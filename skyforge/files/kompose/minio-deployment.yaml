@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: minio
+  name: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: minio
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - |
+              set -e
+              export MINIO_ROOT_USER="$(cat /run/secrets/object-storage-root-user)"
+              export MINIO_ROOT_PASSWORD="$(cat /run/secrets/object-storage-root-password)"
+              if [ -f /etc/skyforge/skyforge.crt ]; then
+                export SSL_CERT_FILE=/tmp/skyforge-ca-certificates.crt
+                cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge.crt > "${SSL_CERT_FILE}"
+              fi
+              exec minio server /data --console-address ":9001"
+          command:
+            - /bin/sh
+            - -lc
+          env:
+            - name: MINIO_BROWSER_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: MINIO_BROWSER_REDIRECT_URL
+                  name: skyforge-config
+            - name: MINIO_CONSOLE_SUBPATH
+              valueFrom:
+                configMapKeyRef:
+                  key: MINIO_CONSOLE_SUBPATH
+                  name: skyforge-config
+          image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            failureThreshold: 6
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: 9000
+            failureThreshold: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+          name: minio
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+            - mountPath: /data
+              name: minio-data
+            - mountPath: /etc/skyforge/skyforge.crt
+              name: minio-cm1
+              readOnly: true
+              subPath: skyforge.crt
+      restartPolicy: Always
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: object-storage-root-user
+                      path: object-storage-root-user
+                  name: object-storage-root-user
+              - secret:
+                  items:
+                    - key: object-storage-root-password
+                      path: object-storage-root-password
+                  name: object-storage-root-password
+        - name: minio-data
+          persistentVolumeClaim:
+            claimName: minio-data
+        - name: minio-cm1
+          secret:
+            items:
+              - key: skyforge-ca-cert
+                path: skyforge.crt
+            secretName: skyforge-ca-cert

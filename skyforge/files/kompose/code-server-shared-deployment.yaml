@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: code-server-shared
+  name: code-server-shared
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: code-server-shared
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: code-server-shared
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - |
+              set -e
+              bin="/home/.openvscode-server/bin/openvscode-server"
+              for ext in $(echo "${CODE_SERVER_EXTENSIONS:-}" | tr ',' ' '); do
+                ext="$(echo "${ext}" | xargs)"
+                [ -z "${ext}" ] && continue
+                echo "Installing OpenVSCode extension: ${ext}"
+                "${bin}" --install-extension "${ext}" \
+                  --force \
+                  --extensions-dir /home/openvscode-server/extensions \
+                  --user-data-dir /home/openvscode-server/data \
+                  --accept-server-license-terms \
+                  --without-connection-token || true
+              done
+              exec "${bin}" \
+                --host 0.0.0.0 \
+                --port 8080 \
+                --server-base-path /code-shared \
+                --telemetry-level off \
+                --accept-server-license-terms \
+                --without-connection-token \
+                --extensions-dir /home/openvscode-server/extensions \
+                --user-data-dir /home/openvscode-server/data \
+                /home/openvscode-server/project
+          command:
+            - /bin/sh
+            - -lc
+          env:
+            - name: CODE_SERVER_EXTENSIONS
+          image: gitpod/openvscode-server:1.105.1
+          livenessProbe:
+            httpGet:
+              path: /code-shared/
+              port: 8080
+            failureThreshold: 6
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /code-shared/
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+          name: code-server-shared
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /home/openvscode-server
+              name: code-server-shared-home
+            - mountPath: /home/openvscode-server/project
+              name: shared-workspace
+      restartPolicy: Always
+      volumes:
+        - name: code-server-shared-home
+          persistentVolumeClaim:
+            claimName: code-server-shared-home
+        - name: shared-workspace
+          persistentVolumeClaim:
+            claimName: shared-workspace

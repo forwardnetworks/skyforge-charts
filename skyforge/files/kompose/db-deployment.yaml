@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: db
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: db
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_DB
+              value: skyforge
+            - name: POSTGRES_PASSWORD_FILE
+              value: /run/secrets/postgres-skyforge-password
+            - name: POSTGRES_USER
+              value: skyforge
+          image: postgres:15-alpine
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            failureThreshold: 6
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            failureThreshold: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+          name: db
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+            - mountPath: /var/lib/postgresql/data
+              name: db-data
+      restartPolicy: Always
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: postgres-skyforge-password
+                      path: postgres-skyforge-password
+                  name: postgres-skyforge-password
+              - secret:
+                  items:
+                    - key: db-semaphore-password
+                      path: db-semaphore-password
+                  name: db-semaphore-password
+              - secret:
+                  items:
+                    - key: db-netbox-password
+                      path: db-netbox-password
+                  name: db-netbox-password
+              - secret:
+                  items:
+                    - key: db-nautobot-password
+                      path: db-nautobot-password
+                  name: db-nautobot-password
+              - secret:
+                  items:
+                    - key: db-gitea-password
+                      path: db-gitea-password
+                  name: db-gitea-password
+              - secret:
+                  items:
+                    - key: db-skyforge-server-password
+                      path: db-skyforge-server-password
+                  name: db-skyforge-server-password
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: db-data

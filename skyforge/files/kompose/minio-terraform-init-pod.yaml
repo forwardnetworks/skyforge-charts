@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    io.kompose.service: minio-terraform-init
+  name: minio-terraform-init
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - args:
+        - |
+          set -euo pipefail
+          root_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+          root_password="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+          tf_user="$(cat /run/secrets/object-storage-terraform-access-key | tr -d '\r\n')"
+          tf_secret="$(cat /run/secrets/object-storage-terraform-secret-key | tr -d '\r\n')"
+
+          echo "Waiting for object storage..."
+          for i in $(seq 1 60); do
+            if mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null
+
+          cat > /tmp/terraform-state.json <<EOF
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": ["s3:ListBucket"],
+                "Resource": ["arn:aws:s3:::terraform-state"]
+              },
+              {
+                "Effect": "Allow",
+                "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+                "Resource": ["arn:aws:s3:::terraform-state/*"]
+              }
+            ]
+          }
+          EOF
+          mc mb -p "local/terraform-state" >/dev/null 2>&1 || true
+          mc admin policy create local terraform-state /tmp/terraform-state.json >/dev/null 2>&1 || true
+          mc admin user svcacct add local "${root_user}" \
+            --access-key "${tf_user}" \
+            --secret-key "${tf_secret}" \
+            --policy /tmp/terraform-state.json \
+            --name terraform-state >/dev/null 2>&1 || true
+          echo "Object storage terraform state ready (bucket terraform-state, service account ${tf_user})."
+      command:
+        - /bin/sh
+        - -lc
+      image: minio/mc:RELEASE.2024-11-17T19-35-25Z
+      name: minio-terraform-init
+      volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+  restartPolicy: Never
+  volumes:
+    - name: run-secrets
+      projected:
+        sources:
+          - secret:
+              items:
+                - key: object-storage-root-user
+                  path: object-storage-root-user
+              name: object-storage-root-user
+          - secret:
+              items:
+                - key: object-storage-root-password
+                  path: object-storage-root-password
+              name: object-storage-root-password
+          - secret:
+              items:
+                - key: object-storage-terraform-access-key
+                  path: object-storage-terraform-access-key
+              name: object-storage-terraform-access-key
+          - secret:
+              items:
+                - key: object-storage-terraform-secret-key
+                  path: object-storage-terraform-secret-key
+              name: object-storage-terraform-secret-key

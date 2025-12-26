@@ -1,0 +1,50 @@
+apiVersion: v1
+data:
+  config.yaml.template: |+
+    issuer: ${DEX_ISSUER}
+
+    storage:
+      type: sqlite3
+      config:
+        file: /var/dex/dex.db
+
+    web:
+      http: 0.0.0.0:5556
+
+    oauth2:
+      skipApprovalScreen: true
+
+    staticClients:
+      - id: minio
+        name: Object Storage
+        secret: ${DEX_MINIO_CLIENT_SECRET}
+        redirectURIs:
+          - ${DEX_MINIO_REDIRECT_URI}
+
+    connectors:
+      - type: ldap
+        id: ldap
+        name: LDAP
+        config:
+          host: ${DEX_LDAP_HOSTPORT}
+          insecureNoSSL: ${DEX_LDAP_INSECURE_NO_SSL}
+          startTLS: ${DEX_LDAP_STARTTLS}
+          insecureSkipVerify: ${DEX_LDAP_INSECURE_SKIP_VERIFY}
+          bindDN: ${DEX_LDAP_BINDDN}
+          bindPW: ${DEX_LDAP_BINDPW}
+          usernamePrompt: Username
+          userSearch:
+            baseDN: ${DEX_USER_SEARCH_BASEDN}
+            filter: ${DEX_USER_SEARCH_FILTER}
+            username: uid
+            idAttr: uid
+            emailAttr: mail
+            nameAttr: cn
+
+kind: ConfigMap
+metadata:
+  annotations:
+    use-subpath: "true"
+  labels:
+    io.kompose.service: dex-config-init
+  name: dex-config-init-cm1

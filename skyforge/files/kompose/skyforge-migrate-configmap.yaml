@@ -1,0 +1,256 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skyforge-migrate-config
+data:
+  atlas.hcl: |
+    variable "db_url" {
+      type = string
+    }
+    
+    env "prod" {
+      url = var.db_url
+      migration {
+        dir    = "file://./skyforge/migrations"
+        format = golang-migrate
+      }
+      format {
+        migrate {
+          diff = "{{ sql . \"  \" }}"
+        }
+      }
+    }
+  20251220000100_init.up.sql: |
+    CREATE TABLE sf_users (
+      username text PRIMARY KEY,
+      display_name text,
+      email text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      last_seen_at timestamptz
+    );
+    
+    CREATE TABLE sf_projects (
+      id text PRIMARY KEY,
+      slug text NOT NULL UNIQUE,
+      name text NOT NULL,
+      description text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      blueprint text,
+      default_branch text,
+      terraform_state_key text,
+      tofu_init_template_id integer,
+      tofu_plan_template_id integer,
+      tofu_apply_template_id integer,
+      ansible_run_template_id integer,
+      netlab_run_template_id integer,
+      aws_account_id text,
+      aws_role_name text,
+      aws_region text,
+      aws_auth_method text,
+      artifacts_bucket text,
+      eve_server text,
+      netlab_server text,
+      semaphore_project_id integer NOT NULL,
+      gitea_owner text NOT NULL,
+      gitea_repo text NOT NULL,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX sf_projects_created_by_idx ON sf_projects(created_by);
+    
+    CREATE TABLE sf_project_members (
+      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
+      username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      role text NOT NULL CHECK (role IN ('owner','editor','viewer')),
+      granted_at timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (project_id, username)
+    );
+    
+    CREATE INDEX sf_project_members_user_idx ON sf_project_members(username);
+    
+    CREATE TABLE sf_project_groups (
+      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
+      group_name text NOT NULL,
+      role text NOT NULL CHECK (role IN ('owner','editor','viewer')),
+      granted_at timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (project_id, group_name)
+    );
+    
+    CREATE INDEX sf_project_groups_project_idx ON sf_project_groups(project_id);
+    
+    CREATE TABLE sf_aws_sso_tokens (
+      username text PRIMARY KEY,
+      start_url text NOT NULL,
+      region text NOT NULL,
+      client_id text,
+      client_secret text,
+      client_secret_expires_at timestamptz,
+      access_token text,
+      access_token_expires_at timestamptz,
+      refresh_token text,
+      refresh_token_expires_at timestamptz,
+      last_authenticated_at_utc timestamptz,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE TABLE sf_project_aws_static_credentials (
+      project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
+      access_key_id text NOT NULL,
+      secret_access_key text NOT NULL,
+      session_token text,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE TABLE sf_audit_log (
+      id bigserial PRIMARY KEY,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      actor_username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      actor_is_admin boolean NOT NULL DEFAULT false,
+      impersonated_username text,
+      action text NOT NULL,
+      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
+      details text
+    );
+    
+    CREATE INDEX sf_audit_log_created_at_idx ON sf_audit_log(created_at DESC);
+    CREATE INDEX sf_audit_log_actor_idx ON sf_audit_log(actor_username);
+    
+    CREATE TABLE sf_notifications (
+      id uuid PRIMARY KEY,
+      username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      title text NOT NULL,
+      message text,
+      type text NOT NULL,
+      category text,
+      reference_id text,
+      priority text,
+      is_read boolean NOT NULL DEFAULT false,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX sf_notifications_user_idx ON sf_notifications(username, created_at DESC);
+    
+    CREATE TABLE sf_settings (
+      key text PRIMARY KEY,
+      value text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+  20251221000100_cloud_credentials.up.sql: |
+    CREATE TABLE sf_project_azure_credentials (
+      project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
+      tenant_id text NOT NULL,
+      client_id text NOT NULL,
+      client_secret text NOT NULL,
+      subscription_id text,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE TABLE sf_project_gcp_credentials (
+      project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
+      service_account_json text NOT NULL,
+      project_id_override text,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+  20251222000100_project_visibility.up.sql: |
+    ALTER TABLE sf_projects
+      ADD COLUMN IF NOT EXISTS is_public boolean NOT NULL DEFAULT false;
+  20251223000100_governance_tables.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_resources (
+      id uuid PRIMARY KEY,
+      provider text NOT NULL,
+      resource_id text NOT NULL,
+      resource_type text NOT NULL,
+      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
+      name text,
+      region text,
+      account_id text,
+      owner_username text REFERENCES sf_users(username) ON UPDATE CASCADE,
+      status text,
+      tags jsonb NOT NULL DEFAULT '{}'::jsonb,
+      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+      first_seen timestamptz NOT NULL DEFAULT now(),
+      last_seen timestamptz NOT NULL DEFAULT now(),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_resources_provider_uq ON sf_resources(provider, resource_id);
+    CREATE INDEX IF NOT EXISTS sf_resources_project_idx ON sf_resources(project_id);
+    CREATE INDEX IF NOT EXISTS sf_resources_owner_idx ON sf_resources(owner_username);
+    
+    CREATE TABLE IF NOT EXISTS sf_resource_events (
+      id uuid PRIMARY KEY,
+      resource_id uuid REFERENCES sf_resources(id) ON DELETE CASCADE,
+      event_type text NOT NULL,
+      actor_username text REFERENCES sf_users(username) ON UPDATE CASCADE,
+      actor_is_admin boolean NOT NULL DEFAULT false,
+      impersonated_username text,
+      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
+      details jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_resource_events_resource_idx ON sf_resource_events(resource_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_resource_events_project_idx ON sf_resource_events(project_id, created_at DESC);
+    
+    CREATE TABLE IF NOT EXISTS sf_cost_snapshots (
+      id uuid PRIMARY KEY,
+      resource_id uuid REFERENCES sf_resources(id) ON DELETE SET NULL,
+      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
+      provider text NOT NULL,
+      period_start date NOT NULL,
+      period_end date NOT NULL,
+      cost_amount numeric NOT NULL,
+      cost_currency text NOT NULL DEFAULT 'USD',
+      source text,
+      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_cost_snapshots_project_idx ON sf_cost_snapshots(project_id, period_end DESC);
+    CREATE INDEX IF NOT EXISTS sf_cost_snapshots_provider_idx ON sf_cost_snapshots(provider, period_end DESC);
+    
+    CREATE TABLE IF NOT EXISTS sf_usage_snapshots (
+      id uuid PRIMARY KEY,
+      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
+      provider text NOT NULL,
+      scope_type text NOT NULL,
+      scope_id text,
+      metric text NOT NULL,
+      value numeric NOT NULL,
+      unit text,
+      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+      collected_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_usage_snapshots_project_idx ON sf_usage_snapshots(project_id, collected_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_usage_snapshots_provider_idx ON sf_usage_snapshots(provider, collected_at DESC);
+  20251223000200_deployments.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_deployments (
+      id uuid PRIMARY KEY,
+      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
+      name text NOT NULL,
+      type text NOT NULL CHECK (type IN ('tofu','netlab')),
+      config jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      last_task_project_id integer,
+      last_task_id integer,
+      last_status text,
+      last_started_at timestamptz,
+      last_finished_at timestamptz
+    );
+    
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_deployments_project_name_uq ON sf_deployments(project_id, name);
+    CREATE INDEX IF NOT EXISTS sf_deployments_project_idx ON sf_deployments(project_id, updated_at DESC);
+  atlas.sum: |
+    h1:edAj9s8L3w5ESMTqCya0mXDYhE130aoaOD+lTyndmew=
+    20251220000100_init.up.sql h1:YCWvMBPS4NllVUMuxfGa/GI6PNNfPI4aiCQzxCuHoYY=
+    20251221000100_cloud_credentials.up.sql h1:eV5g4ndFX+Vv/jGTQoj4rgLgXJemBeS9u0XyKVlEnwQ=
+    20251222000100_project_visibility.up.sql h1:8N5AoNS1iVXnMARyCmsiffW4n6CrAq/nmxailQPZ3cw=
+    20251223000100_governance_tables.up.sql h1:sIMnWWu3E0dBV0dipOpHRXZ9H8tplAlmQ+tM2mC/NhE=
+    20251223000200_deployments.up.sql h1:xU/2T1MUJ041Dx1qsrwhh1jN8f2iqg91U2hwHlf8oZQ=

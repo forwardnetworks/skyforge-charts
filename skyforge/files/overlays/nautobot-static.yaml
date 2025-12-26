@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nautobot-static-nginx
+data:
+  nginx.conf: |
+    worker_processes auto;
+    error_log /dev/stderr warn;
+    pid /tmp/nginx.pid;
+
+    events {
+      worker_connections 1024;
+    }
+
+    http {
+      include /etc/nginx/mime.types;
+      default_type application/octet-stream;
+      access_log /dev/stdout;
+      sendfile on;
+
+      server {
+        listen 8080;
+        server_name _;
+
+        location ^~ /nautobot/static/ {
+          alias /srv/nautobot-static/;
+          add_header Cache-Control "no-store";
+        }
+
+        location ^~ /nautobot/media/ {
+          alias /srv/nautobot-media/;
+          add_header Cache-Control "no-store";
+        }
+
+        location / {
+          return 404;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nautobot-static
+  labels:
+    io.kompose.service: nautobot-static
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nautobot-static
+  template:
+    metadata:
+      labels:
+        io.kompose.service: nautobot-static
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /nautobot/static/django_tables2/bootstrap.css
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /nautobot/static/django_tables2/bootstrap.css
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: nautobot-static
+              mountPath: /srv/nautobot-static
+              readOnly: true
+            - name: nautobot-media
+              mountPath: /srv/nautobot-media
+              readOnly: true
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nautobot-static-nginx
+        - name: nautobot-static
+          persistentVolumeClaim:
+            claimName: nautobot-static
+            readOnly: true
+        - name: nautobot-media
+          persistentVolumeClaim:
+            claimName: nautobot-media
+            readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nautobot-static
+  labels:
+    io.kompose.service: nautobot-static
+spec:
+  selector:
+    io.kompose.service: nautobot-static
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

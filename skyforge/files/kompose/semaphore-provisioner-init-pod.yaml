@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    io.kompose.service: semaphore-provisioner-init
+  name: semaphore-provisioner-init
+spec:
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  containers:
+    - args:
+        - |
+          set -euo pipefail
+          login="${SEMAPHORE_PROVISIONER_LOGIN:-}"
+          name="${SEMAPHORE_PROVISIONER_NAME:-}"
+          email="${SEMAPHORE_PROVISIONER_EMAIL:-}"
+          password="$(cat /run/secrets/semaphore-provisioner-password | tr -d '\n')"
+
+          echo "Waiting for Semaphore config..."
+          for i in $(seq 1 60); do
+            if [ -s /etc/semaphore/config.json ]; then
+              break
+            fi
+            sleep 1
+          done
+
+          if semaphore users list --config /etc/semaphore/config.json | awk '{print $1}' | grep -qx "${login}"; then
+            echo "Semaphore provisioner user exists: ${login}"
+            exit 0
+          fi
+
+          echo "Creating Semaphore provisioner admin user: ${login}"
+          semaphore users add --config /etc/semaphore/config.json \
+            --login "${login}" \
+            --name "${name}" \
+            --email "${email}" \
+            --password "${password}" \
+            --admin
+
+          echo "Semaphore provisioner init complete."
+      command:
+        - /bin/sh
+        - -lc
+      env:
+        - name: SEMAPHORE_PROVISIONER_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_PROVISIONER_EMAIL
+        - name: SEMAPHORE_PROVISIONER_LOGIN
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_PROVISIONER_LOGIN
+        - name: SEMAPHORE_PROVISIONER_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_PROVISIONER_NAME
+      image: semaphoreui/semaphore:latest
+      name: semaphore-provisioner-init
+      volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - mountPath: /etc/semaphore
+          name: semaphore-config
+  restartPolicy: Never
+  volumes:
+    - name: run-secrets
+      projected:
+        sources:
+          - secret:
+              items:
+                - key: semaphore-provisioner-password
+                  path: semaphore-provisioner-password
+              name: semaphore-provisioner-password
+    - name: semaphore-config
+      persistentVolumeClaim:
+        claimName: semaphore-config

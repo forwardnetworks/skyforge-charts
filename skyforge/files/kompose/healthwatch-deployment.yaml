@@ -1,0 +1,264 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: healthwatch
+  name: healthwatch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: healthwatch
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: healthwatch
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - |
+              set -euo pipefail
+              apk add --no-cache curl postgresql-client redis jq netcat-openbsd >/dev/null
+
+              interval="${SKYFORGE_HEALTH_INTERVAL_SECONDS:-30}"
+              if ! echo "${interval}" | grep -Eq '^[0-9]+$' || [ "${interval}" -lt 5 ]; then
+                interval="30"
+              fi
+
+              out_dir="/data"
+              out_file="${out_dir}/platform-health.json"
+              tmp_file="${out_dir}/platform-health.json.tmp"
+              mkdir -p "${out_dir}"
+
+              json_escape() {
+                echo "$1" | sed 's/\\/\\\\/g; s/\"/\\\"/g'
+              }
+
+              check_url() { curl -fsS --max-time 5 -o /dev/null -w "%{http_code}" "$1" 2>/dev/null || echo "000"; }
+              check_pg() { pg_isready -h db -U skyforge >/dev/null 2>&1 && echo "200" || echo "000"; }
+              check_redis() { redis-cli -h redis ping 2>/dev/null | grep -q PONG && echo "200" || echo "000"; }
+              check_radius() { nc -z -u -w 2 freeradius 1812 >/dev/null 2>&1 && echo "200" || echo "000"; }
+              post_alert() {
+                local name="$1"
+                local status="$2"
+                local detail="$3"
+                local webhook="${SKYFORGE_ALERT_WEBHOOK_URL:-}"
+                [ -n "${webhook}" ] || return 0
+                curl -fsS --max-time 5 -H 'Content-Type: application/json' \
+                  -d "{\"service\":\"$(json_escape "${name}")\",\"status\":\"$(json_escape "${status}")\",\"detail\":\"$(json_escape "${detail}")\",\"timestamp\":\"${now}\"}" \
+                  "${webhook}" >/dev/null 2>&1 || true
+              }
+
+              add_http() {
+                local name="$1"
+                local icon="$2"
+                local url="$3"
+                local hint="$4"
+                local code status detail
+
+                code="$(check_url "${url}")"
+                status="down"
+                if echo "${code}" | grep -Eq '^[0-9]{3}$' && [ "${code}" != "000" ] && [ "${code}" -lt 500 ]; then
+                  status="up"
+                fi
+                detail="$(json_escape "${name} (${hint:-${url}}) HTTP ${code} (checked ${now})")"
+                printf '%s{"name":"%s","icon":"%s","status":"%s","detail":"%s"}' "${sep}" "${name}" "${icon}" "${status}" "${detail}"
+                sep=","
+              }
+
+              add_code() {
+                local name="$1"
+                local icon="$2"
+                local code="$3"
+                local detail="$4"
+                local status
+
+                status="down"
+                if echo "${code}" | grep -Eq '^[0-9]{3}$' && [ "${code}" != "000" ] && [ "${code}" -lt 500 ]; then
+                  status="up"
+                fi
+                detail="$(json_escape "${detail}")"
+                printf '%s{"name":"%s","icon":"%s","status":"%s","detail":"%s"}' "${sep}" "${name}" "${icon}" "${status}" "${detail}"
+                sep=","
+              }
+
+              emit_http_checks() {
+                local mode="$1"
+                local entries="${SKYFORGE_HEALTH_HTTP_CHECKS:-}"
+                [ -n "${entries}" ] || return 0
+                local entry name icon url hint
+                local old_ifs="$IFS"
+                IFS=';'
+                for entry in ${entries}; do
+                  entry="$(echo "${entry}" | xargs)"
+                  [ -n "${entry}" ] || continue
+                  IFS='|'
+                  set -- ${entry}
+                  name="$1"
+                  icon="$2"
+                  url="$3"
+                  hint="$4"
+                  IFS=';'
+                  name="$(echo "${name}" | xargs)"
+                  url="$(echo "${url}" | xargs)"
+                  hint="$(echo "${hint}" | xargs)"
+                  icon="$(echo "${icon}" | xargs)"
+                  [ -n "${name}" ] || continue
+                  [ -n "${url}" ] || continue
+                  if [ "${mode}" = "record" ]; then
+                    record_http "${name}" "${url}" "${hint}"
+                  else
+                    add_http "${name}" "${icon:-•}" "${url}" "${hint}"
+                  fi
+                done
+                IFS="${old_ifs}"
+              }
+
+              emit_code_checks() {
+                local mode="$1"
+                local entries="${SKYFORGE_HEALTH_CODE_CHECKS:-}"
+                [ -n "${entries}" ] || return 0
+                local entry name icon token hint code proto detail
+                local old_ifs="$IFS"
+                IFS=';'
+                for entry in ${entries}; do
+                  entry="$(echo "${entry}" | xargs)"
+                  [ -n "${entry}" ] || continue
+                  IFS='|'
+                  set -- ${entry}
+                  name="$1"
+                  icon="$2"
+                  token="$3"
+                  hint="$4"
+                  IFS=';'
+                  name="$(echo "${name}" | xargs)"
+                  token="$(echo "${token}" | xargs)"
+                  hint="$(echo "${hint}" | xargs)"
+                  icon="$(echo "${icon}" | xargs)"
+                  [ -n "${name}" ] || continue
+                  case "${token}" in
+                    pg) code="${pg_code}" ;;
+                    redis) code="${redis_code}" ;;
+                    radius) code="${radius_code}" ;;
+                    *) continue ;;
+                  esac
+                  proto="HTTP"
+                  if [ "${token}" = "radius" ]; then
+                    proto="UDP"
+                  fi
+                  if [ -n "${hint}" ]; then
+                    detail="${name} (${hint}) ${proto} ${code} (checked ${now})"
+                  else
+                    detail="${name} ${proto} ${code} (checked ${now})"
+                  fi
+                  if [ "${mode}" = "record" ]; then
+                    record_state "${name}" "$(echo "${code}" | grep -Eq '^[0-9]{3}$' && [ "${code}" != "000" ] && [ "${code}" -lt 500 ] && echo up || echo down)" "${detail}"
+                  else
+                    add_code "${name}" "${icon:-•}" "${code}" "${detail}"
+                  fi
+                done
+                IFS="${old_ifs}"
+              }
+
+              state_file="${out_dir}/platform-health.state"
+              tmp_state="${out_dir}/platform-health.state.tmp"
+
+              while true; do
+                now="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+                sep=""
+
+                pg_code="$(check_pg)"
+                redis_code="$(check_redis)"
+                radius_code="$(check_radius)"
+
+                # Emit a simple state file for change detection.
+                # Format: <name>\t<status>\t<detail>
+                : >"${tmp_state}"
+                record_state() {
+                  local name="$1"
+                  local status="$2"
+                  local detail="$3"
+                  printf '%s\t%s\t%s\n' "${name}" "${status}" "${detail}" >>"${tmp_state}"
+                }
+
+                # Precompute and record the same checks as the JSON list.
+                record_http() {
+                  local name="$1"
+                  local url="$2"
+                  local hint="$3"
+                  local code status detail
+                  code="$(check_url "${url}")"
+                  status="down"
+                  if echo "${code}" | grep -Eq '^[0-9]{3}$' && [ "${code}" != "000" ] && [ "${code}" -lt 500 ]; then
+                    status="up"
+                  fi
+                  detail="${name} (${hint:-${url}}) HTTP ${code} (checked ${now})"
+                  record_state "${name}" "${status}" "${detail}"
+                }
+                record_code() {
+                  local name="$1"
+                  local code="$2"
+                  local detail="$3"
+                  local status
+                  status="down"
+                  if echo "${code}" | grep -Eq '^[0-9]{3}$' && [ "${code}" != "000" ] && [ "${code}" -lt 500 ]; then
+                    status="up"
+                  fi
+                  record_state "${name}" "${status}" "${detail}"
+                }
+
+                emit_http_checks "record"
+                emit_code_checks "record"
+
+                if [ -f "${state_file}" ] && [ -n "${SKYFORGE_ALERT_WEBHOOK_URL:-}" ]; then
+                  # Alert on any status change compared to the previous iteration.
+                  while IFS=$'\t' read -r name status detail; do
+                    prev_status="$(awk -F '\t' -v n="${name}" '$1==n{print $2}' "${state_file}" 2>/dev/null | head -n 1)"
+                    if [ -n "${prev_status}" ] && [ "${prev_status}" != "${status}" ]; then
+                      post_alert "${name}" "${status}" "${detail}"
+                    fi
+                  done <"${tmp_state}"
+                fi
+
+                mv "${tmp_state}" "${state_file}"
+
+                {
+                  printf '['
+                  emit_http_checks "add"
+                  emit_code_checks "add"
+                  printf ']\n'
+                } > "${tmp_file}"
+
+                mv "${tmp_file}" "${out_file}"
+                sleep "${interval}"
+              done
+          command:
+            - /bin/sh
+            - -lc
+          env:
+            - name: SKYFORGE_ALERT_WEBHOOK_URL
+            - name: SKYFORGE_HEALTH_INTERVAL_SECONDS
+              value: "30"
+            - name: SKYFORGE_HEALTH_HTTP_CHECKS
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_HEALTH_HTTP_CHECKS
+            - name: SKYFORGE_HEALTH_CODE_CHECKS
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_HEALTH_CODE_CHECKS
+          image: alpine:3.20
+          name: healthwatch
+          volumeMounts:
+            - mountPath: /data
+              name: platform-data
+      restartPolicy: Always
+      volumes:
+        - name: platform-data
+          persistentVolumeClaim:
+            claimName: platform-data

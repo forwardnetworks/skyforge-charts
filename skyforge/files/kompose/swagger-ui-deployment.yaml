@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: swagger-ui
+  name: swagger-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: swagger-ui
+  template:
+    metadata:
+      labels:
+        io.kompose.service: swagger-ui
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: swagger-ui
+          image: swaggerapi/swagger-ui:v5.11.0
+          imagePullPolicy: Always
+          env:
+            - name: SWAGGER_JSON
+              value: /tmp/openapi.json
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: openapi
+              mountPath: /tmp/openapi.json
+              subPath: openapi.json
+              readOnly: true
+      volumes:
+        - name: openapi
+          configMap:
+            name: swagger-openapi

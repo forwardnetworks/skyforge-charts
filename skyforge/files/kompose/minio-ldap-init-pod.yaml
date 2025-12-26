@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    io.kompose.service: minio-ldap-init
+  name: minio-ldap-init
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - args:
+        - |
+          set -euo pipefail
+          MINIO_ROOT_USER="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+          MINIO_ROOT_PASSWORD="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+          ldap_url="$(cat /run/secrets/skyforge-ldap-url | tr -d '\r\n')"
+          needtls="$(cat /run/secrets/semaphore-ldap-needtls | tr -d '\r\n')"
+          search_base_dn="$(cat /run/secrets/semaphore-ldap-searchdn | tr -d '\r\n')"
+          user_filter="$(cat /run/secrets/semaphore-ldap-searchfilter | tr -d '\r\n')"
+          bind_dn="$(cat /run/secrets/semaphore-ldap-binddn | tr -d '\r\n')"
+          bind_password="$(cat /run/secrets/semaphore-ldap-bindpassword | tr -d '\r\n')"
+
+          scheme="ldap"
+          hostport="${ldap_url}"
+          case "${ldap_url}" in
+            ldaps://*) scheme="ldaps"; hostport="${ldap_url#ldaps://}" ;;
+            ldap://*)  scheme="ldap";  hostport="${ldap_url#ldap://}" ;;
+          esac
+
+          tls_skip_verify="off"
+          if [ "${SKYFORGE_LDAP_SKIP_TLS_VERIFY:-false}" = "true" ]; then
+            tls_skip_verify="on"
+          fi
+
+          server_insecure="off"
+          server_starttls="off"
+          if [ "${scheme}" = "ldap" ]; then
+            server_insecure="on"
+            if [ "${needtls}" = "true" ]; then
+              server_starttls="on"
+            fi
+          fi
+
+          echo "Waiting for object storage..."
+          for i in $(seq 1 60); do
+            if mc alias set local http://minio:9000 "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}" >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          mc alias set local http://minio:9000 "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}" >/dev/null
+
+          mc admin config set local identity_ldap \
+            enable=on \
+            server_addr="${hostport}" \
+            server_insecure="${server_insecure}" \
+            server_starttls="${server_starttls}" \
+            tls_skip_verify="${tls_skip_verify}" \
+            lookup_bind_dn="${bind_dn}" \
+            lookup_bind_password="${bind_password}" \
+            user_dn_search_base_dn="${search_base_dn}" \
+            user_dn_search_filter="${user_filter}" >/dev/null
+
+          MC_DISABLE_PAGER=true MC_QUIET=1 mc admin service restart --json local >/dev/null
+          echo "Object storage LDAP configured."
+      command:
+        - /bin/sh
+        - -lc
+      env:
+        - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
+          value: "false"
+      image: minio/mc:RELEASE.2024-11-17T19-35-25Z
+      name: minio-ldap-init
+      volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+  restartPolicy: Never
+  volumes:
+    - name: run-secrets
+      projected:
+        sources:
+          - secret:
+              items:
+                - key: object-storage-root-user
+                  path: object-storage-root-user
+              name: object-storage-root-user
+          - secret:
+              items:
+                - key: object-storage-root-password
+                  path: object-storage-root-password
+              name: object-storage-root-password
+          - secret:
+              items:
+                - key: skyforge-ldap-url
+                  path: skyforge-ldap-url
+              name: skyforge-ldap-url
+          - secret:
+              items:
+                - key: semaphore-ldap-searchdn
+                  path: semaphore-ldap-searchdn
+              name: semaphore-ldap-searchdn
+          - secret:
+              items:
+                - key: semaphore-ldap-searchfilter
+                  path: semaphore-ldap-searchfilter
+              name: semaphore-ldap-searchfilter
+          - secret:
+              items:
+                - key: semaphore-ldap-binddn
+                  path: semaphore-ldap-binddn
+              name: semaphore-ldap-binddn
+          - secret:
+              items:
+                - key: semaphore-ldap-bindpassword
+                  path: semaphore-ldap-bindpassword
+              name: semaphore-ldap-bindpassword
+          - secret:
+              items:
+                - key: semaphore-ldap-needtls
+                  path: semaphore-ldap-needtls
+              name: semaphore-ldap-needtls

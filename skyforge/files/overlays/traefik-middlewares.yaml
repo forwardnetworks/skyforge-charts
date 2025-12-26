@@ -1,0 +1,110 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: skyforge-auth
+spec:
+  forwardAuth:
+    address: http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik
+    trustForwardHeader: true
+    authResponseHeaders:
+      - X-Skyforge-Username
+      - X-Skyforge-DisplayName
+      - X-Skyforge-Email
+      - X-Skyforge-Groups
+      - X-Skyforge-First-Name
+      - X-Skyforge-Last-Name
+      - Remote-User
+      - Remote-User-Email
+      - Remote-User-First-Name
+      - Remote-User-Last-Name
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-nautobot
+spec:
+  stripPrefix:
+    prefixes:
+      - /nautobot
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-git
+spec:
+  stripPrefix:
+    prefixes:
+      - /git
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-hoppscotch
+spec:
+  stripPrefix:
+    prefixes:
+      - /hoppscotch
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-swagger
+spec:
+  stripPrefix:
+    prefixes:
+      - /swagger
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-webhooks
+spec:
+  stripPrefix:
+    prefixes:
+      - /webhooks
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-netbox-static
+spec:
+  replacePathRegex:
+    regex: ^/netbox/static/(.*)
+    replacement: /static/$1
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-netbox-media
+spec:
+  replacePathRegex:
+    regex: ^/netbox/media/(.*)
+    replacement: /media/$1
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-skyforge-server
+spec:
+  replacePathRegex:
+    regex: ^/skyforge-server/(.*)
+    replacement: /api/$1
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-semaphore-api
+spec:
+  replacePathRegex:
+    regex: ^/api/(.*)
+    replacement: /semaphore/api/$1
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-files
+spec:
+  replacePathRegex:
+    regex: ^/files/(.*)
+    replacement: /skyforge-files/$1
+---

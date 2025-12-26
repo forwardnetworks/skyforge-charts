@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    io.kompose.service: minio-oidc-init
+  name: minio-oidc-init
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - args:
+        - |
+          set -euo pipefail
+          MINIO_ROOT_USER="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+          MINIO_ROOT_PASSWORD="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+          OIDC_CLIENT_SECRET="$(cat /run/secrets/dex-minio-client-secret | tr -d '\r\n')"
+
+          if [ -f /etc/skyforge/skyforge.crt ]; then
+            export SSL_CERT_FILE=/tmp/skyforge-ca-certificates.crt
+            base_bundle=""
+            for candidate in /etc/ssl/certs/ca-certificates.crt /etc/ssl/cert.pem /etc/pki/tls/certs/ca-bundle.crt; do
+              if [ -f "${candidate}" ]; then
+                base_bundle="${candidate}"
+                break
+              fi
+            done
+            if [ -n "${base_bundle}" ]; then
+              cat "${base_bundle}" /etc/skyforge/skyforge.crt > "${SSL_CERT_FILE}"
+            else
+              cat /etc/skyforge/skyforge.crt > "${SSL_CERT_FILE}"
+            fi
+          fi
+
+          echo "Waiting for object storage..."
+          for i in $(seq 1 60); do
+            if mc alias set local http://minio:9000 "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}" >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          mc alias set local http://minio:9000 "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}" >/dev/null
+
+          echo "Waiting for Dex OIDC discovery..."
+          for i in $(seq 1 60); do
+            if mc admin config set local identity_openid \
+              enable=on \
+              display_name="LDAP" \
+              config_url="http://dex:5556/dex/.well-known/openid-configuration" \
+              client_id="minio" \
+              client_secret="${OIDC_CLIENT_SECRET}" \
+              scopes="openid,profile,email,groups" \
+              redirect_uri_dynamic=on \
+              role_policy="consoleAdmin" >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          mc admin config set local identity_openid \
+            enable=on \
+            display_name="LDAP" \
+            config_url="http://dex:5556/dex/.well-known/openid-configuration" \
+            client_id="minio" \
+            client_secret="${OIDC_CLIENT_SECRET}" \
+            scopes="openid,profile,email,groups" \
+            redirect_uri_dynamic=on \
+            role_policy="consoleAdmin" >/dev/null
+
+          MC_DISABLE_PAGER=true MC_QUIET=1 mc admin service restart --json local >/dev/null
+          echo "Object storage OIDC enabled (Dex/LDAP)."
+      command:
+        - /bin/sh
+        - -lc
+      image: minio/mc:RELEASE.2024-11-17T19-35-25Z
+      name: minio-oidc-init
+      volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - mountPath: /etc/skyforge/skyforge.crt
+          name: skyforge-ca-cert
+          readOnly: true
+          subPath: skyforge.crt
+  restartPolicy: Never
+  volumes:
+    - name: run-secrets
+      projected:
+        sources:
+          - secret:
+              items:
+                - key: object-storage-root-user
+                  path: object-storage-root-user
+              name: object-storage-root-user
+          - secret:
+              items:
+                - key: object-storage-root-password
+                  path: object-storage-root-password
+              name: object-storage-root-password
+          - secret:
+              items:
+                - key: dex-minio-client-secret
+                  path: dex-minio-client-secret
+              name: dex-minio-client-secret
+    - name: skyforge-ca-cert
+      secret:
+        items:
+          - key: skyforge-ca-cert
+            path: skyforge.crt
+        secretName: skyforge-ca-cert

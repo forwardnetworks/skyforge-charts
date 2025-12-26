@@ -1,0 +1,137 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    io.kompose.service: db-provision
+  name: db-provision
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        io.kompose.service: db-provision
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      containers:
+        - name: db-provision
+          image: postgres:15-alpine
+          command:
+            - /bin/sh
+            - -lc
+          args:
+            - |
+              set -euo pipefail
+              export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password)"
+
+              echo "Waiting for Postgres..."
+              for i in $(seq 1 60); do
+                if pg_isready -h db -U skyforge >/dev/null 2>&1; then
+                  break
+                fi
+                sleep 1
+              done
+              pg_isready -h db -U skyforge >/dev/null
+
+              export POSTGRES_USER="skyforge"
+              export POSTGRES_DB="skyforge"
+              export PGHOST="db"
+              export PGPORT="5432"
+
+              read_secret() {
+                name="$1"
+                fallback="${2:-}"
+                path="/run/secrets/$name"
+                if [ -f "$path" ]; then
+                  cat "$path"
+                  return 0
+                fi
+                printf "%s" "$fallback"
+              }
+
+              SEMAPHORE_DB_PASSWORD="$(read_secret db-semaphore-password "${SEMAPHORE_DB_PASSWORD:-semaphore}")"
+              NETBOX_DB_PASSWORD="$(read_secret db-netbox-password "${NETBOX_DB_PASSWORD:-netbox}")"
+              NAUTOBOT_DB_PASSWORD="$(read_secret db-nautobot-password "${NAUTOBOT_DB_PASSWORD:-nautobot}")"
+              GITEA_DB_PASSWORD="$(read_secret db-gitea-password "${GITEA_DB_PASSWORD:-gitea}")"
+              SKYFORGE_SERVER_DB_PASSWORD="$(read_secret db-skyforge-server-password "${SKYFORGE_SERVER_DB_PASSWORD:-skyforge_server}")"
+              HOPPSCOTCH_DB_PASSWORD="$(read_secret db-hoppscotch-password "${HOPPSCOTCH_DB_PASSWORD:-hoppscotch}")"
+
+              psql_base="psql -v ON_ERROR_STOP=1 --username ${POSTGRES_USER} --dbname ${POSTGRES_DB}"
+
+              sql_escape() {
+                printf "%s" "$1" | sed "s/'/''/g"
+              }
+
+              create_role() {
+                role="$1"
+                pw="$2"
+                pw_sql="$(sql_escape "${pw}")"
+                ${psql_base} -c "CREATE ROLE ${role} WITH LOGIN PASSWORD '${pw_sql}';" || \
+                  ${psql_base} -c "ALTER ROLE ${role} WITH LOGIN PASSWORD '${pw_sql}';"
+              }
+
+              create_db() {
+                db="$1"
+                owner="$2"
+                ${psql_base} -c "CREATE DATABASE ${db} OWNER ${owner};" || \
+                  ${psql_base} -c "ALTER DATABASE ${db} OWNER TO ${owner};"
+              }
+
+              create_role semaphore "${SEMAPHORE_DB_PASSWORD}"
+              create_role netbox "${NETBOX_DB_PASSWORD}"
+              create_role nautobot "${NAUTOBOT_DB_PASSWORD}"
+              create_role gitea "${GITEA_DB_PASSWORD}"
+              create_role skyforge_server "${SKYFORGE_SERVER_DB_PASSWORD}"
+              create_role hoppscotch "${HOPPSCOTCH_DB_PASSWORD}"
+
+              create_db semaphore semaphore
+              create_db netbox netbox
+              create_db nautobot nautobot
+              create_db gitea gitea
+              create_db skyforge_server skyforge_server
+              create_db hoppscotch hoppscotch
+              echo "DB provisioning complete."
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: postgres-skyforge-password
+                      path: postgres-skyforge-password
+                  name: postgres-skyforge-password
+              - secret:
+                  items:
+                    - key: db-semaphore-password
+                      path: db-semaphore-password
+                  name: db-semaphore-password
+              - secret:
+                  items:
+                    - key: db-netbox-password
+                      path: db-netbox-password
+                  name: db-netbox-password
+              - secret:
+                  items:
+                    - key: db-nautobot-password
+                      path: db-nautobot-password
+                  name: db-nautobot-password
+              - secret:
+                  items:
+                    - key: db-gitea-password
+                      path: db-gitea-password
+                  name: db-gitea-password
+              - secret:
+                  items:
+                    - key: db-hoppscotch-password
+                      path: db-hoppscotch-password
+                  name: db-hoppscotch-password
+              - secret:
+                  items:
+                    - key: db-skyforge-server-password
+                      path: db-skyforge-server-password
+                  name: db-skyforge-server-password

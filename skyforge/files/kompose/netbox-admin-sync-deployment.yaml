@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: netbox-admin-sync
+  name: netbox-admin-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: netbox-admin-sync
+  template:
+    metadata:
+      labels:
+        io.kompose.service: netbox-admin-sync
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - |
+              set -euo pipefail
+              export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password)"
+              interval="${SKYFORGE_ADMIN_SYNC_SECONDS:-30}"
+              if ! echo "${interval}" | grep -Eq '^[0-9]+$' || [ "${interval}" -lt 5 ]; then
+                interval="30"
+              fi
+
+              normalize_users() {
+                echo "${SKYFORGE_ADMIN_USERS:-}" \
+                  | tr ',' '\n' \
+                  | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+                  | grep -E '^[a-zA-Z0-9_.@-]+$' || true
+              }
+
+              while true; do
+                users="$(normalize_users)"
+                if [ -n "${users}" ]; then
+                  for username in ${users}; do
+                    psql -h db -U skyforge -d netbox \
+                      -c "update auth_user set is_superuser=true, is_staff=true, is_active=true where username='${username}';" >/dev/null || true
+                  done
+                fi
+                sleep "${interval}"
+              done
+          command:
+            - /bin/sh
+            - -lc
+          env:
+            - name: SKYFORGE_ADMIN_SYNC_SECONDS
+              value: "30"
+            - name: SKYFORGE_ADMIN_USERS
+              value: skyforge
+          image: postgres:15-alpine
+          name: netbox-admin-sync
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: postgres-skyforge-password
+                      path: postgres-skyforge-password
+                  name: postgres-skyforge-password

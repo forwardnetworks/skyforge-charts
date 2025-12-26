@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    io.kompose.service: skyforge-migrate
+  name: skyforge-migrate
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        io.kompose.service: skyforge-migrate
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      containers:
+        - name: skyforge-migrate
+          image: arigaio/atlas:latest-alpine
+          imagePullPolicy: Always
+          workingDir: /app
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - >-
+              set -e;
+              db_url="postgres://${SKYFORGE_DB_USER}:${SKYFORGE_DB_PASSWORD}@${SKYFORGE_DB_HOST}:${SKYFORGE_DB_PORT}/${SKYFORGE_DB_NAME}?sslmode=${SKYFORGE_DB_SSLMODE}";
+              atlas migrate apply --config file:///app/atlas.hcl --env prod --var db_url="${db_url}";
+          env:
+            - name: SKYFORGE_DB_HOST
+              value: db
+            - name: SKYFORGE_DB_PORT
+              value: "5432"
+            - name: SKYFORGE_DB_NAME
+              value: skyforge_server
+            - name: SKYFORGE_DB_USER
+              value: skyforge_server
+            - name: SKYFORGE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-skyforge-server-password
+                  key: db-skyforge-server-password
+            - name: SKYFORGE_DB_SSLMODE
+              value: disable
+            - name: ATLAS_CONFIG
+              value: /app/atlas.hcl
+          volumeMounts:
+            - mountPath: /app
+              name: skyforge-migrate-config
+              readOnly: true
+      volumes:
+        - name: skyforge-migrate-config
+          configMap:
+            name: skyforge-migrate-config
+            items:
+              - key: atlas.hcl
+                path: atlas.hcl
+              - key: atlas.sum
+                path: skyforge/migrations/atlas.sum
+              - key: 20251220000100_init.up.sql
+                path: skyforge/migrations/20251220000100_init.up.sql
+              - key: 20251221000100_cloud_credentials.up.sql
+                path: skyforge/migrations/20251221000100_cloud_credentials.up.sql
+              - key: 20251222000100_project_visibility.up.sql
+                path: skyforge/migrations/20251222000100_project_visibility.up.sql
+              - key: 20251223000100_governance_tables.up.sql
+                path: skyforge/migrations/20251223000100_governance_tables.up.sql
+              - key: 20251223000200_deployments.up.sql
+                path: skyforge/migrations/20251223000200_deployments.up.sql

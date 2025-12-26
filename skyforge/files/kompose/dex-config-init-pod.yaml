@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    io.kompose.service: dex-config-init
+  name: dex-config-init
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - args:
+        - |
+          set -euo pipefail
+          apk add --no-cache gettext >/dev/null
+
+          primary_hostname="${SKYFORGE_HOSTNAME%%,*}"
+          primary_hostname="$(echo "${primary_hostname}" | xargs)"
+
+          ldap_url="$(cat /run/secrets/skyforge-ldap-url | tr -d '\r\n')"
+          needtls="$(cat /run/secrets/semaphore-ldap-needtls | tr -d '\r\n')"
+
+          scheme="ldap"
+          hostport="${ldap_url}"
+          case "${ldap_url}" in
+            ldaps://*) scheme="ldaps"; hostport="${ldap_url#ldaps://}" ;;
+            ldap://*)  scheme="ldap";  hostport="${ldap_url#ldap://}" ;;
+          esac
+
+          export DEX_ISSUER="https://${primary_hostname}/dex"
+          export DEX_LDAP_HOSTPORT="${hostport}"
+          export DEX_LDAP_INSECURE_NO_SSL="false"
+          export DEX_LDAP_STARTTLS="false"
+          export DEX_LDAP_INSECURE_SKIP_VERIFY="${SKYFORGE_LDAP_SKIP_TLS_VERIFY:-false}"
+
+          if [ "${scheme}" = "ldap" ]; then
+            export DEX_LDAP_INSECURE_NO_SSL="true"
+            if [ "${needtls}" = "true" ]; then
+              export DEX_LDAP_STARTTLS="true"
+            fi
+          fi
+
+          export DEX_LDAP_BINDDN="$(cat /run/secrets/semaphore-ldap-binddn | tr -d '\r\n')"
+          export DEX_LDAP_BINDPW="$(cat /run/secrets/semaphore-ldap-bindpassword | tr -d '\r\n')"
+          export DEX_USER_SEARCH_BASEDN="$(cat /run/secrets/semaphore-ldap-searchdn | tr -d '\r\n')"
+          export DEX_USER_SEARCH_FILTER="$(cat /run/secrets/semaphore-ldap-searchfilter | tr -d '\r\n')"
+
+          export DEX_MINIO_CLIENT_SECRET="$(cat /run/secrets/dex-minio-client-secret | tr -d '\r\n')"
+          export DEX_MINIO_REDIRECT_URI="https://${primary_hostname}/minio-console/oauth_callback"
+
+          envsubst < /tmp/dex-config.yaml.template > /etc/dex/config.yaml
+          echo "Dex config rendered for issuer ${DEX_ISSUER}"
+      command:
+        - /bin/sh
+        - -lc
+      env:
+        - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
+          value: "false"
+        - name: SKYFORGE_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              key: SKYFORGE_HOSTNAME
+              name: skyforge-config
+      image: alpine:3.20
+      name: dex-config-init
+      volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - mountPath: /etc/dex
+          name: dex-config
+        - mountPath: /tmp/dex-config.yaml.template
+          name: dex-config-init-cm1
+          readOnly: true
+          subPath: dex-config.yaml.template
+  restartPolicy: Never
+  volumes:
+    - name: run-secrets
+      projected:
+        sources:
+          - secret:
+              items:
+                - key: skyforge-ldap-url
+                  path: skyforge-ldap-url
+              name: skyforge-ldap-url
+          - secret:
+              items:
+                - key: semaphore-ldap-searchdn
+                  path: semaphore-ldap-searchdn
+              name: semaphore-ldap-searchdn
+          - secret:
+              items:
+                - key: semaphore-ldap-searchfilter
+                  path: semaphore-ldap-searchfilter
+              name: semaphore-ldap-searchfilter
+          - secret:
+              items:
+                - key: semaphore-ldap-binddn
+                  path: semaphore-ldap-binddn
+              name: semaphore-ldap-binddn
+          - secret:
+              items:
+                - key: semaphore-ldap-bindpassword
+                  path: semaphore-ldap-bindpassword
+              name: semaphore-ldap-bindpassword
+          - secret:
+              items:
+                - key: semaphore-ldap-needtls
+                  path: semaphore-ldap-needtls
+              name: semaphore-ldap-needtls
+          - secret:
+              items:
+                - key: dex-minio-client-secret
+                  path: dex-minio-client-secret
+              name: dex-minio-client-secret
+    - name: dex-config
+      persistentVolumeClaim:
+        claimName: dex-config
+    - configMap:
+        items:
+          - key: config.yaml.template
+            path: dex-config.yaml.template
+        name: dex-config-init-cm1
+      name: dex-config-init-cm1

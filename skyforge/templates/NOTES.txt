@@ -1,0 +1,11 @@
+Skyforge Helm release installed.
+
+Next steps:
+1) Review values and supply required secrets, then upgrade/install:
+   helm upgrade --install skyforge ./charts/skyforge -n <namespace> -f values.yaml
+
+2) Check deployments:
+   kubectl -n <namespace> get pods
+
+3) Visit the UI:
+   https://{{ .Values.skyforge.hostname }}/

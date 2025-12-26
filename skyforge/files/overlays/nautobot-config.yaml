@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nautobot-config
+data:
+  nautobot_config.py: |
+    from nautobot.core.settings import *  # noqa
+
+    import os
+
+
+    def _split_csv(value: str) -> list[str]:
+        return [item.strip() for item in value.split(",") if item.strip()]
+
+    def _read_secret(env_key: str) -> str:
+        file_path = os.getenv(f"{env_key}_FILE", "").strip()
+        if file_path and os.path.exists(file_path):
+            with open(file_path, "r", encoding="utf-8") as handle:
+                return handle.read().strip()
+        return os.getenv(env_key, "").strip()
+
+
+    def _env_bool(key: str, default: bool = False) -> bool:
+        value = os.getenv(key)
+        if value is None:
+            return default
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    def _normalize_django_ldap_dn_template(template: str) -> str:
+        template = template.strip()
+        if "%(user)" in template:
+            return template
+        if "%s" in template:
+            return template.replace("%s", "%(user)s")
+        return template
+
+
+    _public_hostnames = _split_csv(
+        os.getenv("SKYFORGE_HOSTNAME", "")
+    )
+    _allow_any_hosts = _env_bool("SKYFORGE_ALLOW_ANY_HOSTS", True)
+
+    FORCE_SCRIPT_NAME = "/nautobot"
+    USE_X_FORWARDED_HOST = True
+    USE_X_FORWARDED_PORT = True
+    CSRF_TRUSTED_ORIGINS = [f"https://{hostname}" for hostname in _public_hostnames]
+    STATIC_URL = "/nautobot/static/"
+    MEDIA_URL = "/nautobot/media/"
+    SESSION_COOKIE_PATH = "/nautobot/"
+    CSRF_COOKIE_PATH = "/nautobot/"
+    ALLOWED_HOSTS = ["*"] if _allow_any_hosts else [*_public_hostnames, "127.0.0.1", "localhost"]
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+
+    # Skyforge SSO (via Traefik forwardAuth + Remote-User headers).
+    #
+    # Nautobot has built-in support for remote header auth. It is enabled when
+    # `nautobot.core.authentication.RemoteUserBackend` is present in
+    # `AUTHENTICATION_BACKENDS`.
+    if _env_bool("SKYFORGE_SSO_ENABLED", True):
+        REMOTE_AUTH_AUTO_CREATE_USER = True
+        REMOTE_AUTH_HEADER = "HTTP_REMOTE_USER"
+
+        AUTHENTICATION_BACKENDS = (
+            "nautobot.core.authentication.RemoteUserBackend",
+            "nautobot.core.authentication.ObjectPermissionBackend",
+            "django.contrib.auth.backends.ModelBackend",
+        )
+
+    # LDAP auth (optional; enabled when SKYFORGE_LDAP_URL(_FILE) and SKYFORGE_LDAP_BIND_TEMPLATE(_FILE) are set).
+    _ldap_url = _read_secret("SKYFORGE_LDAP_URL")
+    _ldap_bind_template = _read_secret("SKYFORGE_LDAP_BIND_TEMPLATE")
+
+    if _ldap_url and _ldap_bind_template:
+        import ldap  # type: ignore
+
+        AUTHENTICATION_BACKENDS = (
+            "django_auth_ldap.backend.LDAPBackend",
+            *AUTHENTICATION_BACKENDS,
+        )
+
+        AUTH_LDAP_SERVER_URI = _ldap_url
+        AUTH_LDAP_USER_DN_TEMPLATE = _normalize_django_ldap_dn_template(_ldap_bind_template)
+        AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
+        AUTH_LDAP_START_TLS = _env_bool("SKYFORGE_LDAP_STARTTLS", False)
+
+        AUTH_LDAP_CONNECTION_OPTIONS = {
+            ldap.OPT_REFERRALS: 0,
+        }
+        if _env_bool("SKYFORGE_LDAP_SKIP_TLS_VERIFY", False):
+            AUTH_LDAP_CONNECTION_OPTIONS.update(
+                {
+                    ldap.OPT_X_TLS_REQUIRE_CERT: ldap.OPT_X_TLS_NEVER,
+                }
+            )
+
+        AUTH_LDAP_ALWAYS_UPDATE_USER = True
+        AUTH_LDAP_USER_ATTR_MAP = {
+            "first_name": "givenName",
+            "last_name": "sn",
+            "email": "mail",
+        }

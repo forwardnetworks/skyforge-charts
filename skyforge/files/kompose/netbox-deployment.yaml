@@ -1,0 +1,191 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: netbox
+  name: netbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: netbox
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: netbox
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - |
+              set -e
+              export DB_PASSWORD="$(cat /run/secrets/db-netbox-password)"
+              export SUPERUSER_PASSWORD="$(cat /run/secrets/netbox-superuser-password)"
+              export SUPERUSER_API_TOKEN="$(cat /run/secrets/netbox-superuser-api-token)"
+              export SECRET_KEY="$(cat /run/secrets/netbox-secret-key)"
+              exec /usr/bin/tini -- /opt/netbox/docker-entrypoint.sh /opt/netbox/launch-netbox.sh
+          command:
+            - /bin/sh
+            - -lc
+          env:
+            - name: DB_HOST
+              value: db
+            - name: DB_NAME
+              value: netbox
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: netbox
+            - name: REDIS_DATABASE
+              value: "0"
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
+            - name: SKYFORGE_LDAP_BINDDN_FILE
+              value: /run/secrets/semaphore-ldap-binddn
+            - name: SKYFORGE_LDAP_BINDPASSWORD_FILE
+              value: /run/secrets/semaphore-ldap-bindpassword
+            - name: SKYFORGE_LDAP_BIND_TEMPLATE_FILE
+              value: /run/secrets/skyforge-ldap-bind-template
+            - name: SKYFORGE_LDAP_SEARCHDN_FILE
+              value: /run/secrets/semaphore-ldap-searchdn
+            - name: SKYFORGE_LDAP_SEARCHFILTER_FILE
+              value: /run/secrets/semaphore-ldap-searchfilter
+            - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
+              value: "false"
+            - name: SKYFORGE_LDAP_STARTTLS
+              value: "false"
+            - name: SKYFORGE_LDAP_URL_FILE
+              value: /run/secrets/skyforge-ldap-url
+            - name: SKYFORGE_HOSTNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: SKYFORGE_HOSTNAME
+                  name: skyforge-config
+            - name: SUPERUSER_NAME
+              value: skyforge
+            - name: SUPERUSER_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_ADMIN_EMAIL
+          image: skyforge-netbox:latest
+          imagePullPolicy: Always
+          startupProbe:
+            httpGet:
+              path: /login/
+              port: 8080
+              scheme: HTTP
+              httpHeaders:
+                - name: X-Forwarded-Proto
+                  value: https
+            failureThreshold: 60
+            periodSeconds: 5
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /login/
+              port: 8080
+              scheme: HTTP
+              httpHeaders:
+                - name: X-Forwarded-Proto
+                  value: https
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /login/
+              port: 8080
+              scheme: HTTP
+              httpHeaders:
+                - name: X-Forwarded-Proto
+                  value: https
+            failureThreshold: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+          name: netbox
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              memory: "2147483648"
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+            - mountPath: /opt/netbox/netbox/media
+              name: netbox-media
+            - mountPath: /opt/netbox/netbox/reports
+              name: netbox-reports
+            - mountPath: /opt/netbox/netbox/scripts
+              name: netbox-scripts
+      restartPolicy: Always
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: db-netbox-password
+                      path: db-netbox-password
+                  name: db-netbox-password
+              - secret:
+                  items:
+                    - key: netbox-superuser-password
+                      path: netbox-superuser-password
+                  name: netbox-superuser-password
+              - secret:
+                  items:
+                    - key: netbox-superuser-api-token
+                      path: netbox-superuser-api-token
+                  name: netbox-superuser-api-token
+              - secret:
+                  items:
+                    - key: netbox-secret-key
+                      path: netbox-secret-key
+                  name: netbox-secret-key
+              - secret:
+                  items:
+                    - key: skyforge-ldap-url
+                      path: skyforge-ldap-url
+                  name: skyforge-ldap-url
+              - secret:
+                  items:
+                    - key: skyforge-ldap-bind-template
+                      path: skyforge-ldap-bind-template
+                  name: skyforge-ldap-bind-template
+              - secret:
+                  items:
+                    - key: semaphore-ldap-searchdn
+                      path: semaphore-ldap-searchdn
+                  name: semaphore-ldap-searchdn
+              - secret:
+                  items:
+                    - key: semaphore-ldap-searchfilter
+                      path: semaphore-ldap-searchfilter
+                  name: semaphore-ldap-searchfilter
+              - secret:
+                  items:
+                    - key: semaphore-ldap-binddn
+                      path: semaphore-ldap-binddn
+                  name: semaphore-ldap-binddn
+              - secret:
+                  items:
+                    - key: semaphore-ldap-bindpassword
+                      path: semaphore-ldap-bindpassword
+                  name: semaphore-ldap-bindpassword
+        - name: netbox-media
+          persistentVolumeClaim:
+            claimName: netbox-media
+        - name: netbox-reports
+          persistentVolumeClaim:
+            claimName: netbox-reports
+        - name: netbox-scripts
+          persistentVolumeClaim:
+            claimName: netbox-scripts

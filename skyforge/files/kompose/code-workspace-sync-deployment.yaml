@@ -1,0 +1,228 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: code-workspace-sync
+  name: code-workspace-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: code-workspace-sync
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: code-workspace-sync
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - |
+              set -euo pipefail
+              apk add --no-cache git jq ca-certificates curl >/dev/null
+
+              interval="${SKYFORGE_WORKSPACE_SYNC_INTERVAL:-60}"
+              if ! echo "${interval}" | grep -Eq '^[0-9]+$' || [ "${interval}" -lt 10 ]; then
+                interval="60"
+              fi
+
+              workspace_root="/workspace/projects"
+              user_root="/workspace/users"
+              mkdir -p "${workspace_root}" "${user_root}"
+
+              token_file="/run/secrets/skyforge-internal-token"
+              gitea_password_file="/run/secrets/gitea-admin-password"
+              gitea_user="${GITEA_SYNC_USERNAME:-skyforge}"
+              export_url="http://skyforge-server:8085/api/internal/projects-export"
+              public_owner="${GITEA_PUBLIC_OWNER:-skyforge}"
+              public_root="${workspace_root}/public"
+              mkdir -p "${public_root}"
+
+              gitea_password=""
+              if [ -f "${gitea_password_file}" ]; then
+                gitea_password="$(cat "${gitea_password_file}" 2>/dev/null | tr -d '\r\n' || true)"
+              fi
+
+              if [ -n "${gitea_password}" ]; then
+                export GIT_TERMINAL_PROMPT=0
+                export DISPLAY=1
+                cat >/tmp/askpass <<'EOF'
+              #!/bin/sh
+              printenv GIT_PASSWORD
+              EOF
+                chmod 700 /tmp/askpass
+                export GIT_ASKPASS=/tmp/askpass
+                export SSH_ASKPASS=/tmp/askpass
+                export GIT_PASSWORD="${gitea_password}"
+              fi
+
+              sync_repo() {
+                local slug="$1"
+                local owner="$2"
+                local repo="$3"
+                local branch="$4"
+                local dest="$5"
+
+                [ -n "${branch}" ] || branch="master"
+                remote="http://gitea:3000/${owner}/${repo}.git"
+                git_run() {
+                  if [ -n "${gitea_password}" ]; then
+                    git -c "credential.username=${gitea_user}" "$@"
+                  else
+                    git "$@"
+                  fi
+                }
+
+                if [ ! -d "${dest}/.git" ]; then
+                  rm -rf "${dest}" >/dev/null 2>&1 || true
+                  git_run clone --depth 1 --branch "${branch}" "${remote}" "${dest}" >/dev/null 2>&1 || true
+                else
+                  git -C "${dest}" remote set-url origin "${remote}" >/dev/null 2>&1 || true
+                  git_run -C "${dest}" fetch --depth 1 origin "${branch}" >/dev/null 2>&1 || true
+                  git_run -C "${dest}" checkout -B "${branch}" "origin/${branch}" >/dev/null 2>&1 || true
+                fi
+              }
+
+              echo "code-workspace-sync: starting (interval=${interval}s)"
+              echo "code-workspace-sync: public owner=${public_owner}"
+
+              sync_public_repos() {
+                local repos_json
+                repos_json="$(curl -fsS "http://gitea:3000/api/v1/orgs/${public_owner}/repos?limit=100" 2>/dev/null || true)"
+                if [ -z "${repos_json}" ]; then
+                  repos_json="$(curl -fsS "http://gitea:3000/api/v1/users/${public_owner}/repos?limit=100" 2>/dev/null || true)"
+                fi
+                if [ -n "${repos_json}" ]; then
+                  echo "${repos_json}" \
+                    | jq -r '.[]? | (.name + "\t" + .owner.login + "\t" + (.default_branch // "master"))' \
+                    | while IFS=$'\t' read -r repo owner branch; do
+                        [ -n "${repo}" ] || continue
+                        [ -n "${owner}" ] || continue
+                        dest="${public_root}/${repo}"
+                        sync_repo "${repo}" "${owner}" "${repo}" "${branch}" "${dest}"
+                      done
+                else
+                  echo "code-workspace-sync: public repo list unavailable"
+                fi
+              }
+
+              while true; do
+                if [ ! -f "${token_file}" ]; then
+                  sync_public_repos
+                  sleep "${interval}"
+                  continue
+                fi
+
+                token="$(cat "${token_file}" 2>/dev/null | tr -d '\r\n' || true)"
+                if [ -z "${token}" ]; then
+                  sync_public_repos
+                  sleep "${interval}"
+                  continue
+                fi
+
+                tmp="/tmp/projects-export.json"
+                code="$(curl -sS -H "X-Skyforge-Internal-Token: ${token}" -o "${tmp}" -w "%{http_code}" "${export_url}" 2>/dev/null || true)"
+                if [ "${code}" != "200" ]; then
+                  echo "code-workspace-sync: export fetch failed (http=${code:-000})"
+                  sleep "${interval}"
+                  continue
+                fi
+                export_json="$(cat "${tmp}" 2>/dev/null || true)"
+                if [ -z "${export_json}" ]; then
+                  echo "code-workspace-sync: export fetch returned empty body"
+                  sleep "${interval}"
+                  continue
+                fi
+
+                pcount="$(echo "${export_json}" | jq '.projects | length' 2>/dev/null || echo 0)"
+                ucount="$(echo "${export_json}" | jq '[.users[]?] | length' 2>/dev/null || echo 0)"
+                echo "code-workspace-sync: export ok (projects=${pcount} users=${ucount})"
+
+                echo "${export_json}" \
+                  | jq -r '.projects[]? | (.slug + "\t" + .giteaOwner + "\t" + .giteaRepo + "\t" + (.defaultBranch // "master"))' \
+                  | while IFS=$'\t' read -r slug owner repo branch; do
+                      [ -n "${slug}" ] || continue
+                      [ -n "${owner}" ] || continue
+                      [ -n "${repo}" ] || continue
+                      dest="${workspace_root}/${slug}"
+                      sync_repo "${slug}" "${owner}" "${repo}" "${branch}" "${dest}"
+                    done
+
+                echo "${export_json}" \
+                  | jq -r '
+                      [
+                        .users[]?,
+                        (.projects[]?.createdBy // ""),
+                        (.projects[]?.owners[]? // ""),
+                        (.projects[]?.editors[]? // ""),
+                        (.projects[]?.viewers[]? // "")
+                      ]
+                      | map(ascii_downcase)
+                      | map(select(test("^[a-zA-Z0-9_.@-]+$")))
+                      | unique
+                      | .[]
+                    ' \
+                  | while read -r username; do
+                      [ -n "${username}" ] || continue
+                      user_dir="${user_root}/${username}"
+                      mkdir -p "${user_dir}"
+
+              echo "${export_json}" \
+                | jq -r --arg u "${username}" '
+                    .projects[]?
+                    | select(
+                        ((.createdBy // "" | ascii_downcase) == $u)
+                        or ((.owners // [] | map(ascii_downcase) | index($u)) != null)
+                        or ((.editors // [] | map(ascii_downcase) | index($u)) != null)
+                        or ((.viewers // [] | map(ascii_downcase) | index($u)) != null)
+                      )
+                    | (.slug + "\t" + .giteaOwner + "\t" + .giteaRepo + "\t" + (.defaultBranch // "master"))
+                  ' \
+                | while IFS=$'\t' read -r slug owner repo branch; do
+                    [ -n "${slug}" ] || continue
+                    [ -n "${owner}" ] || continue
+                    [ -n "${repo}" ] || continue
+                            dest="${user_dir}/${slug}"
+                            sync_repo "${slug}" "${owner}" "${repo}" "${branch}" "${dest}"
+                    done
+                    done
+
+                sync_public_repos
+
+                sleep "${interval}"
+              done
+          command:
+            - /bin/sh
+            - -lc
+          env:
+            - name: SKYFORGE_WORKSPACE_SYNC_INTERVAL
+              value: "60"
+          image: alpine:3.20
+          name: code-workspace-sync
+          volumeMounts:
+            - mountPath: /workspace
+              name: shared-workspace
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: shared-workspace
+          persistentVolumeClaim:
+            claimName: shared-workspace
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: skyforge-internal-token
+                      path: skyforge-internal-token
+                  name: skyforge-internal-token
+                  optional: true
+              - secret:
+                  items:
+                    - key: gitea-admin-password
+                      path: gitea-admin-password
+                  name: gitea-admin-password

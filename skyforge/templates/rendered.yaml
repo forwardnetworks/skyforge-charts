@@ -1,0 +1,127 @@
+{{- $skip := dict
+  "backup-postgres-minio-cronjob.yaml" true
+  "backup-postgres-s3-cronjob.yaml" true
+  "replicate-minio-aws-s3-cronjob.yaml" true
+  "gitea-admin-sync-deployment.yaml" true
+  "netbox-admin-sync-deployment.yaml" true
+  "nautobot-admin-sync-deployment.yaml" true
+  "semaphore-admin-sync-deployment.yaml" true
+  "code-workspace-sync-deployment.yaml" true
+-}}
+{{- $images := dict
+  "alpine:3.20" .Values.images.alpine
+  "arigaio/atlas:latest-alpine" .Values.images.atlas
+  "dexidp/dex:v2.41.1" .Values.images.dex
+  "freeradius/freeradius-server:3.2.5" .Values.images.freeradius
+  "gitea/gitea:1.22.3-rootless" .Values.images.gitea
+  "gitpod/openvscode-server:1.105.1" .Values.images.openvscode
+  "hoppscotch/hoppscotch:latest" .Values.images.hoppscotch
+  "minio/minio:RELEASE.2024-11-07T00-52-20Z" .Values.images.minio
+  "minio/mc:latest" .Values.images.minioMc
+  "minio/mc:RELEASE.2024-11-17T19-35-25Z" .Values.images.minioMcRelease
+  "postgres:15-alpine" .Values.images.postgres
+  "redis:7-alpine" .Values.images.redis
+  "semaphoreui/semaphore:latest" .Values.images.semaphore
+  "semaphoreui/semaphore:v2.16.47-ansible2.16.5" .Values.images.semaphoreAnsible
+  "swaggerapi/swagger-ui:v5.11.0" .Values.images.swaggerUi
+  "skyforge-nautobot:latest" .Values.images.skyforgeNautobot
+  "skyforge-netbox:latest" .Values.images.skyforgeNetbox
+  "skyforge-portal:latest" .Values.images.skyforgePortal
+  "skyforge-server:latest" .Values.images.skyforgeServer
+  "skyforge-webhooks:latest" .Values.images.skyforgeWebhooks
+-}}
+{{- $hostname := .Values.skyforge.hostname | required "skyforge.hostname is required" -}}
+{{- $domain := .Values.skyforge.domain | required "skyforge.domain is required" -}}
+{{- $replacements := dict
+  "__SKYFORGE_HOSTNAME__" $hostname
+  "__SKYFORGE_DOMAIN__" $domain
+  "__SKYFORGE_LDAP_BASEDN__" .Values.skyforge.ldap.baseDn
+  "__SKYFORGE_ADMIN_USERS__" .Values.skyforge.adminUsers
+  "__SKYFORGE_AWS_SSO_REGION__" .Values.skyforge.awsSsoRegion
+  "__SKYFORGE_AWS_SSO_START_URL__" .Values.skyforge.awsSsoStartUrl
+  "__SKYFORGE_GITEA_API_URL__" .Values.skyforge.gitea.apiUrl
+  "__SKYFORGE_GITEA_URL__" .Values.skyforge.gitea.url
+  "__SKYFORGE_GITEA_USERNAME__" .Values.skyforge.gitea.username
+  "__SKYFORGE_GITEA_REPO_PRIVATE__" (printf "%v" .Values.skyforge.gitea.repoPrivate)
+  "__SKYFORGE_EVE_SSH_USER__" .Values.skyforge.eveSshUser
+  "__SKYFORGE_LDAP_DISPLAY_ATTR__" .Values.skyforge.ldap.displayAttr
+  "__SKYFORGE_LDAP_GROUP_ATTR__" .Values.skyforge.ldap.groupAttr
+  "__SKYFORGE_LDAP_MAIL_ATTR__" .Values.skyforge.ldap.mailAttr
+  "__SKYFORGE_LDAP_SKIP_TLS_VERIFY__" (printf "%v" .Values.skyforge.ldap.skipTlsVerify)
+  "__SKYFORGE_LDAP_STARTTLS__" (printf "%v" .Values.skyforge.ldap.startTls)
+  "__SKYFORGE_LISTEN_ADDR__" .Values.skyforge.listenAddr
+  "__SKYFORGE_MAX_GROUPS__" (printf "%v" .Values.skyforge.maxGroups)
+  "__SKYFORGE_NETBOX_URL__" .Values.skyforge.netboxUrl
+  "__SKYFORGE_NAUTOBOT_URL__" .Values.skyforge.nautobotUrl
+  "__SKYFORGE_OBJECT_STORAGE_ENDPOINT__" .Values.skyforge.objectStorage.endpoint
+  "__SKYFORGE_OBJECT_STORAGE_USE_SSL__" (printf "%v" .Values.skyforge.objectStorage.useSsl)
+  "__SKYFORGE_NETLAB_SSH_USER__" .Values.skyforge.netlab.sshUser
+  "__SKYFORGE_NETLAB_STATE_ROOT__" .Values.skyforge.netlab.stateRoot
+  "__SKYFORGE_PROJECTS_DATA_DIR__" .Values.skyforge.projectsDataDir
+  "__SKYFORGE_PROJECT_SYNC_SECONDS__" (printf "%v" .Values.skyforge.projectSyncSeconds)
+  "__SKYFORGE_UI_THEME_DEFAULT__" .Values.skyforge.uiThemeDefault
+  "__SKYFORGE_SESSION_TTL__" .Values.skyforge.sessionTtl
+  "__SKYFORGE_COOKIE_SECURE__" (printf "%v" .Values.skyforge.cookieSecure)
+  "__SKYFORGE_STATE_BACKEND__" .Values.skyforge.stateBackend
+  "__SKYFORGE_DB_HOST__" .Values.skyforge.db.host
+  "__SKYFORGE_DB_PORT__" (printf "%v" .Values.skyforge.db.port)
+  "__SKYFORGE_DB_NAME__" .Values.skyforge.db.name
+  "__SKYFORGE_DB_USER__" .Values.skyforge.db.user
+  "__SKYFORGE_DB_SSLMODE__" .Values.skyforge.db.sslmode
+  "__SKYFORGE_REDIS_ENABLED__" (printf "%v" .Values.skyforge.redis.enabled)
+  "__SKYFORGE_REDIS_ADDR__" .Values.skyforge.redis.addr
+  "__SKYFORGE_REDIS_DB__" (printf "%v" .Values.skyforge.redis.db)
+  "__SKYFORGE_REDIS_KEY_PREFIX__" .Values.skyforge.redis.keyPrefix
+  "__SKYFORGE_HEALTH_HTTP_CHECKS__" .Values.skyforge.health.httpChecks
+  "__SKYFORGE_HEALTH_CODE_CHECKS__" .Values.skyforge.health.codeChecks
+  "__GITEA_ADMIN_USERNAME__" .Values.skyforge.gitea.adminUsername
+  "__GITEA_ALLOWED_DOMAINS__" .Values.skyforge.gitea.allowedDomains
+  "__SKYFORGE_ADMIN_USERNAME__" .Values.skyforge.admin.username
+  "__SKYFORGE_ADMIN_NAME__" .Values.skyforge.admin.name
+  "__SKYFORGE_PROVISIONER_LOGIN__" .Values.skyforge.provisioner.login
+  "__SKYFORGE_PROVISIONER_NAME__" .Values.skyforge.provisioner.name
+  "__SKYFORGE_UI_PRODUCT_NAME__" .Values.skyforge.ui.productName
+  "__SKYFORGE_UI_PRODUCT_SUBTITLE__" .Values.skyforge.ui.productSubtitle
+  "__SKYFORGE_UI_LOGO_URL__" .Values.skyforge.ui.logoUrl
+  "__SKYFORGE_UI_LOGO_ALT__" .Values.skyforge.ui.logoAlt
+  "__SKYFORGE_UI_HEADER_BG_URL__" .Values.skyforge.ui.headerBgUrl
+  "__SKYFORGE_UI_SUPPORT_TEXT__" .Values.skyforge.ui.supportText
+  "__SKYFORGE_SEMAPHORE_PROJECT_ID__" (printf "%v" .Values.skyforge.semaphore.projectId)
+  "__SKYFORGE_SEMAPHORE_URL__" .Values.skyforge.semaphore.url
+  "__SKYFORGE_SEMAPHORE_USERNAME__" .Values.skyforge.semaphore.username
+  "__SKYFORGE_SEMAPHORE_ADMIN_USERNAME__" .Values.skyforge.semaphore.adminUsername
+  "__SKYFORGE_SESSION_COOKIE__" .Values.skyforge.sessionCookie
+-}}
+
+{{- range $path, $bytes := .Files.Glob "files/kompose/*.yaml" }}
+  {{- $name := base $path -}}
+  {{- if not (hasKey $skip $name) }}
+    {{- $content := toString $bytes -}}
+    {{- range $token, $value := $replacements }}
+      {{- $valueStr := printf "%v" $value -}}
+      {{- if eq $valueStr "" }}{{- $valueStr = "\"\"" }}{{- end }}
+      {{- $content = replace $token $valueStr $content -}}
+    {{- end }}
+    {{- range $old, $new := $images }}
+      {{- $content = replace (printf "image: %s" $old) (printf "image: %s" $new) $content -}}
+    {{- end }}
+    {{- $content = replace "namespace: skyforge" (printf "namespace: %s" $.Release.Namespace) $content -}}
+    {{- $content | nindent 0 }}
+---
+  {{- end }}
+{{- end }}
+
+{{- range $path, $bytes := .Files.Glob "files/overlays/*.yaml" }}
+  {{- $content := toString $bytes -}}
+  {{- range $token, $value := $replacements }}
+    {{- $valueStr := printf "%v" $value -}}
+    {{- if eq $valueStr "" }}{{- $valueStr = "\"\"" }}{{- end }}
+    {{- $content = replace $token $valueStr $content -}}
+  {{- end }}
+  {{- range $old, $new := $images }}
+    {{- $content = replace (printf "image: %s" $old) (printf "image: %s" $new) $content -}}
+  {{- end }}
+  {{- $content = replace "namespace: skyforge" (printf "namespace: %s" $.Release.Namespace) $content -}}
+  {{- $content | nindent 0 }}
+---
+{{- end }}

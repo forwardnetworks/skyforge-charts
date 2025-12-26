@@ -1,0 +1,83 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-postgres-minio
+  labels:
+    io.kompose.service: backup-postgres-minio
+spec:
+  schedule: "11 3 * * *" # daily 03:11 UTC
+  suspend: false
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          containers:
+            - name: backup
+              image: postgres:15-alpine
+              command: ["/bin/sh","-lc"]
+              args:
+                - |
+                  set -eu
+                  apk add --no-cache curl ca-certificates >/dev/null
+                  curl -fsSL -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc
+                  chmod +x /usr/local/bin/mc
+
+                  ts="$(date -u +%Y%m%dT%H%M%SZ)"
+                  out="/tmp/skyforge-postgres-${ts}.sql.gz"
+
+                  minio_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+                  minio_pass="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+
+                  bucket="${MINIO_BACKUP_BUCKET:-skyforge-backups}"
+                  prefix="${MINIO_BACKUP_PREFIX:-postgres}"
+
+                  export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password | tr -d '\r\n')"
+                  echo "Dumping Postgres..."
+                  pg_dumpall -h db -U skyforge | gzip -9 > "${out}"
+
+                  echo "Uploading to MinIO..."
+                  mc alias set local http://minio:9000 "${minio_user}" "${minio_pass}" >/dev/null
+                  mc mb -p "local/${bucket}" >/dev/null 2>&1 || true
+                  mc cp "${out}" "local/${bucket}/${prefix}/$(basename "${out}")"
+
+                  # Retention (best-effort): delete dumps older than N days.
+                  if [ -n "${MINIO_BACKUP_RETENTION_DAYS:-}" ]; then
+                    mc rm --recursive --force --older-than "${MINIO_BACKUP_RETENTION_DAYS}d" "local/${bucket}/${prefix}" >/dev/null 2>&1 || true
+                  fi
+
+                  echo "Done."
+              env:
+                - name: MINIO_BACKUP_BUCKET
+                  value: "skyforge-backups"
+                - name: MINIO_BACKUP_PREFIX
+                  value: "postgres"
+                - name: MINIO_BACKUP_RETENTION_DAYS
+                  value: "30"
+              volumeMounts:
+                - name: run-secrets
+                  mountPath: /run/secrets
+                  readOnly: true
+          volumes:
+            - name: run-secrets
+              projected:
+                sources:
+                  - secret:
+                      name: postgres-skyforge-password
+                      items:
+                        - key: postgres-skyforge-password
+                          path: postgres-skyforge-password
+                  - secret:
+                      name: object-storage-root-user
+                      items:
+                        - key: object-storage-root-user
+                          path: object-storage-root-user
+                  - secret:
+                      name: object-storage-root-password
+                      items:
+                        - key: object-storage-root-password
+                          path: object-storage-root-password

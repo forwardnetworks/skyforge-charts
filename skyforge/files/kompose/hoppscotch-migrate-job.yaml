@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    io.kompose.service: hoppscotch-migrate
+  name: hoppscotch-migrate
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        io.kompose.service: hoppscotch-migrate
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: OnFailure
+      containers:
+        - name: hoppscotch-migrate
+          image: hoppscotch/hoppscotch:latest
+          imagePullPolicy: Always
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hoppscotch-secrets
+                  key: database_url
+            - name: DATA_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hoppscotch-secrets
+                  key: data-encryption-key
+          command:
+            - /bin/sh
+            - -lc
+          args:
+            - |
+              set -euo pipefail
+              cd /dist/backend
+              echo "Running Hoppscotch migrations..."
+              for i in $(seq 1 60); do
+                if pnpx prisma migrate deploy; then
+                  echo "Hoppscotch migrations complete."
+                  exit 0
+                fi
+                echo "Migrations not ready yet; retrying (${i}/60)..."
+                sleep 2
+              done
+              echo "Hoppscotch migrations failed after retries." >&2
+              exit 1

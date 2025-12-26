@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    io.kompose.service: gitea-ldap-init
+  name: gitea-ldap-init
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - args:
+        - |
+          set -euo pipefail
+
+          echo "Waiting for Gitea database/config..."
+          for i in $(seq 1 60); do
+            if gitea admin auth list --config /var/lib/gitea/custom/conf/app.ini >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+
+          ldap_url="$(cat /run/secrets/skyforge-ldap-url | tr -d '\n')"
+          case "${ldap_url}" in
+            ldaps://*) proto="LDAPS"; hostport="${ldap_url#ldaps://}" ;;
+            ldap://*)  proto="Unencrypted"; hostport="${ldap_url#ldap://}" ;;
+            *)         proto="Unencrypted"; hostport="${ldap_url}" ;;
+          esac
+          host="${hostport%%:*}"
+          port="${hostport#*:}"
+          [ "${host}" != "${hostport}" ] || port=""
+
+          if [ "${SKYFORGE_LDAP_STARTTLS:-false}" = "true" ]; then
+            proto="StartTLS"
+          fi
+
+          search_base="$(cat /run/secrets/semaphore-ldap-searchdn | tr -d '\n')"
+          user_filter="$(cat /run/secrets/semaphore-ldap-searchfilter | tr -d '\n')"
+          bind_dn="$(cat /run/secrets/gitea-ldap-binddn | tr -d '\n')"
+          bind_password="$(cat /run/secrets/gitea-ldap-bindpassword | tr -d '\n')"
+
+          [ -n "${search_base}" ] || search_base="dc=example,dc=com"
+          [ -n "${user_filter}" ] || user_filter="(uid=%s)"
+
+          skip_tls_verify_flag=""
+          if [ "${SKYFORGE_LDAP_SKIP_TLS_VERIFY:-false}" = "true" ]; then
+            skip_tls_verify_flag="--skip-tls-verify"
+          fi
+
+          existing_id="$(gitea admin auth list --config /var/lib/gitea/custom/conf/app.ini | awk -F'\t' -v name="${GITEA_LDAP_NAME}" 'NR>1 && $2==name {print $1; exit}')"
+
+          if [ -n "${existing_id}" ]; then
+            echo "Updating Gitea LDAP auth source '${GITEA_LDAP_NAME}' (id=${existing_id})"
+            gitea admin auth update-ldap \
+              --config /var/lib/gitea/custom/conf/app.ini \
+              --id "${existing_id}" \
+              --name "${GITEA_LDAP_NAME}" \
+              --active \
+              --security-protocol "${proto}" \
+              ${skip_tls_verify_flag} \
+              --host "${host}" \
+              --port "${port}" \
+              --user-search-base "${search_base}" \
+              --user-filter "${user_filter}" \
+              --username-attribute "uid" \
+              --firstname-attribute "givenName" \
+              --surname-attribute "sn" \
+              --email-attribute "mail" \
+              --bind-dn "${bind_dn}" \
+              --bind-password "${bind_password}" \
+              --synchronize-users
+          else
+            echo "Creating Gitea LDAP auth source '${GITEA_LDAP_NAME}'"
+            gitea admin auth add-ldap \
+              --config /var/lib/gitea/custom/conf/app.ini \
+              --name "${GITEA_LDAP_NAME}" \
+              --active \
+              --security-protocol "${proto}" \
+              ${skip_tls_verify_flag} \
+              --host "${host}" \
+              --port "${port}" \
+              --user-search-base "${search_base}" \
+              --user-filter "${user_filter}" \
+              --username-attribute "uid" \
+              --firstname-attribute "givenName" \
+              --surname-attribute "sn" \
+              --email-attribute "mail" \
+              --bind-dn "${bind_dn}" \
+              --bind-password "${bind_password}" \
+              --synchronize-users
+          fi
+
+          echo "Gitea LDAP init complete."
+      command:
+        - /bin/sh
+        - -c
+      env:
+        - name: GITEA_LDAP_NAME
+          value: Skyforge LDAP
+        - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
+          value: "false"
+        - name: SKYFORGE_LDAP_STARTTLS
+          value: "false"
+      image: gitea/gitea:1.22.3-rootless
+      name: gitea-ldap-init
+      securityContext:
+        runAsGroup: 1000
+        runAsUser: 1000
+      volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - mountPath: /var/lib/gitea
+          name: gitea-data
+  restartPolicy: Never
+  volumes:
+    - name: run-secrets
+      projected:
+        sources:
+          - secret:
+              items:
+                - key: skyforge-ldap-url
+                  path: skyforge-ldap-url
+              name: skyforge-ldap-url
+          - secret:
+              items:
+                - key: semaphore-ldap-searchdn
+                  path: semaphore-ldap-searchdn
+              name: semaphore-ldap-searchdn
+          - secret:
+              items:
+                - key: semaphore-ldap-searchfilter
+                  path: semaphore-ldap-searchfilter
+              name: semaphore-ldap-searchfilter
+          - secret:
+              items:
+                - key: gitea-ldap-binddn
+                  path: gitea-ldap-binddn
+              name: gitea-ldap-binddn
+          - secret:
+              items:
+                - key: gitea-ldap-bindpassword
+                  path: gitea-ldap-bindpassword
+              name: gitea-ldap-bindpassword
+    - name: gitea-data
+      persistentVolumeClaim:
+        claimName: gitea-data

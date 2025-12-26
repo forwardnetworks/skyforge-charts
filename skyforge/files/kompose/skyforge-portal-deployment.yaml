@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: skyforge-portal
+  name: skyforge-portal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: skyforge-portal
+  template:
+    metadata:
+      labels:
+        io.kompose.service: skyforge-portal
+    spec:
+      containers:
+        - image: skyforge-portal:latest
+          imagePullPolicy: Always
+          name: skyforge-portal
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: /api
+            - name: NEXT_PUBLIC_BASE_URL
+              value: ""
+            - name: NEXT_PUBLIC_ENV
+              value: production
+            - name: SKYFORGE_SERVER_INTERNAL_URL
+              value: http://skyforge-server:8085
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 20
+      restartPolicy: Always

@@ -1,0 +1,81 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: replicate-minio-aws-s3
+  labels:
+    io.kompose.service: replicate-minio-aws-s3
+spec:
+  schedule: "41 3 * * *" # daily 03:41 UTC
+  suspend: true
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          containers:
+            - name: replicate
+              image: minio/mc:RELEASE.2024-11-17T19-35-25Z
+              command: ["/bin/sh","-lc"]
+              args:
+                - |
+                  set -eu
+
+                  : "${BACKUP_S3_BUCKET:?set BACKUP_S3_BUCKET}"
+                  prefix="${BACKUP_S3_PREFIX:-skyforge-backups/minio}"
+                  regex="${MINIO_MIRROR_BUCKET_REGEX:-^(terraform-state|skyforge-files|skyforge-backups|sf-artifacts-.*)$}"
+
+                  minio_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+                  minio_pass="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+                  aws_key="$(cat /run/secrets/aws-access-key-id | tr -d '\r\n')"
+                  aws_secret="$(cat /run/secrets/aws-secret-access-key | tr -d '\r\n')"
+
+                  mc alias set local http://minio:9000 "${minio_user}" "${minio_pass}" >/dev/null
+                  mc alias set aws https://s3.amazonaws.com "${aws_key}" "${aws_secret}" >/dev/null
+
+                  mc mb -p "aws/${BACKUP_S3_BUCKET}" >/dev/null 2>&1 || true
+
+                  echo "Discovering MinIO buckets..."
+                  buckets="$(mc ls local | awk '{print $5}' | tr -d '/' || true)"
+                  for b in ${buckets}; do
+                    if echo "${b}" | grep -Eq "${regex}"; then
+                      echo "Mirroring bucket ${b} -> s3://${BACKUP_S3_BUCKET}/${prefix}/${b}/"
+                      mc mirror --overwrite "local/${b}" "aws/${BACKUP_S3_BUCKET}/${prefix}/${b}" >/dev/null
+                    fi
+                  done
+                  echo "Done."
+              env:
+                - name: BACKUP_S3_BUCKET
+                  value: ""
+                - name: BACKUP_S3_PREFIX
+                  value: "skyforge-backups/minio"
+                - name: MINIO_MIRROR_BUCKET_REGEX
+                  value: "^(terraform-state|skyforge-files|skyforge-backups|sf-artifacts-.*)$"
+              volumeMounts:
+                - name: run-secrets
+                  mountPath: /run/secrets
+                  readOnly: true
+          volumes:
+            - name: run-secrets
+              projected:
+                sources:
+                  - secret:
+                      name: object-storage-root-user
+                      items:
+                        - key: object-storage-root-user
+                          path: object-storage-root-user
+                  - secret:
+                      name: object-storage-root-password
+                      items:
+                        - key: object-storage-root-password
+                          path: object-storage-root-password
+                  - secret:
+                      name: aws-backup-credentials
+                      items:
+                        - key: access_key_id
+                          path: aws-access-key-id
+                        - key: secret_access_key
+                          path: aws-secret-access-key
