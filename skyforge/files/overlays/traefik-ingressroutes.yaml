@@ -188,6 +188,12 @@ spec:
           port: 3000
       middlewares:
         - name: strip-git
+    - match: Path(`/swagger/openapi.json`)
+      kind: Rule
+      priority: 200
+      services:
+        - name: skyforge-server
+          port: 8085
     - match: PathPrefix(`/swagger`)
       kind: Rule
       services:
