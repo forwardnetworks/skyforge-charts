@@ -20,5 +20,7 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 - `secrets.items`: Provide secret values (use `--set-file` for PEM/SSH keys).
 - `secrets.items.skyforge-admin-shared.password`: Shared admin password used to seed Skyforge, Gitea,
   Semaphore, NetBox, Nautobot, and the code-server sync job.
+- `secrets.create`: Set to `false` if you manage secrets out-of-band (for example, using the
+  k3s `k8s/overlays/k3s-traefik-secrets` overlay).
 
 See `charts/skyforge/values.yaml` for the full list of defaults.
