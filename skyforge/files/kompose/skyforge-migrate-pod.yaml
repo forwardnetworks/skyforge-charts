@@ -68,3 +68,5 @@ spec:
                 path: skyforge/migrations/20251223000100_governance_tables.up.sql
               - key: 20251223000200_deployments.up.sql
                 path: skyforge/migrations/20251223000200_deployments.up.sql
+              - key: 20251224000100_labpp_templates.up.sql
+                path: skyforge/migrations/20251224000100_labpp_templates.up.sql
