@@ -20,17 +20,11 @@ spec:
           image: swaggerapi/swagger-ui:v5.11.0
           imagePullPolicy: Always
           env:
-            - name: SWAGGER_JSON
-              value: /tmp/openapi.json
+            - name: SWAGGER_JSON_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_SWAGGER_URL
           ports:
             - containerPort: 8080
               protocol: TCP
-          volumeMounts:
-            - name: openapi
-              mountPath: /tmp/openapi.json
-              subPath: openapi.json
-              readOnly: true
-      volumes:
-        - name: openapi
-          configMap:
-            name: swagger-openapi

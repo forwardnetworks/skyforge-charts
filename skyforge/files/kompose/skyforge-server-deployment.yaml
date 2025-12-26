@@ -69,16 +69,26 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_GITEA_USERNAME
-            - name: SKYFORGE_LABS_EVE_API_URL
-            - name: SKYFORGE_LABS_EVE_PASSWORD
-            - name: SKYFORGE_LABS_EVE_PASSWORD
+            - name: SKYFORGE_EVE_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_EVE_API_URL
+            - name: SKYFORGE_EVE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_EVE_USERNAME
+            - name: SKYFORGE_EVE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: skyforge-labs-eve-password
-                  key: skyforge-labs-eve-password
-            - name: SKYFORGE_LABS_EVE_SKIP_TLS_VERIFY
-              value: "false"
-            - name: SKYFORGE_LABS_EVE_USERNAME
+                  name: skyforge-eve-password
+                  key: skyforge-eve-password
+            - name: SKYFORGE_EVE_SKIP_TLS_VERIFY
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_EVE_SKIP_TLS_VERIFY
             - name: SKYFORGE_EVE_SERVERS_FILE
               value: /run/secrets/skyforge-eve-servers
             - name: SKYFORGE_NETLAB_SERVERS_FILE
@@ -90,7 +100,11 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_EVE_SSH_USER
-            - name: SKYFORGE_LABS_URL
+            - name: SKYFORGE_EVE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_EVE_URL
             - name: SKYFORGE_LDAP_BIND_TEMPLATE
               valueFrom:
                 secretKeyRef:

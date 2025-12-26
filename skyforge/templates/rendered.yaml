@@ -43,6 +43,10 @@
   "__SKYFORGE_GITEA_URL__" .Values.skyforge.gitea.url
   "__SKYFORGE_GITEA_USERNAME__" .Values.skyforge.gitea.username
   "__SKYFORGE_GITEA_REPO_PRIVATE__" (printf "%v" .Values.skyforge.gitea.repoPrivate)
+  "__SKYFORGE_EVE_API_URL__" .Values.skyforge.eveApiUrl
+  "__SKYFORGE_EVE_USERNAME__" .Values.skyforge.eveUsername
+  "__SKYFORGE_EVE_SKIP_TLS_VERIFY__" (printf "%v" .Values.skyforge.eveSkipTlsVerify)
+  "__SKYFORGE_EVE_URL__" .Values.skyforge.eveUrl
   "__SKYFORGE_EVE_SSH_USER__" .Values.skyforge.eveSshUser
   "__SKYFORGE_LDAP_DISPLAY_ATTR__" .Values.skyforge.ldap.displayAttr
   "__SKYFORGE_LDAP_GROUP_ATTR__" .Values.skyforge.ldap.groupAttr
@@ -91,6 +95,7 @@
   "__SKYFORGE_SEMAPHORE_USERNAME__" .Values.skyforge.semaphore.username
   "__SKYFORGE_SEMAPHORE_ADMIN_USERNAME__" .Values.skyforge.semaphore.adminUsername
   "__SKYFORGE_SESSION_COOKIE__" .Values.skyforge.sessionCookie
+  "__SKYFORGE_SWAGGER_URL__" .Values.skyforge.swaggerUrl
 -}}
 
 {{- range $path, $bytes := .Files.Glob "files/kompose/*.yaml" }}
