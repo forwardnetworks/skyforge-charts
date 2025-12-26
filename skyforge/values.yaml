@@ -4,6 +4,7 @@
 skyforge:
   hostname: "skyforge.lab.local"
   domain: "lab.local"
+  dexIssuer: ""
   adminUsers: "skyforge"
   awsSsoRegion: "us-east-1"
   awsSsoStartUrl: ""
@@ -19,6 +20,8 @@ skyforge:
   eveSkipTlsVerify: false
   eveUrl: ""
   eveSshUser: "root"
+  labppApiUrl: ""
+  labppSkipTlsVerify: false
   ldap:
     displayAttr: "cn"
     groupAttr: "memberOf"
@@ -48,6 +51,12 @@ skyforge:
     port: 5432
     name: "skyforge_server"
     user: "skyforge_server"
+    sslmode: "disable"
+  dexDb:
+    host: "db"
+    port: 5432
+    name: "dex"
+    user: "dex"
     sslmode: "disable"
   redis:
     enabled: true
@@ -109,6 +118,8 @@ secrets:
       skyforge-session-secret: ""
     skyforge-admin-password:
       skyforge-admin-password: ""
+    db-dex-password:
+      db-dex-password: ""
     skyforge-semaphore-token:
       skyforge-semaphore-token: ""
     skyforge-semaphore-url:

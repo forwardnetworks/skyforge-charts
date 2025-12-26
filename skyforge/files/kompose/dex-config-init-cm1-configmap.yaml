@@ -4,9 +4,15 @@ data:
     issuer: ${DEX_ISSUER}
 
     storage:
-      type: sqlite3
+      type: postgres
       config:
-        file: /var/dex/dex.db
+        host: ${DEX_DB_HOST}
+        port: ${DEX_DB_PORT}
+        database: ${DEX_DB_NAME}
+        user: ${DEX_DB_USER}
+        password: ${DEX_DB_PASSWORD}
+        ssl:
+          mode: ${DEX_DB_SSLMODE}
 
     web:
       http: 0.0.0.0:5556

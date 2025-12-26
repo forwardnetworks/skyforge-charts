@@ -14,6 +14,10 @@ spec:
 
           primary_hostname="${SKYFORGE_HOSTNAME%%,*}"
           primary_hostname="$(echo "${primary_hostname}" | xargs)"
+          dex_issuer="${SKYFORGE_DEX_ISSUER:-}"
+          if [ -z "${dex_issuer}" ]; then
+            dex_issuer="https://${primary_hostname}/dex"
+          fi
 
           ldap_url="$(cat /run/secrets/skyforge-ldap-url | tr -d '\r\n')"
           needtls="$(cat /run/secrets/semaphore-ldap-needtls | tr -d '\r\n')"
@@ -25,7 +29,7 @@ spec:
             ldap://*)  scheme="ldap";  hostport="${ldap_url#ldap://}" ;;
           esac
 
-          export DEX_ISSUER="https://${primary_hostname}/dex"
+          export DEX_ISSUER="${dex_issuer}"
           export DEX_LDAP_HOSTPORT="${hostport}"
           export DEX_LDAP_INSECURE_NO_SSL="false"
           export DEX_LDAP_STARTTLS="false"
@@ -46,18 +50,59 @@ spec:
           export DEX_MINIO_CLIENT_SECRET="$(cat /run/secrets/dex-minio-client-secret | tr -d '\r\n')"
           export DEX_MINIO_REDIRECT_URI="https://${primary_hostname}/minio-console/oauth_callback"
 
+          export DEX_DB_HOST="${DEX_DB_HOST:-db}"
+          export DEX_DB_PORT="${DEX_DB_PORT:-5432}"
+          export DEX_DB_NAME="${DEX_DB_NAME:-dex}"
+          export DEX_DB_USER="${DEX_DB_USER:-dex}"
+          export DEX_DB_SSLMODE="${DEX_DB_SSLMODE:-disable}"
+          if [ -f /run/secrets/db-dex-password ]; then
+            export DEX_DB_PASSWORD="$(cat /run/secrets/db-dex-password | tr -d '\r\n')"
+          else
+            export DEX_DB_PASSWORD="${DEX_DB_PASSWORD:-dex}"
+          fi
+
           envsubst < /tmp/dex-config.yaml.template > /etc/dex/config.yaml
           echo "Dex config rendered for issuer ${DEX_ISSUER}"
       command:
         - /bin/sh
         - -lc
       env:
+        - name: SKYFORGE_DEX_ISSUER
+          valueFrom:
+            configMapKeyRef:
+              key: SKYFORGE_DEX_ISSUER
+              name: skyforge-config
         - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
           value: "false"
         - name: SKYFORGE_HOSTNAME
           valueFrom:
             configMapKeyRef:
               key: SKYFORGE_HOSTNAME
+              name: skyforge-config
+        - name: DEX_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: DEX_DB_HOST
+              name: skyforge-config
+        - name: DEX_DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: DEX_DB_PORT
+              name: skyforge-config
+        - name: DEX_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: DEX_DB_NAME
+              name: skyforge-config
+        - name: DEX_DB_USER
+          valueFrom:
+            configMapKeyRef:
+              key: DEX_DB_USER
+              name: skyforge-config
+        - name: DEX_DB_SSLMODE
+          valueFrom:
+            configMapKeyRef:
+              key: DEX_DB_SSLMODE
               name: skyforge-config
       image: alpine:3.20
       name: dex-config-init
@@ -111,6 +156,11 @@ spec:
                 - key: dex-minio-client-secret
                   path: dex-minio-client-secret
               name: dex-minio-client-secret
+          - secret:
+              items:
+                - key: db-dex-password
+                  path: db-dex-password
+              name: db-dex-password
     - name: dex-config
       persistentVolumeClaim:
         claimName: dex-config

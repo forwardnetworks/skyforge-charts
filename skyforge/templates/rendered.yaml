@@ -35,6 +35,7 @@
 {{- $replacements := dict
   "__SKYFORGE_HOSTNAME__" $hostname
   "__SKYFORGE_DOMAIN__" $domain
+  "__SKYFORGE_DEX_ISSUER__" .Values.skyforge.dexIssuer
   "__SKYFORGE_LDAP_BASEDN__" .Values.skyforge.ldap.baseDn
   "__SKYFORGE_ADMIN_USERS__" .Values.skyforge.adminUsers
   "__SKYFORGE_AWS_SSO_REGION__" .Values.skyforge.awsSsoRegion
@@ -48,6 +49,8 @@
   "__SKYFORGE_EVE_SKIP_TLS_VERIFY__" (printf "%v" .Values.skyforge.eveSkipTlsVerify)
   "__SKYFORGE_EVE_URL__" .Values.skyforge.eveUrl
   "__SKYFORGE_EVE_SSH_USER__" .Values.skyforge.eveSshUser
+  "__SKYFORGE_LABPP_API_URL__" .Values.skyforge.labppApiUrl
+  "__SKYFORGE_LABPP_SKIP_TLS_VERIFY__" (printf "%v" .Values.skyforge.labppSkipTlsVerify)
   "__SKYFORGE_LDAP_DISPLAY_ATTR__" .Values.skyforge.ldap.displayAttr
   "__SKYFORGE_LDAP_GROUP_ATTR__" .Values.skyforge.ldap.groupAttr
   "__SKYFORGE_LDAP_MAIL_ATTR__" .Values.skyforge.ldap.mailAttr
@@ -72,6 +75,11 @@
   "__SKYFORGE_DB_NAME__" .Values.skyforge.db.name
   "__SKYFORGE_DB_USER__" .Values.skyforge.db.user
   "__SKYFORGE_DB_SSLMODE__" .Values.skyforge.db.sslmode
+  "__DEX_DB_HOST__" .Values.skyforge.dexDb.host
+  "__DEX_DB_PORT__" (printf "%v" .Values.skyforge.dexDb.port)
+  "__DEX_DB_NAME__" .Values.skyforge.dexDb.name
+  "__DEX_DB_USER__" .Values.skyforge.dexDb.user
+  "__DEX_DB_SSLMODE__" .Values.skyforge.dexDb.sslmode
   "__SKYFORGE_REDIS_ENABLED__" (printf "%v" .Values.skyforge.redis.enabled)
   "__SKYFORGE_REDIS_ADDR__" .Values.skyforge.redis.addr
   "__SKYFORGE_REDIS_DB__" (printf "%v" .Values.skyforge.redis.db)
