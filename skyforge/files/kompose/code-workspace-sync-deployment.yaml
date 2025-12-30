@@ -165,6 +165,12 @@ spec:
               - Anonymous file drop uses anonymous/ or files/
               - S3 files are mirrored into s3/ every minute (download-only).
               - Do not edit files in s3/ directly; upload via S3 instead.
+              - Example (mc):
+                mc alias set skyforge https://<skyforge-host> <ACCESS_KEY> <SECRET_KEY>
+                mc ls skyforge/skyforge-files/files/users/${username}/
+                mc cp skyforge/skyforge-files/files/users/${username}/file.txt ./s3/
+              - Example (anonymous drop):
+                curl -T ./file.txt https://<skyforge-host>/files/file.txt
               EOF
                 fi
 
