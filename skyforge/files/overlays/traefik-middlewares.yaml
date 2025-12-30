@@ -66,6 +66,15 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
+  name: strip-api-testing
+spec:
+  stripPrefix:
+    prefixes:
+      - /api-testing
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
   name: replace-netbox-static
 spec:
   replacePathRegex:
