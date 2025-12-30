@@ -8,7 +8,7 @@ spec:
   tls:
     secretName: proxy-tls
   routes:
-    - match: PathPrefix(`/`) && HeadersRegexp(`Cookie`, `skyforge_app=hoppscotch`)
+    - match: PathPrefix(`/`) && (Query(`app`, `hoppscotch`) || HeadersRegexp(`Cookie`, `skyforge_app=hoppscotch`))
       kind: Rule
       priority: 600
       services:
