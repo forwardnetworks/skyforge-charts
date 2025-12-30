@@ -25,6 +25,10 @@ spec:
             - |
               set -e
               export LDAP_URL="$(cat /run/secrets/skyforge-ldap-url)"
+              if [ -z "${LDAP_URL}" ]; then
+                echo "SKYFORGE_LDAP_URL is empty; starting FreeRADIUS without LDAP."
+                exec freeradius -f
+              fi
               export LDAP_BIND_DN="$(cat /run/secrets/semaphore-ldap-binddn)"
               export LDAP_BIND_PASSWORD="$(cat /run/secrets/semaphore-ldap-bindpassword)"
               export LDAP_SEARCH_DN="$(cat /run/secrets/semaphore-ldap-searchdn)"

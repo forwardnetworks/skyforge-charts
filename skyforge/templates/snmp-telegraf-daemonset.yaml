@@ -1,0 +1,64 @@
+{{- if and .Values.skyforge .Values.skyforge.snmpTraps .Values.skyforge.snmpTraps.enabled -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: skyforge-snmp-telegraf
+  labels:
+    app.kubernetes.io/name: skyforge-snmp-telegraf
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge-snmp-telegraf
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: skyforge-snmp-telegraf
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- with .Values.kubernetes.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: telegraf
+          image: {{ required "images.telegraf is required when skyforge.snmpTraps.enabled=true" .Values.images.telegraf }}
+          imagePullPolicy: IfNotPresent
+          command: ["/usr/bin/telegraf"]
+          args: ["--config", "/etc/telegraf/telegraf.conf"]
+          env:
+            - name: SKYFORGE_INTERNAL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-internal-token
+                  key: skyforge-internal-token
+          ports:
+            - name: snmptrap
+              containerPort: {{ default 162 .Values.skyforge.snmpTraps.hostPort }}
+              hostPort: {{ default 162 .Values.skyforge.snmpTraps.hostPort }}
+              protocol: UDP
+          volumeMounts:
+            - name: telegraf-config
+              mountPath: /etc/telegraf
+              readOnly: true
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              add: ["NET_BIND_SERVICE", "SETGID", "SETUID", "SETFCAP"]
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+      volumes:
+        - name: telegraf-config
+          configMap:
+            name: skyforge-snmp-telegraf
+{{- end }}

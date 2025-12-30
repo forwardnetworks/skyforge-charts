@@ -20,6 +20,10 @@ spec:
           done
 
           ldap_url="$(cat /run/secrets/skyforge-ldap-url | tr -d '\n')"
+          if [ -z "${ldap_url}" ]; then
+            echo "SKYFORGE_LDAP_URL is empty; skipping Gitea LDAP init."
+            exit 0
+          fi
           case "${ldap_url}" in
             ldaps://*) proto="LDAPS"; hostport="${ldap_url#ldaps://}" ;;
             ldap://*)  proto="Unencrypted"; hostport="${ldap_url#ldap://}" ;;
@@ -35,11 +39,11 @@ spec:
 
           search_base="$(cat /run/secrets/semaphore-ldap-searchdn | tr -d '\n')"
           user_filter="$(cat /run/secrets/semaphore-ldap-searchfilter | tr -d '\n')"
-          bind_dn="$(cat /run/secrets/gitea-ldap-binddn | tr -d '\n')"
-          bind_password="$(cat /run/secrets/gitea-ldap-bindpassword | tr -d '\n')"
+          user_dn="$(cat /run/secrets/skyforge-ldap-bind-template | tr -d '\n')"
 
           [ -n "${search_base}" ] || search_base="dc=example,dc=com"
           [ -n "${user_filter}" ] || user_filter="(uid=%s)"
+          [ -n "${user_dn}" ] || user_dn="uid=%s,${search_base}"
 
           skip_tls_verify_flag=""
           if [ "${SKYFORGE_LDAP_SKIP_TLS_VERIFY:-false}" = "true" ]; then
@@ -50,7 +54,7 @@ spec:
 
           if [ -n "${existing_id}" ]; then
             echo "Updating Gitea LDAP auth source '${GITEA_LDAP_NAME}' (id=${existing_id})"
-            gitea admin auth update-ldap \
+            gitea admin auth update-ldap-simple \
               --config /var/lib/gitea/custom/conf/app.ini \
               --id "${existing_id}" \
               --name "${GITEA_LDAP_NAME}" \
@@ -65,12 +69,10 @@ spec:
               --firstname-attribute "givenName" \
               --surname-attribute "sn" \
               --email-attribute "mail" \
-              --bind-dn "${bind_dn}" \
-              --bind-password "${bind_password}" \
-              --synchronize-users
+              --user-dn "${user_dn}"
           else
             echo "Creating Gitea LDAP auth source '${GITEA_LDAP_NAME}'"
-            gitea admin auth add-ldap \
+            gitea admin auth add-ldap-simple \
               --config /var/lib/gitea/custom/conf/app.ini \
               --name "${GITEA_LDAP_NAME}" \
               --active \
@@ -84,9 +86,7 @@ spec:
               --firstname-attribute "givenName" \
               --surname-attribute "sn" \
               --email-attribute "mail" \
-              --bind-dn "${bind_dn}" \
-              --bind-password "${bind_password}" \
-              --synchronize-users
+              --user-dn "${user_dn}"
           fi
 
           echo "Gitea LDAP init complete."
@@ -97,9 +97,15 @@ spec:
         - name: GITEA_LDAP_NAME
           value: Skyforge LDAP
         - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-          value: "false"
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LDAP_SKIP_TLS_VERIFY
         - name: SKYFORGE_LDAP_STARTTLS
-          value: "false"
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LDAP_STARTTLS
       image: gitea/gitea:1.22.3-rootless
       name: gitea-ldap-init
       securityContext:
@@ -133,14 +139,9 @@ spec:
               name: semaphore-ldap-searchfilter
           - secret:
               items:
-                - key: gitea-ldap-binddn
-                  path: gitea-ldap-binddn
-              name: gitea-ldap-binddn
-          - secret:
-              items:
-                - key: gitea-ldap-bindpassword
-                  path: gitea-ldap-bindpassword
-              name: gitea-ldap-bindpassword
+                - key: skyforge-ldap-bind-template
+                  path: skyforge-ldap-bind-template
+              name: skyforge-ldap-bind-template
     - name: gitea-data
       persistentVolumeClaim:
         claimName: gitea-data

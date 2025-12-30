@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: technitium-dns
+  labels:
+    app: technitium-dns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: technitium-dns
+  template:
+    metadata:
+      labels:
+        app: technitium-dns
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: technitium-dns
+          image: technitium/dns-server:latest
+          ports:
+            - name: web
+              containerPort: 5380
+            - name: dns-udp
+              containerPort: 53
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+          env:
+            - name: DNS_SERVER_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_HOSTNAME
+            # Keep Technitium admin credentials aligned with the shared Skyforge admin password
+            # so the DNS SSO bridge can mint an admin token and provision per-user zones.
+            - name: DNS_SERVER_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-admin-shared
+                  key: password
+          volumeMounts:
+            - name: data
+              mountPath: /etc/dns
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5380
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5380
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: technitium-dns-data

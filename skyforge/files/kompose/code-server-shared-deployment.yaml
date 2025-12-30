@@ -22,17 +22,6 @@ spec:
             - |
               set -e
               bin="/home/.openvscode-server/bin/openvscode-server"
-              for ext in $(echo "${CODE_SERVER_EXTENSIONS:-}" | tr ',' ' '); do
-                ext="$(echo "${ext}" | xargs)"
-                [ -z "${ext}" ] && continue
-                echo "Installing OpenVSCode extension: ${ext}"
-                "${bin}" --install-extension "${ext}" \
-                  --force \
-                  --extensions-dir /home/openvscode-server/extensions \
-                  --user-data-dir /home/openvscode-server/data \
-                  --accept-server-license-terms \
-                  --without-connection-token || true
-              done
               exec "${bin}" \
                 --host 0.0.0.0 \
                 --port 8080 \
@@ -46,8 +35,6 @@ spec:
           command:
             - /bin/sh
             - -lc
-          env:
-            - name: CODE_SERVER_EXTENSIONS
           image: gitpod/openvscode-server:1.105.1
           livenessProbe:
             httpGet:

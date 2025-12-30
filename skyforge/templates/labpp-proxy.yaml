@@ -1,0 +1,93 @@
+{{- /*
+Expose LabPP API endpoints (running on external EVE hosts) through Traefik on the Skyforge hostname.
+
+This is intentionally optional: it creates Services+Endpoints pointing at external IPs and a
+Traefik IngressRoute + Middleware rules to rewrite:
+  /labpp/<name>/*  ->  https://<eve-ip>:443/labpp/*
+*/ -}}
+{{- $cfg := .Values.skyforge.labppProxy }}
+{{- if and $cfg $cfg.enabled }}
+{{- $port := default 443 $cfg.port }}
+{{- $transport := default "eve-servers-transport" $cfg.serversTransport }}
+
+{{ range $s := $cfg.servers }}
+{{ $name := required "skyforge.labppProxy.servers[].name is required" $s.name }}
+{{- $host := "" -}}
+{{- if $s.host -}}
+{{- $host = $s.host -}}
+{{- else if $s.hostname -}}
+{{- $host = $s.hostname -}}
+{{- end -}}
+{{- $ip := "" -}}
+{{- if $s.ip -}}
+{{- $ip = $s.ip -}}
+{{- end -}}
+{{- if and (eq $host "") (eq $ip "") -}}
+{{- fail (printf "skyforge.labppProxy.servers[%s] must set host (preferred) or ip" $name) -}}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: labpp-proxy-{{ $name }}
+spec:
+  {{- if ne $host "" }}
+  type: ExternalName
+  externalName: {{ $host }}
+  {{- end }}
+  ports:
+    - name: https
+      port: {{ $port }}
+      protocol: TCP
+      targetPort: {{ $port }}
+{{- if eq $host "" }}
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: labpp-proxy-{{ $name }}
+subsets:
+  - addresses:
+      - ip: {{ $ip }}
+    ports:
+      - name: https
+        port: {{ $port }}
+        protocol: TCP
+{{- end }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-labpp-{{ $name }}
+spec:
+  replacePathRegex:
+    regex: ^/labpp/{{ $name }}/?(.*)
+    replacement: /labpp/$1
+{{ end }}
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: skyforge-labpp-proxy
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: proxy-tls
+  routes:
+{{ range $s := $cfg.servers }}
+{{ $name := required "skyforge.labppProxy.servers[].name is required" $s.name }}
+    - match: PathPrefix(`/labpp/{{ $name }}`)
+      kind: Rule
+      priority: 650
+      services:
+        - name: labpp-proxy-{{ $name }}
+          port: {{ $port }}
+          scheme: https
+          serversTransport: {{ $transport }}
+      middlewares:
+        - name: skyforge-auth
+        - name: replace-labpp-{{ $name }}
+{{ end }}
+{{- end }}

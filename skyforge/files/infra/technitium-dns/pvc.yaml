@@ -1,13 +1,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  labels:
-    io.kompose.service: webhooks-data
-  name: webhooks-data
+  name: technitium-dns-data
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
-
+      storage: 5Gi

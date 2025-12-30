@@ -1,0 +1,39 @@
+{{- /*
+Vector syslog collector configuration.
+
+- Runs as a DaemonSet with hostNetwork, listening on UDP/514 (or configured port).
+- Forwards events to skyforge-server's internal ingest endpoint using SKYFORGE_INTERNAL_TOKEN.
+*/ -}}
+{{- if and .Values.skyforge .Values.skyforge.syslog .Values.skyforge.syslog.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skyforge-syslog-vector
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+data:
+  vector.yaml: |
+    sources:
+      syslog_udp:
+        type: syslog
+        mode: udp
+        address: "0.0.0.0:{{ default 514 .Values.skyforge.syslog.hostPort }}"
+
+    sinks:
+      skyforge_ingest:
+        type: http
+        inputs:
+          - syslog_udp
+        uri: "http://skyforge-server:8085/ingest/syslog"
+        method: post
+        encoding:
+          codec: json
+        request:
+          headers:
+            X-Skyforge-Internal-Token: "${SKYFORGE_INTERNAL_TOKEN}"
+        healthcheck:
+          enabled: true
+        batch:
+          max_bytes: 1048576
+          timeout_secs: 1
+{{- end }}

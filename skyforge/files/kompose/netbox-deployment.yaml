@@ -22,7 +22,7 @@ spec:
             - |
               set -e
               export DB_PASSWORD="$(cat /run/secrets/db-netbox-password)"
-              export SUPERUSER_PASSWORD="$(cat /run/secrets/netbox-superuser-password)"
+              export SUPERUSER_PASSWORD="$(cat /run/secrets/skyforge-admin-shared)"
               export SUPERUSER_API_TOKEN="$(cat /run/secrets/netbox-superuser-api-token)"
               export SECRET_KEY="$(cat /run/secrets/netbox-secret-key)"
               exec /usr/bin/tini -- /opt/netbox/docker-entrypoint.sh /opt/netbox/launch-netbox.sh
@@ -55,9 +55,15 @@ spec:
             - name: SKYFORGE_LDAP_SEARCHFILTER_FILE
               value: /run/secrets/semaphore-ldap-searchfilter
             - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-              value: "false"
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_LDAP_SKIP_TLS_VERIFY
             - name: SKYFORGE_LDAP_STARTTLS
-              value: "false"
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_LDAP_STARTTLS
             - name: SKYFORGE_LDAP_URL_FILE
               value: /run/secrets/skyforge-ldap-url
             - name: SKYFORGE_HOSTNAME
@@ -73,10 +79,10 @@ spec:
                   name: skyforge-config
                   key: SKYFORGE_ADMIN_EMAIL
           image: skyforge-netbox:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           startupProbe:
             httpGet:
-              path: /login/
+              path: /netbox/login/
               port: 8080
               scheme: HTTP
               httpHeaders:
@@ -87,7 +93,7 @@ spec:
             timeoutSeconds: 2
           livenessProbe:
             httpGet:
-              path: /login/
+              path: /netbox/login/
               port: 8080
               scheme: HTTP
               httpHeaders:
@@ -99,7 +105,7 @@ spec:
             timeoutSeconds: 2
           readinessProbe:
             httpGet:
-              path: /login/
+              path: /netbox/login/
               port: 8080
               scheme: HTTP
               httpHeaders:
@@ -137,9 +143,9 @@ spec:
                   name: db-netbox-password
               - secret:
                   items:
-                    - key: netbox-superuser-password
-                      path: netbox-superuser-password
-                  name: netbox-superuser-password
+                    - key: password
+                      path: skyforge-admin-shared
+                  name: skyforge-admin-shared
               - secret:
                   items:
                     - key: netbox-superuser-api-token

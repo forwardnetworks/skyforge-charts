@@ -1,0 +1,55 @@
+{{- /*
+Telegraf node metrics collector configuration.
+
+- Runs as a DaemonSet (multi-node ready).
+- Collects basic host metrics and forwards them to skyforge-server's internal ingest API.
+- Metrics are stored as a short-lived snapshot in Redis, not as time-series in Postgres.
+*/ -}}
+{{- if and .Values.skyforge .Values.skyforge.nodeMetrics .Values.skyforge.nodeMetrics.enabled -}}
+{{- $interval := default "10s" .Values.skyforge.nodeMetrics.interval -}}
+{{- $internalSecret := lookup "v1" "Secret" .Release.Namespace "skyforge-internal-token" -}}
+{{- $internalTokenB64 := "" -}}
+{{- if $internalSecret -}}
+  {{- $internalTokenB64 = (index $internalSecret.data "skyforge-internal-token") | default "" -}}
+{{- end -}}
+{{- $internalToken := $internalTokenB64 | b64dec -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: skyforge-node-telegraf
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+type: Opaque
+stringData:
+  telegraf.conf: |
+    [agent]
+      interval = {{ $interval | quote }}
+      round_interval = true
+      metric_batch_size = 100
+      metric_buffer_limit = 1000
+      flush_interval = "1s"
+      precision = ""
+      omit_hostname = false
+      hostname = "${NODE_NAME}"
+
+    [[inputs.cpu]]
+      percpu = false
+      totalcpu = true
+      collect_cpu_time = false
+      report_active = true
+
+    [[inputs.mem]]
+
+    [[inputs.disk]]
+      mount_points = ["/"]
+      ignore_fs = ["tmpfs", "devtmpfs", "overlay", "squashfs", "aufs", "tracefs"]
+
+    [[inputs.system]]
+
+    [[outputs.http]]
+      url = "http://skyforge-server:8085/ingest/metrics/node"
+      method = "POST"
+      use_batch_format = false
+      data_format = "json"
+      headers = {"Content-Type" = "application/json", "X-Skyforge-Internal-Token" = {{ $internalToken | quote }}}
+{{- end }}

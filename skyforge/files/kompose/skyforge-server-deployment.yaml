@@ -32,8 +32,8 @@ spec:
             - name: SKYFORGE_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: skyforge-admin-password
-                  key: skyforge-admin-password
+                  name: skyforge-admin-shared
+                  key: password
             - name: SKYFORGE_AWS_SSO_REGION
               valueFrom:
                 configMapKeyRef:
@@ -54,11 +54,22 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_GITEA_URL
+            - name: SKYFORGE_SSO_SKIP_TLS_VERIFY
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_SSO_SKIP_TLS_VERIFY
+            - name: ENCORE_RUNTIME_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-encore-runtime-config
+                  key: skyforge-encore-runtime-config
+                  optional: true
             - name: SKYFORGE_GITEA_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: gitea-admin-password
-                  key: gitea-admin-password
+                  name: skyforge-admin-shared
+                  key: password
             - name: SKYFORGE_GITEA_REPO_PRIVATE
               valueFrom:
                 configMapKeyRef:
@@ -203,6 +214,11 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_PROJECTS_DATA_DIR
+            - name: SKYFORGE_PLATFORM_DATA_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_PLATFORM_DATA_DIR
             - name: SKYFORGE_PROJECT_SYNC_SECONDS
               valueFrom:
                 configMapKeyRef:
@@ -276,8 +292,8 @@ spec:
             - name: SKYFORGE_SEMAPHORE_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: semaphore-admin-password
-                  key: semaphore-admin-password
+                  name: skyforge-admin-shared
+                  key: password
             - name: SKYFORGE_SEMAPHORE_URL
               valueFrom:
                 configMapKeyRef:
@@ -303,6 +319,11 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_COOKIE_SECURE
+            - name: SKYFORGE_COOKIE_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_COOKIE_DOMAIN
             - name: SKYFORGE_INTERNAL_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -366,7 +387,7 @@ spec:
             - name: PORT
               value: "8085"
           image: skyforge-server:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
               path: /api/health
@@ -386,16 +407,15 @@ spec:
             - containerPort: 8085
               protocol: TCP
           volumeMounts:
-            - mountPath: /encore/infra.config.json
+            - mountPath: /encore
               name: skyforge-server-infra-config
               readOnly: true
-              subPath: infra.config.json
             - mountPath: /run/secrets
               name: run-secrets
               readOnly: true
             - mountPath: /var/lib/skyforge
               name: skyforge-server-data
-            - mountPath: /var/lib/skyforge/platform-data
+            - mountPath: /data
               name: platform-data
             - mountPath: /home/openvscode-server
               name: code-server-home
@@ -412,6 +432,7 @@ spec:
                     - key: skyforge-eve-servers
                       path: skyforge-eve-servers
                   name: skyforge-eve-servers
+                  optional: true
               - secret:
                   items:
                     - key: skyforge-netlab-servers
@@ -423,11 +444,13 @@ spec:
                     - key: netlab-runner-rsa
                       path: netlab-runner-rsa
                   name: netlab-runner-rsa
+                  optional: true
               - secret:
                   items:
                     - key: eve-runner-ssh-key
                       path: eve-runner-ssh-key
                   name: eve-runner-ssh-key
+                  optional: true
         - name: skyforge-server-data
           persistentVolumeClaim:
             claimName: skyforge-server-data

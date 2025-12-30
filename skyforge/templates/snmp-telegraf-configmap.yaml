@@ -1,0 +1,41 @@
+{{- /*
+Telegraf SNMP trap collector configuration.
+
+- Runs as a DaemonSet with hostNetwork, listening on UDP/162.
+- Forwards traps to skyforge-server's internal ingest endpoint using SKYFORGE_INTERNAL_TOKEN.
+
+NOTE: This is SNMPv2c trap ingest via Telegraf's `inputs.snmp_trap`.
+*/ -}}
+{{- if and .Values.skyforge .Values.skyforge.snmpTraps .Values.skyforge.snmpTraps.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skyforge-snmp-telegraf
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+data:
+  telegraf.conf: |
+    [agent]
+      interval = "10s"
+      round_interval = true
+      metric_batch_size = 100
+      metric_buffer_limit = 1000
+      collection_jitter = "0s"
+      flush_interval = "1s"
+      flush_jitter = "0s"
+      precision = ""
+      omit_hostname = true
+
+    [[inputs.snmp_trap]]
+      service_address = "udp://:{{ default 162 .Values.skyforge.snmpTraps.hostPort }}"
+      timeout = "5s"
+      version = "2c"
+
+    [[outputs.http]]
+      url = "http://skyforge-server:8085/ingest/snmp/trap"
+      method = "POST"
+      use_batch_format = false
+      data_format = "json"
+      tagexclude = ["host"]
+      headers = {"Content-Type" = "application/json", "X-Skyforge-Internal-Token" = "${SKYFORGE_INTERNAL_TOKEN}"}
+{{- end }}

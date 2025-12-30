@@ -16,11 +16,11 @@ spec:
     spec:
       containers:
         - image: skyforge-portal:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           name: skyforge-portal
           env:
             - name: NEXT_PUBLIC_API_URL
-              value: /api
+              value: /api/skyforge
             - name: NEXT_PUBLIC_BASE_URL
               value: ""
             - name: NEXT_PUBLIC_ENV

@@ -23,7 +23,7 @@ spec:
               set -e
               export NAUTOBOT_DB_PASSWORD="$(cat /run/secrets/db-nautobot-password)"
               export NAUTOBOT_SECRET_KEY="$(cat /run/secrets/nautobot-secret-key)"
-              export NAUTOBOT_SUPERUSER_PASSWORD="$(cat /run/secrets/nautobot-superuser-password)"
+              export NAUTOBOT_SUPERUSER_PASSWORD="$(cat /run/secrets/skyforge-admin-shared)"
               export NAUTOBOT_SUPERUSER_API_TOKEN="$(cat /run/secrets/nautobot-superuser-api-token)"
               export SKYFORGE_LDAP_URL="$(cat /run/secrets/skyforge-ldap-url)"
               export SKYFORGE_LDAP_BIND_TEMPLATE="$(cat /run/secrets/skyforge-ldap-bind-template)"
@@ -65,9 +65,15 @@ spec:
             - name: SKYFORGE_LDAP_BIND_TEMPLATE_FILE
               value: /run/secrets/skyforge-ldap-bind-template
             - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-              value: "false"
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_LDAP_SKIP_TLS_VERIFY
             - name: SKYFORGE_LDAP_STARTTLS
-              value: "false"
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_LDAP_STARTTLS
             - name: SKYFORGE_LDAP_URL_FILE
               value: /run/secrets/skyforge-ldap-url
             - name: SKYFORGE_HOSTNAME
@@ -76,7 +82,7 @@ spec:
                   key: SKYFORGE_HOSTNAME
                   name: skyforge-config
           image: skyforge-nautobot:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           startupProbe:
             httpGet:
               path: /login/
@@ -150,9 +156,9 @@ spec:
                   name: nautobot-secret-key
               - secret:
                   items:
-                    - key: nautobot-superuser-password
-                      path: nautobot-superuser-password
-                  name: nautobot-superuser-password
+                    - key: password
+                      path: skyforge-admin-shared
+                  name: skyforge-admin-shared
               - secret:
                   items:
                     - key: nautobot-superuser-api-token

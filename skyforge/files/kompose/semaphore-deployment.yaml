@@ -43,11 +43,11 @@ spec:
               SEMAPHORE_DB_PORT="${SEMAPHORE_DB_PORT:-5432}"
               SEMAPHORE_DB_USER="${SEMAPHORE_DB_USER:-semaphore}"
               SEMAPHORE_DB="${SEMAPHORE_DB:-semaphore}"
-              SEMAPHORE_WEB_ROOT="${SEMAPHORE_WEB_ROOT:-/semaphore}"
-              SEMAPHORE_LDAP_ENABLE="${SEMAPHORE_LDAP_ENABLE:-true}"
+              SEMAPHORE_WEB_ROOT="${SEMAPHORE_WEB_ROOT:-/}"
+              SEMAPHORE_LDAP_ENABLE="${SEMAPHORE_LDAP_ENABLE:-false}"
 
               SEMAPHORE_DB_PASS="$(cat /run/secrets/db-semaphore-password)"
-              SEMAPHORE_ADMIN_PASSWORD="$(cat /run/secrets/semaphore-admin-password)"
+              SEMAPHORE_ADMIN_PASSWORD="$(cat /run/secrets/skyforge-admin-shared)"
               SEMAPHORE_PROVISIONER_PASSWORD="$(cat /run/secrets/semaphore-provisioner-password)"
               SEMAPHORE_COOKIE_HASH="$(cat /run/secrets/semaphore-cookie-hash)"
               SEMAPHORE_COOKIE_ENCRYPTION="$(cat /run/secrets/semaphore-cookie-encryption)"
@@ -58,6 +58,7 @@ spec:
               SEMAPHORE_LDAP_SEARCHDN="$(cat /run/secrets/semaphore-ldap-searchdn)"
               SEMAPHORE_LDAP_SEARCHFILTER="$(cat /run/secrets/semaphore-ldap-searchfilter)"
               SEMAPHORE_LDAP_NEEDTLS="$(cat /run/secrets/semaphore-ldap-needtls)"
+              SEMAPHORE_LDAP_NEEDTLS="${SEMAPHORE_LDAP_NEEDTLS:-false}"
 
               cat > /etc/semaphore/config.json <<EOF
               {
@@ -150,7 +151,9 @@ spec:
             - name: SEMAPHORE_PLAYBOOK_PATH
               value: /tmp/semaphore
             - name: SEMAPHORE_WEB_ROOT
-              value: /semaphore
+              value: /semaphore/
+            - name: SEMAPHORE_LDAP_ENABLE
+              value: "true"
             - name: KUBECONFIG
               value: /tmp/kubeconfig
           image: semaphoreui/semaphore:v2.16.47-ansible2.16.5
@@ -204,9 +207,9 @@ spec:
                   name: db-semaphore-password
               - secret:
                   items:
-                    - key: semaphore-admin-password
-                      path: semaphore-admin-password
-                  name: semaphore-admin-password
+                    - key: password
+                      path: skyforge-admin-shared
+                  name: skyforge-admin-shared
               - secret:
                   items:
                     - key: semaphore-provisioner-password

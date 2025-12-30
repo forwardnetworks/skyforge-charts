@@ -25,7 +25,11 @@ spec:
           done
 
           if semaphore users list --config /etc/semaphore/config.json | awk '{print $1}' | grep -qx "${login}"; then
-            echo "Semaphore provisioner user exists: ${login}"
+            echo "Semaphore provisioner user exists: ${login} (syncing password)"
+            semaphore users change-by-login --config /etc/semaphore/config.json \
+              --login "${login}" \
+              --password "${password}" \
+              --admin
             exit 0
           fi
 

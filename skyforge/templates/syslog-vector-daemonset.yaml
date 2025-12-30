@@ -1,0 +1,62 @@
+{{- if and .Values.skyforge .Values.skyforge.syslog .Values.skyforge.syslog.enabled -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: skyforge-syslog-vector
+  labels:
+    app.kubernetes.io/name: skyforge-syslog-vector
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge-syslog-vector
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: skyforge-syslog-vector
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- with .Values.kubernetes.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: vector
+          image: {{ required "images.vector is required when skyforge.syslog.enabled=true" .Values.images.vector }}
+          imagePullPolicy: IfNotPresent
+          args: ["--config", "/etc/vector/vector.yaml"]
+          env:
+            - name: SKYFORGE_INTERNAL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-internal-token
+                  key: skyforge-internal-token
+          ports:
+            - name: syslog
+              containerPort: {{ default 514 .Values.skyforge.syslog.hostPort }}
+              hostPort: {{ default 514 .Values.skyforge.syslog.hostPort }}
+              protocol: UDP
+          volumeMounts:
+            - name: vector-config
+              mountPath: /etc/vector
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add: ["NET_BIND_SERVICE"]
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+      volumes:
+        - name: vector-config
+          configMap:
+            name: skyforge-syslog-vector
+{{- end }}
+

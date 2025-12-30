@@ -1,6 +1,10 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "10"
   labels:
     io.kompose.service: skyforge-migrate
   name: skyforge-migrate
@@ -24,9 +28,19 @@ spec:
             - -c
           args:
             - >-
-              set -e;
+              set -euo pipefail;
               db_url="postgres://${SKYFORGE_DB_USER}:${SKYFORGE_DB_PASSWORD}@${SKYFORGE_DB_HOST}:${SKYFORGE_DB_PORT}/${SKYFORGE_DB_NAME}?sslmode=${SKYFORGE_DB_SSLMODE}";
-              atlas migrate apply --config file:///app/atlas.hcl --env prod --var db_url="${db_url}";
+              echo "Running Skyforge migrations...";
+              for i in $(seq 1 60); do
+                if atlas migrate apply --config file:///app/atlas.hcl --env prod --var db_url="${db_url}"; then
+                  echo "Skyforge migrations complete.";
+                  exit 0;
+                fi
+                echo "Migrations not ready yet; retrying (${i}/60)...";
+                sleep 2;
+              done;
+              echo "Skyforge migrations failed after retries." >&2;
+              exit 1;
           env:
             - name: SKYFORGE_DB_HOST
               value: db
@@ -70,3 +84,11 @@ spec:
                 path: skyforge/migrations/20251223000200_deployments.up.sql
               - key: 20251224000100_labpp_templates.up.sql
                 path: skyforge/migrations/20251224000100_labpp_templates.up.sql
+              - key: 20251227000100_deployments_labpp.up.sql
+                path: skyforge/migrations/20251227000100_deployments_labpp.up.sql
+              - key: 20251229000100_dns_tokens.up.sql
+                path: skyforge/migrations/20251229000100_dns_tokens.up.sql
+              - key: 20251230000100_syslog_events.up.sql
+                path: skyforge/migrations/20251230000100_syslog_events.up.sql
+              - key: 20251230000200_webhooks_snmp.up.sql
+                path: skyforge/migrations/20251230000200_webhooks_snmp.up.sql

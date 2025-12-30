@@ -1,0 +1,99 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "30"
+  labels:
+    io.kompose.service: gitea-admin-bootstrap
+  name: gitea-admin-bootstrap
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        io.kompose.service: gitea-admin-bootstrap
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      containers:
+        - args:
+            - |
+              set -eu
+              export SECRET_KEY="$(cat /run/secrets/gitea-secret-key)"
+              export GITEA__database__PASSWD="$(cat /run/secrets/db-gitea-password)"
+              admin_username="${SKYFORGE_ADMIN_USERNAME:-}"
+              admin_email="${SKYFORGE_ADMIN_EMAIL:-}"
+              admin_password="$(cat /run/secrets/skyforge-admin-shared | tr -d '\n')"
+              config="/var/lib/gitea/custom/conf/app.ini"
+
+              if [ -z "${admin_username}" ] || [ -z "${admin_password}" ]; then
+                echo "SKYFORGE admin username/password not set; skipping."
+                exit 0
+              fi
+
+              if gitea admin user create --config "${config}" \
+                --username "${admin_username}" \
+                --password "${admin_password}" \
+                --email "${admin_email}" \
+                --admin \
+                --must-change-password=false; then
+                echo "Gitea admin created: ${admin_username}"
+              else
+                gitea admin user change-password --config "${config}" \
+                  --username "${admin_username}" \
+                  --password "${admin_password}"
+                echo "Gitea admin password updated: ${admin_username}"
+              fi
+
+              gitea admin user must-change-password --config "${config}" --all --unset
+
+          command:
+            - /bin/sh
+            - -c
+          env:
+            - name: SKYFORGE_ADMIN_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_ADMIN_USERNAME
+            - name: SKYFORGE_ADMIN_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_ADMIN_EMAIL
+          image: gitea/gitea:1.22.3-rootless
+          name: gitea-admin-bootstrap
+          securityContext:
+            runAsGroup: 1000
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+            - mountPath: /var/lib/gitea
+              name: gitea-data
+      restartPolicy: OnFailure
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: db-gitea-password
+                      path: db-gitea-password
+                  name: db-gitea-password
+              - secret:
+                  items:
+                    - key: gitea-secret-key
+                      path: gitea-secret-key
+                  name: gitea-secret-key
+              - secret:
+                  items:
+                    - key: password
+                      path: skyforge-admin-shared
+                  name: skyforge-admin-shared
+        - name: gitea-data
+          persistentVolumeClaim:
+            claimName: gitea-data

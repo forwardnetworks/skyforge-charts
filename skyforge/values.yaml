@@ -4,17 +4,23 @@
 skyforge:
   hostname: "skyforge.lab.local"
   domain: "lab.local"
-  dexIssuer: ""
+  # Optional cookie Domain attribute. Leave empty for host-only cookies.
+  # If you enable any Skyforge tools on a subdomain (e.g. Hoppscotch at
+  # `tool.<skyforge.hostname>`), set this to a common parent domain like
+  # `.skyforge.lab.local` so SSO cookies work across subdomains.
+  cookieDomain: ""
   adminUsers: "skyforge"
   awsSsoRegion: "us-east-1"
   awsSsoStartUrl: ""
   gitea:
-    apiUrl: "http://gitea:3000/api/v1"
-    url: "http://gitea:3000"
+    apiUrl: ""
+    url: ""
     username: "skyforge"
     repoPrivate: true
     adminUsername: "skyforge"
-    allowedDomains: "gitea,localhost,127.0.0.1"
+    allowedDomains: ""
+  netboxSsoUrl: ""
+  nautobotSsoUrl: ""
   eveApiUrl: ""
   eveUsername: ""
   eveSkipTlsVerify: false
@@ -22,6 +28,14 @@ skyforge:
   eveSshUser: "root"
   labppApiUrl: ""
   labppSkipTlsVerify: false
+  # Optional: expose LabPP API through Traefik on the Skyforge hostname.
+  # When enabled, this creates Services/Endpoints that point at external EVE hosts and routes:
+  #   https://<skyforge-hostname>/labpp/<name>/*  ->  https://<eve-ip>:443/labpp/*
+  labppProxy:
+    enabled: false
+    port: 443
+    serversTransport: "eve-servers-transport"
+    servers: []
   ldap:
     displayAttr: "cn"
     groupAttr: "memberOf"
@@ -31,32 +45,35 @@ skyforge:
     baseDn: ""
   listenAddr: ":8085"
   maxGroups: 50
-  netboxUrl: "http://netbox:8080"
-  nautobotUrl: "http://nautobot:8080"
+  platformDataDir: "/data"
+  ssoSkipTlsVerify: false
+  netboxUrl: ""
+  netboxMgmtSubnet: "10.255.0.0/24"
+  nautobotUrl: ""
   objectStorage:
     endpoint: "minio:9000"
     useSsl: false
   netlab:
     sshUser: "ubuntu"
     stateRoot: "/var/lib/skyforge/netlab"
+  dns:
+    enabled: false
+    # NodePort for UDP/TCP 53 on the k3s host.
+    nodePort: 30053
+    # NodePort for the DNS web UI on the k3s host.
+    webNodePort: 30380
   projectsDataDir: "/var/lib/skyforge"
   projectSyncSeconds: 300
   uiThemeDefault: ""
   sessionTtl: "8h"
   cookieSecure: false
   stateBackend: "postgres"
-  swaggerUrl: "https://skyforge.lab.local/swagger/openapi.json"
+  swaggerUrl: ""
   db:
     host: "db"
     port: 5432
     name: "skyforge_server"
     user: "skyforge_server"
-    sslmode: "disable"
-  dexDb:
-    host: "db"
-    port: 5432
-    name: "dex"
-    user: "dex"
     sslmode: "disable"
   redis:
     enabled: true
@@ -64,7 +81,7 @@ skyforge:
     db: 0
     keyPrefix: "skyforge"
   health:
-    httpChecks: "Edge|edge|http://skyforge-portal:3000/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;EVE-NG|🧪|http://skyforge-server:8085/api/health/eve|/labs/;Semaphore|semaphore|http://semaphore:3000/semaphore/|/semaphore/;NetBox|netbox|http://netbox:8080/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/nautobot/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;VS Code Server|code|http://code-server:8080/code/|/code/;API Testing|api|http://hoppscotch/|/hoppscotch/;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://webhooks:8080/|/webhooks/;S3|s3|http://minio:9000/minio/health/ready|/minio-console/;Dex|dex|http://dex:5556/dex/.well-known/openid-configuration|/dex/;DNS|dns|http://technitium-dns:5380/|/dns/"
+    httpChecks: "Edge|edge|http://skyforge-portal:3000/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;EVE-NG|🧪|http://skyforge-server:8085/api/health/eve|/labs/;Semaphore|semaphore|http://semaphore:3000/semaphore/|/semaphore/;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;VS Code Server|code|http://code-server:8080/code/|/code/;API Testing|api|http://hoppscotch/|/api-testing;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-portal:3000/webhooks|/webhooks/;S3|s3|http://minio:9000/minio/health/ready|/minio-console/"
     codeChecks: "Postgres|postgres|pg|db;Redis|redis|redis|redis;RADIUS|radius|radius|freeradius"
   admin:
     username: "skyforge"
@@ -75,41 +92,66 @@ skyforge:
   ui:
     productName: "Skyforge"
     productSubtitle: "Automation Hub"
-    logoUrl: "/assets/skyforge/skyforge-mark.svg"
+    logoUrl: "/assets/skyforge/FN-logo.svg"
     logoAlt: "Skyforge"
     headerBgUrl: "/assets/skyforge/header-background.png"
     supportText: "Need access? Contact your platform admin."
     supportUrl: ""
   minio:
     consoleSubpath: "/minio-console"
+    # Optional: LDAP group to grant MinIO Console access + read/write bucket access.
+    # If empty, LDAP users may be able to authenticate but lack permissions.
+    ldapConsoleGroup: ""
   semaphore:
     projectId: 1
-    url: "http://semaphore:3000/semaphore/api"
+    # Semaphore serves its UI under `/semaphore/` (via ingress) but its internal API base is `/api`.
+    url: "http://semaphore:3000/api"
     username: "skyforge-provisioner"
     adminUsername: "skyforge"
+    auth: ""
+    adminAuth: ""
   sessionCookie: "skyforge_session"
+  syslog:
+    enabled: false
+    # Syslog events are collected via Vector (DaemonSet, hostNetwork).
+    # Host port to bind on each node (UDP); defaults to 514.
+    hostPort: 514
+  snmpTraps:
+    enabled: false
+    # SNMP trap events are collected via Telegraf (DaemonSet, hostNetwork).
+    # Host port to bind on each node (UDP); defaults to 162.
+    hostPort: 162
+  nodeMetrics:
+    enabled: false
+    interval: "10s"
 
 images:
   alpine: "alpine:3.20"
-  dex: "dexidp/dex:v2.41.1"
+  vector: "timberio/vector:0.44.0-debian"
+  telegraf: "telegraf:1.33-alpine"
   freeradius: "freeradius/freeradius-server:3.2.5"
   gitea: "gitea/gitea:1.22.3-rootless"
   openvscode: "gitpod/openvscode-server:1.105.1"
-  hoppscotch: "hoppscotch/hoppscotch:latest"
+  hoppscotch: "docker.io/hoppscotch/hoppscotch@sha256:0bf0d0c1a34399d8bc4a0d89126b41c717db771c5a451d69d076cb4305b9eaff"
   minio: "minio/minio:RELEASE.2024-11-07T00-52-20Z"
-  minioMc: "minio/mc:latest"
+  minioMc: "minio/mc:RELEASE.2024-11-17T19-35-25Z"
   minioMcRelease: "minio/mc:RELEASE.2024-11-17T19-35-25Z"
   postgres: "postgres:15-alpine"
   redis: "redis:7-alpine"
-  semaphore: "semaphoreui/semaphore:latest"
+  semaphore: "semaphoreui/semaphore:v2.16.47-ansible2.16.5"
   semaphoreAnsible: "semaphoreui/semaphore:v2.16.47-ansible2.16.5"
   swaggerUi: "swaggerapi/swagger-ui:v5.11.0"
-  atlas: "arigaio/atlas:latest-alpine"
+  technitiumDns: "docker.io/technitium/dns-server@sha256:94f2b90d63f03181421152157a8099ea2752b13fa30b6c96833859be8e93dfa9"
+  atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "skyforge-nautobot:latest"
   skyforgeNetbox: "skyforge-netbox:latest"
   skyforgePortal: "skyforge-portal:latest"
   skyforgeServer: "skyforge-server:latest"
-  skyforgeWebhooks: "skyforge-webhooks:latest"
+
+kubernetes:
+  # Optional image pull secrets to attach to service accounts created by the chart.
+  # Example: ["ghcr-pull"] for private GHCR images.
+  imagePullSecrets: []
 
 secrets:
   create: true
@@ -118,8 +160,6 @@ secrets:
       skyforge-session-secret: ""
     skyforge-admin-shared:
       password: ""
-    db-dex-password:
-      db-dex-password: ""
     skyforge-semaphore-token:
       skyforge-semaphore-token: ""
     skyforge-semaphore-url:
@@ -191,8 +231,6 @@ secrets:
       object-storage-terraform-access-key: ""
     object-storage-terraform-secret-key:
       object-storage-terraform-secret-key: ""
-    dex-minio-client-secret:
-      dex-minio-client-secret: ""
     netbox-superuser-api-token:
       netbox-superuser-api-token: ""
     netbox-secret-key:

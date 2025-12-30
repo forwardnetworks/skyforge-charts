@@ -1,0 +1,80 @@
+{{- $pullSecrets := .Values.kubernetes.imagePullSecrets -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: skyforge-server
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+{{- if $pullSecrets }}
+imagePullSecrets:
+{{- range $name := $pullSecrets }}
+  - name: {{ $name | quote }}
+{{- end }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: skyforge-server-scaler
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["hoppscotch", "code-server"]
+    verbs: ["get", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: skyforge-server-scaler
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: skyforge-server-scaler
+subjects:
+  - kind: ServiceAccount
+    name: skyforge-server
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: semaphore-runner
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+{{- if $pullSecrets }}
+imagePullSecrets:
+{{- range $name := $pullSecrets }}
+  - name: {{ $name | quote }}
+{{- end }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: semaphore-runner
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "delete", "get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: semaphore-runner
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: semaphore-runner
+subjects:
+  - kind: ServiceAccount
+    name: semaphore-runner
