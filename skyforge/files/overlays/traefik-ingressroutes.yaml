@@ -16,14 +16,6 @@ spec:
           port: 80
       middlewares:
         - name: skyforge-auth
-    - match: PathPrefix(`/api-testing`)
-      kind: Rule
-      priority: 470
-      services:
-        - name: hoppscotch
-          port: 80
-      middlewares:
-        - name: skyforge-auth
     - match: PathPrefix(`/assets/`) && !PathPrefix(`/assets/skyforge/`)
       kind: Rule
       priority: 455
