@@ -8,9 +8,17 @@ spec:
   tls:
     secretName: proxy-tls
   routes:
-    - match: PathPrefix(`/api-testing`)
+    - match: Path(`/`) && HeadersRegexp(`Cookie`, `skyforge_app=hoppscotch`)
       kind: Rule
-      priority: 460
+      priority: 470
+      services:
+        - name: hoppscotch
+          port: 80
+      middlewares:
+        - name: skyforge-auth
+    - match: PathPrefix(`/assets/`) && !PathPrefix(`/assets/skyforge/`)
+      kind: Rule
+      priority: 455
       services:
         - name: hoppscotch
           port: 80
