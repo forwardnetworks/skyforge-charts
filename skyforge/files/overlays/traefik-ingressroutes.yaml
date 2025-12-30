@@ -24,7 +24,6 @@ spec:
           port: 80
       middlewares:
         - name: skyforge-auth
-        - name: strip-api-testing
     - match: PathPrefix(`/assets/`) && !PathPrefix(`/assets/skyforge/`)
       kind: Rule
       priority: 455
