@@ -15,31 +15,55 @@ spec:
         io.kompose.service: skyforge-portal
     spec:
       containers:
-        - image: skyforge-portal:latest
-          imagePullPolicy: IfNotPresent
-          name: skyforge-portal
-          env:
-            - name: NEXT_PUBLIC_API_URL
-              value: /api/skyforge
-            - name: NEXT_PUBLIC_BASE_URL
-              value: ""
-            - name: NEXT_PUBLIC_ENV
-              value: production
-            - name: SKYFORGE_SERVER_INTERNAL_URL
-              value: http://skyforge-server:8085
-          ports:
-            - containerPort: 3000
-              protocol: TCP
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 10
-            periodSeconds: 20
+      - image: skyforge-portal:latest
+        imagePullPolicy: IfNotPresent
+        name: skyforge-portal
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: /api/skyforge
+        - name: NEXT_PUBLIC_BASE_URL
+          value: ''
+        - name: NEXT_PUBLIC_ENV
+          value: production
+        - name: SKYFORGE_SERVER_INTERNAL_URL
+          value: http://skyforge-server:8085
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        volumeMounts:
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
       restartPolicy: Always
+      volumes:
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

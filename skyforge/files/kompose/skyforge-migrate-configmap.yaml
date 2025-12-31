@@ -55,7 +55,7 @@ data:
       artifacts_bucket text,
       eve_server text,
       netlab_server text,
-      semaphore_project_id integer NOT NULL,
+      legacy_project_id integer NOT NULL,
       gitea_owner text NOT NULL,
       gitea_repo text NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now()
@@ -334,8 +334,26 @@ data:
     
     CREATE INDEX IF NOT EXISTS sf_snmp_trap_events_received_at_idx ON sf_snmp_trap_events(received_at DESC);
     CREATE INDEX IF NOT EXISTS sf_snmp_trap_events_username_idx ON sf_snmp_trap_events(username, received_at DESC);
+  20251231000100_containerlab_templates.up.sql: |
+    ALTER TABLE sf_projects ADD COLUMN containerlab_run_template_id integer;
+  20260101000100_pki_certs.up.sql: |
+    CREATE TABLE sf_pki_certs (
+      id text PRIMARY KEY,
+      username text NOT NULL,
+      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
+      common_name text NOT NULL,
+      sans jsonb,
+      cert_pem text NOT NULL,
+      key_pem text NOT NULL,
+      issued_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz NOT NULL,
+      revoked_at timestamptz
+    );
+    
+    CREATE INDEX sf_pki_certs_user_idx ON sf_pki_certs(username, issued_at DESC);
+    CREATE INDEX sf_pki_certs_project_idx ON sf_pki_certs(project_id);
   atlas.sum: |
-    h1:P3hwb2FDk+tNEOL5x61XFnLPzCTlZHFbbAOur+R3R4A=
+    h1:b4xf0y/f0KLYkAu1G1ermvVo6ssUUdr7s2Yc8l3hrQg=
     20251220000100_init.up.sql h1:YCWvMBPS4NllVUMuxfGa/GI6PNNfPI4aiCQzxCuHoYY=
     20251221000100_cloud_credentials.up.sql h1:eV5g4ndFX+Vv/jGTQoj4rgLgXJemBeS9u0XyKVlEnwQ=
     20251222000100_project_visibility.up.sql h1:8N5AoNS1iVXnMARyCmsiffW4n6CrAq/nmxailQPZ3cw=
@@ -346,3 +364,45 @@ data:
     20251229000100_dns_tokens.up.sql h1:1EpaT4MtQ28NABDN6BBAy9zWHR5BdK5/m77IlYK78rg=
     20251230000100_syslog_events.up.sql h1:KLPMXav6/9SGauXAqNWTKW+9NHXxfKAn4jHElAyV2Qo=
     20251230000200_webhooks_snmp.up.sql h1:9Oceq9kh9MTsoDlTfFH9BLlDofttD3AIOszWbYbLduM=
+    20251231000100_containerlab_templates.up.sql h1:pm0PD8e1f6aEw1WJ+SxKIEZFlKvTfXwYzCLTgNFuPCY=
+    20260101000100_pki_certs.up.sql h1:gtFQf20oVOJfPvZAsEIlZBQ6JxeRiOtiHcKeuwOlzY4=
+  20260102000100_tasks.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_tasks (
+      id bigserial PRIMARY KEY,
+      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
+      deployment_id uuid,
+      task_type text NOT NULL,
+      status text NOT NULL,
+      message text,
+      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      started_at timestamptz,
+      finished_at timestamptz,
+      error text
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_tasks_project_idx ON sf_tasks(project_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_tasks_deployment_idx ON sf_tasks(deployment_id, created_at DESC);
+    
+    CREATE TABLE IF NOT EXISTS sf_task_logs (
+      id bigserial PRIMARY KEY,
+      task_id bigint NOT NULL REFERENCES sf_tasks(id) ON DELETE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      stream text NOT NULL DEFAULT 'stdout',
+      output text NOT NULL
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_task_logs_task_idx ON sf_task_logs(task_id, created_at);
+  20260102000200_variable_groups.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_project_variable_groups (
+      id bigserial PRIMARY KEY,
+      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
+      name text NOT NULL,
+      variables jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_project_variable_groups_name_uq ON sf_project_variable_groups(project_id, name);
+    CREATE INDEX IF NOT EXISTS sf_project_variable_groups_project_idx ON sf_project_variable_groups(project_id, updated_at DESC);

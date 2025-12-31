@@ -24,11 +24,11 @@ spec:
               MINIO_ROOT_USER="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
               MINIO_ROOT_PASSWORD="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
               ldap_url="$(cat /run/secrets/skyforge-ldap-url | tr -d '\r\n')"
-              needtls="$(cat /run/secrets/semaphore-ldap-needtls | tr -d '\r\n')"
-              search_base_dn="$(cat /run/secrets/semaphore-ldap-searchdn | tr -d '\r\n')"
-              user_filter="$(cat /run/secrets/semaphore-ldap-searchfilter | tr -d '\r\n')"
-              bind_dn="$(cat /run/secrets/semaphore-ldap-binddn | tr -d '\r\n')"
-              bind_password="$(cat /run/secrets/semaphore-ldap-bindpassword | tr -d '\r\n')"
+              needtls="$(cat /run/secrets/skyforge-ldap-needtls | tr -d '\r\n')"
+              search_base_dn="$(cat /run/secrets/skyforge-ldap-searchdn | tr -d '\r\n')"
+              user_filter="$(cat /run/secrets/skyforge-ldap-searchfilter | tr -d '\r\n')"
+              bind_dn="$(cat /run/secrets/skyforge-ldap-binddn | tr -d '\r\n')"
+              bind_password="$(cat /run/secrets/skyforge-ldap-bindpassword | tr -d '\r\n')"
               base_dn="${SKYFORGE_LDAP_BASEDN:-}"
 
               if [ -z "${ldap_url}" ]; then
@@ -185,26 +185,26 @@ spec:
                   name: skyforge-ldap-url
               - secret:
                   items:
-                    - key: semaphore-ldap-searchdn
-                      path: semaphore-ldap-searchdn
-                  name: semaphore-ldap-searchdn
+                    - key: skyforge-ldap-searchdn
+                      path: skyforge-ldap-searchdn
+                  name: skyforge-ldap-searchdn
               - secret:
                   items:
-                    - key: semaphore-ldap-searchfilter
-                      path: semaphore-ldap-searchfilter
-                  name: semaphore-ldap-searchfilter
+                    - key: skyforge-ldap-searchfilter
+                      path: skyforge-ldap-searchfilter
+                  name: skyforge-ldap-searchfilter
               - secret:
                   items:
-                    - key: semaphore-ldap-binddn
-                      path: semaphore-ldap-binddn
-                  name: semaphore-ldap-binddn
+                    - key: skyforge-ldap-binddn
+                      path: skyforge-ldap-binddn
+                  name: skyforge-ldap-binddn
               - secret:
                   items:
-                    - key: semaphore-ldap-bindpassword
-                      path: semaphore-ldap-bindpassword
-                  name: semaphore-ldap-bindpassword
+                    - key: skyforge-ldap-bindpassword
+                      path: skyforge-ldap-bindpassword
+                  name: skyforge-ldap-bindpassword
               - secret:
                   items:
-                    - key: semaphore-ldap-needtls
-                      path: semaphore-ldap-needtls
-                  name: semaphore-ldap-needtls
+                    - key: skyforge-ldap-needtls
+                      path: skyforge-ldap-needtls
+                  name: skyforge-ldap-needtls

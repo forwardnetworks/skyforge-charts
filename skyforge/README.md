@@ -17,10 +17,12 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 - `skyforge.labppApiUrl`: Optional LabPP API base URL (defaults to `<eve web>/labpp`).
 - `skyforge.labppSkipTlsVerify`: `true` to skip LabPP TLS verification.
 - `skyforge.labppProxy`: Optional Traefik proxy for exposing LabPP API endpoints via `https://<skyforge-hostname>/labpp/<name>/...`.
+- `skyforge.pkiDefaultDays`: Default certificate TTL (days) for the PKI UI.
 - `images.*`: Override container images.
 - `secrets.items`: Provide secret values (use `--set-file` for PEM/SSH keys).
 - `secrets.items.skyforge-admin-shared.password`: Shared admin password used to seed Skyforge, Gitea,
-  Semaphore, NetBox, Nautobot, and the code-server sync job.
+  NetBox, Nautobot, and the code-server sync job.
+- `secrets.items.skyforge-pki-ca-cert` / `secrets.items.skyforge-pki-ca-key`: Optional CA cert/key for PKI issuance.
 - `secrets.create`: Set to `false` if you manage secrets out-of-band (for example, using the
   k3s `k8s/overlays/k3s-traefik-secrets` overlay).
 
@@ -31,7 +33,6 @@ See `charts/skyforge/values.yaml` for the full list of defaults.
 The chart includes one-time admin bootstrap jobs:
 
 - `gitea-admin-bootstrap`
-- `semaphore-admin-bootstrap`
 - `netbox-admin-bootstrap`
 - `nautobot-admin-bootstrap`
 
@@ -44,7 +45,6 @@ and run a Helm upgrade:
 ```bash
 kubectl -n skyforge delete job \
   gitea-admin-bootstrap \
-  semaphore-admin-bootstrap \
   netbox-admin-bootstrap \
   nautobot-admin-bootstrap
 

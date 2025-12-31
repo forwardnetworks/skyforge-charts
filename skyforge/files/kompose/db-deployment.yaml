@@ -18,71 +18,90 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-        - env:
-            - name: PGDATA
-              value: /var/lib/postgresql/data/pgdata
-            - name: POSTGRES_DB
-              value: skyforge
-            - name: POSTGRES_PASSWORD_FILE
-              value: /run/secrets/postgres-skyforge-password
-            - name: POSTGRES_USER
-              value: skyforge
-          image: postgres:15-alpine
-          livenessProbe:
-            tcpSocket:
-              port: 5432
-            failureThreshold: 6
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 2
-          readinessProbe:
-            tcpSocket:
-              port: 5432
-            failureThreshold: 3
-            periodSeconds: 5
-            timeoutSeconds: 2
-          name: db
-          volumeMounts:
-            - mountPath: /run/secrets
-              name: run-secrets
-              readOnly: true
-            - mountPath: /var/lib/postgresql/data
-              name: db-data
+      - env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_DB
+          value: skyforge
+        - name: POSTGRES_PASSWORD_FILE
+          value: /run/secrets/postgres-skyforge-password
+        - name: POSTGRES_USER
+          value: skyforge
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        image: postgres:15-alpine
+        livenessProbe:
+          tcpSocket:
+            port: 5432
+          failureThreshold: 6
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 2
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        name: db
+        volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - mountPath: /var/lib/postgresql/data
+          name: db-data
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
       restartPolicy: Always
       volumes:
-        - name: run-secrets
-          projected:
-            sources:
-              - secret:
-                  items:
-                    - key: postgres-skyforge-password
-                      path: postgres-skyforge-password
-                  name: postgres-skyforge-password
-              - secret:
-                  items:
-                    - key: db-semaphore-password
-                      path: db-semaphore-password
-                  name: db-semaphore-password
-              - secret:
-                  items:
-                    - key: db-netbox-password
-                      path: db-netbox-password
-                  name: db-netbox-password
-              - secret:
-                  items:
-                    - key: db-nautobot-password
-                      path: db-nautobot-password
-                  name: db-nautobot-password
-              - secret:
-                  items:
-                    - key: db-gitea-password
-                      path: db-gitea-password
-                  name: db-gitea-password
-              - secret:
-                  items:
-                    - key: db-skyforge-server-password
-                      path: db-skyforge-server-password
-                  name: db-skyforge-server-password
-        - name: db-data
-          persistentVolumeClaim:
-            claimName: db-data
+      - name: run-secrets
+        projected:
+          sources:
+          - secret:
+              items:
+              - key: postgres-skyforge-password
+                path: postgres-skyforge-password
+              name: postgres-skyforge-password
+          - secret:
+              items:
+          - secret:
+              items:
+              - key: db-netbox-password
+                path: db-netbox-password
+              name: db-netbox-password
+          - secret:
+              items:
+              - key: db-nautobot-password
+                path: db-nautobot-password
+              name: db-nautobot-password
+          - secret:
+              items:
+              - key: db-gitea-password
+                path: db-gitea-password
+              name: db-gitea-password
+          - secret:
+              items:
+              - key: db-skyforge-server-password
+                path: db-skyforge-server-password
+              name: db-skyforge-server-password
+      - name: db-data
+        persistentVolumeClaim:
+          claimName: db-data
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

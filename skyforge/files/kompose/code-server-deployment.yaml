@@ -18,67 +18,76 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-        - args:
-            - |
-              set -e
-              bin="/home/.openvscode-server/bin/openvscode-server"
-              for ext in $(echo "${CODE_SERVER_EXTENSIONS:-}" | tr ',' ' '); do
-                ext="$(echo "${ext}" | xargs)"
-                [ -z "${ext}" ] && continue
-                echo "Installing OpenVSCode extension: ${ext}"
-                "${bin}" --install-extension "${ext}" \
-                  --force \
-                  --extensions-dir /home/openvscode-server/extensions \
-                  --user-data-dir /home/openvscode-server/data \
-                  --accept-server-license-terms \
-                  --without-connection-token || true
-              done
-              exec "${bin}" \
-                --host 0.0.0.0 \
-                --port 8080 \
-                --server-base-path /code \
-                --telemetry-level off \
-                --accept-server-license-terms \
-                --without-connection-token \
-                --extensions-dir /home/openvscode-server/extensions \
-                --user-data-dir /home/openvscode-server/data \
-                /home/openvscode-server/project
-          command:
-            - /bin/sh
-            - -lc
-          env:
-            - name: CODE_SERVER_EXTENSIONS
-              value: srl-labs.vscode-containerlab,hashicorp.terraform,redhat.ansible,ms-azuretools.vscode-docker,eamodio.gitlens
-          image: gitpod/openvscode-server:1.105.1
-          livenessProbe:
-            httpGet:
-              path: /code/
-              port: 8080
-            failureThreshold: 6
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 2
-          readinessProbe:
-            httpGet:
-              path: /code/
-              port: 8080
-            failureThreshold: 3
-            periodSeconds: 5
-            timeoutSeconds: 2
-          name: code-server
-          ports:
-            - containerPort: 8080
-              protocol: TCP
-          volumeMounts:
-            - mountPath: /home/openvscode-server
-              name: code-server-home
-            - mountPath: /home/openvscode-server/project
-              name: shared-workspace
+      - args:
+        - "set -e\nbin=\"/home/.openvscode-server/bin/openvscode-server\"\nfor ext\
+          \ in $(echo \"${CODE_SERVER_EXTENSIONS:-}\" | tr ',' ' '); do\n  ext=\"\
+          $(echo \"${ext}\" | xargs)\"\n  [ -z \"${ext}\" ] && continue\n  echo \"\
+          Installing OpenVSCode extension: ${ext}\"\n  \"${bin}\" --install-extension\
+          \ \"${ext}\" \\\n    --force \\\n    --extensions-dir /home/openvscode-server/extensions\
+          \ \\\n    --user-data-dir /home/openvscode-server/data \\\n    --accept-server-license-terms\
+          \ \\\n    --without-connection-token || true\ndone\nexec \"${bin}\" \\\n\
+          \  --host 0.0.0.0 \\\n  --port 8080 \\\n  --server-base-path /code \\\n\
+          \  --telemetry-level off \\\n  --accept-server-license-terms \\\n  --without-connection-token\
+          \ \\\n  --extensions-dir /home/openvscode-server/extensions \\\n  --user-data-dir\
+          \ /home/openvscode-server/data \\\n  /home/openvscode-server/project\n"
+        command:
+        - /bin/sh
+        - -lc
+        env:
+        - name: CODE_SERVER_EXTENSIONS
+          value: srl-labs.vscode-containerlab,hashicorp.terraform,redhat.ansible,ms-azuretools.vscode-docker,eamodio.gitlens
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        image: gitpod/openvscode-server:1.105.1
+        livenessProbe:
+          httpGet:
+            path: /code/
+            port: 8080
+          failureThreshold: 6
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /code/
+            port: 8080
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        name: code-server
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /home/openvscode-server
+          name: code-server-home
+        - mountPath: /home/openvscode-server/project
+          name: shared-workspace
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
       restartPolicy: Always
       volumes:
-        - name: code-server-home
-          persistentVolumeClaim:
-            claimName: code-server-home
-        - name: shared-workspace
-          persistentVolumeClaim:
-            claimName: shared-workspace
+      - name: code-server-home
+        persistentVolumeClaim:
+          claimName: code-server-home
+      - name: shared-workspace
+        persistentVolumeClaim:
+          claimName: shared-workspace
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

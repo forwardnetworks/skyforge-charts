@@ -19,444 +19,446 @@ spec:
       automountServiceAccountToken: true
       serviceAccountName: skyforge-server
       containers:
-        - env:
-            - name: SKYFORGE_ADMIN_USERS
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_ADMIN_USERS
-            - name: POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: SKYFORGE_ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-admin-shared
-                  key: password
-            - name: SKYFORGE_AWS_SSO_REGION
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_AWS_SSO_REGION
-            - name: SKYFORGE_AWS_SSO_START_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_AWS_SSO_START_URL
-            - name: SKYFORGE_GITEA_API_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_GITEA_API_URL
-            - name: SKYFORGE_GITEA_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_GITEA_URL
-            - name: SKYFORGE_SSO_SKIP_TLS_VERIFY
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_SSO_SKIP_TLS_VERIFY
-            - name: ENCORE_RUNTIME_CONFIG
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-encore-runtime-config
-                  key: skyforge-encore-runtime-config
-                  optional: true
-            - name: SKYFORGE_GITEA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-admin-shared
-                  key: password
-            - name: SKYFORGE_GITEA_REPO_PRIVATE
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_GITEA_REPO_PRIVATE
-            - name: SKYFORGE_GITEA_USERNAME
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_GITEA_USERNAME
-            - name: SKYFORGE_EVE_API_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_EVE_API_URL
-            - name: SKYFORGE_EVE_USERNAME
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_EVE_USERNAME
-            - name: SKYFORGE_EVE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-eve-password
-                  key: skyforge-eve-password
-            - name: SKYFORGE_EVE_SKIP_TLS_VERIFY
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_EVE_SKIP_TLS_VERIFY
-            - name: SKYFORGE_EVE_SERVERS_FILE
-              value: /run/secrets/skyforge-eve-servers
-            - name: SKYFORGE_NETLAB_SERVERS_FILE
-              value: /run/secrets/skyforge-netlab-servers
-            - name: SKYFORGE_EVE_SSH_KEY_FILE
-              value: /run/secrets/eve-runner-ssh-key
-            - name: SKYFORGE_EVE_SSH_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_EVE_SSH_USER
-            - name: SKYFORGE_EVE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_EVE_URL
-            - name: SKYFORGE_LDAP_BIND_TEMPLATE
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-ldap-bind-template
-                  key: skyforge-ldap-bind-template
-            - name: SKYFORGE_LDAP_DISPLAY_ATTR
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_LDAP_DISPLAY_ATTR
-            - name: SKYFORGE_LDAP_GROUP_ATTR
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_LDAP_GROUP_ATTR
-            - name: SKYFORGE_LDAP_MAIL_ATTR
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_LDAP_MAIL_ATTR
-            - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-            - name: SKYFORGE_LDAP_STARTTLS
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_LDAP_STARTTLS
-            - name: SKYFORGE_LDAP_URL
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-ldap-url
-                  key: skyforge-ldap-url
-            - name: SKYFORGE_LISTEN_ADDR
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_LISTEN_ADDR
+      - env:
+        - name: SKYFORGE_ADMIN_USERS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_ADMIN_USERS
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: SKYFORGE_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-admin-shared
+              key: password
+        - name: SKYFORGE_AWS_SSO_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_AWS_SSO_REGION
+        - name: SKYFORGE_AWS_SSO_START_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_AWS_SSO_START_URL
+        - name: SKYFORGE_GITEA_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_GITEA_API_URL
+        - name: SKYFORGE_GITEA_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_GITEA_URL
+        - name: SKYFORGE_SSO_SKIP_TLS_VERIFY
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_SSO_SKIP_TLS_VERIFY
+        - name: ENCORE_RUNTIME_CONFIG
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-encore-runtime-config
+              key: skyforge-encore-runtime-config
+              optional: true
+        - name: SKYFORGE_GITEA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-admin-shared
+              key: password
+        - name: SKYFORGE_GITEA_REPO_PRIVATE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_GITEA_REPO_PRIVATE
+        - name: SKYFORGE_GITEA_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_GITEA_USERNAME
+        - name: SKYFORGE_EVE_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_EVE_API_URL
+        - name: SKYFORGE_EVE_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_EVE_USERNAME
+        - name: SKYFORGE_EVE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-eve-password
+              key: skyforge-eve-password
+        - name: SKYFORGE_EVE_SKIP_TLS_VERIFY
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_EVE_SKIP_TLS_VERIFY
+        - name: SKYFORGE_EVE_SERVERS_FILE
+          value: /run/secrets/skyforge-eve-servers
+        - name: SKYFORGE_NETLAB_SERVERS_FILE
+          value: /run/secrets/skyforge-netlab-servers
+        - name: SKYFORGE_EVE_SSH_KEY_FILE
+          value: /run/secrets/eve-runner-ssh-key
+        - name: SKYFORGE_EVE_SSH_USER
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_EVE_SSH_USER
+        - name: SKYFORGE_EVE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_EVE_URL
+        - name: SKYFORGE_LDAP_BIND_TEMPLATE
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-ldap-bind-template
+              key: skyforge-ldap-bind-template
+        - name: SKYFORGE_LDAP_DISPLAY_ATTR
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LDAP_DISPLAY_ATTR
+        - name: SKYFORGE_LDAP_GROUP_ATTR
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LDAP_GROUP_ATTR
+        - name: SKYFORGE_LDAP_MAIL_ATTR
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LDAP_MAIL_ATTR
+        - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LDAP_SKIP_TLS_VERIFY
+        - name: SKYFORGE_LDAP_STARTTLS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LDAP_STARTTLS
+        - name: SKYFORGE_LDAP_URL
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-ldap-url
+              key: skyforge-ldap-url
+        - name: SKYFORGE_LISTEN_ADDR
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LISTEN_ADDR
             - name: SKYFORGE_CORP_EMAIL_DOMAIN
               valueFrom:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_CORP_EMAIL_DOMAIN
+            - name: SKYFORGE_PKI_CA_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-pki-ca-cert
+                  key: skyforge-pki-ca-cert
+            - name: SKYFORGE_PKI_CA_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-pki-ca-key
+                  key: skyforge-pki-ca-key
+            - name: SKYFORGE_PKI_DEFAULT_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_PKI_DEFAULT_DAYS
             - name: SKYFORGE_MAX_GROUPS
               valueFrom:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_MAX_GROUPS
-            - name: SKYFORGE_NETBOX_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_NETBOX_URL
-            - name: SKYFORGE_NAUTOBOT_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_NAUTOBOT_URL
-            - name: SKYFORGE_OBJECT_STORAGE_ENDPOINT
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_OBJECT_STORAGE_ENDPOINT
-            - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: object-storage-terraform-access-key
-                  key: object-storage-terraform-access-key
-            - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: object-storage-terraform-secret-key
-                  key: object-storage-terraform-secret-key
-            - name: SKYFORGE_OBJECT_STORAGE_USE_SSL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_OBJECT_STORAGE_USE_SSL
-            - name: SKYFORGE_NETLAB_SSH_HOST
-            - name: SKYFORGE_NETLAB_SSH_KEY_FILE
-              value: /run/secrets/netlab-runner-rsa
-            - name: SKYFORGE_NETLAB_SSH_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_NETLAB_SSH_USER
-            - name: SKYFORGE_NETLAB_STATE_ROOT
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_NETLAB_STATE_ROOT
-            - name: SKYFORGE_PROJECTS_DATA_DIR
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_PROJECTS_DATA_DIR
-            - name: SKYFORGE_PLATFORM_DATA_DIR
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_PLATFORM_DATA_DIR
-            - name: SKYFORGE_PROJECT_SYNC_SECONDS
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_PROJECT_SYNC_SECONDS
-            - name: SKYFORGE_UI_PRODUCT_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_UI_PRODUCT_NAME
-            - name: SKYFORGE_UI_PRODUCT_SUBTITLE
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_UI_PRODUCT_SUBTITLE
-            - name: SKYFORGE_UI_LOGO_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_UI_LOGO_URL
-            - name: SKYFORGE_UI_LOGO_ALT
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_UI_LOGO_ALT
-            - name: SKYFORGE_UI_HEADER_BG_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_UI_HEADER_BG_URL
-            - name: SKYFORGE_UI_THEME_DEFAULT
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_UI_THEME_DEFAULT
-            - name: SKYFORGE_UI_SUPPORT_TEXT
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_UI_SUPPORT_TEXT
-            - name: SKYFORGE_UI_SUPPORT_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_UI_SUPPORT_URL
-            - name: SKYFORGE_SEMAPHORE_PROJECT_ID
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_SEMAPHORE_PROJECT_ID
-            - name: SKYFORGE_SEMAPHORE_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-semaphore-token
-                  key: skyforge-semaphore-token
-            - name: SKYFORGE_SEMAPHORE_USERNAME
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_SEMAPHORE_USERNAME
-            - name: SKYFORGE_SEMAPHORE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: semaphore-provisioner-password
-                  key: semaphore-provisioner-password
-            - name: SKYFORGE_SEMAPHORE_ADMIN_USERNAME
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_SEMAPHORE_ADMIN_USERNAME
-            - name: SKYFORGE_SEMAPHORE_ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-admin-shared
-                  key: password
-            - name: SKYFORGE_SEMAPHORE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_SEMAPHORE_URL
-            - name: SKYFORGE_SESSION_COOKIE
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_SESSION_COOKIE
-            - name: SKYFORGE_SESSION_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-session-secret
-                  key: skyforge-session-secret
-            - name: SKYFORGE_SESSION_TTL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_SESSION_TTL
-            - name: SKYFORGE_COOKIE_SECURE
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_COOKIE_SECURE
-            - name: SKYFORGE_COOKIE_DOMAIN
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_COOKIE_DOMAIN
-            - name: SKYFORGE_INTERNAL_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-internal-token
-                  key: skyforge-internal-token
-            - name: SKYFORGE_STATE_BACKEND
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_STATE_BACKEND
-            - name: SKYFORGE_DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_DB_HOST
-            - name: SKYFORGE_DB_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_DB_PORT
-            - name: SKYFORGE_DB_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_DB_NAME
-            - name: SKYFORGE_DB_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_DB_USER
-            - name: SKYFORGE_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: db-skyforge-server-password
-                  key: db-skyforge-server-password
-            - name: SKYFORGE_DB_SSLMODE
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_DB_SSLMODE
-            - name: SKYFORGE_REDIS_ENABLED
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_REDIS_ENABLED
-            - name: SKYFORGE_REDIS_ADDR
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_REDIS_ADDR
-            - name: SKYFORGE_REDIS_DB
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_REDIS_DB
-            - name: SKYFORGE_REDIS_KEY_PREFIX
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_REDIS_KEY_PREFIX
-            - name: PORT
-              value: "8085"
-          image: skyforge-server:latest
-          imagePullPolicy: IfNotPresent
-          livenessProbe:
-            httpGet:
-              path: /api/health
-              port: 8085
-            failureThreshold: 6
-            periodSeconds: 10
-            timeoutSeconds: 2
-          readinessProbe:
-            httpGet:
-              path: /api/health
-              port: 8085
-            failureThreshold: 3
-            periodSeconds: 5
-            timeoutSeconds: 2
-          name: skyforge-server
-          ports:
-            - containerPort: 8085
-              protocol: TCP
-          volumeMounts:
-            - mountPath: /encore
-              name: skyforge-server-infra-config
-              readOnly: true
-            - mountPath: /run/secrets
-              name: run-secrets
-              readOnly: true
-            - mountPath: /var/lib/skyforge
-              name: skyforge-server-data
-            - mountPath: /data
-              name: platform-data
-            - mountPath: /home/openvscode-server
-              name: code-server-home
+        - name: SKYFORGE_NETBOX_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_NETBOX_URL
+        - name: SKYFORGE_NAUTOBOT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_NAUTOBOT_URL
+        - name: SKYFORGE_OBJECT_STORAGE_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_OBJECT_STORAGE_ENDPOINT
+        - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: object-storage-terraform-access-key
+              key: object-storage-terraform-access-key
+        - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: object-storage-terraform-secret-key
+              key: object-storage-terraform-secret-key
+        - name: SKYFORGE_OBJECT_STORAGE_USE_SSL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_OBJECT_STORAGE_USE_SSL
+        - name: SKYFORGE_NETLAB_SSH_HOST
+        - name: SKYFORGE_NETLAB_SSH_KEY_FILE
+          value: /run/secrets/netlab-runner-rsa
+        - name: SKYFORGE_NETLAB_SSH_USER
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_NETLAB_SSH_USER
+        - name: SKYFORGE_NETLAB_STATE_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_NETLAB_STATE_ROOT
+        - name: SKYFORGE_PROJECTS_DATA_DIR
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_PROJECTS_DATA_DIR
+        - name: SKYFORGE_PLATFORM_DATA_DIR
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_PLATFORM_DATA_DIR
+        - name: SKYFORGE_PROJECT_SYNC_SECONDS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_PROJECT_SYNC_SECONDS
+        - name: SKYFORGE_UI_PRODUCT_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_UI_PRODUCT_NAME
+        - name: SKYFORGE_UI_PRODUCT_SUBTITLE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_UI_PRODUCT_SUBTITLE
+        - name: SKYFORGE_UI_LOGO_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_UI_LOGO_URL
+        - name: SKYFORGE_UI_LOGO_ALT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_UI_LOGO_ALT
+        - name: SKYFORGE_UI_HEADER_BG_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_UI_HEADER_BG_URL
+        - name: SKYFORGE_UI_THEME_DEFAULT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_UI_THEME_DEFAULT
+        - name: SKYFORGE_UI_SUPPORT_TEXT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_UI_SUPPORT_TEXT
+        - name: SKYFORGE_UI_SUPPORT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_UI_SUPPORT_URL
+        - name: SKYFORGE_SESSION_COOKIE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_SESSION_COOKIE
+        - name: SKYFORGE_SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-session-secret
+              key: skyforge-session-secret
+        - name: SKYFORGE_SESSION_TTL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_SESSION_TTL
+        - name: SKYFORGE_COOKIE_SECURE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_COOKIE_SECURE
+        - name: SKYFORGE_COOKIE_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_COOKIE_DOMAIN
+        - name: SKYFORGE_INTERNAL_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-internal-token
+              key: skyforge-internal-token
+        - name: SKYFORGE_STATE_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_STATE_BACKEND
+        - name: SKYFORGE_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_DB_HOST
+        - name: SKYFORGE_DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_DB_PORT
+        - name: SKYFORGE_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_DB_NAME
+        - name: SKYFORGE_DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_DB_USER
+        - name: SKYFORGE_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-skyforge-server-password
+              key: db-skyforge-server-password
+        - name: SKYFORGE_DB_SSLMODE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_DB_SSLMODE
+        - name: SKYFORGE_REDIS_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_REDIS_ENABLED
+        - name: SKYFORGE_REDIS_ADDR
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_REDIS_ADDR
+        - name: SKYFORGE_REDIS_DB
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_REDIS_DB
+        - name: SKYFORGE_REDIS_KEY_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_REDIS_KEY_PREFIX
+        - name: PORT
+          value: '8085'
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        image: skyforge-server:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8085
+          failureThreshold: 6
+          periodSeconds: 10
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8085
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        name: skyforge-server
+        ports:
+        - containerPort: 8085
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /encore
+          name: skyforge-server-infra-config
+          readOnly: true
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - mountPath: /var/lib/skyforge
+          name: skyforge-server-data
+        - mountPath: /data
+          name: platform-data
+        - mountPath: /home/openvscode-server
+          name: code-server-home
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
       restartPolicy: Always
       volumes:
-        - name: skyforge-server-infra-config
-          configMap:
-            name: skyforge-server-infra-config
-        - name: run-secrets
-          projected:
-            sources:
-              - secret:
-                  items:
-                    - key: skyforge-eve-servers
-                      path: skyforge-eve-servers
-                  name: skyforge-eve-servers
-                  optional: true
-              - secret:
-                  items:
-                    - key: skyforge-netlab-servers
-                      path: skyforge-netlab-servers
-                  name: skyforge-netlab-servers
-                  optional: true
-              - secret:
-                  items:
-                    - key: netlab-runner-rsa
-                      path: netlab-runner-rsa
-                  name: netlab-runner-rsa
-                  optional: true
-              - secret:
-                  items:
-                    - key: eve-runner-ssh-key
-                      path: eve-runner-ssh-key
-                  name: eve-runner-ssh-key
-                  optional: true
-        - name: skyforge-server-data
-          persistentVolumeClaim:
-            claimName: skyforge-server-data
-        - name: platform-data
-          persistentVolumeClaim:
-            claimName: platform-data
-        - name: code-server-home
-          persistentVolumeClaim:
-            claimName: code-server-home
+      - name: skyforge-server-infra-config
+        configMap:
+          name: skyforge-server-infra-config
+      - name: run-secrets
+        projected:
+          sources:
+          - secret:
+              items:
+              - key: skyforge-eve-servers
+                path: skyforge-eve-servers
+              name: skyforge-eve-servers
+              optional: true
+          - secret:
+              items:
+              - key: skyforge-netlab-servers
+                path: skyforge-netlab-servers
+              name: skyforge-netlab-servers
+              optional: true
+          - secret:
+              items:
+              - key: netlab-runner-rsa
+                path: netlab-runner-rsa
+              name: netlab-runner-rsa
+              optional: true
+          - secret:
+              items:
+              - key: eve-runner-ssh-key
+                path: eve-runner-ssh-key
+              name: eve-runner-ssh-key
+              optional: true
+      - name: skyforge-server-data
+        persistentVolumeClaim:
+          claimName: skyforge-server-data
+      - name: platform-data
+        persistentVolumeClaim:
+          claimName: platform-data
+      - name: code-server-home
+        persistentVolumeClaim:
+          claimName: code-server-home
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

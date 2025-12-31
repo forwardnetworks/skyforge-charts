@@ -54,7 +54,6 @@ spec:
                 printf "%s" "$fallback"
               }
 
-              SEMAPHORE_DB_PASSWORD="$(read_secret db-semaphore-password "${SEMAPHORE_DB_PASSWORD:-semaphore}")"
               NETBOX_DB_PASSWORD="$(read_secret db-netbox-password "${NETBOX_DB_PASSWORD:-netbox}")"
               NAUTOBOT_DB_PASSWORD="$(read_secret db-nautobot-password "${NAUTOBOT_DB_PASSWORD:-nautobot}")"
               GITEA_DB_PASSWORD="$(read_secret db-gitea-password "${GITEA_DB_PASSWORD:-gitea}")"
@@ -82,14 +81,12 @@ spec:
                   ${psql_base} -c "ALTER DATABASE ${db} OWNER TO ${owner};"
               }
 
-              create_role semaphore "${SEMAPHORE_DB_PASSWORD}"
               create_role netbox "${NETBOX_DB_PASSWORD}"
               create_role nautobot "${NAUTOBOT_DB_PASSWORD}"
               create_role gitea "${GITEA_DB_PASSWORD}"
               create_role skyforge_server "${SKYFORGE_SERVER_DB_PASSWORD}"
               create_role hoppscotch "${HOPPSCOTCH_DB_PASSWORD}"
 
-              create_db semaphore semaphore
               create_db netbox netbox
               create_db nautobot nautobot
               create_db gitea gitea
@@ -109,11 +106,6 @@ spec:
                     - key: postgres-skyforge-password
                       path: postgres-skyforge-password
                   name: postgres-skyforge-password
-              - secret:
-                  items:
-                    - key: db-semaphore-password
-                      path: db-semaphore-password
-                  name: db-semaphore-password
               - secret:
                   items:
                     - key: db-netbox-password

@@ -92,3 +92,11 @@ spec:
                 path: skyforge/migrations/20251230000100_syslog_events.up.sql
               - key: 20251230000200_webhooks_snmp.up.sql
                 path: skyforge/migrations/20251230000200_webhooks_snmp.up.sql
+              - key: 20251231000100_containerlab_templates.up.sql
+                path: skyforge/migrations/20251231000100_containerlab_templates.up.sql
+              - key: 20260101000100_pki_certs.up.sql
+                path: skyforge/migrations/20260101000100_pki_certs.up.sql
+              - key: 20251230000100_syslog_events.up.sql
+                path: skyforge/migrations/20251230000100_syslog_events.up.sql
+              - key: 20251230000200_webhooks_snmp.up.sql
+                path: skyforge/migrations/20251230000200_webhooks_snmp.up.sql

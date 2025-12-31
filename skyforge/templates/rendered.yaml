@@ -5,9 +5,7 @@
   "gitea-admin-sync-deployment.yaml" true
   "netbox-admin-sync-deployment.yaml" true
   "nautobot-admin-sync-deployment.yaml" true
-  "semaphore-admin-sync-deployment.yaml" true
   "code-workspace-sync-deployment.yaml" true
-  "semaphore-rbac.yaml" true
   "skyforge-server-rbac.yaml" true
 -}}
 {{- $vals := fromYaml (toYaml .Values) -}}
@@ -38,8 +36,6 @@
   "postgres:15-alpine" .Values.images.postgres
   "redis:7-alpine" .Values.images.redis
   "technitium/dns-server:latest" $technitiumDnsImage
-  "semaphoreui/semaphore:latest" .Values.images.semaphore
-  "semaphoreui/semaphore:v2.16.47-ansible2.16.5" .Values.images.semaphoreAnsible
   "swaggerapi/swagger-ui:v5.11.0" .Values.images.swaggerUi
   "skyforge-nautobot:latest" .Values.images.skyforgeNautobot
   "skyforge-netbox:latest" .Values.images.skyforgeNetbox
@@ -101,6 +97,7 @@
   "__SKYFORGE_PROJECTS_DATA_DIR__" .Values.skyforge.projectsDataDir
   "__SKYFORGE_PLATFORM_DATA_DIR__" .Values.skyforge.platformDataDir
   "__SKYFORGE_PROJECT_SYNC_SECONDS__" (printf "%v" .Values.skyforge.projectSyncSeconds)
+  "__SKYFORGE_PKI_DEFAULT_DAYS__" (printf "%v" .Values.skyforge.pkiDefaultDays)
   "__SKYFORGE_UI_THEME_DEFAULT__" .Values.skyforge.uiThemeDefault
   "__SKYFORGE_SESSION_TTL__" .Values.skyforge.sessionTtl
   "__SKYFORGE_COOKIE_SECURE__" (printf "%v" .Values.skyforge.cookieSecure)
@@ -132,12 +129,6 @@
   "__SKYFORGE_UI_LOGO_ALT__" .Values.skyforge.ui.logoAlt
   "__SKYFORGE_UI_HEADER_BG_URL__" .Values.skyforge.ui.headerBgUrl
   "__SKYFORGE_UI_SUPPORT_TEXT__" .Values.skyforge.ui.supportText
-  "__SKYFORGE_SEMAPHORE_PROJECT_ID__" (printf "%v" .Values.skyforge.semaphore.projectId)
-  "__SKYFORGE_SEMAPHORE_URL__" .Values.skyforge.semaphore.url
-  "__SKYFORGE_SEMAPHORE_AUTH__" .Values.skyforge.semaphore.auth
-  "__SKYFORGE_SEMAPHORE_USERNAME__" .Values.skyforge.semaphore.username
-  "__SKYFORGE_SEMAPHORE_ADMIN_USERNAME__" .Values.skyforge.semaphore.adminUsername
-  "__SKYFORGE_SEMAPHORE_ADMIN_AUTH__" .Values.skyforge.semaphore.adminAuth
   "__SKYFORGE_SESSION_COOKIE__" .Values.skyforge.sessionCookie
   "__SKYFORGE_SWAGGER_URL__" $swaggerUrl
 -}}

@@ -37,8 +37,8 @@ spec:
             proto="StartTLS"
           fi
 
-          search_base="$(cat /run/secrets/semaphore-ldap-searchdn | tr -d '\n')"
-          user_filter="$(cat /run/secrets/semaphore-ldap-searchfilter | tr -d '\n')"
+          search_base="$(cat /run/secrets/skyforge-ldap-searchdn | tr -d '\n')"
+          user_filter="$(cat /run/secrets/skyforge-ldap-searchfilter | tr -d '\n')"
           user_dn="$(cat /run/secrets/skyforge-ldap-bind-template | tr -d '\n')"
 
           [ -n "${search_base}" ] || search_base="dc=example,dc=com"
@@ -129,14 +129,14 @@ spec:
               name: skyforge-ldap-url
           - secret:
               items:
-                - key: semaphore-ldap-searchdn
-                  path: semaphore-ldap-searchdn
-              name: semaphore-ldap-searchdn
+                - key: skyforge-ldap-searchdn
+                  path: skyforge-ldap-searchdn
+              name: skyforge-ldap-searchdn
           - secret:
               items:
-                - key: semaphore-ldap-searchfilter
-                  path: semaphore-ldap-searchfilter
-              name: semaphore-ldap-searchfilter
+                - key: skyforge-ldap-searchfilter
+                  path: skyforge-ldap-searchfilter
+              name: skyforge-ldap-searchfilter
           - secret:
               items:
                 - key: skyforge-ldap-bind-template

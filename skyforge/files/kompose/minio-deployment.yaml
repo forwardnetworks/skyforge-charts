@@ -18,86 +18,105 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-        - args:
-            - |
-              set -e
-              if [ -f /etc/skyforge/skyforge.crt ]; then
-                export SSL_CERT_FILE=/tmp/skyforge-ca-certificates.crt
-                cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge.crt > "${SSL_CERT_FILE}"
-              fi
-              exec minio server /data --console-address ":9001"
-          command:
-            - /bin/sh
-            - -lc
-          env:
-            - name: MINIO_BROWSER_REDIRECT_URL
-              valueFrom:
-                configMapKeyRef:
-                  key: MINIO_BROWSER_REDIRECT_URL
-                  name: skyforge-config
-            - name: MINIO_CONSOLE_SUBPATH
-              valueFrom:
-                configMapKeyRef:
-                  key: MINIO_CONSOLE_SUBPATH
-                  name: skyforge-config
-            - name: MINIO_ROOT_USER
-              valueFrom:
-                secretKeyRef:
-                  key: object-storage-root-user
-                  name: object-storage-root-user
-            - name: MINIO_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: object-storage-root-password
-                  name: object-storage-root-password
-          image: minio/minio:RELEASE.2024-11-07T00-52-20Z
-          livenessProbe:
-            httpGet:
-              path: /minio/health/live
-              port: 9000
-            failureThreshold: 6
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 2
-          readinessProbe:
-            httpGet:
-              path: /minio/health/ready
-              port: 9000
-            failureThreshold: 3
-            periodSeconds: 5
-            timeoutSeconds: 2
-          name: minio
-          volumeMounts:
-            - mountPath: /run/secrets
-              name: run-secrets
-              readOnly: true
-            - mountPath: /data
-              name: minio-data
-            - mountPath: /etc/skyforge/skyforge.crt
-              name: minio-cm1
-              readOnly: true
-              subPath: skyforge.crt
+      - args:
+        - "set -e\nif [ -f /etc/skyforge/skyforge-ca-cert ]; then\n  export SSL_CERT_FILE=/tmp/skyforge-ca-certificates.crt\n\
+          \  cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > \"\
+          ${SSL_CERT_FILE}\"\nfi\nexec minio server /data --console-address \":9001\"\
+          \n"
+        command:
+        - /bin/sh
+        - -lc
+        env:
+        - name: MINIO_BROWSER_REDIRECT_URL
+          valueFrom:
+            configMapKeyRef:
+              key: MINIO_BROWSER_REDIRECT_URL
+              name: skyforge-config
+        - name: MINIO_CONSOLE_SUBPATH
+          valueFrom:
+            configMapKeyRef:
+              key: MINIO_CONSOLE_SUBPATH
+              name: skyforge-config
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              key: object-storage-root-user
+              name: object-storage-root-user
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: object-storage-root-password
+              name: object-storage-root-password
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+          failureThreshold: 6
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        name: minio
+        volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - mountPath: /data
+          name: minio-data
+        - mountPath: /etc/skyforge/skyforge-ca-cert
+          name: minio-cm1
+          readOnly: true
+          subPath: skyforge-ca-cert
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
       restartPolicy: Always
       volumes:
-        - name: run-secrets
-          projected:
-            sources:
-              - secret:
-                  items:
-                    - key: object-storage-root-user
-                      path: object-storage-root-user
-                  name: object-storage-root-user
-              - secret:
-                  items:
-                    - key: object-storage-root-password
-                      path: object-storage-root-password
-                  name: object-storage-root-password
-        - name: minio-data
-          persistentVolumeClaim:
-            claimName: minio-data
-        - name: minio-cm1
-          secret:
-            items:
-              - key: skyforge-ca-cert
-                path: skyforge.crt
-            secretName: skyforge-ca-cert
+      - name: run-secrets
+        projected:
+          sources:
+          - secret:
+              items:
+              - key: object-storage-root-user
+                path: object-storage-root-user
+              name: object-storage-root-user
+          - secret:
+              items:
+              - key: object-storage-root-password
+                path: object-storage-root-password
+              name: object-storage-root-password
+      - name: minio-data
+        persistentVolumeClaim:
+          claimName: minio-data
+      - name: minio-cm1
+        secret:
+          items:
+          - key: skyforge-ca-cert
+            path: skyforge-ca-cert
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

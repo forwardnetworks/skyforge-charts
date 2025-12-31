@@ -8,9 +8,17 @@ spec:
   tls:
     secretName: proxy-tls
   routes:
-    - match: PathPrefix(`/`) && Query(`app`, `hoppscotch`)
+    - match: PathPrefix(`/api-testing`)
       kind: Rule
       priority: 600
+      services:
+        - name: hoppscotch
+          port: 80
+      middlewares:
+        - name: redirect-api-testing
+    - match: PathPrefix(`/`) && Query(`app`, `hoppscotch`)
+      kind: Rule
+      priority: 599
       services:
         - name: hoppscotch
           port: 80
@@ -90,13 +98,6 @@ spec:
           port: 8085
       middlewares:
         - name: replace-skyforge-api
-    - match: PathPrefix(`/api/`) || PathPrefix(`/api/ws`)
-      kind: Rule
-      services:
-        - name: semaphore
-          port: 3000
-      middlewares:
-        - name: replace-semaphore-api
     - match: PathPrefix(`/skyforge-server/`)
       kind: Rule
       services:
@@ -179,11 +180,12 @@ spec:
       middlewares:
         - name: skyforge-auth
         - name: strip-nautobot
-    - match: PathPrefix(`/semaphore`)
+    - match: PathPrefix(`/labs`)
       kind: Rule
+      priority: 100
       services:
-        - name: semaphore
-          port: 3000
+        - name: skyforge-server
+          port: 8085
       middlewares:
         - name: skyforge-auth
     - match: PathPrefix(`/labs`)

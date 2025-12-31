@@ -16,53 +16,61 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-        - args:
-            - |
-              set -euo pipefail
-              export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password)"
-              interval="${SKYFORGE_ADMIN_SYNC_SECONDS:-30}"
-              if ! echo "${interval}" | grep -Eq '^[0-9]+$' || [ "${interval}" -lt 5 ]; then
-                interval="30"
-              fi
-
-              normalize_users() {
-                echo "${SKYFORGE_ADMIN_USERS:-}" \
-                  | tr ',' '\n' \
-                  | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
-                  | grep -E '^[a-zA-Z0-9_.@-]+$' || true
-              }
-
-              while true; do
-                users="$(normalize_users)"
-                if [ -n "${users}" ]; then
-                  for username in ${users}; do
-                    psql -h db -U skyforge -d netbox \
-                      -c "update auth_user set is_superuser=true, is_staff=true, is_active=true where username='${username}';" >/dev/null || true
-                  done
-                fi
-                sleep "${interval}"
-              done
-          command:
-            - /bin/sh
-            - -lc
-          env:
-            - name: SKYFORGE_ADMIN_SYNC_SECONDS
-              value: "30"
-            - name: SKYFORGE_ADMIN_USERS
-              value: skyforge
-          image: postgres:15-alpine
-          name: netbox-admin-sync
-          volumeMounts:
-            - mountPath: /run/secrets
-              name: run-secrets
-              readOnly: true
+      - args:
+        - "set -euo pipefail\nexport PGPASSWORD=\"$(cat /run/secrets/postgres-skyforge-password)\"\
+          \ninterval=\"${SKYFORGE_ADMIN_SYNC_SECONDS:-30}\"\nif ! echo \"${interval}\"\
+          \ | grep -Eq '^[0-9]+$' || [ \"${interval}\" -lt 5 ]; then\n  interval=\"\
+          30\"\nfi\n\nnormalize_users() {\n  echo \"${SKYFORGE_ADMIN_USERS:-}\" \\\
+          \n    | tr ',' '\\n' \\\n    | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'\
+          \ \\\n    | grep -E '^[a-zA-Z0-9_.@-]+$' || true\n}\n\nwhile true; do\n\
+          \  users=\"$(normalize_users)\"\n  if [ -n \"${users}\" ]; then\n    for\
+          \ username in ${users}; do\n      psql -h db -U skyforge -d netbox \\\n\
+          \        -c \"update auth_user set is_superuser=true, is_staff=true, is_active=true\
+          \ where username='${username}';\" >/dev/null || true\n    done\n  fi\n \
+          \ sleep \"${interval}\"\ndone\n"
+        command:
+        - /bin/sh
+        - -lc
+        env:
+        - name: SKYFORGE_ADMIN_SYNC_SECONDS
+          value: '30'
+        - name: SKYFORGE_ADMIN_USERS
+          value: skyforge
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        image: postgres:15-alpine
+        name: netbox-admin-sync
+        volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
       restartPolicy: Always
       volumes:
-        - name: run-secrets
-          projected:
-            sources:
-              - secret:
-                  items:
-                    - key: postgres-skyforge-password
-                      path: postgres-skyforge-password
-                  name: postgres-skyforge-password
+      - name: run-secrets
+        projected:
+          sources:
+          - secret:
+              items:
+              - key: postgres-skyforge-password
+                path: postgres-skyforge-password
+              name: postgres-skyforge-password
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

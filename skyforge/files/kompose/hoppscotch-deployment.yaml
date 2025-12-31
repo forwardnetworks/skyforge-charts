@@ -16,59 +16,83 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-        - name: hoppscotch
-          image: hoppscotch/hoppscotch:latest
-          imagePullPolicy: Always
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: hoppscotch-secrets
-                  key: database_url
-            - name: DATA_ENCRYPTION_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: hoppscotch-secrets
-                  key: data-encryption-key
-            - name: TRUST_PROXY
-              value: "true"
-            - name: ENABLE_SUBPATH_BASED_ACCESS
-              value: "true"
-            - name: VITE_BASE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: HOPPSCOTCH_BASE_URL
-            - name: VITE_SHORTCODE_BASE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: HOPPSCOTCH_SHORTCODE_BASE_URL
-            - name: VITE_ADMIN_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: HOPPSCOTCH_ADMIN_URL
-            - name: VITE_BACKEND_GQL_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: HOPPSCOTCH_BACKEND_GQL_URL
-            - name: VITE_BACKEND_WS_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: HOPPSCOTCH_BACKEND_WS_URL
-            - name: VITE_BACKEND_API_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: HOPPSCOTCH_BACKEND_API_URL
-            - name: WHITELISTED_ORIGINS
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: HOPPSCOTCH_WHITELISTED_ORIGINS
-          ports:
-            - containerPort: 3000
-              protocol: TCP
+      - name: hoppscotch
+        image: hoppscotch/hoppscotch:latest
+        imagePullPolicy: Always
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: hoppscotch-secrets
+              key: database_url
+        - name: DATA_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hoppscotch-secrets
+              key: data-encryption-key
+        - name: TRUST_PROXY
+          value: 'true'
+        - name: ENABLE_SUBPATH_BASED_ACCESS
+          value: 'false'
+        - name: VITE_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: HOPPSCOTCH_BASE_URL
+        - name: VITE_SHORTCODE_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: HOPPSCOTCH_SHORTCODE_BASE_URL
+        - name: VITE_ADMIN_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: HOPPSCOTCH_ADMIN_URL
+        - name: VITE_BACKEND_GQL_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: HOPPSCOTCH_BACKEND_GQL_URL
+        - name: VITE_BACKEND_WS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: HOPPSCOTCH_BACKEND_WS_URL
+        - name: VITE_BACKEND_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: HOPPSCOTCH_BACKEND_API_URL
+        - name: WHITELISTED_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: HOPPSCOTCH_WHITELISTED_ORIGINS
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        volumeMounts:
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
+      volumes:
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

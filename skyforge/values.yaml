@@ -66,6 +66,7 @@ skyforge:
   projectSyncSeconds: 300
   uiThemeDefault: ""
   sessionTtl: "8h"
+  pkiDefaultDays: 365
   cookieSecure: false
   stateBackend: "postgres"
   swaggerUrl: ""
@@ -81,7 +82,7 @@ skyforge:
     db: 0
     keyPrefix: "skyforge"
   health:
-    httpChecks: "Edge|edge|http://skyforge-portal:3000/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;EVE-NG|🧪|http://skyforge-server:8085/api/health/eve|/labs/;Semaphore|semaphore|http://semaphore:3000/semaphore/|/semaphore/;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;VS Code Server|code|http://code-server:8080/code/|/code/;API Testing|api|http://hoppscotch/|/?app=hoppscotch;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-portal:3000/webhooks|/webhooks/;S3|s3|http://minio:9000/minio/health/ready|/minio-console/"
+    httpChecks: "Edge|edge|http://skyforge-portal:3000/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;EVE-NG|🧪|http://skyforge-server:8085/api/health/eve|/labs/;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;VS Code Server|code|http://code-server:8080/code/|/code/;API Testing|api|http://hoppscotch/|/?app=hoppscotch;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-portal:3000/webhooks|/webhooks/;S3|s3|http://minio:9000/minio/health/ready|/minio-console/"
     codeChecks: "Postgres|postgres|pg|db;Redis|redis|redis|redis;RADIUS|radius|radius|freeradius"
   admin:
     username: "skyforge"
@@ -102,14 +103,6 @@ skyforge:
     # Optional: LDAP group to grant MinIO Console access + read/write bucket access.
     # If empty, LDAP users may be able to authenticate but lack permissions.
     ldapConsoleGroup: ""
-  semaphore:
-    projectId: 1
-    # Semaphore serves its UI under `/semaphore/` (via ingress) but its internal API base is `/api`.
-    url: "http://semaphore:3000/api"
-    username: "skyforge-provisioner"
-    adminUsername: "skyforge"
-    auth: ""
-    adminAuth: ""
   sessionCookie: "skyforge_session"
   syslog:
     enabled: false
@@ -138,8 +131,6 @@ images:
   minioMcRelease: "minio/mc:RELEASE.2024-11-17T19-35-25Z"
   postgres: "postgres:15-alpine"
   redis: "redis:7-alpine"
-  semaphore: "semaphoreui/semaphore:v2.16.47-ansible2.16.5"
-  semaphoreAnsible: "semaphoreui/semaphore:v2.16.47-ansible2.16.5"
   swaggerUi: "swaggerapi/swagger-ui:v5.11.0"
   technitiumDns: "docker.io/technitium/dns-server@sha256:94f2b90d63f03181421152157a8099ea2752b13fa30b6c96833859be8e93dfa9"
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
@@ -160,10 +151,6 @@ secrets:
       skyforge-session-secret: ""
     skyforge-admin-shared:
       password: ""
-    skyforge-semaphore-token:
-      skyforge-semaphore-token: ""
-    skyforge-semaphore-url:
-      skyforge-semaphore-url: ""
     skyforge-ldap-url:
       skyforge-ldap-url: ""
     skyforge-ldap-bind-template:
@@ -182,8 +169,6 @@ secrets:
       eve-runner-ssh-key: ""
     postgres-skyforge-password:
       postgres-skyforge-password: ""
-    db-semaphore-password:
-      db-semaphore-password: ""
     db-netbox-password:
       db-netbox-password: ""
     db-nautobot-password:
@@ -194,26 +179,6 @@ secrets:
       db-hoppscotch-password: ""
     db-skyforge-server-password:
       db-skyforge-server-password: ""
-    semaphore-provisioner-password:
-      semaphore-provisioner-password: ""
-    semaphore-cookie-hash:
-      semaphore-cookie-hash: ""
-    semaphore-cookie-encryption:
-      semaphore-cookie-encryption: ""
-    semaphore-access-key-encryption:
-      semaphore-access-key-encryption: ""
-    semaphore-ldap-binddn:
-      semaphore-ldap-binddn: ""
-    semaphore-ldap-bindpassword:
-      semaphore-ldap-bindpassword: ""
-    semaphore-ldap-server:
-      semaphore-ldap-server: ""
-    semaphore-ldap-searchdn:
-      semaphore-ldap-searchdn: ""
-    semaphore-ldap-searchfilter:
-      semaphore-ldap-searchfilter: ""
-    semaphore-ldap-needtls:
-      semaphore-ldap-needtls: ""
     gitea-secret-key:
       gitea-secret-key: ""
     gitea-ldap-binddn:
@@ -247,6 +212,10 @@ secrets:
       object-storage-artifacts-secret-key: ""
     aws-terraform-shared-credentials:
       aws-terraform-shared-credentials: ""
+    skyforge-pki-ca-cert:
+      skyforge-pki-ca-cert: ""
+    skyforge-pki-ca-key:
+      skyforge-pki-ca-key: ""
     proxy-tls:
       tls.crt: ""
       tls.key: ""

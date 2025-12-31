@@ -16,15 +16,39 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-        - name: swagger-ui
-          image: swaggerapi/swagger-ui:v5.11.0
-          imagePullPolicy: Always
-          env:
-            - name: SWAGGER_JSON_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_SWAGGER_URL
-          ports:
-            - containerPort: 8080
-              protocol: TCP
+      - name: swagger-ui
+        image: swaggerapi/swagger-ui:v5.11.0
+        imagePullPolicy: Always
+        env:
+        - name: SWAGGER_JSON_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_SWAGGER_URL
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
+      volumes:
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work
