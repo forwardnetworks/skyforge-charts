@@ -67,36 +67,38 @@ spec:
         - name: skyforge-migrate-config
           configMap:
             name: skyforge-migrate-config
-            items:
-              - key: atlas.hcl
-                path: atlas.hcl
-              - key: atlas.sum
-                path: skyforge/migrations/atlas.sum
-              - key: 20251220000100_init.up.sql
-                path: skyforge/migrations/20251220000100_init.up.sql
-              - key: 20251221000100_cloud_credentials.up.sql
-                path: skyforge/migrations/20251221000100_cloud_credentials.up.sql
-              - key: 20251222000100_project_visibility.up.sql
-                path: skyforge/migrations/20251222000100_project_visibility.up.sql
-              - key: 20251223000100_governance_tables.up.sql
-                path: skyforge/migrations/20251223000100_governance_tables.up.sql
-              - key: 20251223000200_deployments.up.sql
-                path: skyforge/migrations/20251223000200_deployments.up.sql
-              - key: 20251224000100_labpp_templates.up.sql
-                path: skyforge/migrations/20251224000100_labpp_templates.up.sql
-              - key: 20251227000100_deployments_labpp.up.sql
-                path: skyforge/migrations/20251227000100_deployments_labpp.up.sql
-              - key: 20251229000100_dns_tokens.up.sql
-                path: skyforge/migrations/20251229000100_dns_tokens.up.sql
-              - key: 20251230000100_syslog_events.up.sql
-                path: skyforge/migrations/20251230000100_syslog_events.up.sql
-              - key: 20251230000200_webhooks_snmp.up.sql
-                path: skyforge/migrations/20251230000200_webhooks_snmp.up.sql
-              - key: 20251231000100_containerlab_templates.up.sql
-                path: skyforge/migrations/20251231000100_containerlab_templates.up.sql
-              - key: 20260101000100_pki_certs.up.sql
-                path: skyforge/migrations/20260101000100_pki_certs.up.sql
-              - key: 20251230000100_syslog_events.up.sql
-                path: skyforge/migrations/20251230000100_syslog_events.up.sql
-              - key: 20251230000200_webhooks_snmp.up.sql
-                path: skyforge/migrations/20251230000200_webhooks_snmp.up.sql
+          items:
+            - key: atlas.hcl
+              path: atlas.hcl
+            - key: atlas.sum
+              path: skyforge/migrations/atlas.sum
+            - key: 20251220000100_init.up.sql
+              path: skyforge/migrations/20251220000100_init.up.sql
+            - key: 20251221000100_cloud_credentials.up.sql
+              path: skyforge/migrations/20251221000100_cloud_credentials.up.sql
+            - key: 20251222000100_project_visibility.up.sql
+              path: skyforge/migrations/20251222000100_project_visibility.up.sql
+            - key: 20251223000100_governance_tables.up.sql
+              path: skyforge/migrations/20251223000100_governance_tables.up.sql
+            - key: 20251223000200_deployments.up.sql
+              path: skyforge/migrations/20251223000200_deployments.up.sql
+            - key: 20251224000100_labpp_templates.up.sql
+              path: skyforge/migrations/20251224000100_labpp_templates.up.sql
+            - key: 20251227000100_deployments_labpp.up.sql
+              path: skyforge/migrations/20251227000100_deployments_labpp.up.sql
+            - key: 20251229000100_dns_tokens.up.sql
+              path: skyforge/migrations/20251229000100_dns_tokens.up.sql
+            - key: 20251230000100_syslog_events.up.sql
+              path: skyforge/migrations/20251230000100_syslog_events.up.sql
+            - key: 20251230000200_webhooks_snmp.up.sql
+              path: skyforge/migrations/20251230000200_webhooks_snmp.up.sql
+            - key: 20251231000100_containerlab_templates.up.sql
+              path: skyforge/migrations/20251231000100_containerlab_templates.up.sql
+            - key: 20260101000100_pki_certs.up.sql
+              path: skyforge/migrations/20260101000100_pki_certs.up.sql
+            - key: 20260102000100_tasks.up.sql
+              path: skyforge/migrations/20260102000100_tasks.up.sql
+            - key: 20260102000200_variable_groups.up.sql
+              path: skyforge/migrations/20260102000200_variable_groups.up.sql
+            - key: 20260102000300_legacy_project_id.up.sql
+              path: skyforge/migrations/20260102000300_legacy_project_id.up.sql
