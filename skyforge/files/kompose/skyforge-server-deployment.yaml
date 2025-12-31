@@ -389,9 +389,10 @@ spec:
         - containerPort: 8085
           protocol: TCP
         volumeMounts:
-        - mountPath: /encore
+        - mountPath: /encore/infra.config.json
           name: skyforge-server-infra-config
           readOnly: true
+          subPath: infra.config.json
         - mountPath: /run/secrets
           name: run-secrets
           readOnly: true

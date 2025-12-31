@@ -64,8 +64,6 @@ spec:
               name: postgres-skyforge-password
           - secret:
               items:
-          - secret:
-              items:
               - key: db-netbox-password
                 path: db-netbox-password
               name: db-netbox-password
