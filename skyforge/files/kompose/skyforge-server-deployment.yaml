@@ -156,31 +156,31 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_LISTEN_ADDR
-            - name: SKYFORGE_CORP_EMAIL_DOMAIN
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_CORP_EMAIL_DOMAIN
-            - name: SKYFORGE_PKI_CA_CERT
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-pki-ca-cert
-                  key: skyforge-pki-ca-cert
-            - name: SKYFORGE_PKI_CA_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-pki-ca-key
-                  key: skyforge-pki-ca-key
-            - name: SKYFORGE_PKI_DEFAULT_DAYS
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_PKI_DEFAULT_DAYS
-            - name: SKYFORGE_MAX_GROUPS
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_MAX_GROUPS
+        - name: SKYFORGE_CORP_EMAIL_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_CORP_EMAIL_DOMAIN
+        - name: SKYFORGE_PKI_CA_CERT
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-pki-ca-cert
+              key: skyforge-pki-ca-cert
+        - name: SKYFORGE_PKI_CA_KEY
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-pki-ca-key
+              key: skyforge-pki-ca-key
+        - name: SKYFORGE_PKI_DEFAULT_DAYS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_PKI_DEFAULT_DAYS
+        - name: SKYFORGE_MAX_GROUPS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_MAX_GROUPS
         - name: SKYFORGE_NETBOX_URL
           valueFrom:
             configMapKeyRef:
