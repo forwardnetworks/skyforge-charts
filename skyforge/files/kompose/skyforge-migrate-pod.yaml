@@ -100,5 +100,3 @@ spec:
               path: skyforge/migrations/20260102000100_tasks.up.sql
             - key: 20260102000200_variable_groups.up.sql
               path: skyforge/migrations/20260102000200_variable_groups.up.sql
-            - key: 20260102000300_legacy_project_id.up.sql
-              path: skyforge/migrations/20260102000300_legacy_project_id.up.sql
