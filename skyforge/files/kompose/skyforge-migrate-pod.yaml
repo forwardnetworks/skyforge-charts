@@ -67,7 +67,7 @@ spec:
         - name: skyforge-migrate-config
           configMap:
             name: skyforge-migrate-config
-          items:
+            items:
             - key: atlas.hcl
               path: atlas.hcl
             - key: atlas.sum
