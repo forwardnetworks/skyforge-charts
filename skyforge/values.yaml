@@ -36,6 +36,14 @@ skyforge:
     port: 443
     serversTransport: "eve-servers-transport"
     servers: []
+  # Optional: expose EVE-NG UI through Traefik on the Skyforge hostname.
+  # When enabled, this creates Services/Endpoints that point at external EVE hosts and routes:
+  #   https://<skyforge-hostname>/labs/<name>/*  ->  https://<eve-ip>:443/*
+  eveProxy:
+    enabled: false
+    port: 443
+    serversTransport: "eve-servers-transport"
+    servers: []
   ldap:
     displayAttr: "cn"
     groupAttr: "memberOf"

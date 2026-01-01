@@ -5,6 +5,19 @@ with value-based substitution for hostnames, image references, and config defaul
 
 ## Install
 
+Preferred: publish the chart to GHCR and install from the OCI registry (no chart files on the host).
+
+```bash
+gh auth token | helm registry login ghcr.io -u "$(gh api user -q .login)" --password-stdin
+
+helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
+  -n skyforge --create-namespace \
+  -f deploy/skyforge-values.yaml \
+  -f deploy/skyforge-secrets.yaml
+```
+
+For local development only, you can still install from the chart directory:
+
 ```bash
 helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace \
   -f values.yaml
@@ -17,6 +30,7 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 - `skyforge.labppApiUrl`: Optional LabPP API base URL (defaults to `<eve web>/labpp`).
 - `skyforge.labppSkipTlsVerify`: `true` to skip LabPP TLS verification.
 - `skyforge.labppProxy`: Optional Traefik proxy for exposing LabPP API endpoints via `https://<skyforge-hostname>/labpp/<name>/...`.
+- `skyforge.eveProxy`: Optional Traefik proxy for exposing EVE-NG UI via `https://<skyforge-hostname>/labs/<name>/...` (used for SSO).
 - `skyforge.pkiDefaultDays`: Default certificate TTL (days) for the PKI UI.
 - `images.*`: Override container images.
 - `secrets.items`: Provide secret values (use `--set-file` for PEM/SSH keys).
@@ -48,5 +62,6 @@ kubectl -n skyforge delete job \
   netbox-admin-bootstrap \
   nautobot-admin-bootstrap
 
-helm upgrade --install skyforge ./charts/skyforge -n skyforge --reuse-values
+helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
+  -n skyforge --reuse-values
 ```
