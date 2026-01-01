@@ -37,7 +37,7 @@ spec:
       priority: 459
       services:
         - name: hoppscotch
-          port: 80
+          port: 3170
       middlewares:
         - name: skyforge-auth
     - match: PathPrefix(`/admin`)
@@ -45,7 +45,7 @@ spec:
       priority: 458
       services:
         - name: hoppscotch
-          port: 80
+          port: 3100
       middlewares:
         - name: skyforge-auth
     - match: Path(`/healthz`) || Path(`/health`)
