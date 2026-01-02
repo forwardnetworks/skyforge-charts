@@ -171,11 +171,21 @@ spec:
             secretKeyRef:
               name: skyforge-pki-ca-key
               key: skyforge-pki-ca-key
+        - name: SKYFORGE_SSH_CA_KEY
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-ssh-ca-key
+              key: skyforge-ssh-ca-key
         - name: SKYFORGE_PKI_DEFAULT_DAYS
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_PKI_DEFAULT_DAYS
+        - name: SKYFORGE_SSH_DEFAULT_DAYS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_SSH_DEFAULT_DAYS
         - name: SKYFORGE_MAX_GROUPS
           valueFrom:
             configMapKeyRef:

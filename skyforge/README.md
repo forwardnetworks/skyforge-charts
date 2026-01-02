@@ -32,11 +32,13 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 - `skyforge.labppProxy`: Optional Traefik proxy for exposing LabPP API endpoints via `https://<skyforge-hostname>/labpp/<name>/...`.
 - `skyforge.eveProxy`: Optional Traefik proxy for exposing EVE-NG UI via `https://<skyforge-hostname>/labs/<name>/...` (used for SSO).
 - `skyforge.pkiDefaultDays`: Default certificate TTL (days) for the PKI UI.
+- `skyforge.sshDefaultDays`: Default SSH certificate TTL (days) for the PKI UI.
 - `images.*`: Override container images.
 - `secrets.items`: Provide secret values (use `--set-file` for PEM/SSH keys).
 - `secrets.items.skyforge-admin-shared.password`: Shared admin password used to seed Skyforge, Gitea,
   NetBox, Nautobot, and the code-server sync job.
 - `secrets.items.skyforge-pki-ca-cert` / `secrets.items.skyforge-pki-ca-key`: Optional CA cert/key for PKI issuance.
+- `secrets.items.skyforge-ssh-ca-key`: Optional SSH CA key for SSH user certificates.
 - `secrets.create`: Set to `false` if you manage secrets out-of-band (for example, using the
   k3s `k8s/overlays/k3s-traefik-secrets` overlay).
 

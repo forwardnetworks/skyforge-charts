@@ -75,6 +75,7 @@ skyforge:
   uiThemeDefault: ""
   sessionTtl: "8h"
   pkiDefaultDays: 365
+  sshDefaultDays: 30
   cookieSecure: false
   stateBackend: "postgres"
   swaggerUrl: ""

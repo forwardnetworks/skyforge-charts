@@ -97,6 +97,7 @@
   "__SKYFORGE_PLATFORM_DATA_DIR__" .Values.skyforge.platformDataDir
   "__SKYFORGE_PROJECT_SYNC_SECONDS__" (printf "%v" .Values.skyforge.projectSyncSeconds)
   "__SKYFORGE_PKI_DEFAULT_DAYS__" (printf "%v" .Values.skyforge.pkiDefaultDays)
+  "__SKYFORGE_SSH_DEFAULT_DAYS__" (printf "%v" .Values.skyforge.sshDefaultDays)
   "__SKYFORGE_UI_THEME_DEFAULT__" .Values.skyforge.uiThemeDefault
   "__SKYFORGE_SESSION_TTL__" .Values.skyforge.sessionTtl
   "__SKYFORGE_COOKIE_SECURE__" (printf "%v" .Values.skyforge.cookieSecure)
