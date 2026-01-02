@@ -1,10 +1,6 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-    "helm.sh/hook-weight": "10"
   labels:
     io.kompose.service: skyforge-migrate
   name: skyforge-migrate
@@ -100,3 +96,7 @@ spec:
               path: skyforge/migrations/20260102000100_tasks.up.sql
             - key: 20260102000200_variable_groups.up.sql
               path: skyforge/migrations/20260102000200_variable_groups.up.sql
+            - key: 20260102000400_forward_credentials.up.sql
+              path: skyforge/migrations/20260102000400_forward_credentials.up.sql
+            - key: 20260102000500_forward_collectors.up.sql
+              path: skyforge/migrations/20260102000500_forward_collectors.up.sql

@@ -1,10 +1,6 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-    "helm.sh/hook-weight": "0"
   name: skyforge-migrate-config
 data:
   atlas.hcl: |
@@ -392,8 +388,26 @@ data:
     
     CREATE UNIQUE INDEX IF NOT EXISTS sf_project_variable_groups_name_uq ON sf_project_variable_groups(project_id, name);
     CREATE INDEX IF NOT EXISTS sf_project_variable_groups_project_idx ON sf_project_variable_groups(project_id, updated_at DESC);
+  20260102000400_forward_credentials.up.sql: |
+    CREATE TABLE sf_project_forward_credentials (
+      project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
+      base_url text NOT NULL,
+      username text NOT NULL,
+      password text NOT NULL,
+      device_username text,
+      device_password text,
+      jump_host text,
+      jump_username text,
+      jump_private_key text,
+      jump_cert text,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+  20260102000500_forward_collectors.up.sql: |
+    ALTER TABLE sf_project_forward_credentials
+      ADD COLUMN collector_id text,
+      ADD COLUMN collector_username text;
   atlas.sum: |
-    h1:5EvCBoLM5EULJy5ocXGMfR/K7pz38+zBgr6pLtalHbQ=
+    h1:drVUNR6RXtUrOgtbnjWibri6Lx8HV/Kav4KvpE9viXk=
     20251220000100_init.up.sql h1:8ITR02T74XZfpZ3rcL70w9DZISnVDzQsaLj6TnOwQ28=
     20251221000100_cloud_credentials.up.sql h1:PtQvgzP7HJE4TZ7gqiW01zBEIxo0mvxEdimTl6YTA3U=
     20251222000100_project_visibility.up.sql h1:FaGsv7P4dJFB/Ydno13XedpXBprWY/kZ3yrwGprbfxo=
@@ -408,3 +422,5 @@ data:
     20260101000100_pki_certs.up.sql h1:dqekieTimJZEBW4En/fwi6o9dzwqOqk4Ney7W9ziGY0=
     20260102000100_tasks.up.sql h1:fMwUWINcAdsLETOR/PDuF84cv6b1cVOOrkUGOhVI/8c=
     20260102000200_variable_groups.up.sql h1:nlpSwmBebG68qp39CySYhITyuqgDNB3oIMpH/KbZ4h4=
+    20260102000400_forward_credentials.up.sql h1:vpnAvuigesLx2ibNZT9RE8kBtgP/TZGyTOMCKF04XAw=
+    20260102000500_forward_collectors.up.sql h1:Eusgazs8hGJkj4fBHwb9UYkGJt2BPUFh4ERtGA2Jqc0=
