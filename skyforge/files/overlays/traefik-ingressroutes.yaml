@@ -15,6 +15,7 @@ spec:
         - name: hoppscotch
           port: 80
       middlewares:
+        - name: skyforge-auth
         - name: redirect-api-testing
     - match: PathPrefix(`/`) && Query(`app`, `hoppscotch`)
       kind: Rule
