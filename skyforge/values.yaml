@@ -70,8 +70,8 @@ skyforge:
     nodePort: 30053
     # NodePort for the DNS web UI on the k3s host.
     webNodePort: 30380
-  projectsDataDir: "/var/lib/skyforge"
-  projectSyncSeconds: 300
+  workspacesDataDir: "/var/lib/skyforge"
+  workspaceSyncSeconds: 300
   uiThemeDefault: ""
   sessionTtl: "8h"
   pkiDefaultDays: 365

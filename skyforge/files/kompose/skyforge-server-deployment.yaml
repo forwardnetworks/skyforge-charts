@@ -234,21 +234,21 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_NETLAB_STATE_ROOT
-        - name: SKYFORGE_PROJECTS_DATA_DIR
+        - name: SKYFORGE_WORKSPACES_DATA_DIR
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
-              key: SKYFORGE_PROJECTS_DATA_DIR
+              key: SKYFORGE_WORKSPACES_DATA_DIR
         - name: SKYFORGE_PLATFORM_DATA_DIR
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_PLATFORM_DATA_DIR
-        - name: SKYFORGE_PROJECT_SYNC_SECONDS
+        - name: SKYFORGE_WORKSPACE_SYNC_SECONDS
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
-              key: SKYFORGE_PROJECT_SYNC_SECONDS
+              key: SKYFORGE_WORKSPACE_SYNC_SECONDS
         - name: SKYFORGE_UI_PRODUCT_NAME
           valueFrom:
             configMapKeyRef:

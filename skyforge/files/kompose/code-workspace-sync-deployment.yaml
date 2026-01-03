@@ -22,13 +22,13 @@ spec:
         - "set -euo pipefail\napk add --no-cache git jq ca-certificates curl >/dev/null\n\
           \ninterval=\"${SKYFORGE_WORKSPACE_SYNC_INTERVAL:-60}\"\nif ! echo \"${interval}\"\
           \ | grep -Eq '^[0-9]+$' || [ \"${interval}\" -lt 10 ]; then\n  interval=\"\
-          60\"\nfi\n\nworkspace_root=\"/workspace/projects\"\nuser_root=\"/workspace/users\"\
+          60\"\nfi\n\nworkspace_root=\"/workspace/workspaces\"\nuser_root=\"/workspace/users\"\
           \nmkdir -p \"${workspace_root}\" \"${user_root}\"\n\ntoken_file=\"/run/secrets/skyforge-internal-token\"\
           \ngitea_password_file=\"/run/secrets/skyforge-admin-shared\"\ns3_access_key_file=\"\
           /run/secrets/object-storage-artifacts-access-key\"\ns3_secret_key_file=\"\
           /run/secrets/object-storage-artifacts-secret-key\"\ns3_root_user_file=\"\
           /run/secrets/object-storage-root-user\"\ns3_root_password_file=\"/run/secrets/object-storage-root-password\"\
-          \ngitea_user=\"${GITEA_SYNC_USERNAME:-skyforge}\"\nexport_url=\"http://skyforge-server:8085/api/internal/projects-export\"\
+          \ngitea_user=\"${GITEA_SYNC_USERNAME:-skyforge}\"\nexport_url=\"http://skyforge-server:8085/api/internal/workspaces-export\"\
           \npublic_owner=\"${GITEA_PUBLIC_OWNER:-skyforge}\"\npublic_root=\"${workspace_root}/public\"\
           \nmkdir -p \"${public_root}\"\ns3_bucket=\"${SKYFORGE_WORKSPACE_S3_BUCKET:-skyforge}\"\
           \ns3_endpoint=\"${SKYFORGE_OBJECT_STORAGE_ENDPOINT:-minio:9000}\"\ns3_use_ssl=\"\
@@ -84,7 +84,7 @@ spec:
           \ can access are synced into this folder.\n- The sync job runs every minute\
           \ and may overwrite local changes.\n- To keep changes, commit and push to\
           \ Gitea:\n  git status\n  git add -A\n  git commit -m \"Describe your change\"\
-          \n  git push\n\n## Shared projects\n- Shared project clones live in /workspace/projects.\n\
+          \n  git push\n\n## Shared workspaces\n- Shared workspace clones live in /workspace/workspaces.\n\
           \n## S3 / MinIO artifacts\n- Use the S3 console at https://<skyforge-host>/minio-console/\n\
           - Store personal artifacts under files/users/${username}/\n- Anonymous file\
           \ drop uses anonymous/ or files/\n- S3 files are mirrored into s3/ every\
@@ -117,7 +117,7 @@ spec:
           \ ]; then\n    sync_public_repos\n    sleep \"${interval}\"\n    continue\n\
           \  fi\n\n  token=\"$(cat \"${token_file}\" 2>/dev/null | tr -d '\\r\\n'\
           \ || true)\"\n  if [ -z \"${token}\" ]; then\n    sync_public_repos\n  \
-          \  sleep \"${interval}\"\n    continue\n  fi\n\n  tmp=\"/tmp/projects-export.json\"\
+          \  sleep \"${interval}\"\n    continue\n  fi\n\n  tmp=\"/tmp/workspaces-export.json\"\
           \n  code=\"$(curl -sS -H \"X-Skyforge-Internal-Token: ${token}\" -o \"${tmp}\"\
           \ -w \"%{http_code}\" \"${export_url}\" 2>/dev/null || true)\"\n  if [ \"\
           ${code}\" != \"200\" ]; then\n    echo \"code-workspace-sync: export fetch\
@@ -125,27 +125,27 @@ spec:
           \  fi\n  export_json=\"$(cat \"${tmp}\" 2>/dev/null || true)\"\n  if [ -z\
           \ \"${export_json}\" ]; then\n    echo \"code-workspace-sync: export fetch\
           \ returned empty body\"\n    sleep \"${interval}\"\n    continue\n  fi\n\
-          \n  pcount=\"$(echo \"${export_json}\" | jq '.projects | length' 2>/dev/null\
+          \n  pcount=\"$(echo \"${export_json}\" | jq '.workspaces | length' 2>/dev/null\
           \ || echo 0)\"\n  ucount=\"$(echo \"${export_json}\" | jq '[.users[]?] |\
           \ length' 2>/dev/null || echo 0)\"\n  echo \"code-workspace-sync: export\
-          \ ok (projects=${pcount} users=${ucount})\"\n\n  echo \"${export_json}\"\
-          \ \\\n    | jq -r '.projects[]? | (.slug + \"\\t\" + .giteaOwner + \"\\\
+          \ ok (workspaces=${pcount} users=${ucount})\"\n\n  echo \"${export_json}\"\
+          \ \\\n    | jq -r '.workspaces[]? | (.slug + \"\\t\" + .giteaOwner + \"\\\
           t\" + .giteaRepo + \"\\t\" + (.defaultBranch // \"master\"))' \\\n    |\
           \ while IFS=$'\\t' read -r slug owner repo branch; do\n        [ -n \"${slug}\"\
           \ ] || continue\n        [ -n \"${owner}\" ] || continue\n        [ -n \"\
           ${repo}\" ] || continue\n        dest=\"${workspace_root}/${slug}\"\n  \
           \      sync_repo \"${slug}\" \"${owner}\" \"${repo}\" \"${branch}\" \"${dest}\"\
           \n      done\n\n  echo \"${export_json}\" \\\n    | jq -r '\n        [\n\
-          \          .users[]?,\n          (.projects[]?.createdBy // \"\"),\n   \
-          \       (.projects[]?.owners[]? // \"\"),\n          (.projects[]?.editors[]?\
-          \ // \"\"),\n          (.projects[]?.viewers[]? // \"\")\n        ]\n  \
+          \          .users[]?,\n          (.workspaces[]?.createdBy // \"\"),\n   \
+          \       (.workspaces[]?.owners[]? // \"\"),\n          (.workspaces[]?.editors[]?\
+          \ // \"\"),\n          (.workspaces[]?.viewers[]? // \"\")\n        ]\n  \
           \      | map(ascii_downcase)\n        | map(select(test(\"^[a-zA-Z0-9_.@-]+$\"\
           )))\n        | unique\n        | .[]\n      ' \\\n    | while read -r username;\
           \ do\n        [ -n \"${username}\" ] || continue\n        user_dir=\"${user_root}/${username}\"\
           \n        mkdir -p \"${user_dir}\"\n        ensure_user_scaffold \"${user_dir}\"\
           \ \"${username}\"\n        sync_user_s3 \"${username}\" \"${user_dir}\"\n\
           \necho \"${export_json}\" \\\n  | jq -r --arg u \"${username}\" '\n    \
-          \  .projects[]?\n      | select(\n          ((.createdBy // \"\" | ascii_downcase)\
+          \  .workspaces[]?\n      | select(\n          ((.createdBy // \"\" | ascii_downcase)\
           \ == $u)\n          or ((.owners // [] | map(ascii_downcase) | index($u))\
           \ != null)\n          or ((.editors // [] | map(ascii_downcase) | index($u))\
           \ != null)\n          or ((.viewers // [] | map(ascii_downcase) | index($u))\

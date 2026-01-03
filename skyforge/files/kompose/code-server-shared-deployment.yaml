@@ -23,7 +23,7 @@ spec:
           ${bin}\" \\\n  --host 0.0.0.0 \\\n  --port 8080 \\\n  --server-base-path\
           \ /code-shared \\\n  --telemetry-level off \\\n  --accept-server-license-terms\
           \ \\\n  --without-connection-token \\\n  --extensions-dir /home/openvscode-server/extensions\
-          \ \\\n  --user-data-dir /home/openvscode-server/data \\\n  /home/openvscode-server/project\n"
+          \ \\\n  --user-data-dir /home/openvscode-server/data \\\n  /home/openvscode-server/workspace\n"
         command:
         - /bin/sh
         - -lc
@@ -50,7 +50,7 @@ spec:
         volumeMounts:
         - mountPath: /home/openvscode-server
           name: code-server-shared-home
-        - mountPath: /home/openvscode-server/project
+        - mountPath: /home/openvscode-server/workspace
           name: shared-workspace
         - name: skyforge-ca-bundle
           mountPath: /etc/skyforge/ca

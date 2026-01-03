@@ -1,0 +1,1 @@
+{{- .Files.Get "files/kompose/skyforge-migrate-pod.yaml" | nindent 0 }}

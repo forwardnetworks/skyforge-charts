@@ -1,0 +1,1 @@
+{{- .Files.Get "files/kompose/skyforge-migrate-configmap.yaml" | nindent 0 }}

@@ -93,9 +93,9 @@
   "__SKYFORGE_OBJECT_STORAGE_USE_SSL__" (printf "%v" .Values.skyforge.objectStorage.useSsl)
   "__SKYFORGE_NETLAB_SSH_USER__" .Values.skyforge.netlab.sshUser
   "__SKYFORGE_NETLAB_STATE_ROOT__" .Values.skyforge.netlab.stateRoot
-  "__SKYFORGE_PROJECTS_DATA_DIR__" .Values.skyforge.projectsDataDir
+  "__SKYFORGE_WORKSPACES_DATA_DIR__" .Values.skyforge.workspacesDataDir
   "__SKYFORGE_PLATFORM_DATA_DIR__" .Values.skyforge.platformDataDir
-  "__SKYFORGE_PROJECT_SYNC_SECONDS__" (printf "%v" .Values.skyforge.projectSyncSeconds)
+  "__SKYFORGE_WORKSPACE_SYNC_SECONDS__" (printf "%v" .Values.skyforge.workspaceSyncSeconds)
   "__SKYFORGE_PKI_DEFAULT_DAYS__" (printf "%v" .Values.skyforge.pkiDefaultDays)
   "__SKYFORGE_SSH_DEFAULT_DAYS__" (printf "%v" .Values.skyforge.sshDefaultDays)
   "__SKYFORGE_UI_THEME_DEFAULT__" .Values.skyforge.uiThemeDefault
