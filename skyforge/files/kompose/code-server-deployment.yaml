@@ -35,7 +35,7 @@ spec:
         - -lc
         env:
         - name: CODE_SERVER_EXTENSIONS
-          value: srl-labs.vscode-containerlab,hashicorp.terraform,redhat.ansible,redhat.vscode-yaml,golang.go,ms-azuretools.vscode-docker,eamodio.gitlens
+          value: srl-labs.vscode-containerlab,hashicorp.terraform,redhat.ansible,redhat.vscode-yaml,golang.go,ms-vscode-remote.remote-ssh,ms-azuretools.vscode-docker,eamodio.gitlens
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
         image: gitpod/openvscode-server:1.105.1
