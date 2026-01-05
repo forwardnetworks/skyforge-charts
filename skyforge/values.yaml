@@ -145,8 +145,8 @@ images:
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "skyforge-nautobot:latest"
   skyforgeNetbox: "skyforge-netbox:latest"
-  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260103-1702"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260103-1748"
+  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260105-0928"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260105-0928"
 
 kubernetes:
   # Optional image pull secrets to attach to service accounts created by the chart.
