@@ -146,7 +146,7 @@ images:
   skyforgeNautobot: "skyforge-nautobot:latest"
   skyforgeNetbox: "skyforge-netbox:latest"
   skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260105-0928"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260105-0928"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260105-1055"
 
 kubernetes:
   # Optional image pull secrets to attach to service accounts created by the chart.
