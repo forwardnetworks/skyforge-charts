@@ -36,8 +36,8 @@ spec:
                 secretKeyRef:
                   name: dex-client-coder-secret
                   key: dex-client-coder-secret
-            - name: CODER_OIDC_SKIP_VERIFY
-              value: "true"
+            - name: CODER_OIDC_CA_CERT
+              value: "/etc/ssl/certs/skyforge-ca.crt"
           ports:
             - containerPort: 7080
           livenessProbe:
@@ -59,10 +59,17 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/coder
               name: coder-data
+            - mountPath: /etc/ssl/certs/skyforge-ca.crt
+              name: skyforge-ca-cert
+              subPath: skyforge-ca-cert
+              readOnly: true
       volumes:
         - name: coder-data
           persistentVolumeClaim:
             claimName: coder-data
+        - name: skyforge-ca-cert
+          secret:
+            secretName: skyforge-ca-cert
 ---
 apiVersion: v1
 kind: Service
