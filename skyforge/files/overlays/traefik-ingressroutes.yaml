@@ -47,12 +47,6 @@ spec:
       services:
         - name: skyforge-portal
           port: 3000
-    - match: Path(`/code-shared`) || PathPrefix(`/code-shared/`)
-      kind: Rule
-      priority: 440
-      services:
-        - name: code-server-shared
-          port: 8080
     - match: PathPrefix(`/data/`)
       kind: Rule
       services:
@@ -184,11 +178,11 @@ spec:
           port: 8080
       middlewares:
         - name: strip-swagger
-    - match: Path(`/code`) || PathPrefix(`/code/`)
+    - match: PathPrefix(`/coder`)
       kind: Rule
       services:
-        - name: code-server
-          port: 8080
+        - name: coder
+          port: 7080
       middlewares:
         - name: skyforge-auth
     - match: PathPrefix(`/webhooks`)

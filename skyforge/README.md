@@ -36,7 +36,7 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 - `images.*`: Override container images.
 - `secrets.items`: Provide secret values (use `--set-file` for PEM/SSH keys).
 - `secrets.items.skyforge-admin-shared.password`: Shared admin password used to seed Skyforge, Gitea,
-  NetBox, Nautobot, and the code-server sync job.
+  NetBox and Nautobot.
 - `secrets.items.skyforge-pki-ca-cert` / `secrets.items.skyforge-pki-ca-key`: Optional CA cert/key for PKI issuance.
 - `secrets.items.skyforge-ssh-ca-key`: Optional SSH CA key for SSH user certificates.
 - `secrets.create`: Set to `false` if you manage secrets out-of-band (for example, using the

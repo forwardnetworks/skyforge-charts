@@ -410,8 +410,6 @@ spec:
           name: skyforge-server-data
         - mountPath: /data
           name: platform-data
-        - mountPath: /home/openvscode-server
-          name: code-server-home
         - name: skyforge-ca-bundle
           mountPath: /etc/skyforge/ca
       restartPolicy: Always
@@ -452,9 +450,6 @@ spec:
       - name: platform-data
         persistentVolumeClaim:
           claimName: platform-data
-      - name: code-server-home
-        persistentVolumeClaim:
-          claimName: code-server-home
       - name: skyforge-ca-cert
         secret:
           secretName: skyforge-ca-cert

@@ -91,7 +91,7 @@ skyforge:
     db: 0
     keyPrefix: "skyforge"
   health:
-    httpChecks: "Edge|edge|http://skyforge-portal:3000/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;EVE-NG|🧪|http://skyforge-server:8085/api/health/eve|/labs/;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;VS Code Server|code|http://code-server:8080/code/|/code/;API Testing|api|http://yaade:9339/api/health|/api-testing/;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-portal:3000/webhooks|/webhooks/"
+    httpChecks: "Edge|edge|http://skyforge-portal:3000/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;EVE-NG|🧪|http://skyforge-server:8085/api/health/eve|/labs/;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;Coder|coder|http://coder:7080/healthz|/coder/;API Testing|api|http://yaade:9339/api/health|/api-testing/;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-portal:3000/webhooks|/webhooks/"
     codeChecks: "Postgres|postgres|pg|db;Redis|redis|redis|redis;RADIUS|radius|radius|freeradius"
   admin:
     username: "skyforge"
@@ -133,7 +133,7 @@ images:
   telegraf: "telegraf:1.33-alpine"
   freeradius: "freeradius/freeradius-server:3.2.5"
   gitea: "gitea/gitea:1.22.3-rootless"
-  openvscode: "gitpod/openvscode-server:1.105.1"
+  coder: "ghcr.io/coder/coder:latest"
   yaade: "esperotech/yaade:latest"
   minio: "minio/minio:RELEASE.2024-11-07T00-52-20Z"
   minioMc: "minio/mc:RELEASE.2024-11-17T19-35-25Z"
@@ -145,8 +145,8 @@ images:
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "skyforge-nautobot:latest"
   skyforgeNetbox: "skyforge-netbox:latest"
-  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260107-1342"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260107-1342"
+  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260107-1416"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260107-1416"
 
 kubernetes:
   # Optional image pull secrets to attach to service accounts created by the chart.
@@ -208,8 +208,6 @@ secrets:
       nautobot-superuser-api-token: ""
     nautobot-secret-key:
       nautobot-secret-key: ""
-    code-server-password:
-      code-server-password: ""
     object-storage-artifacts-access-key:
       object-storage-artifacts-access-key: ""
     object-storage-artifacts-secret-key:
