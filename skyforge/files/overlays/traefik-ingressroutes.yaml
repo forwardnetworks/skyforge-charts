@@ -16,6 +16,12 @@ spec:
           port: 80
       middlewares:
         - name: skyforge-auth
+    - match: PathPrefix(`/assets/`)
+      kind: Rule
+      priority: 440
+      services:
+        - name: coder
+          port: 7080
     - match: Path(`/healthz`) || Path(`/health`)
       kind: Rule
       priority: 400
@@ -185,6 +191,7 @@ spec:
           port: 7080
       middlewares:
         - name: skyforge-auth
+        - name: strip-coder
     - match: PathPrefix(`/webhooks`)
       kind: Rule
       services:
