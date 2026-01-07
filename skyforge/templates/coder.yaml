@@ -36,6 +36,8 @@ spec:
                 secretKeyRef:
                   name: dex-client-coder-secret
                   key: dex-client-coder-secret
+            - name: CODER_OIDC_SKIP_VERIFY
+              value: "true"
           ports:
             - containerPort: 7080
           livenessProbe:
