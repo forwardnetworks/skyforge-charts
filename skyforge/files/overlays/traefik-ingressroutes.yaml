@@ -12,45 +12,10 @@ spec:
       kind: Rule
       priority: 600
       services:
-        - name: hoppscotch
+        - name: yaade
           port: 80
       middlewares:
         - name: skyforge-auth
-        - name: redirect-api-testing
-    - match: PathPrefix(`/`) && Query(`app`, `hoppscotch`)
-      kind: Rule
-      priority: 599
-      services:
-        - name: hoppscotch
-          port: 80
-      middlewares:
-        - name: skyforge-auth
-    - match: PathPrefix(`/assets/`) && !PathPrefix(`/assets/skyforge/`)
-      kind: Rule
-      priority: 455
-      services:
-        - name: hoppscotch
-          port: 80
-      middlewares:
-        - name: skyforge-auth
-    - match: PathPrefix(`/backend`)
-      kind: Rule
-      priority: 459
-      services:
-        - name: hoppscotch
-          port: 3170
-      middlewares:
-        - name: skyforge-auth
-        - name: strip-hoppscotch-backend
-    - match: PathPrefix(`/admin`)
-      kind: Rule
-      priority: 458
-      services:
-        - name: hoppscotch
-          port: 3100
-      middlewares:
-        - name: skyforge-auth
-        - name: strip-hoppscotch-admin
     - match: Path(`/healthz`) || Path(`/health`)
       kind: Rule
       priority: 400

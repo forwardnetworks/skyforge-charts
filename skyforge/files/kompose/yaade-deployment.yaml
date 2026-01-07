@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: yaade
+  name: yaade
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: yaade
+  template:
+    metadata:
+      labels:
+        io.kompose.service: yaade
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: yaade
+          image: esperotech/yaade:latest
+          imagePullPolicy: Always
+          env:
+            - name: YAADE_ADMIN_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: YAADE_ADMIN_USERNAME
+            - name: YAADE_BASE_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: YAADE_BASE_PATH
+          ports:
+            - containerPort: 9339
+              protocol: TCP
+          volumeMounts:
+            - name: yaade-data
+              mountPath: /app/data
+      volumes:
+        - name: yaade-data
+          persistentVolumeClaim:
+            claimName: yaade-data

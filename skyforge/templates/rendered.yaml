@@ -28,7 +28,7 @@
   "freeradius/freeradius-server:3.2.5" .Values.images.freeradius
   "gitea/gitea:1.22.3-rootless" .Values.images.gitea
   "gitpod/openvscode-server:1.105.1" .Values.images.openvscode
-  "hoppscotch/hoppscotch:latest" .Values.images.hoppscotch
+  "esperotech/yaade:latest" .Values.images.yaade
   "minio/minio:RELEASE.2024-11-07T00-52-20Z" .Values.images.minio
   "minio/mc:latest" .Values.images.minioMc
   "minio/mc:RELEASE.2024-11-17T19-35-25Z" .Values.images.minioMcRelease
