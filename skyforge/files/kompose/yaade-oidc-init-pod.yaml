@@ -41,27 +41,8 @@ spec:
             -d "{\"username\":\"${YAADE_ADMIN_USERNAME}\",\"password\":\"${admin_password}\"}" \
             "${login_url}" >/dev/null
 
-          cat >/tmp/yaade-auth.json <<EOF
-{
-  "providers": [{
-    "id": "dex",
-    "label": "Login with Skyforge",
-    "provider": "oidc-discovery",
-    "params": {
-      "site": "https://${SKYFORGE_HOSTNAME}/dex",
-      "clientId": "${client_id}",
-      "clientSecret": "${client_secret}",
-      "callbackUrl": "${callback_url}",
-      "scopes": ["openid","email","profile","groups"],
-      "fields": {
-        "username": "/email",
-        "groups": "/groups",
-        "defaultGroups": ["admin"]
-      }
-    }
-  }]
-}
-EOF
+          auth_payload="$(printf '%s' \"{\\\"providers\\\":[{\\\"id\\\":\\\"dex\\\",\\\"label\\\":\\\"Login with Skyforge\\\",\\\"provider\\\":\\\"oidc-discovery\\\",\\\"params\\\":{\\\"site\\\":\\\"https://${SKYFORGE_HOSTNAME}/dex\\\",\\\"clientId\\\":\\\"${client_id}\\\",\\\"clientSecret\\\":\\\"${client_secret}\\\",\\\"callbackUrl\\\":\\\"${callback_url}\\\",\\\"scopes\\\":[\\\"openid\\\",\\\"email\\\",\\\"profile\\\",\\\"groups\\\"],\\\"fields\\\":{\\\"username\\\":\\\"/email\\\",\\\"groups\\\":\\\"/groups\\\",\\\"defaultGroups\\\":[\\\"admin\\\"]}}}}]}\")"
+          printf '%s' "${auth_payload}" >/tmp/yaade-auth.json
 
           echo "Configuring Yaade OIDC providers..."
           curl -sf -b /tmp/yaade-cookie \
