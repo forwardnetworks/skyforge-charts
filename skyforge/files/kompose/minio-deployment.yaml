@@ -47,6 +47,31 @@ spec:
             secretKeyRef:
               key: object-storage-root-password
               name: object-storage-root-password
+        - name: MINIO_IDENTITY_OPENID_ENABLE
+          value: "on"
+        - name: MINIO_IDENTITY_OPENID_CONFIG_URL
+          valueFrom:
+            secretKeyRef:
+              key: skyforge-oidc-discovery-url
+              name: skyforge-oidc-discovery-url
+        - name: MINIO_IDENTITY_OPENID_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              key: minio-oidc-client-id
+              name: minio-oidc-client-id
+        - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: dex-client-minio-secret
+              name: dex-client-minio-secret
+        - name: MINIO_IDENTITY_OPENID_SCOPES
+          value: "openid,email,profile,groups"
+        - name: MINIO_IDENTITY_OPENID_ROLE_POLICY
+          value: "consoleAdmin"
+        - name: MINIO_IDENTITY_OPENID_DISPLAY_NAME
+          value: "Skyforge"
+        - name: MINIO_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC
+          value: "on"
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
         image: minio/minio:RELEASE.2024-11-07T00-52-20Z

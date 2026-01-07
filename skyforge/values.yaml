@@ -195,6 +195,8 @@ secrets:
       dex-client-coder-secret: ""
     dex-client-gitea-secret:
       dex-client-gitea-secret: ""
+    dex-client-minio-secret:
+      dex-client-minio-secret: ""
     dex-client-yaade-secret:
       dex-client-yaade-secret: ""
     dex-client-netbox-secret:
@@ -203,12 +205,18 @@ secrets:
       dex-client-nautobot-secret: ""
     skyforge-oidc-discovery-url:
       skyforge-oidc-discovery-url: ""
+    minio-oidc-client-id:
+      minio-oidc-client-id: ""
+    yaade-oidc-client-id:
+      yaade-oidc-client-id: ""
     gitea-oidc-client-id:
       gitea-oidc-client-id: ""
     gitea-oidc-name:
       gitea-oidc-name: ""
     gitea-oidc-scopes:
       gitea-oidc-scopes: ""
+    yaade-admin-password:
+      yaade-admin-password: ""
     gitea-secret-key:
       gitea-secret-key: ""
     gitea-ldap-binddn:
