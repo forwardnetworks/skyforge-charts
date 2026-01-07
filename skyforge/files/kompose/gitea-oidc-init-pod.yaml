@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    io.kompose.service: gitea-oidc-init
+  name: gitea-oidc-init
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - args:
+        - |
+          set -euo pipefail
+
+          echo "Waiting for Gitea database/config..."
+          for i in $(seq 1 60); do
+            if gitea admin auth list --config /var/lib/gitea/custom/conf/app.ini >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+
+          discovery_url="$(cat /run/secrets/skyforge-oidc-discovery-url | tr -d '\n')"
+          client_id="$(cat /run/secrets/gitea-oidc-client-id | tr -d '\n')"
+          client_secret="$(cat /run/secrets/dex-client-gitea-secret | tr -d '\n')"
+          auth_name="$(cat /run/secrets/gitea-oidc-name | tr -d '\n')"
+          scopes="$(cat /run/secrets/gitea-oidc-scopes | tr -d '\n')"
+
+          if [ -z "${discovery_url}" ] || [ -z "${client_id}" ] || [ -z "${client_secret}" ]; then
+            echo "Missing OIDC settings; skipping Gitea OIDC init."
+            exit 0
+          fi
+
+          [ -n "${auth_name}" ] || auth_name="oidc"
+          [ -n "${scopes}" ] || scopes="openid email profile groups"
+
+          existing_id="$(gitea admin auth list --config /var/lib/gitea/custom/conf/app.ini | awk -F'\t' -v name="${auth_name}" 'NR>1 && $2==name {print $1; exit}')"
+
+          if [ -n "${existing_id}" ]; then
+            echo "Updating Gitea OIDC auth source '${auth_name}' (id=${existing_id})"
+            gitea admin auth update-oauth \
+              --config /var/lib/gitea/custom/conf/app.ini \
+              --id "${existing_id}" \
+              --name "${auth_name}" \
+              --provider openidConnect \
+              --key "${client_id}" \
+              --secret "${client_secret}" \
+              --auto-discover-url "${discovery_url}" \
+              --scopes "${scopes}" \
+              --skip-local-2fa
+          else
+            echo "Creating Gitea OIDC auth source '${auth_name}'"
+            gitea admin auth add-oauth \
+              --config /var/lib/gitea/custom/conf/app.ini \
+              --name "${auth_name}" \
+              --provider openidConnect \
+              --key "${client_id}" \
+              --secret "${client_secret}" \
+              --auto-discover-url "${discovery_url}" \
+              --scopes "${scopes}" \
+              --skip-local-2fa
+          fi
+
+          echo "Gitea OIDC init complete."
+      command:
+        - /bin/sh
+        - -c
+      image: gitea/gitea:1.22.3-rootless
+      name: gitea-oidc-init
+      securityContext:
+        runAsGroup: 1000
+        runAsUser: 1000
+      volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - mountPath: /var/lib/gitea
+          name: gitea-data
+  restartPolicy: Never
+  volumes:
+    - name: run-secrets
+      projected:
+        sources:
+          - secret:
+              items:
+                - key: skyforge-oidc-discovery-url
+                  path: skyforge-oidc-discovery-url
+              name: skyforge-oidc-discovery-url
+          - secret:
+              items:
+                - key: gitea-oidc-client-id
+                  path: gitea-oidc-client-id
+              name: gitea-oidc-client-id
+          - secret:
+              items:
+                - key: dex-client-gitea-secret
+                  path: dex-client-gitea-secret
+              name: dex-client-gitea-secret
+          - secret:
+              items:
+                - key: gitea-oidc-name
+                  path: gitea-oidc-name
+              name: gitea-oidc-name
+          - secret:
+              items:
+                - key: gitea-oidc-scopes
+                  path: gitea-oidc-scopes
+              name: gitea-oidc-scopes
+    - name: gitea-data
+      persistentVolumeClaim:
+        claimName: gitea-data

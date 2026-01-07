@@ -193,12 +193,22 @@ secrets:
       config.yaml: ""
     dex-client-coder-secret:
       dex-client-coder-secret: ""
+    dex-client-gitea-secret:
+      dex-client-gitea-secret: ""
     dex-client-yaade-secret:
       dex-client-yaade-secret: ""
     dex-client-netbox-secret:
       dex-client-netbox-secret: ""
     dex-client-nautobot-secret:
       dex-client-nautobot-secret: ""
+    skyforge-oidc-discovery-url:
+      skyforge-oidc-discovery-url: ""
+    gitea-oidc-client-id:
+      gitea-oidc-client-id: ""
+    gitea-oidc-name:
+      gitea-oidc-name: ""
+    gitea-oidc-scopes:
+      gitea-oidc-scopes: ""
     gitea-secret-key:
       gitea-secret-key: ""
     gitea-ldap-binddn:

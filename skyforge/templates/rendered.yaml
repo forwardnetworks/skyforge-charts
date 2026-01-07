@@ -116,6 +116,7 @@
   "__SKYFORGE_HEALTH_HTTP_CHECKS__" $healthHttpChecks
   "__SKYFORGE_HEALTH_CODE_CHECKS__" .Values.skyforge.health.codeChecks
   "__SKYFORGE_MINIO_LDAP_CONSOLE_GROUP__" (dig "skyforge" "minio" "ldapConsoleGroup" "" $vals)
+  "__SKYFORGE_OIDC_DISCOVERY_URL__" (printf "https://%s/dex/.well-known/openid-configuration" $hostname)
   "__SKYFORGE_DNS_NODEPORT__" (printf "%v" $dnsNodePort)
   "__SKYFORGE_DNS_WEB_NODEPORT__" (printf "%v" $dnsWebNodePort)
   "__GITEA_ADMIN_USERNAME__" .Values.skyforge.gitea.adminUsername
