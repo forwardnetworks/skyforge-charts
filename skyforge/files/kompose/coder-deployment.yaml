@@ -23,12 +23,10 @@ spec:
             - name: CODER_ACCESS_URL
               value: "https://skyforge.local.forwardnetworks.com/coder"
             - name: CODER_PG_CONNECTION_URL
-              value: "postgres://coder:${CODER_DB_PASSWORD}@db:5432/coder?sslmode=disable"
-            - name: CODER_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: db-coder-password
-                  key: db-coder-password
+                  name: coder-pg-connection-url
+                  key: coder-pg-connection-url
           ports:
             - containerPort: 7080
           livenessProbe:

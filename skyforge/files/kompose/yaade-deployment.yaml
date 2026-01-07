@@ -30,6 +30,8 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: YAADE_BASE_PATH
+            - name: YAADE_PORT
+              value: "9339"
           ports:
             - containerPort: 9339
               protocol: TCP
