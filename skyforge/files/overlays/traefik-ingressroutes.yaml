@@ -196,8 +196,6 @@ spec:
       services:
         - name: dex
           port: 5556
-      middlewares:
-        - name: strip-dex
     - match: PathPrefix(`/webhooks`)
       kind: Rule
       services:
