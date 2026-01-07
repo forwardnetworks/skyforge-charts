@@ -57,6 +57,15 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
+  name: strip-dex
+spec:
+  stripPrefix:
+    prefixes:
+      - /dex
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
   name: strip-dns
 spec:
   stripPrefix:

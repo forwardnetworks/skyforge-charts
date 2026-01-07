@@ -50,11 +50,12 @@ spec:
                 printf "%s" "$fallback"
               }
 
-              NETBOX_DB_PASSWORD="$(read_secret db-netbox-password "${NETBOX_DB_PASSWORD:-netbox}")"
-              NAUTOBOT_DB_PASSWORD="$(read_secret db-nautobot-password "${NAUTOBOT_DB_PASSWORD:-nautobot}")"
-              GITEA_DB_PASSWORD="$(read_secret db-gitea-password "${GITEA_DB_PASSWORD:-gitea}")"
-              CODER_DB_PASSWORD="$(read_secret db-coder-password "${CODER_DB_PASSWORD:-coder}")"
-              SKYFORGE_SERVER_DB_PASSWORD="$(read_secret db-skyforge-server-password "${SKYFORGE_SERVER_DB_PASSWORD:-skyforge_server}")"
+NETBOX_DB_PASSWORD="$(read_secret db-netbox-password "${NETBOX_DB_PASSWORD:-netbox}")"
+NAUTOBOT_DB_PASSWORD="$(read_secret db-nautobot-password "${NAUTOBOT_DB_PASSWORD:-nautobot}")"
+GITEA_DB_PASSWORD="$(read_secret db-gitea-password "${GITEA_DB_PASSWORD:-gitea}")"
+CODER_DB_PASSWORD="$(read_secret db-coder-password "${CODER_DB_PASSWORD:-coder}")"
+DEX_DB_PASSWORD="$(read_secret db-dex-password "${DEX_DB_PASSWORD:-dex}")"
+SKYFORGE_SERVER_DB_PASSWORD="$(read_secret db-skyforge-server-password "${SKYFORGE_SERVER_DB_PASSWORD:-skyforge_server}")"
 
               psql_base="psql -v ON_ERROR_STOP=1 --username ${POSTGRES_USER} --dbname ${POSTGRES_DB}"
 
@@ -79,15 +80,17 @@ spec:
 
               create_role netbox "${NETBOX_DB_PASSWORD}"
               create_role nautobot "${NAUTOBOT_DB_PASSWORD}"
-              create_role gitea "${GITEA_DB_PASSWORD}"
-              create_role coder "${CODER_DB_PASSWORD}"
-              create_role skyforge_server "${SKYFORGE_SERVER_DB_PASSWORD}"
+create_role gitea "${GITEA_DB_PASSWORD}"
+create_role coder "${CODER_DB_PASSWORD}"
+create_role dex "${DEX_DB_PASSWORD}"
+create_role skyforge_server "${SKYFORGE_SERVER_DB_PASSWORD}"
 
               create_db netbox netbox
               create_db nautobot nautobot
-              create_db gitea gitea
-              create_db coder coder
-              create_db skyforge_server skyforge_server
+create_db gitea gitea
+create_db coder coder
+create_db dex dex
+create_db skyforge_server skyforge_server
               echo "DB provisioning complete."
           volumeMounts:
             - mountPath: /run/secrets
@@ -122,6 +125,11 @@ spec:
                     - key: db-coder-password
                       path: db-coder-password
                   name: db-coder-password
+              - secret:
+                  items:
+                    - key: db-dex-password
+                      path: db-dex-password
+                  name: db-dex-password
               - secret:
                   items:
                     - key: db-skyforge-server-password

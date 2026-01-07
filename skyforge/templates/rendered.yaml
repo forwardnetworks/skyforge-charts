@@ -28,6 +28,7 @@
   "freeradius/freeradius-server:3.2.5" .Values.images.freeradius
   "gitea/gitea:1.22.3-rootless" .Values.images.gitea
   "ghcr.io/coder/coder:latest" .Values.images.coder
+  "ghcr.io/dexidp/dex:v2.37.0" .Values.images.dex
   "esperotech/yaade:latest" .Values.images.yaade
   "minio/minio:RELEASE.2024-11-07T00-52-20Z" .Values.images.minio
   "minio/mc:latest" .Values.images.minioMc

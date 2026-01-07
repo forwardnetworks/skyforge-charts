@@ -27,6 +27,15 @@ spec:
                 secretKeyRef:
                   name: coder-pg-connection-url
                   key: coder-pg-connection-url
+            - name: CODER_OIDC_ISSUER_URL
+              value: "https://skyforge.local.forwardnetworks.com/dex"
+            - name: CODER_OIDC_CLIENT_ID
+              value: "coder"
+            - name: CODER_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: dex-client-coder-secret
+                  key: dex-client-coder-secret
           ports:
             - containerPort: 7080
           livenessProbe:

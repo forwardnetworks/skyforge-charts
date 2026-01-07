@@ -190,8 +190,14 @@ spec:
         - name: coder
           port: 7080
       middlewares:
-        - name: skyforge-auth
         - name: strip-coder
+    - match: PathPrefix(`/dex`)
+      kind: Rule
+      services:
+        - name: dex
+          port: 5556
+      middlewares:
+        - name: strip-dex
     - match: PathPrefix(`/webhooks`)
       kind: Rule
       services:

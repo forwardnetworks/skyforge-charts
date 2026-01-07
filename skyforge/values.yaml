@@ -135,6 +135,7 @@ images:
   gitea: "gitea/gitea:1.22.3-rootless"
   coder: "ghcr.io/coder/coder:latest"
   yaade: "esperotech/yaade:latest"
+  dex: "ghcr.io/dexidp/dex:v2.37.0"
   minio: "minio/minio:RELEASE.2024-11-07T00-52-20Z"
   minioMc: "minio/mc:RELEASE.2024-11-17T19-35-25Z"
   minioMcRelease: "minio/mc:RELEASE.2024-11-17T19-35-25Z"
@@ -184,8 +185,20 @@ secrets:
       db-nautobot-password: ""
     db-gitea-password:
       db-gitea-password: ""
+    db-dex-password:
+      db-dex-password: ""
     db-skyforge-server-password:
       db-skyforge-server-password: ""
+    dex-config:
+      config.yaml: ""
+    dex-client-coder-secret:
+      dex-client-coder-secret: ""
+    dex-client-yaade-secret:
+      dex-client-yaade-secret: ""
+    dex-client-netbox-secret:
+      dex-client-netbox-secret: ""
+    dex-client-nautobot-secret:
+      dex-client-nautobot-secret: ""
     gitea-secret-key:
       gitea-secret-key: ""
     gitea-ldap-binddn:
