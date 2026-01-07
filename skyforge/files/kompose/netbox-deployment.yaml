@@ -72,6 +72,12 @@ spec:
               key: SKYFORGE_LDAP_STARTTLS
         - name: SKYFORGE_LDAP_URL_FILE
           value: /run/secrets/skyforge-ldap-url
+        - name: SKYFORGE_OIDC_DISCOVERY_URL_FILE
+          value: /run/secrets/skyforge-oidc-discovery-url
+        - name: SKYFORGE_OIDC_CLIENT_ID_FILE
+          value: /run/secrets/netbox-oidc-client-id
+        - name: SKYFORGE_OIDC_CLIENT_SECRET_FILE
+          value: /run/secrets/dex-client-netbox-secret
         - name: SKYFORGE_HOSTNAME
           valueFrom:
             configMapKeyRef:
@@ -196,6 +202,21 @@ spec:
               - key: skyforge-ldap-bindpassword
                 path: skyforge-ldap-bindpassword
               name: skyforge-ldap-bindpassword
+          - secret:
+              items:
+              - key: skyforge-oidc-discovery-url
+                path: skyforge-oidc-discovery-url
+              name: skyforge-oidc-discovery-url
+          - secret:
+              items:
+              - key: netbox-oidc-client-id
+                path: netbox-oidc-client-id
+              name: netbox-oidc-client-id
+          - secret:
+              items:
+              - key: dex-client-netbox-secret
+                path: dex-client-netbox-secret
+              name: dex-client-netbox-secret
       - name: netbox-media
         persistentVolumeClaim:
           claimName: netbox-media

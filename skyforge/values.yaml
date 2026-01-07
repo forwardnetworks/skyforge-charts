@@ -209,6 +209,10 @@ secrets:
       minio-oidc-client-id: ""
     yaade-oidc-client-id:
       yaade-oidc-client-id: ""
+    netbox-oidc-client-id:
+      netbox-oidc-client-id: ""
+    nautobot-oidc-client-id:
+      nautobot-oidc-client-id: ""
     gitea-oidc-client-id:
       gitea-oidc-client-id: ""
     gitea-oidc-name:
