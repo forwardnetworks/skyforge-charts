@@ -17,6 +17,7 @@ spec:
       containers:
         - name: dex
           image: {{ .Values.images.dex | quote }}
+          command: ["dex"]
           args: ["serve", "/etc/dex/config.yaml"]
           ports:
             - containerPort: 5556
