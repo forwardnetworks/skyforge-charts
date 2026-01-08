@@ -145,7 +145,7 @@ images:
   technitiumDns: "docker.io/technitium/dns-server@sha256:94f2b90d63f03181421152157a8099ea2752b13fa30b6c96833859be8e93dfa9"
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135"
-  skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:20260108-0135"
+  skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:20260108-0145"
   skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260108-0040"
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260107-1416"
 
