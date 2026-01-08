@@ -98,6 +98,8 @@ spec:
               name: skyforge-config
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
+        - name: REQUESTS_CA_BUNDLE
+          value: /etc/skyforge/ca/ca-certificates.crt
         image: skyforge-nautobot:latest
         imagePullPolicy: IfNotPresent
         startupProbe:

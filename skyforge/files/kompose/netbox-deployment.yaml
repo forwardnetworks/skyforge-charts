@@ -92,6 +92,8 @@ spec:
               key: SKYFORGE_ADMIN_EMAIL
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
+        - name: REQUESTS_CA_BUNDLE
+          value: /etc/skyforge/ca/ca-certificates.crt
         image: skyforge-netbox:latest
         imagePullPolicy: IfNotPresent
         startupProbe:
