@@ -12,14 +12,14 @@ spec:
           set -euo pipefail
 
           base_path="${YAADE_BASE_PATH:-/api-testing}"
-          base_url="http://yaade:9339${base_path}"
+          base_url="http://yaade"
           login_url="${base_url}/api/login"
           config_url="${base_url}/api/config/auth_config"
           callback_url="https://${SKYFORGE_HOSTNAME}${base_path}/callback-dex"
 
           echo "Waiting for Yaade API..."
           for i in $(seq 1 60); do
-            if curl -sf "${base_url}/api/health" >/dev/null 2>&1; then
+            if curl -sf "${base_url}/api/loginProviders" >/dev/null 2>&1; then
               break
             fi
             sleep 2

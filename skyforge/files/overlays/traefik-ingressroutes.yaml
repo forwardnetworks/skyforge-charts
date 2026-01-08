@@ -191,6 +191,12 @@ spec:
           port: 7080
       middlewares:
         - name: strip-coder
+    - match: PathPrefix(`/api/v2`)
+      kind: Rule
+      priority: 220
+      services:
+        - name: coder
+          port: 7080
     - match: PathPrefix(`/dex`)
       kind: Rule
       services:
