@@ -71,7 +71,12 @@ spec:
         - name: MINIO_IDENTITY_OPENID_DISPLAY_NAME
           value: "Skyforge"
         - name: MINIO_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC
-          value: "on"
+          value: "off"
+        - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
+          valueFrom:
+            configMapKeyRef:
+              key: MINIO_IDENTITY_OPENID_REDIRECT_URI
+              name: skyforge-config
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
         image: minio/minio:RELEASE.2024-11-07T00-52-20Z
