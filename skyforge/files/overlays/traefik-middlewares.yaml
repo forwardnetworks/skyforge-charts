@@ -53,6 +53,16 @@ spec:
   stripPrefix:
     prefixes:
       - /coder
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: coder-basepath
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Prefix: /coder
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
