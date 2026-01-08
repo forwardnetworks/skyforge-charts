@@ -192,6 +192,14 @@ spec:
       middlewares:
         - name: strip-coder
         - name: coder-basepath
+    - match: PathPrefix(`/workspaces`) || PathPrefix(`/templates`) || PathPrefix(`/tasks`)
+      kind: Rule
+      priority: 210
+      services:
+        - name: coder
+          port: 7080
+      middlewares:
+        - name: coder-root-redirect
     - match: Path(`/oauth_callback`)
       kind: Rule
       services:

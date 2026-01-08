@@ -63,6 +63,17 @@ spec:
   headers:
     customRequestHeaders:
       X-Forwarded-Prefix: /coder
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: coder-root-redirect
+spec:
+  redirectRegex:
+    regex: "^/(workspaces|templates|tasks)(/?.*)$"
+    replacement: "/coder/$1$2"
+    permanent: false
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
