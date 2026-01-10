@@ -13,6 +13,10 @@ spec:
       - X-Skyforge-Groups
       - X-Skyforge-First-Name
       - X-Skyforge-Last-Name
+      - X-Forwarded-User
+      - X-Forwarded-Email
+      - X-Forwarded-First-Name
+      - X-Forwarded-Last-Name
       - Remote-User
       - Remote-User-Email
       - Remote-User-First-Name

@@ -75,9 +75,9 @@ spec:
         - name: GITEA__security__ENABLE_REVERSE_PROXY_AUTHENTICATION
           value: 'true'
         - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION_USER
-          value: 'Remote-User'
+          value: 'X-Forwarded-User'
         - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION_EMAIL
-          value: 'Remote-User-Email'
+          value: 'X-Forwarded-Email'
         - name: GITEA__security__REVERSE_PROXY_LIMIT
           value: '1'
         - name: GITEA__security__REVERSE_PROXY_TRUSTED_PROXIES
