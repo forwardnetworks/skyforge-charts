@@ -72,7 +72,7 @@ spec:
           value: 'true'
         - name: GITEA__service__REQUIRE_SIGNIN_VIEW
           value: 'false'
-        - name: GITEA__security__ENABLE_REVERSE_PROXY_AUTHENTICATION
+        - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION
           value: 'true'
         - name: GITEA__security__REVERSE_PROXY_AUTO_REGISTRATION
           value: 'true'
