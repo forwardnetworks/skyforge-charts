@@ -8,6 +8,7 @@ spec:
     trustForwardHeader: true
     authRequestHeaders:
       - Cookie
+    authResponseHeadersRegex: "^X-Skyforge-.*|^X-Forwarded-.*|^Remote-User.*$"
     authResponseHeaders:
       - X-Skyforge-Username
       - X-Skyforge-DisplayName
