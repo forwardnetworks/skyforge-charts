@@ -132,6 +132,8 @@ spec:
         - name: nautobot
           port: 8080
       middlewares:
+        - name: strip-nautobot
+        - name: nautobot-basepath
         - name: skyforge-auth
     - match: PathPrefix(`/labs`)
       kind: Rule
