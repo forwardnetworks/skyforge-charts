@@ -69,7 +69,7 @@ spec:
         - name: GITEA__service__DISABLE_REGISTRATION
           value: 'false'
         - name: GITEA__service__ALLOW_ONLY_EXTERNAL_REGISTRATION
-          value: 'true'
+          value: 'false'
         - name: GITEA__service__REVERSE_PROXY_AUTHENTICATION
           value: 'true'
         - name: GITEA__service__REVERSE_PROXY_AUTHENTICATION_USER
