@@ -6,6 +6,8 @@ spec:
   forwardAuth:
     address: http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik
     trustForwardHeader: true
+    authRequestHeaders:
+      - Cookie
     authResponseHeaders:
       - X-Skyforge-Username
       - X-Skyforge-DisplayName
