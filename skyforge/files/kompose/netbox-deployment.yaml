@@ -79,6 +79,8 @@ spec:
             configMapKeyRef:
               key: SKYFORGE_HOSTNAME
               name: skyforge-config
+        - name: SKYFORGE_SSO_ENABLED
+          value: 'true'
         - name: API_TOKEN_PEPPERS
           valueFrom:
             secretKeyRef:
