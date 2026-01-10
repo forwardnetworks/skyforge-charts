@@ -189,3 +189,33 @@ spec:
               - key: skyforge-ldap-bind-template
                 path: skyforge-ldap-bind-template
               name: skyforge-ldap-bind-template
+      - name: nautobot-static
+        persistentVolumeClaim:
+          claimName: nautobot-static
+      - name: nautobot-media
+        persistentVolumeClaim:
+          claimName: nautobot-media
+      - name: nautobot-reports
+        persistentVolumeClaim:
+          claimName: nautobot-reports
+      - name: nautobot-jobs
+        persistentVolumeClaim:
+          claimName: nautobot-jobs
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

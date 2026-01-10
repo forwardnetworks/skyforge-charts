@@ -205,3 +205,30 @@ spec:
               - key: skyforge-ldap-bindpassword
                 path: skyforge-ldap-bindpassword
               name: skyforge-ldap-bindpassword
+      - name: netbox-media
+        persistentVolumeClaim:
+          claimName: netbox-media
+      - name: netbox-reports
+        persistentVolumeClaim:
+          claimName: netbox-reports
+      - name: netbox-scripts
+        persistentVolumeClaim:
+          claimName: netbox-scripts
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work
