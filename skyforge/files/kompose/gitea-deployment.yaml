@@ -70,6 +70,14 @@ spec:
           value: 'false'
         - name: GITEA__service__ALLOW_ONLY_EXTERNAL_REGISTRATION
           value: 'true'
+        - name: GITEA__service__REVERSE_PROXY_AUTHENTICATION
+          value: 'true'
+        - name: GITEA__service__REVERSE_PROXY_AUTHENTICATION_USER
+          value: 'X-Skyforge-Username'
+        - name: GITEA__service__REVERSE_PROXY_AUTHENTICATION_EMAIL
+          value: 'X-Skyforge-Email'
+        - name: GITEA__service__REVERSE_PROXY_AUTO_REGISTRATION
+          value: 'true'
         - name: GITEA__service__REQUIRE_SIGNIN_VIEW
           value: 'true'
         - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION
