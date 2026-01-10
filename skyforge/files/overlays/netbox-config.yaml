@@ -76,7 +76,7 @@ data:
     if remote_auth_enabled:
         REMOTE_AUTH_ENABLED = True
         REMOTE_AUTH_AUTO_CREATE_USER = True
-        REMOTE_AUTH_HEADER = "HTTP_X_FORWARDED_USER"
+        REMOTE_AUTH_HEADER = "HTTP_REMOTE_USER"
         AUTHENTICATION_BACKENDS = [
             "netbox.authentication.RemoteUserBackend",
             "django.contrib.auth.backends.ModelBackend",
