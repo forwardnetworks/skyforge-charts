@@ -82,7 +82,11 @@ spec:
           value: 'true'
         - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION
           value: 'true'
+        - name: GITEA__security__ENABLE_REVERSE_PROXY_AUTHENTICATION
+          value: 'true'
         - name: GITEA__security__REVERSE_PROXY_AUTO_REGISTRATION
+          value: 'true'
+        - name: GITEA__security__ENABLE_REVERSE_PROXY_AUTO_REGISTRATION
           value: 'true'
         - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION_USER
           value: 'X-Skyforge-Username'
