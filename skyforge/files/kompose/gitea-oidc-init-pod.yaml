@@ -69,12 +69,19 @@ spec:
       securityContext:
         runAsGroup: 1000
         runAsUser: 1000
+      env:
+        - name: SSL_CERT_FILE
+          value: /etc/ssl/certs/skyforge-ca.crt
       volumeMounts:
         - mountPath: /run/secrets
           name: run-secrets
           readOnly: true
         - mountPath: /var/lib/gitea
           name: gitea-data
+        - mountPath: /etc/ssl/certs/skyforge-ca.crt
+          name: skyforge-ca-cert
+          subPath: skyforge-ca-cert
+          readOnly: true
   restartPolicy: Never
   volumes:
     - name: run-secrets
@@ -108,3 +115,6 @@ spec:
     - name: gitea-data
       persistentVolumeClaim:
         claimName: gitea-data
+    - name: skyforge-ca-cert
+      secret:
+        secretName: skyforge-ca-cert

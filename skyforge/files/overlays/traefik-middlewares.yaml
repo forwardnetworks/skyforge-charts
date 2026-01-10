@@ -62,8 +62,18 @@ metadata:
 spec:
   headers:
     customRequestHeaders:
-      X-Forwarded-Prefix: /coder
+      X-Forwarded-Prefix: /workspaces
 
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: coder-portal-redirect
+spec:
+  redirectRegex:
+    regex: "^/coder(/.*)?$"
+    replacement: "/workspaces$1"
+    permanent: false
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
@@ -72,7 +82,17 @@ metadata:
 spec:
   redirectRegex:
     regex: "^/(workspaces|templates|tasks)(/?.*)$"
-    replacement: "/coder/$1$2"
+    replacement: "/$1$2"
+    permanent: false
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: yaade-oidc-redirect
+spec:
+  redirectRegex:
+    regex: "^/api-testing/?$"
+    replacement: "/api/skyforge/api/yaade/sso"
     permanent: false
 ---
 apiVersion: traefik.io/v1alpha1

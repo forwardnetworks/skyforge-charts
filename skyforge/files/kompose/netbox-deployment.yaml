@@ -44,6 +44,8 @@ spec:
           value: '5432'
         - name: DB_USER
           value: netbox
+        - name: BASE_PATH
+          value: /netbox
         - name: REDIS_DATABASE
           value: '0'
         - name: REDIS_HOST
@@ -72,17 +74,16 @@ spec:
               key: SKYFORGE_LDAP_STARTTLS
         - name: SKYFORGE_LDAP_URL_FILE
           value: /run/secrets/skyforge-ldap-url
-        - name: SKYFORGE_OIDC_DISCOVERY_URL_FILE
-          value: /run/secrets/skyforge-oidc-discovery-url
-        - name: SKYFORGE_OIDC_CLIENT_ID_FILE
-          value: /run/secrets/netbox-oidc-client-id
-        - name: SKYFORGE_OIDC_CLIENT_SECRET_FILE
-          value: /run/secrets/dex-client-netbox-secret
         - name: SKYFORGE_HOSTNAME
           valueFrom:
             configMapKeyRef:
               key: SKYFORGE_HOSTNAME
               name: skyforge-config
+        - name: API_TOKEN_PEPPERS
+          valueFrom:
+            secretKeyRef:
+              name: netbox-api-token-peppers
+              key: netbox-api-token-peppers
         - name: SUPERUSER_NAME
           value: skyforge
         - name: SUPERUSER_EMAIL

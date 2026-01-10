@@ -32,6 +32,30 @@ spec:
 
               python /opt/netbox/netbox/manage.py shell -c "$(printf '%s\n' \
                 'import os' \
+                'from django.contrib.auth import get_user_model' \
+                'from users.models import Token' \
+                'token = os.environ.get("SKYFORGE_NETBOX_SUPERUSER_TOKEN", "").strip()' \
+                'username = os.environ.get("SKYFORGE_ADMIN_USERNAME", "skyforge")' \
+                'if token:' \
+                '    user = get_user_model().objects.get(username=username)' \
+                '    Token.objects.filter(user=user).exclude(plaintext=token).delete()' \
+                '    Token.objects.get_or_create(' \
+                '        user=user,' \
+                '        plaintext=token,' \
+                '        defaults={' \
+                '            "version": 1,' \
+                '            "write_enabled": True,' \
+                '            "enabled": True,' \
+                '            "description": "Skyforge API token",' \
+                '        },' \
+                '    )' \
+                '    print("netbox api token synced")' \
+                'else:' \
+                '    print("SKYFORGE_NETBOX_SUPERUSER_TOKEN not set; skipping token sync")' \
+              )"
+
+              python /opt/netbox/netbox/manage.py shell -c "$(printf '%s\n' \
+                'import os' \
                 'from django.contrib.contenttypes.models import ContentType' \
                 'from extras.models import CustomField' \
                 'from ipam.models import Prefix' \
@@ -92,7 +116,12 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_NETBOX_MGMT_SUBNET
-          image: skyforge-netbox:latest
+            - name: SKYFORGE_NETBOX_SUPERUSER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: netbox-superuser-api-token
+                  key: netbox-superuser-api-token
+          image: ghcr.io/forwardnetworks/skyforge-netbox:20260109-1220
           imagePullPolicy: IfNotPresent
           name: netbox-admin-bootstrap
           volumeMounts:

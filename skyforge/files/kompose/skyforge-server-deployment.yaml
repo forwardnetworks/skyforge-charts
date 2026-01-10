@@ -80,6 +80,21 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_GITEA_USERNAME
+        - name: SKYFORGE_YAADE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_YAADE_URL
+        - name: SKYFORGE_YAADE_ADMIN_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_YAADE_ADMIN_USERNAME
+        - name: YAADE_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: yaade-admin-password
+              key: yaade-admin-password
         - name: SKYFORGE_EVE_API_URL
           valueFrom:
             configMapKeyRef:
@@ -234,6 +249,91 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_NETLAB_STATE_ROOT
+        - name: SKYFORGE_LABPP_RUNNER_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_RUNNER_IMAGE
+        - name: SKYFORGE_LABPP_RUNNER_PULL_POLICY
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_RUNNER_PULL_POLICY
+        - name: SKYFORGE_LABPP_RUNNER_PVC
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_RUNNER_PVC
+        - name: SKYFORGE_LABPP_CONFIG_DIR_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_CONFIG_DIR_BASE
+        - name: SKYFORGE_LABPP_CONFIG_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_CONFIG_VERSION
+        - name: SKYFORGE_LABPP_NETBOX_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_NETBOX_URL
+        - name: SKYFORGE_LABPP_NETBOX_MGMT_SUBNET
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_NETBOX_MGMT_SUBNET
+        - name: SKYFORGE_LABPP_S3_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_S3_REGION
+        - name: SKYFORGE_LABPP_S3_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_S3_BUCKET
+        - name: SKYFORGE_LABPP_S3_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_S3_ENDPOINT
+        - name: SKYFORGE_LABPP_S3_DISABLE_SSL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_S3_DISABLE_SSL
+        - name: SKYFORGE_LABPP_S3_DISABLE_CHECKSUM
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LABPP_S3_DISABLE_CHECKSUM
+        - name: SKYFORGE_LABPP_NETBOX_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-labpp-netbox-username
+              key: skyforge-labpp-netbox-username
+        - name: SKYFORGE_LABPP_NETBOX_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-labpp-netbox-password
+              key: skyforge-labpp-netbox-password
+        - name: SKYFORGE_LABPP_NETBOX_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-labpp-netbox-token
+              key: skyforge-labpp-netbox-token
+        - name: SKYFORGE_LABPP_S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-labpp-s3-access-key
+              key: skyforge-labpp-s3-access-key
+        - name: SKYFORGE_LABPP_S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-labpp-s3-secret-key
+              key: skyforge-labpp-s3-secret-key
         - name: SKYFORGE_WORKSPACES_DATA_DIR
           valueFrom:
             configMapKeyRef:
@@ -314,6 +414,26 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_COOKIE_DOMAIN
+        - name: SKYFORGE_OIDC_ISSUER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_OIDC_ISSUER_URL
+        - name: SKYFORGE_OIDC_REDIRECT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_OIDC_REDIRECT_URL
+        - name: SKYFORGE_OIDC_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-oidc-client-id
+              key: skyforge-oidc-client-id
+        - name: SKYFORGE_OIDC_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-oidc-client-secret
+              key: skyforge-oidc-client-secret
         - name: SKYFORGE_INTERNAL_TOKEN
           valueFrom:
             secretKeyRef:

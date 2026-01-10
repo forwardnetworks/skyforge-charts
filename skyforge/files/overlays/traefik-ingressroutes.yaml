@@ -8,14 +8,6 @@ spec:
   tls:
     secretName: proxy-tls
   routes:
-    - match: PathPrefix(`/api-testing`)
-      kind: Rule
-      priority: 600
-      services:
-        - name: yaade
-          port: 80
-      middlewares:
-        - name: skyforge-auth
     - match: PathPrefix(`/assets/`)
       kind: Rule
       priority: 440
@@ -104,7 +96,6 @@ spec:
         - name: netbox
           port: 8080
       middlewares:
-        - name: skyforge-auth
         - name: replace-netbox-static
     - match: PathPrefix(`/netbox/media/`)
       kind: Rule
@@ -113,7 +104,6 @@ spec:
         - name: netbox
           port: 8080
       middlewares:
-        - name: skyforge-auth
         - name: replace-netbox-media
     - match: PathPrefix(`/netbox`)
       kind: Rule
@@ -129,16 +119,12 @@ spec:
       services:
         - name: nautobot-static
           port: 8080
-      middlewares:
-        - name: skyforge-auth
     - match: PathPrefix(`/nautobot/media/`)
       kind: Rule
       priority: 200
       services:
         - name: nautobot-static
           port: 8080
-      middlewares:
-        - name: skyforge-auth
     - match: PathPrefix(`/nautobot`)
       kind: Rule
       priority: 100
@@ -146,8 +132,8 @@ spec:
         - name: nautobot
           port: 8080
       middlewares:
-        - name: skyforge-auth
         - name: strip-nautobot
+        - name: skyforge-auth
     - match: PathPrefix(`/labs`)
       kind: Rule
       priority: 100
@@ -171,6 +157,7 @@ spec:
           port: 3000
       middlewares:
         - name: strip-git
+        - name: skyforge-auth
     - match: Path(`/swagger/openapi.json`)
       kind: Rule
       priority: 200
@@ -184,22 +171,39 @@ spec:
           port: 8080
       middlewares:
         - name: strip-swagger
-    - match: PathPrefix(`/coder`)
+    - match: PathPrefix(`/workspaces`)
       kind: Rule
       services:
         - name: coder
           port: 7080
       middlewares:
-        - name: strip-coder
+        - name: skyforge-auth
         - name: coder-basepath
-    - match: PathPrefix(`/workspaces`) || PathPrefix(`/templates`) || PathPrefix(`/tasks`)
+    - match: PathPrefix(`/api-testing`)
+      kind: Rule
+      priority: 600
+      services:
+        - name: yaade
+          port: 80
+      middlewares:
+        - name: skyforge-auth
+        - name: yaade-oidc-redirect
+    - match: PathPrefix(`/coder`)
+      kind: Rule
+      priority: 205
+      services:
+        - name: skyforge-portal
+          port: 3000
+      middlewares:
+        - name: coder-portal-redirect
+    - match: PathPrefix(`/templates`) || PathPrefix(`/tasks`)
       kind: Rule
       priority: 210
       services:
         - name: coder
           port: 7080
       middlewares:
-        - name: coder-root-redirect
+        - name: skyforge-auth
     - match: Path(`/oauth_callback`)
       kind: Rule
       services:
@@ -211,6 +215,8 @@ spec:
       services:
         - name: coder
           port: 7080
+      middlewares:
+        - name: skyforge-auth
     - match: PathPrefix(`/dex`)
       kind: Rule
       services:

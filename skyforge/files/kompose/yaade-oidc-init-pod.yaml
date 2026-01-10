@@ -12,7 +12,7 @@ spec:
           set -euo pipefail
 
           base_path="${YAADE_BASE_PATH:-/api-testing}"
-          base_url="http://yaade"
+          base_url="http://yaade${base_path}"
           login_url="${base_url}/api/login"
           config_url="${base_url}/api/config/auth_config"
           callback_url="https://${SKYFORGE_HOSTNAME}${base_path}/callback-dex"
@@ -29,6 +29,7 @@ spec:
           oidc_discovery="$(cat /run/secrets/skyforge-oidc-discovery-url | tr -d '\n')"
           client_id="$(cat /run/secrets/yaade-oidc-client-id | tr -d '\n')"
           client_secret="$(cat /run/secrets/dex-client-yaade-secret | tr -d '\n')"
+          oidc_site="https://${SKYFORGE_HOSTNAME}/dex"
 
           if [ -z "${admin_password}" ] || [ -z "${oidc_discovery}" ] || [ -z "${client_id}" ] || [ -z "${client_secret}" ]; then
             echo "Missing OIDC settings; skipping Yaade OIDC init."
@@ -41,17 +42,31 @@ spec:
             -d "{\"username\":\"${YAADE_ADMIN_USERNAME}\",\"password\":\"${admin_password}\"}" \
             "${login_url}" >/dev/null
 
-          auth_payload="$(printf '%s' \"{\\\"providers\\\":[{\\\"id\\\":\\\"dex\\\",\\\"label\\\":\\\"Login with Skyforge\\\",\\\"provider\\\":\\\"oidc-discovery\\\",\\\"params\\\":{\\\"site\\\":\\\"https://${SKYFORGE_HOSTNAME}/dex\\\",\\\"clientId\\\":\\\"${client_id}\\\",\\\"clientSecret\\\":\\\"${client_secret}\\\",\\\"callbackUrl\\\":\\\"${callback_url}\\\",\\\"scopes\\\":[\\\"openid\\\",\\\"email\\\",\\\"profile\\\",\\\"groups\\\"],\\\"fields\\\":{\\\"username\\\":\\\"/email\\\",\\\"groups\\\":\\\"/groups\\\",\\\"defaultGroups\\\":[\\\"admin\\\"]}}}}]}\")"
-          printf '%s' "${auth_payload}" >/tmp/yaade-auth.json
+          cat >/tmp/yaade-auth.json <<EOF
+          {"providers":[{"id":"dex","label":"Skyforge SSO","provider":"oidc-discovery","params":{"site":"${oidc_site}","clientId":"${client_id}","clientSecret":"${client_secret}","callbackUrl":"${callback_url}","scopes":["openid","email","profile","groups"],"fields":{"username":"/preferred_username","groups":"/groups"}}}]}
+          EOF
 
           echo "Configuring Yaade OIDC providers..."
-          curl -sf -b /tmp/yaade-cookie \
-            -H "Content-Type: application/json" \
-            -X PUT \
-            --data-binary @/tmp/yaade-auth.json \
-            "${config_url}" >/dev/null
+          for i in $(seq 1 5); do
+            http_code="$(curl -s -o /tmp/yaade-auth-response.json -w '%{http_code}' \
+              -b /tmp/yaade-cookie \
+              -H "Content-Type: application/json" \
+              -X PUT \
+              --data-binary @/tmp/yaade-auth.json \
+              "${config_url}" || true)"
+            if [ "${http_code}" = "200" ]; then
+              echo "Yaade OIDC init complete."
+              exit 0
+            fi
+            echo "Yaade OIDC init attempt ${i} failed (HTTP ${http_code})."
+            if [ -s /tmp/yaade-auth-response.json ]; then
+              cat /tmp/yaade-auth-response.json
+            fi
+            sleep 2
+          done
 
-          echo "Yaade OIDC init complete."
+          echo "Yaade OIDC init failed after retries."
+          exit 1
       command:
         - /bin/sh
         - -c
@@ -71,11 +86,17 @@ spec:
             configMapKeyRef:
               key: SKYFORGE_HOSTNAME
               name: skyforge-config
+        - name: SSL_CERT_FILE
+          value: /etc/ssl/certs/skyforge-ca.crt
       image: curlimages/curl:8.10.1
       name: yaade-oidc-init
       volumeMounts:
         - mountPath: /run/secrets
           name: run-secrets
+          readOnly: true
+        - mountPath: /etc/ssl/certs/skyforge-ca.crt
+          name: skyforge-ca-cert
+          subPath: skyforge-ca-cert
           readOnly: true
   restartPolicy: Never
   volumes:
@@ -102,3 +123,6 @@ spec:
                 - key: yaade-oidc-client-id
                   path: yaade-oidc-client-id
               name: yaade-oidc-client-id
+    - name: skyforge-ca-cert
+      secret:
+        secretName: skyforge-ca-cert

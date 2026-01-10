@@ -15,7 +15,7 @@ data:
     env "prod" {
       url = var.db_url
       migration {
-        dir    = "file://./skyforge/migrations"
+        dir    = "file:///app/skyforge/migrations"
         format = golang-migrate
       }
       format {
@@ -24,6 +24,27 @@ data:
         }
       }
     }
+  atlas.sum: |
+    h1:Kq7USOoT/Pk0wKOKrAYKAOQSksST22MYR4+MXvMIdP0=
+    20251220000100_init.up.sql h1:ZR4Y0ICXFcjlVW2XKzVYoSNksZP2tQ0ajHHNnh/1IoM=
+    20251221000100_cloud_credentials.up.sql h1:Xb5agfyv110UYW/49J7WKrDhUCDZeS7EiMKgQUf+Tvs=
+    20251222000100_project_visibility.up.sql h1:PDVyAxeOyGa1iSj+KXN2dlV1G2jxBK9A49c/1gXv4PQ=
+    20251223000100_governance_tables.up.sql h1:I/yixR+WfszaYbqb/MmWNmv88qAbdG22eUQ747NHX7M=
+    20251223000200_deployments.up.sql h1:AatWT1CH2r72NBhtjBLtwZh9dwFSmFdhT5W0sLjv5LI=
+    20251224000100_labpp_templates.up.sql h1:L6XkOdaN6+IRWScLYshgzEeZ7+VCP2aKfcOBK6/nEZY=
+    20251227000100_deployments_labpp.up.sql h1:Hx69mqydHuLCmo0bNdXU2ZpN+JHFrIIpqihc7+Rk1ZU=
+    20251229000100_dns_tokens.up.sql h1:S1XoLnrVGFxTKpYKM1/yn+tmu5+1KFv1IEXdI5bXyfA=
+    20251230000100_syslog_events.up.sql h1:XeWauMZmv3WMFSji3JjbweiRS01dm2gVj9ZV5DlDp2I=
+    20251230000200_webhooks_snmp.up.sql h1:HIKuQsWzqF0MKIILCvDttMDcHm8JF1Uj0qfqMiJLis0=
+    20251231000100_containerlab_templates.up.sql h1:YM/yZEczDuH9siqBXsV583AlTEpfQxcT2pVVZSgw+Ng=
+    20260101000100_pki_certs.up.sql h1:pKe9+RM8Ne6BkLRpOMO46Xdk6vCJKbofbY3imsfrkcA=
+    20260102000100_tasks.up.sql h1:eTgJzGd9RbxatsBg3/DPkbVPt6DCLHurhuV5DA3ieho=
+    20260102000200_variable_groups.up.sql h1:rP1btq+GLuCt2cEmVOBil2r2pdebT9HriVL/GuOcK/E=
+    20260102000400_forward_credentials.up.sql h1:K7UN4IdF8Ag0PevZr+QSq2P38YKDyy91fASLOGOO42A=
+    20260102000500_forward_collectors.up.sql h1:XpO8ZLkT7WzV6W9dAKqFGdxQL209nlIT0RxmSLGkiHs=
+    20260102000600_pki_ssh_certs.up.sql h1:HuOwauibGEjWiJWF9oEMNkai+769epYXAPEQ7epAQ3Y=
+    20260103000100_workspace_rename.up.sql h1:q4ttxNo49clCFnVEaNuG41ll/k0qKB/0YKK+pQXZcbQ=
+    20260110120000_rename_tofu_to_terraform.up.sql h1:/dic8pIb/fzn8TB3EHeqyJ8TgOupH2Jh1sR4OOWGc7Y=
   20251220000100_init.up.sql: |
     CREATE TABLE sf_users (
       username text PRIMARY KEY,
@@ -43,9 +64,9 @@ data:
       blueprint text,
       default_branch text,
       terraform_state_key text,
-      tofu_init_template_id integer,
-      tofu_plan_template_id integer,
-      tofu_apply_template_id integer,
+      terraform_init_template_id integer,
+      terraform_plan_template_id integer,
+      terraform_apply_template_id integer,
       ansible_run_template_id integer,
       netlab_run_template_id integer,
       aws_account_id text,
@@ -237,7 +258,7 @@ data:
       id uuid PRIMARY KEY,
       project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
       name text NOT NULL,
-      type text NOT NULL CHECK (type IN ('tofu','netlab')),
+      type text NOT NULL CHECK (type IN ('terraform','netlab')),
       config jsonb NOT NULL DEFAULT '{}'::jsonb,
       created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
       created_at timestamptz NOT NULL DEFAULT now(),
@@ -258,7 +279,7 @@ data:
       DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
     
     ALTER TABLE sf_deployments
-      ADD CONSTRAINT sf_deployments_type_check CHECK (type IN ('tofu','netlab','labpp'));
+      ADD CONSTRAINT sf_deployments_type_check CHECK (type IN ('terraform','netlab','labpp'));
   20251229000100_dns_tokens.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_dns_tokens (
       username text PRIMARY KEY REFERENCES sf_users(username) ON UPDATE CASCADE,
@@ -423,49 +444,49 @@ data:
       expires_at TIMESTAMPTZ NOT NULL,
       revoked_at TIMESTAMPTZ NULL
     );
-
+    
     CREATE INDEX sf_pki_ssh_certs_user_idx ON sf_pki_ssh_certs(username, issued_at DESC);
     CREATE INDEX sf_pki_ssh_certs_project_idx ON sf_pki_ssh_certs(project_id);
   20260103000100_workspace_rename.up.sql: |
     ALTER TABLE sf_projects RENAME TO sf_workspaces;
     ALTER TABLE sf_workspaces RENAME COLUMN legacy_project_id TO legacy_workspace_id;
-
+    
     ALTER TABLE sf_project_members RENAME TO sf_workspace_members;
     ALTER TABLE sf_workspace_members RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_project_groups RENAME TO sf_workspace_groups;
     ALTER TABLE sf_workspace_groups RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_project_aws_static_credentials RENAME TO sf_workspace_aws_static_credentials;
     ALTER TABLE sf_workspace_aws_static_credentials RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_project_azure_credentials RENAME TO sf_workspace_azure_credentials;
     ALTER TABLE sf_workspace_azure_credentials RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_project_gcp_credentials RENAME TO sf_workspace_gcp_credentials;
     ALTER TABLE sf_workspace_gcp_credentials RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_project_forward_credentials RENAME TO sf_workspace_forward_credentials;
     ALTER TABLE sf_workspace_forward_credentials RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_project_variable_groups RENAME TO sf_workspace_variable_groups;
     ALTER TABLE sf_workspace_variable_groups RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_deployments RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_deployments RENAME COLUMN last_task_project_id TO last_task_workspace_id;
-
+    
     ALTER TABLE sf_tasks RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_resources RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_resource_events RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_cost_snapshots RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_usage_snapshots RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_pki_certs RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_pki_ssh_certs RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER TABLE sf_audit_log RENAME COLUMN project_id TO workspace_id;
-
+    
     ALTER INDEX IF EXISTS sf_projects_created_by_idx RENAME TO sf_workspaces_created_by_idx;
     ALTER INDEX IF EXISTS sf_project_members_user_idx RENAME TO sf_workspace_members_user_idx;
     ALTER INDEX IF EXISTS sf_project_groups_project_idx RENAME TO sf_workspace_groups_workspace_idx;
@@ -480,23 +501,51 @@ data:
     ALTER INDEX IF EXISTS sf_tasks_project_idx RENAME TO sf_tasks_workspace_idx;
     ALTER INDEX IF EXISTS sf_project_variable_groups_project_idx RENAME TO sf_workspace_variable_groups_workspace_idx;
     ALTER INDEX IF EXISTS sf_project_variable_groups_name_uq RENAME TO sf_workspace_variable_groups_name_uq;
-  atlas.sum: |
-    h1:nqWn7DE54iXj2hZip+ElPdQyTumkD1N+uoKlGCI1Tr0=
-    20251220000100_init.up.sql h1:8ITR02T74XZfpZ3rcL70w9DZISnVDzQsaLj6TnOwQ28=
-    20251221000100_cloud_credentials.up.sql h1:PtQvgzP7HJE4TZ7gqiW01zBEIxo0mvxEdimTl6YTA3U=
-    20251222000100_project_visibility.up.sql h1:FaGsv7P4dJFB/Ydno13XedpXBprWY/kZ3yrwGprbfxo=
-    20251223000100_governance_tables.up.sql h1:LANTkheqr+lTM+QUpVzrL5k747mxcQZvGzqipPOwXw4=
-    20251223000200_deployments.up.sql h1:hnSagrnYtBsOhqV25vLQwyvqPTHic54J1K+0LWZRogA=
-    20251224000100_labpp_templates.up.sql h1:yEoisc/vIJrEyKgkNqk2CwstBvelSAR8E8m8zyoDvh0=
-    20251227000100_deployments_labpp.up.sql h1:9i5+GpHCpCCnLHH02mhLFgXvn5RXEesIX1XLt8sOVGQ=
-    20251229000100_dns_tokens.up.sql h1:B3SOsCLbup4JGqwoWbmFOMQQSVbwyvpQmvi8RjXbbpM=
-    20251230000100_syslog_events.up.sql h1:7m2f2akEv0TtM9KC5a0SmUWimYVrMlGK5jaCC5evp3s=
-    20251230000200_webhooks_snmp.up.sql h1:lTv7AGqfCFz9gK8BjXkoFIedDwlmjL7aB51bQ3OgwRo=
-    20251231000100_containerlab_templates.up.sql h1:D/jp4HztHjsHh9roK4wbPq/7K51bwGxuk0dSP9/EhoQ=
-    20260101000100_pki_certs.up.sql h1:dqekieTimJZEBW4En/fwi6o9dzwqOqk4Ney7W9ziGY0=
-    20260102000100_tasks.up.sql h1:fMwUWINcAdsLETOR/PDuF84cv6b1cVOOrkUGOhVI/8c=
-    20260102000200_variable_groups.up.sql h1:nlpSwmBebG68qp39CySYhITyuqgDNB3oIMpH/KbZ4h4=
-    20260102000400_forward_credentials.up.sql h1:vpnAvuigesLx2ibNZT9RE8kBtgP/TZGyTOMCKF04XAw=
-    20260102000500_forward_collectors.up.sql h1:Eusgazs8hGJkj4fBHwb9UYkGJt2BPUFh4ERtGA2Jqc0=
-    20260102000600_pki_ssh_certs.up.sql h1:JRwUbPfPVTvWCkHzCciGlbaxV8avCoCTI6yrg3PfKdQ=
-    20260103000100_workspace_rename.up.sql h1:rFQ8aHlvJF9VFsbayzosuXeuX1H65ouYLXO5ZIW3GMs=
+  20260110120000_rename_tofu_to_terraform.up.sql: |
+    DO $$
+    BEGIN
+      IF to_regclass('sf_projects') IS NOT NULL THEN
+        BEGIN
+          ALTER TABLE sf_projects RENAME COLUMN tofu_init_template_id TO terraform_init_template_id;
+        EXCEPTION WHEN undefined_column THEN
+          NULL;
+        END;
+    
+        BEGIN
+          ALTER TABLE sf_projects RENAME COLUMN tofu_plan_template_id TO terraform_plan_template_id;
+        EXCEPTION WHEN undefined_column THEN
+          NULL;
+        END;
+    
+        BEGIN
+          ALTER TABLE sf_projects RENAME COLUMN tofu_apply_template_id TO terraform_apply_template_id;
+        EXCEPTION WHEN undefined_column THEN
+          NULL;
+        END;
+      END IF;
+    
+      IF to_regclass('sf_workspaces') IS NOT NULL THEN
+        BEGIN
+          ALTER TABLE sf_workspaces RENAME COLUMN tofu_init_template_id TO terraform_init_template_id;
+        EXCEPTION WHEN undefined_column THEN
+          NULL;
+        END;
+    
+        BEGIN
+          ALTER TABLE sf_workspaces RENAME COLUMN tofu_plan_template_id TO terraform_plan_template_id;
+        EXCEPTION WHEN undefined_column THEN
+          NULL;
+        END;
+    
+        BEGIN
+          ALTER TABLE sf_workspaces RENAME COLUMN tofu_apply_template_id TO terraform_apply_template_id;
+        EXCEPTION WHEN undefined_column THEN
+          NULL;
+        END;
+      END IF;
+    END $$;
+    
+    UPDATE sf_deployments SET type='terraform' WHERE type='tofu';
+    
+    ALTER TABLE sf_deployments DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
+    ALTER TABLE sf_deployments ADD CONSTRAINT sf_deployments_type_check CHECK (type IN ('terraform','netlab','labpp','containerlab'));

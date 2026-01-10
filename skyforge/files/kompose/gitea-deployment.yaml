@@ -67,9 +67,21 @@ spec:
         - name: GITEA__server__START_SSH_SERVER
           value: 'false'
         - name: GITEA__service__DISABLE_REGISTRATION
+          value: 'false'
+        - name: GITEA__service__ALLOW_ONLY_EXTERNAL_REGISTRATION
           value: 'true'
         - name: GITEA__service__REQUIRE_SIGNIN_VIEW
           value: 'false'
+        - name: GITEA__security__ENABLE_REVERSE_PROXY_AUTHENTICATION
+          value: 'true'
+        - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION_USER
+          value: 'Remote-User'
+        - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION_EMAIL
+          value: 'Remote-User-Email'
+        - name: GITEA__security__REVERSE_PROXY_LIMIT
+          value: '1'
+        - name: GITEA__security__REVERSE_PROXY_TRUSTED_PROXIES
+          value: '10.0.0.0/8,192.168.0.0/16,172.16.0.0/12,127.0.0.1/32'
         - name: GITEA__service__RESERVED_USERNAMES
           value: ''
         - name: GITEA__user__RESERVED_USERNAMES

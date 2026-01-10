@@ -27,8 +27,15 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 
 - `skyforge.hostname`: Public hostname for ingress routes.
 - `skyforge.domain`: Email/domain suffix used by default accounts.
-- `skyforge.labppApiUrl`: Optional LabPP API base URL (defaults to `<eve web>/labpp`).
-- `skyforge.labppSkipTlsVerify`: `true` to skip LabPP TLS verification.
+- `skyforge.labpp.runnerImage`: LabPP runner image (job executed by skyforge-server).
+- `skyforge.labpp.runnerPullPolicy`: Image pull policy for the LabPP runner.
+- `skyforge.labpp.runnerPvc`: PVC name mounted at `/var/lib/skyforge` for templates/configs (default `skyforge-server-data`).
+- `skyforge.labpp.configDirBase`: LabPP config output dir (default `/var/lib/skyforge/labpp/configs`).
+- `skyforge.labpp.configVersion`: LabPP properties file version (default `1.0`).
+- `skyforge.labpp.netboxUrl`: NetBox base URL for LabPP allocations.
+- `skyforge.labpp.netboxMgmtSubnet`: NetBox management subnet CIDR for LabPP allocations.
+- `skyforge.labpp.s3Region`: Optional LabPP S3 region.
+- `skyforge.labpp.s3Bucket`: Optional LabPP S3 bucket.
 - `skyforge.labppProxy`: Optional Traefik proxy for exposing LabPP API endpoints via `https://<skyforge-hostname>/labpp/<name>/...`.
 - `skyforge.eveProxy`: Optional Traefik proxy for exposing EVE-NG UI via `https://<skyforge-hostname>/labs/<name>/...` (used for SSO).
 - `skyforge.pkiDefaultDays`: Default certificate TTL (days) for the PKI UI.

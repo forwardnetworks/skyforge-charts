@@ -5,6 +5,8 @@
   "gitea-admin-sync-deployment.yaml" true
   "netbox-admin-sync-deployment.yaml" true
   "nautobot-admin-sync-deployment.yaml" true
+  "gitea-oidc-init-pod.yaml" true
+  "yaade-oidc-init-pod.yaml" true
   "skyforge-server-rbac.yaml" true
 -}}
 {{- $vals := fromYaml (toYaml .Values) -}}
@@ -78,8 +80,19 @@
   "__SKYFORGE_EVE_SKIP_TLS_VERIFY__" (printf "%v" .Values.skyforge.eveSkipTlsVerify)
   "__SKYFORGE_EVE_URL__" .Values.skyforge.eveUrl
   "__SKYFORGE_EVE_SSH_USER__" .Values.skyforge.eveSshUser
-  "__SKYFORGE_LABPP_API_URL__" .Values.skyforge.labppApiUrl
-  "__SKYFORGE_LABPP_SKIP_TLS_VERIFY__" (printf "%v" .Values.skyforge.labppSkipTlsVerify)
+  "__SKYFORGE_EVE_SSH_TUNNEL_ENABLED__" (printf "%v" .Values.skyforge.eveSshTunnelEnabled)
+  "__SKYFORGE_LABPP_RUNNER_IMAGE__" .Values.skyforge.labpp.runnerImage
+  "__SKYFORGE_LABPP_RUNNER_PULL_POLICY__" .Values.skyforge.labpp.runnerPullPolicy
+  "__SKYFORGE_LABPP_RUNNER_PVC__" .Values.skyforge.labpp.runnerPvc
+  "__SKYFORGE_LABPP_CONFIG_DIR_BASE__" .Values.skyforge.labpp.configDirBase
+  "__SKYFORGE_LABPP_CONFIG_VERSION__" .Values.skyforge.labpp.configVersion
+  "__SKYFORGE_LABPP_NETBOX_URL__" .Values.skyforge.labpp.netboxUrl
+  "__SKYFORGE_LABPP_NETBOX_MGMT_SUBNET__" .Values.skyforge.labpp.netboxMgmtSubnet
+  "__SKYFORGE_LABPP_S3_REGION__" .Values.skyforge.labpp.s3Region
+  "__SKYFORGE_LABPP_S3_BUCKET__" .Values.skyforge.labpp.s3Bucket
+  "__SKYFORGE_LABPP_S3_ENDPOINT__" .Values.skyforge.labpp.s3Endpoint
+  "__SKYFORGE_LABPP_S3_DISABLE_SSL__" (printf "%v" .Values.skyforge.labpp.s3DisableSsl)
+  "__SKYFORGE_LABPP_S3_DISABLE_CHECKSUM__" (printf "%v" .Values.skyforge.labpp.s3DisableChecksum)
   "__SKYFORGE_LDAP_DISPLAY_ATTR__" .Values.skyforge.ldap.displayAttr
   "__SKYFORGE_LDAP_GROUP_ATTR__" .Values.skyforge.ldap.groupAttr
   "__SKYFORGE_LDAP_MAIL_ATTR__" .Values.skyforge.ldap.mailAttr
@@ -90,6 +103,8 @@
   "__SKYFORGE_NETBOX_URL__" $netboxUrl
   "__SKYFORGE_NETBOX_MGMT_SUBNET__" .Values.skyforge.netboxMgmtSubnet
   "__SKYFORGE_NAUTOBOT_URL__" $nautobotUrl
+  "__SKYFORGE_YAADE_URL__" .Values.skyforge.yaadeUrl
+  "__SKYFORGE_YAADE_ADMIN_USERNAME__" .Values.skyforge.yaadeAdminUsername
   "__SKYFORGE_OBJECT_STORAGE_ENDPOINT__" .Values.skyforge.objectStorage.endpoint
   "__SKYFORGE_OBJECT_STORAGE_USE_SSL__" (printf "%v" .Values.skyforge.objectStorage.useSsl)
   "__SKYFORGE_NETLAB_SSH_USER__" .Values.skyforge.netlab.sshUser
@@ -117,6 +132,8 @@
   "__SKYFORGE_HEALTH_CODE_CHECKS__" .Values.skyforge.health.codeChecks
   "__SKYFORGE_MINIO_LDAP_CONSOLE_GROUP__" (dig "skyforge" "minio" "ldapConsoleGroup" "" $vals)
   "__SKYFORGE_OIDC_DISCOVERY_URL__" (printf "https://%s/dex/.well-known/openid-configuration" $hostname)
+  "__SKYFORGE_OIDC_ISSUER_URL__" (printf "https://%s/dex" $hostname)
+  "__SKYFORGE_OIDC_REDIRECT_URL__" (printf "https://%s/api/skyforge/api/oidc/callback" $hostname)
   "__SKYFORGE_DNS_NODEPORT__" (printf "%v" $dnsNodePort)
   "__SKYFORGE_DNS_WEB_NODEPORT__" (printf "%v" $dnsWebNodePort)
   "__GITEA_ADMIN_USERNAME__" .Values.skyforge.gitea.adminUsername

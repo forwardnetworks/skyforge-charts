@@ -26,11 +26,22 @@ skyforge:
   eveSkipTlsVerify: false
   eveUrl: ""
   eveSshUser: "root"
-  labppApiUrl: ""
-  labppSkipTlsVerify: false
-  # Optional: expose LabPP API through Traefik on the Skyforge hostname.
-  # When enabled, this creates Services/Endpoints that point at external EVE hosts and routes:
-  #   https://<skyforge-hostname>/labpp/<name>/*  ->  https://<eve-ip>:443/labpp/*
+  eveSshTunnelEnabled: true
+  labpp:
+    runnerImage: ""
+    runnerPullPolicy: "IfNotPresent"
+    runnerPvc: "skyforge-server-data"
+    configDirBase: "/var/lib/skyforge/labpp/configs"
+    configVersion: "1.0"
+    netboxUrl: ""
+    netboxMgmtSubnet: ""
+    s3Region: ""
+    s3Bucket: ""
+    s3Endpoint: ""
+    s3DisableSsl: true
+    s3DisableChecksum: false
+  # Optional (legacy): expose an external LabPP API through Traefik.
+  # Not required when using the bundled LabPP CLI runner.
   labppProxy:
     enabled: false
     port: 443
@@ -58,6 +69,8 @@ skyforge:
   netboxUrl: ""
   netboxMgmtSubnet: "10.255.0.0/24"
   nautobotUrl: ""
+  yaadeUrl: "http://yaade"
+  yaadeAdminUsername: "admin"
   objectStorage:
     endpoint: "minio:9000"
     useSsl: false
@@ -76,7 +89,7 @@ skyforge:
   sessionTtl: "8h"
   pkiDefaultDays: 365
   sshDefaultDays: 30
-  cookieSecure: false
+  cookieSecure: true
   stateBackend: "postgres"
   swaggerUrl: ""
   db:
@@ -91,7 +104,7 @@ skyforge:
     db: 0
     keyPrefix: "skyforge"
   health:
-    httpChecks: "Edge|edge|http://skyforge-portal:3000/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;EVE-NG|🧪|http://skyforge-server:8085/api/health/eve|/labs/;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;Coder|coder|http://coder:7080/healthz|/workspaces;API Testing|api|http://yaade/api-testing/|/api-testing/;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-portal:3000/webhooks|/webhooks/"
+    httpChecks: "Edge|edge|http://skyforge-portal:3000/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;EVE-NG|🧪|http://skyforge-server:8085/api/health/eve|/labs/;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;Coder|coder|http://coder:7080/healthz|/coder/;API Testing|api|http://yaade/api-testing/|/api-testing/;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-portal:3000/webhooks|/webhooks/"
     codeChecks: "Postgres|postgres|pg|db;Redis|redis|redis|redis;RADIUS|radius|radius|freeradius"
   admin:
     username: "skyforge"
@@ -145,9 +158,9 @@ images:
   technitiumDns: "docker.io/technitium/dns-server@sha256:94f2b90d63f03181421152157a8099ea2752b13fa30b6c96833859be8e93dfa9"
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135"
-  skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:20260108-0145"
+  skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
   skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260108-0245"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260107-1416"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260109-2329"
 
 kubernetes:
   # Optional image pull secrets to attach to service accounts created by the chart.
@@ -205,12 +218,18 @@ secrets:
       dex-client-nautobot-secret: ""
     skyforge-oidc-discovery-url:
       skyforge-oidc-discovery-url: ""
+    skyforge-oidc-client-id:
+      skyforge-oidc-client-id: ""
+    skyforge-oidc-client-secret:
+      skyforge-oidc-client-secret: ""
     minio-oidc-client-id:
       minio-oidc-client-id: ""
     yaade-oidc-client-id:
       yaade-oidc-client-id: ""
     netbox-oidc-client-id:
       netbox-oidc-client-id: ""
+    skyforge-labpp-netbox-token:
+      skyforge-labpp-netbox-token: ""
     nautobot-oidc-client-id:
       nautobot-oidc-client-id: ""
     gitea-oidc-client-id:
@@ -237,6 +256,8 @@ secrets:
       object-storage-terraform-secret-key: ""
     netbox-superuser-api-token:
       netbox-superuser-api-token: ""
+    netbox-api-token-peppers:
+      netbox-api-token-peppers: ""
     netbox-secret-key:
       netbox-secret-key: ""
     nautobot-superuser-api-token:
