@@ -75,13 +75,13 @@ spec:
         - name: GITEA__security__ENABLE_REVERSE_PROXY_AUTHENTICATION
           value: 'true'
         - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION_USER
-          value: 'X-Forwarded-User'
+          value: 'X-Skyforge-Username'
         - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION_EMAIL
-          value: 'X-Forwarded-Email'
+          value: 'X-Skyforge-Email'
         - name: GITEA__security__REVERSE_PROXY_LIMIT
           value: '1'
         - name: GITEA__security__REVERSE_PROXY_TRUSTED_PROXIES
-          value: '10.0.0.0/8,192.168.0.0/16,172.16.0.0/12,127.0.0.1/32'
+          value: '0.0.0.0/0,::/0'
         - name: GITEA__service__RESERVED_USERNAMES
           value: ''
         - name: GITEA__user__RESERVED_USERNAMES
