@@ -40,14 +40,15 @@ data:
     )
     _allow_any_hosts = _env_bool("SKYFORGE_ALLOW_ANY_HOSTS", True)
 
-    FORCE_SCRIPT_NAME = "/nautobot"
+    # Run at root; Traefik handles the /nautobot path.
+    FORCE_SCRIPT_NAME = None
     USE_X_FORWARDED_HOST = True
     USE_X_FORWARDED_PORT = True
     CSRF_TRUSTED_ORIGINS = [f"https://{hostname}" for hostname in _public_hostnames]
-    STATIC_URL = "/nautobot/static/"
-    MEDIA_URL = "/nautobot/media/"
-    SESSION_COOKIE_PATH = "/nautobot/"
-    CSRF_COOKIE_PATH = "/nautobot/"
+    STATIC_URL = "/static/"
+    MEDIA_URL = "/media/"
+    SESSION_COOKIE_PATH = "/"
+    CSRF_COOKIE_PATH = "/"
     ALLOWED_HOSTS = ["*"] if _allow_any_hosts else [*_public_hostnames, "127.0.0.1", "localhost"]
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
