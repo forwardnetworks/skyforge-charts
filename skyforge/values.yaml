@@ -206,16 +206,8 @@ secrets:
       config.yaml: ""
     dex-client-coder-secret:
       dex-client-coder-secret: ""
-    dex-client-gitea-secret:
-      dex-client-gitea-secret: ""
     dex-client-minio-secret:
       dex-client-minio-secret: ""
-    dex-client-yaade-secret:
-      dex-client-yaade-secret: ""
-    dex-client-netbox-secret:
-      dex-client-netbox-secret: ""
-    dex-client-nautobot-secret:
-      dex-client-nautobot-secret: ""
     skyforge-oidc-discovery-url:
       skyforge-oidc-discovery-url: ""
     skyforge-oidc-client-id:
@@ -224,20 +216,8 @@ secrets:
       skyforge-oidc-client-secret: ""
     minio-oidc-client-id:
       minio-oidc-client-id: ""
-    yaade-oidc-client-id:
-      yaade-oidc-client-id: ""
-    netbox-oidc-client-id:
-      netbox-oidc-client-id: ""
     skyforge-labpp-netbox-token:
       skyforge-labpp-netbox-token: ""
-    nautobot-oidc-client-id:
-      nautobot-oidc-client-id: ""
-    gitea-oidc-client-id:
-      gitea-oidc-client-id: ""
-    gitea-oidc-name:
-      gitea-oidc-name: ""
-    gitea-oidc-scopes:
-      gitea-oidc-scopes: ""
     yaade-admin-password:
       yaade-admin-password: ""
     gitea-secret-key:

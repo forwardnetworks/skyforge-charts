@@ -5,8 +5,6 @@
   "gitea-admin-sync-deployment.yaml" true
   "netbox-admin-sync-deployment.yaml" true
   "nautobot-admin-sync-deployment.yaml" true
-  "gitea-oidc-init-pod.yaml" true
-  "yaade-oidc-init-pod.yaml" true
   "skyforge-server-rbac.yaml" true
 -}}
 {{- $vals := fromYaml (toYaml .Values) -}}

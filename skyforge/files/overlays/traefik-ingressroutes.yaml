@@ -187,7 +187,6 @@ spec:
           port: 80
       middlewares:
         - name: skyforge-auth
-        - name: yaade-oidc-redirect
     - match: PathPrefix(`/coder`)
       kind: Rule
       priority: 205
