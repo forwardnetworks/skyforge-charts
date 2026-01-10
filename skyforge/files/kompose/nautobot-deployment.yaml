@@ -154,6 +154,9 @@ spec:
           name: nautobot-reports
         - mountPath: /opt/nautobot/jobs
           name: nautobot-jobs
+        - mountPath: /opt/nautobot/nautobot_config.py
+          name: nautobot-config
+          subPath: nautobot_config.py
         - name: skyforge-ca-bundle
           mountPath: /etc/skyforge/ca
       restartPolicy: Always
@@ -203,6 +206,9 @@ spec:
       - name: nautobot-jobs
         persistentVolumeClaim:
           claimName: nautobot-jobs
+      - name: nautobot-config
+        configMap:
+          name: nautobot-config
       - name: skyforge-ca-cert
         secret:
           secretName: skyforge-ca-cert

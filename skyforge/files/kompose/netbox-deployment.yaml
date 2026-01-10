@@ -150,6 +150,9 @@ spec:
           name: netbox-reports
         - mountPath: /opt/netbox/netbox/scripts
           name: netbox-scripts
+        - mountPath: /etc/netbox/config/extra.py
+          name: netbox-config
+          subPath: extra.py
         - name: skyforge-ca-bundle
           mountPath: /etc/skyforge/ca
       restartPolicy: Always
@@ -216,6 +219,9 @@ spec:
       - name: netbox-scripts
         persistentVolumeClaim:
           claimName: netbox-scripts
+      - name: netbox-config
+        configMap:
+          name: netbox-config
       - name: skyforge-ca-cert
         secret:
           secretName: skyforge-ca-cert

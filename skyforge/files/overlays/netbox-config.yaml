@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: netbox-config
+data:
+  extra.py: |
+    import json
+    import os
+
+
+    def read_file(path: str) -> str:
+        if not path:
+            return ""
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                return handle.read().strip()
+        except OSError:
+            return ""
+
+
+    def truthy(value: str) -> bool:
+        return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+    raw_base_path = os.getenv("SKYFORGE_NETBOX_BASE_PATH", "netbox/").strip()
+    if raw_base_path:
+        BASE_PATH = raw_base_path if raw_base_path.endswith("/") else f"{raw_base_path}/"
+        csrf_path = f"/{BASE_PATH.rstrip('/')}"
+        CSRF_COOKIE_PATH = csrf_path
+        SESSION_COOKIE_PATH = csrf_path
+        CSRF_COOKIE_SECURE = True
+
+    raw_host = os.getenv("SKYFORGE_HOSTNAME", "").strip()
+    if raw_host:
+        CSRF_TRUSTED_ORIGINS = [
+            f"https://{host.strip()}"
+            for host in raw_host.replace(",", " ").split()
+            if host.strip()
+        ]
+
+    raw_token_peppers = os.getenv("API_TOKEN_PEPPERS", "").strip()
+    if raw_token_peppers:
+        try:
+            parsed = json.loads(raw_token_peppers)
+        except json.JSONDecodeError:
+            parsed = [value.strip() for value in raw_token_peppers.split(",") if value.strip()]
+        if isinstance(parsed, dict):
+            converted = {}
+            for key, value in parsed.items():
+                try:
+                    int_key = int(key)
+                except (TypeError, ValueError):
+                    continue
+                if isinstance(value, (list, tuple)):
+                    value = value[0] if value else ""
+                converted[int_key] = str(value) if value is not None else ""
+            API_TOKEN_PEPPERS = converted
+        else:
+            if isinstance(parsed, (list, tuple)):
+                parsed = parsed[0] if parsed else ""
+            API_TOKEN_PEPPERS = {1: str(parsed) if parsed is not None else ""}
+
+
+    ldap_url = read_file(os.getenv("SKYFORGE_LDAP_URL_FILE", "").strip()) or os.getenv("SKYFORGE_LDAP_URL", "").strip()
+    remote_auth_enabled = truthy(os.getenv("SKYFORGE_SSO_ENABLED", "true"))
+    oidc_discovery_url = read_file(os.getenv("SKYFORGE_OIDC_DISCOVERY_URL_FILE", "").strip()) or os.getenv(
+        "SKYFORGE_OIDC_DISCOVERY_URL", ""
+    ).strip()
+    oidc_client_id = read_file(os.getenv("SKYFORGE_OIDC_CLIENT_ID_FILE", "").strip()) or os.getenv(
+        "SKYFORGE_OIDC_CLIENT_ID", ""
+    ).strip()
+    oidc_client_secret = read_file(os.getenv("SKYFORGE_OIDC_CLIENT_SECRET_FILE", "").strip()) or os.getenv(
+        "SKYFORGE_OIDC_CLIENT_SECRET", ""
+    ).strip()
+    oidc_enabled = bool(oidc_discovery_url and oidc_client_id and oidc_client_secret)
+
+    if remote_auth_enabled:
+        REMOTE_AUTH_ENABLED = True
+        REMOTE_AUTH_AUTO_CREATE_USER = True
+        REMOTE_AUTH_HEADER = "HTTP_X_FORWARDED_USER"
+        AUTHENTICATION_BACKENDS = [
+            "netbox.authentication.RemoteUserBackend",
+            "django.contrib.auth.backends.ModelBackend",
+        ]
+
+    if oidc_enabled and not remote_auth_enabled:
+        oidc_endpoint = oidc_discovery_url
+        suffix = "/.well-known/openid-configuration"
+        if oidc_endpoint.endswith(suffix):
+            oidc_endpoint = oidc_endpoint[: -len(suffix)]
+
+        AUTHENTICATION_BACKENDS = [
+            "social_core.backends.open_id_connect.OpenIdConnectAuth",
+            "django.contrib.auth.backends.ModelBackend",
+        ]
+        SOCIAL_AUTH_ENABLED = True
+        SOCIAL_AUTH_BACKEND_PREFIX = "social_core.backends"
+        SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = oidc_endpoint
+        SOCIAL_AUTH_OIDC_KEY = oidc_client_id
+        SOCIAL_AUTH_OIDC_SECRET = oidc_client_secret
+        SOCIAL_AUTH_OIDC_SCOPE = ["openid", "profile", "email", "groups"]
+        SOCIAL_AUTH_OIDC_USERNAME_KEY = "preferred_username"
+        SOCIAL_AUTH_OIDC_EMAIL_KEY = "email"
+        SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+        SOCIAL_AUTH_OIDC_VERIFY_SSL = False
+    if ldap_url and not oidc_enabled and not remote_auth_enabled:
+        # NetBox derives Django's AUTHENTICATION_BACKENDS from REMOTE_AUTH_BACKEND.
+        # Override REMOTE_AUTH_BACKEND so LDAP credentials entered into the NetBox
+        # login form are validated via the built-in LDAP backend, while preserving
+        # local admin logins via ModelBackend.
+        if "AUTHENTICATION_BACKENDS" not in globals():
+            AUTHENTICATION_BACKENDS = [
+                "netbox.authentication.LDAPBackend",
+                "django.contrib.auth.backends.ModelBackend",
+            ]
+        REMOTE_AUTH_BACKEND = [
+            "netbox.authentication.LDAPBackend",
+            "django.contrib.auth.backends.ModelBackend",
+        ]
+        AUTH_LDAP_START_TLS = truthy(os.getenv("SKYFORGE_LDAP_STARTTLS", "false"))
+        REMOTE_AUTH_ENABLED = False
+
+        ldap_config_path = "/etc/netbox/config/ldap/ldap_config.py"
+        try:
+            with open(ldap_config_path, "r", encoding="utf-8") as handle:
+                exec(handle.read(), globals())  # noqa: S102
+        except OSError:
+            pass
