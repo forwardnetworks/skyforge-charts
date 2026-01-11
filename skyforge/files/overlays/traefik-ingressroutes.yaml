@@ -8,6 +8,22 @@ spec:
   tls:
     secretName: proxy-tls
   routes:
+    - match: PathPrefix(`/git/assets/`) || PathPrefix(`/git/avatars/`) || Path(`/git/favicon.svg`)
+      kind: Rule
+      priority: 520
+      services:
+        - name: gitea
+          port: 3000
+      middlewares:
+        - name: strip-git
+    - match: PathPrefix(`/git/skyforge/blueprints`)
+      kind: Rule
+      priority: 510
+      services:
+        - name: gitea
+          port: 3000
+      middlewares:
+        - name: strip-git
     - match: PathPrefix(`/assets/`)
       kind: Rule
       priority: 440
