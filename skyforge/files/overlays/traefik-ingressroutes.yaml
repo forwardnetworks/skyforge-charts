@@ -117,14 +117,36 @@ spec:
       kind: Rule
       priority: 200
       services:
-        - name: nautobot-static
+        - name: nautobot
           port: 8080
+      middlewares:
+        - name: strip-nautobot
+        - name: nautobot-forwarded-proto
+    - match: PathPrefix(`/static/`)
+      kind: Rule
+      priority: 200
+      services:
+        - name: nautobot
+          port: 8080
+      middlewares:
+        - name: nautobot-forwarded-proto
     - match: PathPrefix(`/nautobot/media/`)
       kind: Rule
       priority: 200
       services:
-        - name: nautobot-static
+        - name: nautobot
           port: 8080
+      middlewares:
+        - name: strip-nautobot
+        - name: nautobot-forwarded-proto
+    - match: PathPrefix(`/media/`)
+      kind: Rule
+      priority: 200
+      services:
+        - name: nautobot
+          port: 8080
+      middlewares:
+        - name: nautobot-forwarded-proto
     - match: PathPrefix(`/nautobot`)
       kind: Rule
       priority: 100
@@ -132,9 +154,9 @@ spec:
         - name: nautobot
           port: 8080
       middlewares:
-        - name: strip-nautobot
-        - name: nautobot-basepath
         - name: skyforge-auth
+        - name: strip-nautobot
+        - name: nautobot-forwarded-proto
     - match: PathPrefix(`/labs`)
       kind: Rule
       priority: 100

@@ -37,11 +37,11 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: nautobot-basepath
+  name: nautobot-forwarded-proto
 spec:
   headers:
     customRequestHeaders:
-      X-Forwarded-Prefix: /nautobot
+      X-Forwarded-Proto: https
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware

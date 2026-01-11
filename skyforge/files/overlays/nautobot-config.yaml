@@ -40,8 +40,7 @@ data:
     )
     _allow_any_hosts = _env_bool("SKYFORGE_ALLOW_ANY_HOSTS", True)
 
-    # Run at root; Traefik handles the /nautobot path.
-    FORCE_SCRIPT_NAME = None
+    # Serve at root; Traefik strips /nautobot before proxying.
     USE_X_FORWARDED_HOST = True
     USE_X_FORWARDED_PORT = True
     CSRF_TRUSTED_ORIGINS = [f"https://{hostname}" for hostname in _public_hostnames]
@@ -64,6 +63,7 @@ data:
     # `nautobot.core.authentication.RemoteUserBackend` is present in
     # `AUTHENTICATION_BACKENDS`.
     if _env_bool("SKYFORGE_SSO_ENABLED", True):
+        REMOTE_AUTH_ENABLED = True
         REMOTE_AUTH_AUTO_CREATE_USER = True
         REMOTE_AUTH_HEADER = "HTTP_REMOTE_USER"
 

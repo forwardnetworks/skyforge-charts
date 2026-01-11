@@ -146,8 +146,6 @@ spec:
         - mountPath: /run/secrets
           name: run-secrets
           readOnly: true
-        - mountPath: /opt/nautobot/static
-          name: nautobot-static
         - mountPath: /opt/nautobot/media
           name: nautobot-media
         - mountPath: /opt/nautobot/reports
@@ -194,9 +192,6 @@ spec:
               - key: skyforge-ldap-bind-template
                 path: skyforge-ldap-bind-template
               name: skyforge-ldap-bind-template
-      - name: nautobot-static
-        persistentVolumeClaim:
-          claimName: nautobot-static
       - name: nautobot-media
         persistentVolumeClaim:
           claimName: nautobot-media
