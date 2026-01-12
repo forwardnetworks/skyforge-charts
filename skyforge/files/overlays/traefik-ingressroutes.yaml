@@ -259,8 +259,6 @@ spec:
       services:
         - name: coder
           port: 7080
-      middlewares:
-        - name: skyforge-auth
     - match: PathPrefix(`/dex`)
       kind: Rule
       services:
