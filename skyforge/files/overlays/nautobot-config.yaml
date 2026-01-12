@@ -73,6 +73,49 @@ data:
             "django.contrib.auth.backends.ModelBackend",
         )
 
+        try:
+            from django.contrib.auth.signals import user_logged_in
+            from django.dispatch import receiver
+
+            @receiver(user_logged_in)
+            def _skyforge_apply_rbac(sender, user, request, **kwargs):
+                if user is None or not getattr(user, "is_authenticated", False):
+                    return
+
+                from django.contrib.auth.models import Group
+                from django.contrib.contenttypes.models import ContentType
+                from nautobot.users.models import ObjectPermission
+
+                group, _ = Group.objects.get_or_create(name="skyforge-users")
+                perm, created = ObjectPermission.objects.get_or_create(
+                    name="Skyforge Users: write",
+                    defaults={
+                        "enabled": True,
+                        "actions": ["add", "change", "delete"],
+                        "constraints": [],
+                    },
+                )
+                if not created:
+                    perm.enabled = True
+                    perm.actions = ["add", "change", "delete"]
+                    perm.constraints = []
+                    perm.save()
+                perm.groups.add(group)
+
+                types = []
+                for label in ["ipam.ipaddress", "ipam.prefix", "dcim.device", "dcim.interface", "dcim.cable"]:
+                    app_label, model = label.split(".", 1)
+                    try:
+                        types.append(ContentType.objects.get(app_label=app_label, model=model))
+                    except ContentType.DoesNotExist:
+                        continue
+                if types:
+                    perm.object_types.set(types)
+
+                user.groups.add(group)
+        except Exception:
+            pass
+
     # LDAP auth (optional; enabled when SKYFORGE_LDAP_URL(_FILE) and SKYFORGE_LDAP_BIND_TEMPLATE(_FILE) are set).
     _ldap_url = _read_secret("SKYFORGE_LDAP_URL")
     _ldap_bind_template = _read_secret("SKYFORGE_LDAP_BIND_TEMPLATE")

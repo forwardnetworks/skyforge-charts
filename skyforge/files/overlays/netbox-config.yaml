@@ -77,10 +77,54 @@ data:
         REMOTE_AUTH_ENABLED = True
         REMOTE_AUTH_AUTO_CREATE_USER = True
         REMOTE_AUTH_HEADER = "HTTP_REMOTE_USER"
+        REMOTE_AUTH_DEFAULT_GROUPS = ["skyforge-users"]
+        REMOTE_AUTH_AUTO_CREATE_GROUPS = True
         AUTHENTICATION_BACKENDS = [
             "netbox.authentication.RemoteUserBackend",
             "django.contrib.auth.backends.ModelBackend",
         ]
+        try:
+            from django.contrib.auth.signals import user_logged_in
+            from django.dispatch import receiver
+
+            @receiver(user_logged_in)
+            def _skyforge_apply_rbac(sender, user, request, **kwargs):
+                if user is None or not getattr(user, "is_authenticated", False):
+                    return
+
+                from core.models import ObjectType
+                from django.contrib.auth.models import Group
+                from users.models import ObjectPermission
+
+                group, _ = Group.objects.get_or_create(name="skyforge-users")
+                perm, created = ObjectPermission.objects.get_or_create(
+                    name="Skyforge Users: write",
+                    defaults={
+                        "enabled": True,
+                        "actions": ["add", "change", "delete"],
+                        "constraints": [],
+                    },
+                )
+                if not created:
+                    perm.enabled = True
+                    perm.actions = ["add", "change", "delete"]
+                    perm.constraints = []
+                    perm.save()
+                perm.groups.add(group)
+
+                types = []
+                for label in ["ipam.ipaddress", "ipam.prefix", "dcim.device", "dcim.interface", "dcim.cable"]:
+                    app_label, model = label.split(".", 1)
+                    try:
+                        types.append(ObjectType.objects.get(app_label=app_label, model=model))
+                    except ObjectType.DoesNotExist:
+                        continue
+                if types:
+                    perm.object_types.set(types)
+
+                user.groups.add(group)
+        except Exception:
+            pass
 
     if oidc_enabled and not remote_auth_enabled:
         oidc_endpoint = oidc_discovery_url
