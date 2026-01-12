@@ -151,6 +151,8 @@ skyforge:
       email: ""
       passwordSecretName: "coder-admin-bootstrap"
       passwordSecretKey: "password"
+    demo:
+      enabled: false
 
 images:
   alpine: "alpine:3.20"

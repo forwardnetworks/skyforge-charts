@@ -2,7 +2,7 @@
 {{- $email := default "" .Values.skyforge.coder.bootstrap.email -}}
 {{- $secretName := default "coder-admin-bootstrap" .Values.skyforge.coder.bootstrap.passwordSecretName -}}
 {{- $secretKey := default "password" .Values.skyforge.coder.bootstrap.passwordSecretKey -}}
-{{- if and (ne $username "") (ne $email "") }}
+{{- if and .Values.skyforge.coder.demo.enabled (ne $username "") (ne $email "") }}
 apiVersion: batch/v1
 kind: Job
 metadata:
