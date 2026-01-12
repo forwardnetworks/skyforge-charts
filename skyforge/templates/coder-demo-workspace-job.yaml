@@ -68,10 +68,10 @@ spec:
                 echo "[coder-demo] workspace skyforge-demo already exists"
               else
                 cat > /tmp/skyforge-demo-params.yaml <<'YAML'
-cpu: "2"
-memory: "2"
-home_disk_size: "10"
-              YAML
+                cpu: "2"
+                memory: "2"
+                home_disk_size: "10"
+                YAML
                 echo "[coder-demo] creating workspace skyforge-demo"
                 /opt/coder create skyforge-demo --template skyforge-demo --yes --rich-parameter-file /tmp/skyforge-demo-params.yaml
               fi
