@@ -148,7 +148,7 @@ skyforge:
     # Default goes to Coder's workspace UI under /workspaces.
     # For demo "open VS Code", set this to something like:
     #   /workspaces/@skyforge-demo/skyforge-demo/apps/code-server
-    portalRedirectPath: "/workspaces"
+    portalRedirectPath: "/coder/launch"
     # Optional bootstrap admin user (created once, idempotent).
     # If you leave these empty, you'll need to create the first user manually.
     bootstrap:
