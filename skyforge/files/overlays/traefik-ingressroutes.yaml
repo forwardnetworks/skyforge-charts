@@ -30,6 +30,12 @@ spec:
       services:
         - name: coder
           port: 7080
+    - match: PathPrefix(`/bin/`)
+      kind: Rule
+      priority: 441
+      services:
+        - name: coder
+          port: 7080
     - match: Path(`/healthz`) || Path(`/health`)
       kind: Rule
       priority: 400
