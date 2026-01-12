@@ -4,9 +4,12 @@ metadata:
   name: coder
   labels:
 {{ include "skyforge.labels" . | indent 4 }}
-{{- with .Values.kubernetes.imagePullSecrets }}
+{{- $pullSecrets := .Values.kubernetes.imagePullSecrets -}}
+{{- if $pullSecrets }}
 imagePullSecrets:
-{{ toYaml . | nindent 2 }}
+{{- range $name := $pullSecrets }}
+  - name: {{ $name | quote }}
+{{- end }}
 {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
