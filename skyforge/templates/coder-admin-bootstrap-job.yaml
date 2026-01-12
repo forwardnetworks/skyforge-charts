@@ -41,7 +41,7 @@ spec:
               fi
 
               echo "[coder-admin-bootstrap] creating initial admin user: ${CODER_BOOTSTRAP_USERNAME}"
-              coder server create-admin-user \
+              /opt/coder server create-admin-user \
                 --postgres-url "${CODER_PG_CONNECTION_URL}" \
                 --username "${CODER_BOOTSTRAP_USERNAME}" \
                 --email "${CODER_BOOTSTRAP_EMAIL}" \
@@ -63,4 +63,3 @@ spec:
                   name: {{ $secretName | quote }}
                   key: {{ $secretKey | quote }}
 {{- end }}
-
