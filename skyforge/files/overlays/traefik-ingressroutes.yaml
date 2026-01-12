@@ -88,6 +88,12 @@ spec:
           port: 3000
       middlewares:
         - name: coder-portal-redirect
+    - match: PathPrefix(`/workspaces`) || PathPrefix(`/templates`) || PathPrefix(`/tasks`) || PathPrefix(`/api/v2`) || PathPrefix(`/login`) || PathPrefix(`/@`) || PathPrefix(`/icon`) || PathPrefix(`/emojis`)
+      kind: Rule
+      priority: 455
+      services:
+        - name: coder
+          port: 7080
     - match: PathPrefix(`/skyforge-server/`)
       kind: Rule
       services:

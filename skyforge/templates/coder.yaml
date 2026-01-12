@@ -22,9 +22,9 @@ spec:
             - name: CODER_HTTP_ADDRESS
               value: "0.0.0.0:7080"
             - name: CODER_BASE_PATH
-              value: "/workspaces"
+              value: "/"
             - name: CODER_ACCESS_URL
-              value: "https://{{ .Values.skyforge.hostname }}/workspaces"
+              value: "https://{{ .Values.skyforge.hostname }}"
             - name: CODER_PG_CONNECTION_URL
               valueFrom:
                 secretKeyRef:
