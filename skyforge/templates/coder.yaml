@@ -14,6 +14,7 @@ spec:
       labels:
         io.kompose.service: coder
     spec:
+      serviceAccountName: coder
       containers:
         - name: coder
           image: {{ .Values.images.coder | quote }}
@@ -41,9 +42,9 @@ spec:
             - name: CODER_OIDC_CA_CERT
               value: "/etc/ssl/certs/skyforge-ca.crt"
             - name: CODER_OIDC_AUTO_LOGIN
-              value: "true"
+              value: {{ default true .Values.skyforge.coder.oidcAutoLogin | quote }}
             - name: CODER_DISABLE_PASSWORD_AUTH
-              value: "true"
+              value: {{ default true .Values.skyforge.coder.disablePasswordAuth | quote }}
           ports:
             - containerPort: 7080
           livenessProbe:

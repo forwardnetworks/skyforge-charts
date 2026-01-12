@@ -139,6 +139,18 @@ skyforge:
   nodeMetrics:
     enabled: false
     interval: "10s"
+  coder:
+    # Enables password auth for the bootstrap admin user (useful for demos).
+    # Keep this true for strict SSO-only deployments.
+    disablePasswordAuth: true
+    oidcAutoLogin: true
+    # Optional bootstrap admin user (created once, idempotent).
+    # If you leave these empty, you'll need to create the first user manually.
+    bootstrap:
+      username: ""
+      email: ""
+      passwordSecretName: "coder-admin-bootstrap"
+      passwordSecretKey: "password"
 
 images:
   alpine: "alpine:3.20"
@@ -218,6 +230,8 @@ secrets:
       yaade-admin-password: ""
     gitea-secret-key:
       gitea-secret-key: ""
+    coder-admin-bootstrap:
+      password: ""
     gitea-ldap-binddn:
       gitea-ldap-binddn: ""
     gitea-ldap-bindpassword:

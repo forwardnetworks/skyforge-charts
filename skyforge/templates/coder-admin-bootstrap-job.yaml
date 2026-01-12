@@ -1,0 +1,66 @@
+{{- $username := default "" .Values.skyforge.coder.bootstrap.username -}}
+{{- $email := default "" .Values.skyforge.coder.bootstrap.email -}}
+{{- $secretName := default "coder-admin-bootstrap" .Values.skyforge.coder.bootstrap.passwordSecretName -}}
+{{- $secretKey := default "password" .Values.skyforge.coder.bootstrap.passwordSecretKey -}}
+{{- if and (ne $username "") (ne $email "") }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: coder-admin-bootstrap
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+{{ include "skyforge.labels" . | indent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: coder
+      containers:
+        - name: coder-admin-bootstrap
+          image: {{ .Values.images.coder | quote }}
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-lc"]
+          args:
+            - |
+              set -euo pipefail
+              echo "[coder-admin-bootstrap] waiting for coder..."
+              for i in $(seq 1 120); do
+                if curl -fsS http://coder:7080/healthz >/dev/null; then
+                  break
+                fi
+                sleep 2
+              done
+
+              code="$(curl -sS -o /tmp/first.json -w '%{http_code}' http://coder:7080/api/v2/users/first || true)"
+              if [ "$code" != "404" ]; then
+                echo "[coder-admin-bootstrap] first user already exists (status=$code); nothing to do"
+                exit 0
+              fi
+
+              echo "[coder-admin-bootstrap] creating initial admin user: ${CODER_BOOTSTRAP_USERNAME}"
+              coder server create-admin-user \
+                --postgres-url "${CODER_PG_CONNECTION_URL}" \
+                --username "${CODER_BOOTSTRAP_USERNAME}" \
+                --email "${CODER_BOOTSTRAP_EMAIL}" \
+                --password "${CODER_BOOTSTRAP_PASSWORD}"
+              echo "[coder-admin-bootstrap] done"
+          env:
+            - name: CODER_PG_CONNECTION_URL
+              valueFrom:
+                secretKeyRef:
+                  name: coder-pg-connection-url
+                  key: coder-pg-connection-url
+            - name: CODER_BOOTSTRAP_USERNAME
+              value: {{ $username | quote }}
+            - name: CODER_BOOTSTRAP_EMAIL
+              value: {{ $email | quote }}
+            - name: CODER_BOOTSTRAP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName | quote }}
+                  key: {{ $secretKey | quote }}
+{{- end }}
+
