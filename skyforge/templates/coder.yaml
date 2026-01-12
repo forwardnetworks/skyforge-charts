@@ -31,7 +31,7 @@ spec:
                   name: coder-pg-connection-url
                   key: coder-pg-connection-url
             - name: CODER_OIDC_ISSUER_URL
-              value: "https://{{ .Values.skyforge.hostname }}/dex"
+              value: "https://{{ .Values.skyforge.hostname }}/dex-coder"
             - name: CODER_OIDC_CLIENT_ID
               value: "coder"
             - name: CODER_OIDC_CLIENT_SECRET

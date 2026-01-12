@@ -278,6 +278,14 @@ spec:
       services:
         - name: dex
           port: 5556
+    - match: PathPrefix(`/dex-coder`)
+      kind: Rule
+      priority: 221
+      services:
+        - name: dex-coder
+          port: 5556
+      middlewares:
+        - name: skyforge-auth
     - match: PathPrefix(`/webhooks`)
       kind: Rule
       services:
