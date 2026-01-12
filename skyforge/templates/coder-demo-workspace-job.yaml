@@ -12,7 +12,7 @@ metadata:
   labels:
 {{ include "skyforge.labels" . | indent 4 }}
 spec:
-  backoffLimit: 2
+  backoffLimit: 0
   template:
     metadata:
       labels:
