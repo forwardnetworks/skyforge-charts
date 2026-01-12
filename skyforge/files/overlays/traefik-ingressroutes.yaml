@@ -278,14 +278,23 @@ spec:
       services:
         - name: dex
           port: 5556
+    # Coder's OIDC provider: allow discovery/token endpoints without Skyforge auth
+    # (Coder server fetches these without a browser session), but require Skyforge
+    # auth headers for interactive /auth flows (authproxy connector).
+    - match: PathPrefix(`/dex-coder/auth`)
+      kind: Rule
+      priority: 222
+      services:
+        - name: dex-coder
+          port: 5556
+      middlewares:
+        - name: skyforge-auth
     - match: PathPrefix(`/dex-coder`)
       kind: Rule
       priority: 221
       services:
         - name: dex-coder
           port: 5556
-      middlewares:
-        - name: skyforge-auth
     - match: PathPrefix(`/webhooks`)
       kind: Rule
       services:
