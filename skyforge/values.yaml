@@ -158,6 +158,12 @@ skyforge:
       passwordSecretKey: "password"
     demo:
       enabled: false
+  clabernetes:
+    # Experimental: deploy containerlab topologies to k8s via clabernetes.
+    enabled: false
+    managerImage: "ghcr.io/srl-labs/clabernetes/clabernetes-manager:dev-latest"
+    launcherImage: "ghcr.io/srl-labs/clabernetes/clabernetes-launcher:dev-latest"
+    replicaCount: 1
 
 images:
   alpine: "alpine:3.20"
@@ -178,8 +184,8 @@ images:
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260112-0509"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260110-1857"
+  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260112-1305"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260112-1305"
 
 kubernetes:
   # Optional image pull secrets to attach to service accounts created by the chart.

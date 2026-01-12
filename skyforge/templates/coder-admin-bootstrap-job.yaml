@@ -7,10 +7,14 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: coder-admin-bootstrap
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
 {{ include "skyforge.labels" . | indent 4 }}
 spec:
   backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
   template:
     metadata:
       labels:

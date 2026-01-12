@@ -1,0 +1,156 @@
+{{- if .Values.skyforge.clabernetes.enabled -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: clabernetes-service-account
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: clabernetes-certificate
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+data: {}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: clabernetes-cluster-role
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["clabernetes.containerlab.dev"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - secrets
+      - configmaps
+      - services
+      - pods
+      - persistentvolumeclaims
+      - serviceaccounts
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["rolebindings"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: clabernetes-cluster-role
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: clabernetes-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: clabernetes-service-account
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clabernetes-manager
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.skyforge.clabernetes.replicaCount }}
+  selector:
+    matchLabels:
+      app: clabernetes-manager
+  template:
+    metadata:
+      labels:
+        app: clabernetes-manager
+        {{- include "skyforge.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: clabernetes-service-account
+      terminationGracePeriodSeconds: 10
+      initContainers:
+        - name: init
+          image: {{ .Values.skyforge.clabernetes.managerImage | quote }}
+          imagePullPolicy: IfNotPresent
+          command: ["/clabernetes/manager", "run", "--initializer"]
+          env:
+            - name: APP_NAME
+              value: clabernetes
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CLIENT_OPERATION_TIMEOUT_MULTIPLIER
+              value: "1"
+            - name: MANAGER_LOGGER_LEVEL
+              value: "info"
+            - name: CONTROLLER_LOGGER_LEVEL
+              value: "info"
+            - name: LAUNCHER_IMAGE
+              value: {{ .Values.skyforge.clabernetes.launcherImage | quote }}
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 50m
+      containers:
+        - name: manager
+          image: {{ .Values.skyforge.clabernetes.managerImage | quote }}
+          imagePullPolicy: IfNotPresent
+          command: ["/clabernetes/manager", "run"]
+          env:
+            - name: APP_NAME
+              value: clabernetes
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CLIENT_OPERATION_TIMEOUT_MULTIPLIER
+              value: "1"
+            - name: MANAGER_LOGGER_LEVEL
+              value: "info"
+            - name: CONTROLLER_LOGGER_LEVEL
+              value: "info"
+            - name: LAUNCHER_IMAGE
+              value: {{ .Values.skyforge.clabernetes.launcherImage | quote }}
+          ports:
+            - name: http
+              containerPort: 10443
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: 10443
+              scheme: HTTPS
+            successThreshold: 1
+            failureThreshold: 2
+            periodSeconds: 30
+            timeoutSeconds: 5
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 50m
+{{- end -}}
+

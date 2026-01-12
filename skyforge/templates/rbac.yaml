@@ -44,3 +44,32 @@ subjects:
   - kind: ServiceAccount
     name: skyforge-server
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: skyforge-server-clabernetes
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["clabernetes.containerlab.dev"]
+    resources: ["topologies"]
+    verbs: ["get", "list", "create", "update", "delete"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: skyforge-server-clabernetes
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: skyforge-server-clabernetes
+subjects:
+  - kind: ServiceAccount
+    name: skyforge-server
+    namespace: {{ .Release.Namespace }}
+---
