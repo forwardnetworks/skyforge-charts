@@ -37,14 +37,14 @@ spec:
               done
 
               echo "[coder-demo] logging in as ${CODER_BOOTSTRAP_EMAIL}..."
-              token="$(
+              resp="$(
                 curl -fsS -X POST http://coder:7080/api/v2/users/login \
                   -H 'Content-Type: application/json' \
-                  -d "{\"email\":\"${CODER_BOOTSTRAP_EMAIL}\",\"password\":\"${CODER_BOOTSTRAP_PASSWORD}\"}" \
-                | sed -n 's/.*\"session_token\"[[:space:]]*:[[:space:]]*\"\\([^\"]*\\)\".*/\\1/p'
+                  -d "{\"email\":\"${CODER_BOOTSTRAP_EMAIL}\",\"password\":\"${CODER_BOOTSTRAP_PASSWORD}\"}"
               )"
+              token="$(echo "$resp" | awk -F'\"' '/session_token/ {print $4}')"
               if [ -z "$token" ]; then
-                echo "[coder-demo] failed to obtain session token"
+                echo "[coder-demo] failed to obtain session token; response=$resp"
                 exit 1
               fi
 
