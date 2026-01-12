@@ -45,6 +45,8 @@ spec:
               value: {{ .Values.skyforge.coder.oidcAutoLogin | quote }}
             - name: CODER_DISABLE_PASSWORD_AUTH
               value: {{ .Values.skyforge.coder.disablePasswordAuth | quote }}
+            - name: CODER_OAUTH2_GITHUB_DEFAULT_PROVIDER_ENABLE
+              value: "false"
           ports:
             - containerPort: 7080
           livenessProbe:
