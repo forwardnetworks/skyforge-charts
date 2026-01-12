@@ -108,24 +108,47 @@ data:
                 )
 
                 types = []
-                for label in ["ipam.ipaddress", "ipam.prefix", "dcim.device", "dcim.interface", "dcim.cable"]:
+                for label in ["ipam.ipaddress", "ipam.prefix", "dcim.device", "dcim.interface"]:
                     app_label, model = label.split(".", 1)
                     try:
                         types.append(ObjectType.objects.get(app_label=app_label, model=model))
                     except ObjectType.DoesNotExist:
                         continue
 
+                all_types = list(ObjectType.objects.all())
+
+                perm_view, _ = ObjectPermission.objects.get_or_create(
+                    name="Skyforge Users: view",
+                    defaults={
+                        "enabled": True,
+                        "actions": ["view"],
+                        "constraints": [],
+                    },
+                )
+                perm_view.enabled = True
+                perm_view.actions = ["view"]
+                perm_view.constraints = []
+                perm_view.save()
+                perm_view.groups.add(group)
+                perm_view.object_types.set(all_types)
+
                 perm_add, _ = ObjectPermission.objects.get_or_create(
                     name="Skyforge Users: add",
                     defaults={
                         "enabled": True,
                         "actions": ["add"],
-                        "constraints": [],
+                        "constraints": [
+                            {"tenant_id": tenant.id},
+                            {"device__tenant_id": tenant.id},
+                        ],
                     },
                 )
                 perm_add.enabled = True
                 perm_add.actions = ["add"]
-                perm_add.constraints = []
+                perm_add.constraints = [
+                    {"tenant_id": tenant.id},
+                    {"device__tenant_id": tenant.id},
+                ]
                 perm_add.save()
                 perm_add.groups.add(group)
                 if types:
