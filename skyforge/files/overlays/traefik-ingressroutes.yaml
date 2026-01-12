@@ -299,9 +299,15 @@ spec:
       services:
         - name: dex-coder
           port: 5556
-    - match: PathPrefix(`/dex-coder`)
+    - match: PathPrefix(`/dex-coder/userinfo`)
       kind: Rule
       priority: 221
+      services:
+        - name: dex-coder
+          port: 5556
+    - match: PathPrefix(`/dex-coder`)
+      kind: Rule
+      priority: 220
       services:
         - name: dex-coder
           port: 5556
