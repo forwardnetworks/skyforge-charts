@@ -84,33 +84,63 @@ data:
 
                 from django.contrib.auth.models import Group
                 from django.contrib.contenttypes.models import ContentType
+                from nautobot.tenancy.models import Tenant
                 from nautobot.users.models import ObjectPermission
 
                 group, _ = Group.objects.get_or_create(name="skyforge-users")
-                perm, created = ObjectPermission.objects.get_or_create(
-                    name="Skyforge Users: write",
+                username = getattr(user, "username", "") or ""
+                tenant, _ = Tenant.objects.get_or_create(
+                    name=username or "user",
                     defaults={
-                        "enabled": True,
-                        "actions": ["add", "change", "delete"],
-                        "constraints": [],
+                        "description": "Skyforge per-user tenant",
                     },
                 )
-                if not created:
-                    perm.enabled = True
-                    perm.actions = ["add", "change", "delete"]
-                    perm.constraints = []
-                    perm.save()
-                perm.groups.add(group)
 
                 types = []
-                for label in ["ipam.ipaddress", "ipam.prefix", "dcim.device", "dcim.interface", "dcim.cable"]:
+                for label in ["ipam.ipaddress", "ipam.prefix", "dcim.device", "dcim.interface"]:
                     app_label, model = label.split(".", 1)
                     try:
                         types.append(ContentType.objects.get(app_label=app_label, model=model))
                     except ContentType.DoesNotExist:
                         continue
+
+                perm_add, _ = ObjectPermission.objects.get_or_create(
+                    name="Skyforge Users: add",
+                    defaults={
+                        "enabled": True,
+                        "actions": ["add"],
+                        "constraints": [],
+                    },
+                )
+                perm_add.enabled = True
+                perm_add.actions = ["add"]
+                perm_add.constraints = []
+                perm_add.save()
+                perm_add.groups.add(group)
                 if types:
-                    perm.object_types.set(types)
+                    perm_add.object_types.set(types)
+
+                perm_edit, _ = ObjectPermission.objects.get_or_create(
+                    name="Skyforge Users: tenant edit",
+                    defaults={
+                        "enabled": True,
+                        "actions": ["change", "delete"],
+                        "constraints": [
+                            {"tenant_id": str(tenant.id)},
+                            {"device__tenant_id": str(tenant.id)},
+                        ],
+                    },
+                )
+                perm_edit.enabled = True
+                perm_edit.actions = ["change", "delete"]
+                perm_edit.constraints = [
+                    {"tenant_id": str(tenant.id)},
+                    {"device__tenant_id": str(tenant.id)},
+                ]
+                perm_edit.save()
+                perm_edit.groups.add(group)
+                if types:
+                    perm_edit.object_types.set(types)
 
                 user.groups.add(group)
         except Exception:
