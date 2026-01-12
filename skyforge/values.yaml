@@ -144,6 +144,11 @@ skyforge:
     # Keep this true for strict SSO-only deployments.
     disablePasswordAuth: true
     oidcAutoLogin: true
+    # Portal link (/coder) redirect target.
+    # Default goes to Coder's workspace UI under /workspaces.
+    # For demo "open VS Code", set this to something like:
+    #   /workspaces/@skyforge-demo/skyforge-demo/apps/code-server
+    portalRedirectPath: "/workspaces"
     # Optional bootstrap admin user (created once, idempotent).
     # If you leave these empty, you'll need to create the first user manually.
     bootstrap:
@@ -173,7 +178,7 @@ images:
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260108-0245"
+  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260112-0447"
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260110-1857"
 
 kubernetes:

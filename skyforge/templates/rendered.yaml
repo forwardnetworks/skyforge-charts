@@ -146,6 +146,7 @@
   "__SKYFORGE_UI_LOGO_ALT__" .Values.skyforge.ui.logoAlt
   "__SKYFORGE_UI_HEADER_BG_URL__" .Values.skyforge.ui.headerBgUrl
   "__SKYFORGE_UI_SUPPORT_TEXT__" .Values.skyforge.ui.supportText
+  "__SKYFORGE_CODER_PORTAL_REDIRECT_PATH__" .Values.skyforge.coder.portalRedirectPath
   "__SKYFORGE_SESSION_COOKIE__" .Values.skyforge.sessionCookie
   "__SKYFORGE_SWAGGER_URL__" $swaggerUrl
 -}}

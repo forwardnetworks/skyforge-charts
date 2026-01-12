@@ -88,7 +88,7 @@ metadata:
 spec:
   redirectRegex:
     regex: "^/coder(/.*)?$"
-    replacement: "/workspaces$1"
+    replacement: "__SKYFORGE_CODER_PORTAL_REDIRECT_PATH__$1"
     permanent: false
 ---
 apiVersion: traefik.io/v1alpha1
