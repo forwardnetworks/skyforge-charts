@@ -184,7 +184,7 @@ images:
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260112-1305"
+  skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260112-1408"
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260112-1405"
 
 kubernetes:
