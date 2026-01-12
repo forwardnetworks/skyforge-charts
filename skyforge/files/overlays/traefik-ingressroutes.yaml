@@ -80,6 +80,14 @@ spec:
           port: 8085
       middlewares:
         - name: replace-skyforge-api
+    - match: PathPrefix(`/coder`)
+      kind: Rule
+      priority: 460
+      services:
+        - name: skyforge-portal
+          port: 3000
+      middlewares:
+        - name: coder-portal-redirect
     - match: PathPrefix(`/skyforge-server/`)
       kind: Rule
       services:
