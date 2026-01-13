@@ -92,6 +92,13 @@ skyforge:
     webNodePort: 30380
   workspacesDataDir: "/var/lib/skyforge"
   workspaceSyncSeconds: 300
+  internalCronjobsEnabled: true
+  # Self-hosted: schedule periodic workspace sync via Kubernetes CronJob.
+  # This triggers /api/internal/workspaces/sync and enqueues the work for the task worker.
+  workspaceSyncCron: "*/5 * * * *"
+  # Self-hosted: schedule cloud credential checks via Kubernetes CronJob.
+  # This triggers /api/internal/cloud/checks and enqueues the work for the task worker.
+  cloudCheckCron: "*/30 * * * *"
   uiThemeDefault: ""
   sessionTtl: "8h"
   pkiDefaultDays: 365
