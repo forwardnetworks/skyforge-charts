@@ -22,8 +22,9 @@ spec:
                 - /bin/sh
                 - -lc
                 - >
-                  wget -qO- --method=POST
+                  wget -qO-
                   --header="X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}"
+                  --post-data=""
                   http://skyforge-server:8085/api/internal/tasks/reconcile >/dev/null
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
@@ -55,8 +56,9 @@ spec:
                 - /bin/sh
                 - -lc
                 - >
-                  wget -qO- --method=POST
+                  wget -qO-
                   --header="X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}"
+                  --post-data=""
                   http://skyforge-server:8085/api/internal/tasks/reconcile-running >/dev/null
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
@@ -88,8 +90,9 @@ spec:
                 - /bin/sh
                 - -lc
                 - >
-                  wget -qO- --method=POST
+                  wget -qO-
                   --header="X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}"
+                  --post-data=""
                   http://skyforge-server:8085/api/internal/tasks/metrics >/dev/null
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
@@ -121,8 +124,9 @@ spec:
                 - /bin/sh
                 - -lc
                 - >
-                  wget -qO- --method=POST
+                  wget -qO-
                   --header="X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}"
+                  --post-data=""
                   http://skyforge-server:8085/api/internal/workspaces/sync >/dev/null
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
@@ -154,8 +158,9 @@ spec:
                 - /bin/sh
                 - -lc
                 - >
-                  wget -qO- --method=POST
+                  wget -qO-
                   --header="X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}"
+                  --post-data=""
                   http://skyforge-server:8085/api/internal/cloud/checks >/dev/null
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
