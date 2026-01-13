@@ -53,6 +53,11 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 
 See `charts/skyforge/values.yaml` for the full list of defaults.
 
+## Cron
+
+Skyforge uses Encore cron jobs for periodic maintenance (queued-task reconcile, etc), so the Helm
+chart does not install Kubernetes CronJobs for these tasks.
+
 ## Admin bootstrap and password sync
 
 The chart includes one-time admin bootstrap jobs:
