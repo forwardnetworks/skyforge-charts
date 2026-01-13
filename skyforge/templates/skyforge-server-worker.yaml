@@ -57,6 +57,24 @@ spec:
                 secretKeyRef:
                   name: skyforge-admin-shared
                   key: password
+            - name: SKYFORGE_LABPP_NETBOX_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-labpp-netbox-username
+                  key: skyforge-labpp-netbox-username
+                  optional: true
+            - name: SKYFORGE_LABPP_NETBOX_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-labpp-netbox-password
+                  key: skyforge-labpp-netbox-password
+                  optional: true
+            - name: SKYFORGE_LABPP_NETBOX_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-labpp-netbox-token
+                  key: skyforge-labpp-netbox-token
+                  optional: true
             - name: SKYFORGE_TASK_WORKER_ENABLED
               value: "true"
             - name: SKYFORGE_STATE_BACKEND
