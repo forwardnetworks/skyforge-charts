@@ -5,7 +5,7 @@ metadata:
     io.kompose.service: skyforge-server
   name: skyforge-server
 spec:
-  replicas: 1
+  replicas: __SKYFORGE_SERVER_REPLICA_COUNT__
   selector:
     matchLabels:
       io.kompose.service: skyforge-server

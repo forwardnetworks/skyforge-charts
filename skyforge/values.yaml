@@ -2,6 +2,8 @@
 # Override anything here with your local deployment details.
 
 skyforge:
+  serverReplicaCount: 1
+  portalReplicaCount: 1
   hostname: "skyforge.lab.local"
   domain: "lab.local"
   # Optional cookie Domain attribute. Leave empty for host-only cookies.

@@ -5,7 +5,7 @@ metadata:
     io.kompose.service: skyforge-portal
   name: skyforge-portal
 spec:
-  replicas: 1
+  replicas: __SKYFORGE_PORTAL_REPLICA_COUNT__
   selector:
     matchLabels:
       io.kompose.service: skyforge-portal
