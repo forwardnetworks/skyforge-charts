@@ -541,7 +541,7 @@ spec:
       volumes:
       - name: skyforge-server-infra-config
         configMap:
-          name: skyforge-server-infra-config-api
+          name: skyforge-server-infra-config
       - name: run-secrets
         projected:
           sources:
