@@ -10,11 +10,11 @@ spec:
   replicas: {{ .Values.skyforge.workerReplicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: skyforge-server-worker
+      app.kubernetes.io/name: skyforge
+      app.kubernetes.io/component: worker
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: skyforge-server-worker
         {{- include "skyforge.labels" . | nindent 8 }}
         app.kubernetes.io/component: worker
     spec:
@@ -184,4 +184,3 @@ spec:
             - name: skyforge-ca-bundle
               mountPath: /work
 {{- end }}
-
