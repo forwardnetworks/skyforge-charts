@@ -57,6 +57,8 @@ spec:
                 secretKeyRef:
                   name: skyforge-admin-shared
                   key: password
+            - name: SKYFORGE_TASK_WORKER_ENABLED
+              value: "true"
             - name: SKYFORGE_STATE_BACKEND
               valueFrom:
                 configMapKeyRef:

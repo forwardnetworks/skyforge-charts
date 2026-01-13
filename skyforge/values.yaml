@@ -4,6 +4,8 @@
 skyforge:
   serverReplicaCount: 1
   portalReplicaCount: 1
+  # When false, skyforge-server pods NACK queue messages; use workerReplicaCount>0 to drain the queue.
+  taskWorkerEnabled: true
   # Optional dedicated worker deployment replica count. When > 0, the chart
   # creates a separate Deployment that runs the task worker.
   workerReplicaCount: 0
