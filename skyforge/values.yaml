@@ -4,6 +4,12 @@
 skyforge:
   serverReplicaCount: 1
   portalReplicaCount: 1
+  # When true, the skyforge-server deployment runs the task worker (NSQ PubSub subscription).
+  # For an API/worker split, set this to false and set workerReplicaCount > 0.
+  taskWorkerEnabled: true
+  # Optional dedicated worker deployment replica count. When > 0, the chart
+  # creates a separate Deployment that runs the task worker.
+  workerReplicaCount: 0
   hostname: "skyforge.lab.local"
   domain: "lab.local"
   # Optional cookie Domain attribute. Leave empty for host-only cookies.

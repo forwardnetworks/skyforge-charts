@@ -1,0 +1,187 @@
+{{- if gt (int .Values.skyforge.workerReplicaCount) 0 }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skyforge-server-worker
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.skyforge.workerReplicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge-server-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: skyforge-server-worker
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+    spec:
+      serviceAccountName: skyforge-server
+      containers:
+        - name: skyforge-server-worker
+          image: {{ .Values.images.skyforgeServer | quote }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: ENCORE_RUNTIME_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-encore-runtime-config
+                  key: skyforge-encore-runtime-config
+                  optional: true
+            - name: SKYFORGE_INTERNAL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-internal-token
+                  key: skyforge-internal-token
+            - name: SKYFORGE_SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-session-secret
+                  key: skyforge-session-secret
+            - name: SKYFORGE_STATE_BACKEND
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_STATE_BACKEND
+            - name: SKYFORGE_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_HOST
+            - name: SKYFORGE_DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_PORT
+            - name: SKYFORGE_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_NAME
+            - name: SKYFORGE_DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_USER
+            - name: SKYFORGE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-skyforge-server-password
+                  key: db-skyforge-server-password
+            - name: SKYFORGE_DB_SSLMODE
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_SSLMODE
+            - name: SKYFORGE_REDIS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_REDIS_ENABLED
+            - name: SKYFORGE_REDIS_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_REDIS_ADDR
+            - name: SKYFORGE_REDIS_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_REDIS_DB
+            - name: SKYFORGE_REDIS_KEY_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_REDIS_KEY_PREFIX
+            - name: SKYFORGE_EVE_SERVERS_FILE
+              value: /run/secrets/skyforge-eve-servers
+            - name: SKYFORGE_NETLAB_SERVERS_FILE
+              value: /run/secrets/skyforge-netlab-servers
+            - name: SKYFORGE_EVE_SSH_KEY_FILE
+              value: /run/secrets/eve-runner-ssh-key
+            - name: SKYFORGE_NETLAB_SSH_KEY_FILE
+              value: /run/secrets/netlab-runner-rsa
+            - name: SKYFORGE_TASK_WORKER_ENABLED
+              value: "true"
+            - name: PORT
+              value: "8085"
+            - name: SSL_CERT_FILE
+              value: /etc/skyforge/ca/ca-certificates.crt
+          volumeMounts:
+            - mountPath: /encore/infra.config.json
+              name: skyforge-server-infra-config
+              readOnly: true
+              subPath: infra.config.json
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+            - mountPath: /var/lib/skyforge
+              name: skyforge-server-data
+            - mountPath: /data
+              name: platform-data
+            - name: skyforge-ca-bundle
+              mountPath: /etc/skyforge/ca
+      volumes:
+        - name: skyforge-server-infra-config
+          configMap:
+            name: skyforge-server-infra-config
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  name: skyforge-eve-servers
+                  optional: true
+                  items:
+                    - key: skyforge-eve-servers
+                      path: skyforge-eve-servers
+              - secret:
+                  name: skyforge-netlab-servers
+                  optional: true
+                  items:
+                    - key: skyforge-netlab-servers
+                      path: skyforge-netlab-servers
+              - secret:
+                  name: netlab-runner-rsa
+                  optional: true
+                  items:
+                    - key: netlab-runner-rsa
+                      path: netlab-runner-rsa
+              - secret:
+                  name: eve-runner-ssh-key
+                  optional: true
+                  items:
+                    - key: eve-runner-ssh-key
+                      path: eve-runner-ssh-key
+        - name: skyforge-server-data
+          persistentVolumeClaim:
+            claimName: skyforge-server-data
+        - name: platform-data
+          persistentVolumeClaim:
+            claimName: platform-data
+        - name: skyforge-ca-cert
+          secret:
+            secretName: skyforge-ca-cert
+        - name: skyforge-ca-bundle
+          emptyDir: {}
+      initContainers:
+        - name: skyforge-ca-bundle
+          image: {{ .Values.images.alpine | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+          volumeMounts:
+            - name: skyforge-ca-cert
+              mountPath: /etc/skyforge
+              readOnly: true
+            - name: skyforge-ca-bundle
+              mountPath: /work
+{{- end }}
+

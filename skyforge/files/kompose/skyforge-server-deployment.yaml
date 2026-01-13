@@ -494,6 +494,11 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_REDIS_KEY_PREFIX
+        - name: SKYFORGE_TASK_WORKER_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_TASK_WORKER_ENABLED
         - name: PORT
           value: '8085'
         - name: SSL_CERT_FILE
@@ -536,7 +541,7 @@ spec:
       volumes:
       - name: skyforge-server-infra-config
         configMap:
-          name: skyforge-server-infra-config
+          name: skyforge-server-infra-config-api
       - name: run-secrets
         projected:
           sources:
