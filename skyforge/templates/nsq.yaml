@@ -1,0 +1,64 @@
+{{- if .Values.nsq.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: nsq
+  labels:
+    app.kubernetes.io/name: nsq
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: nsq
+  ports:
+    - name: tcp
+      port: 4150
+      targetPort: 4150
+      protocol: TCP
+    - name: http
+      port: 4151
+      targetPort: 4151
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nsq
+  labels:
+    app.kubernetes.io/name: nsq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nsq
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nsq
+    spec:
+      containers:
+        - name: nsqd
+          image: {{ .Values.images.nsq | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /nsqd
+          args:
+            - --tcp-address=0.0.0.0:4150
+            - --http-address=0.0.0.0:4151
+            - --mem-queue-size=10000
+          ports:
+            - name: tcp
+              containerPort: 4150
+            - name: http
+              containerPort: 4151
+          readinessProbe:
+            tcpSocket:
+              port: 4150
+            initialDelaySeconds: 2
+            periodSeconds: 2
+          livenessProbe:
+            tcpSocket:
+              port: 4150
+            initialDelaySeconds: 10
+            periodSeconds: 10
+{{- end }}
+

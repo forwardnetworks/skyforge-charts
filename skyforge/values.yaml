@@ -186,6 +186,10 @@ images:
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
   skyforgePortal: "ghcr.io/forwardnetworks/skyforge-portal:20260112-2358"
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260112-2344"
+  nsq: "nsqio/nsq:v1.2.1"
+
+nsq:
+  enabled: true
 
 kubernetes:
   # Optional image pull secrets to attach to service accounts created by the chart.
