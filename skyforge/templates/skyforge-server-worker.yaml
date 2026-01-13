@@ -21,8 +21,11 @@ spec:
       serviceAccountName: skyforge-server
       containers:
         - name: skyforge-server-worker
-          image: {{ .Values.images.skyforgeServer | quote }}
+          image: {{ .Values.images.skyforgeServerWorker | default .Values.images.skyforgeServer | quote }}
           imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: skyforge-config
           env:
             - name: POD_NAMESPACE
               valueFrom:
@@ -44,6 +47,16 @@ spec:
                 secretKeyRef:
                   name: skyforge-session-secret
                   key: skyforge-session-secret
+            - name: SKYFORGE_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-admin-shared
+                  key: password
+            - name: SKYFORGE_GITEA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-admin-shared
+                  key: password
             - name: SKYFORGE_STATE_BACKEND
               valueFrom:
                 configMapKeyRef:
@@ -107,8 +120,6 @@ spec:
               value: /run/secrets/eve-runner-ssh-key
             - name: SKYFORGE_NETLAB_SSH_KEY_FILE
               value: /run/secrets/netlab-runner-rsa
-            - name: SKYFORGE_TASK_WORKER_ENABLED
-              value: "true"
             - name: PORT
               value: "8085"
             - name: SSL_CERT_FILE

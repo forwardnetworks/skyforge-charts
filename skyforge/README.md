@@ -27,6 +27,7 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 
 - `skyforge.hostname`: Public hostname for ingress routes.
 - `skyforge.domain`: Email/domain suffix used by default accounts.
+- `skyforge.workerReplicaCount`: Dedicated task worker replica count (processes queued runs from PubSub).
 - `skyforge.labpp.runnerImage`: LabPP runner image (job executed by skyforge-server).
 - `skyforge.labpp.runnerPullPolicy`: Image pull policy for the LabPP runner.
 - `skyforge.labpp.runnerPvc`: PVC name mounted at `/var/lib/skyforge` for templates/configs (default `skyforge-server-data`).
@@ -41,6 +42,7 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 - `skyforge.pkiDefaultDays`: Default certificate TTL (days) for the PKI UI.
 - `skyforge.sshDefaultDays`: Default SSH certificate TTL (days) for the PKI UI.
 - `images.*`: Override container images.
+- `images.skyforgeServerWorker`: Dedicated task worker image (built with `-tags=skyforge_worker`).
 - `secrets.items`: Provide secret values (use `--set-file` for PEM/SSH keys).
 - `secrets.items.skyforge-admin-shared.password`: Shared admin password used to seed Skyforge, Gitea,
   NetBox and Nautobot.
