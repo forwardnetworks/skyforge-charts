@@ -37,6 +37,22 @@
       }
     }
   ],
+  "pubsub": [
+    {
+      "type": "nsq",
+      "hosts": "nsq:4150",
+      "topics": {
+        "skyforge-task-queue": {
+          "name": "skyforge-task-queue",
+          "subscriptions": {
+            "skyforge-task-worker": {
+              "name": "skyforge-task-worker"
+            }
+          }
+        }
+      }
+    }
+  ],
   "graceful_shutdown": {
     "total": 30,
     "shutdown_hooks": 10,
@@ -44,6 +60,8 @@
   },
   "secrets": {
     "SKYFORGE_SESSION_SECRET": {},
+    "SKYFORGE_OIDC_CLIENT_ID": {},
+    "SKYFORGE_OIDC_CLIENT_SECRET": {},
     "SKYFORGE_LDAP_URL": {},
     "SKYFORGE_LDAP_BIND_TEMPLATE": {},
     "SKYFORGE_LDAP_LOOKUP_BINDDN": {},
@@ -55,9 +73,7 @@
     "SKYFORGE_OBJECT_STORAGE_ROOT_PASSWORD": {},
     "SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_KEY": {},
     "SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_KEY": {},
-    "SKYFORGE_INTERNAL_TOKEN": {},
-    "SKYFORGE_OIDC_CLIENT_ID": {},
-    "SKYFORGE_OIDC_CLIENT_SECRET": {}
+    "SKYFORGE_INTERNAL_TOKEN": {}
   },
   "env": {
     "SKYFORGE_DB_HOST": "db",
