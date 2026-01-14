@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: skyforge-server-infra-config
+  name: skyforge-server-infra-config-worker
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
 data:
   infra.config.json: |
-{{- .Files.Get "files/infra.api.config.json" | nindent 4 }}
+{{- .Files.Get "files/infra.config.json" | nindent 4 }}
+

@@ -17,6 +17,9 @@ spec:
       labels:
         {{- include "skyforge.labels" . | nindent 8 }}
         app.kubernetes.io/component: worker
+      annotations:
+        checksum/values: {{ sha256sum (toJson .Values) | quote }}
+        checksum/infra-worker: {{ sha256sum (.Files.Get "files/infra.config.json") | quote }}
     spec:
       serviceAccountName: skyforge-server
       containers:
@@ -126,7 +129,7 @@ spec:
               value: /etc/skyforge/ca/ca-certificates.crt
           volumeMounts:
             - mountPath: /encore/infra.config.json
-              name: skyforge-server-infra-config
+              name: skyforge-server-infra-config-worker
               readOnly: true
               subPath: infra.config.json
             - mountPath: /run/secrets
@@ -139,9 +142,9 @@ spec:
             - name: skyforge-ca-bundle
               mountPath: /etc/skyforge/ca
       volumes:
-        - name: skyforge-server-infra-config
+        - name: skyforge-server-infra-config-worker
           configMap:
-            name: skyforge-server-infra-config
+            name: skyforge-server-infra-config-worker
         - name: run-secrets
           projected:
             sources:
