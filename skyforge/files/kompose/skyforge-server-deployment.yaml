@@ -474,26 +474,6 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_DB_SSLMODE
-        - name: SKYFORGE_REDIS_ENABLED
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_REDIS_ENABLED
-        - name: SKYFORGE_REDIS_ADDR
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_REDIS_ADDR
-        - name: SKYFORGE_REDIS_DB
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_REDIS_DB
-        - name: SKYFORGE_REDIS_KEY_PREFIX
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_REDIS_KEY_PREFIX
         - name: SKYFORGE_TASK_WORKER_ENABLED
           valueFrom:
             configMapKeyRef:

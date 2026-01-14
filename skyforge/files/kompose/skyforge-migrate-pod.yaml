@@ -109,3 +109,11 @@ spec:
                 path: skyforge/migrations/20260103000100_workspace_rename.up.sql
               - key: 20260110120000_rename_tofu_to_terraform.up.sql
                 path: skyforge/migrations/20260110120000_rename_tofu_to_terraform.up.sql
+              - key: 20260112000100_task_events.up.sql
+                path: skyforge/migrations/20260112000100_task_events.up.sql
+              - key: 20260113000300_forward_device_types.up.sql
+                path: skyforge/migrations/20260113000300_forward_device_types.up.sql
+              - key: 20260114000100_node_metrics_and_heartbeats.up.sql
+                path: skyforge/migrations/20260114000100_node_metrics_and_heartbeats.up.sql
+              - key: 20260114000200_ldap_password_cache.up.sql
+                path: skyforge/migrations/20260114000200_ldap_password_cache.up.sql

@@ -25,7 +25,7 @@ data:
       }
     }
   atlas.sum: |
-    h1:Kq7USOoT/Pk0wKOKrAYKAOQSksST22MYR4+MXvMIdP0=
+    h1:F6knd2DjT7k8I4tu/4yKd9BdSk+hyW1pOnNmv3lRNSE=
     20251220000100_init.up.sql h1:ZR4Y0ICXFcjlVW2XKzVYoSNksZP2tQ0ajHHNnh/1IoM=
     20251221000100_cloud_credentials.up.sql h1:Xb5agfyv110UYW/49J7WKrDhUCDZeS7EiMKgQUf+Tvs=
     20251222000100_project_visibility.up.sql h1:PDVyAxeOyGa1iSj+KXN2dlV1G2jxBK9A49c/1gXv4PQ=
@@ -45,6 +45,10 @@ data:
     20260102000600_pki_ssh_certs.up.sql h1:HuOwauibGEjWiJWF9oEMNkai+769epYXAPEQ7epAQ3Y=
     20260103000100_workspace_rename.up.sql h1:q4ttxNo49clCFnVEaNuG41ll/k0qKB/0YKK+pQXZcbQ=
     20260110120000_rename_tofu_to_terraform.up.sql h1:/dic8pIb/fzn8TB3EHeqyJ8TgOupH2Jh1sR4OOWGc7Y=
+    20260112000100_task_events.up.sql h1:Z0dqhyzNJPZ8Yc4OiItZMzXew4SyvypbJs0tnuB0RcA=
+    20260113000300_forward_device_types.up.sql h1:oXUDEFllD1rRIqYkLbcOKp3HVxnmgIxBQ2Egg6fOw1Q=
+    20260114000100_node_metrics_and_heartbeats.up.sql h1:rMDwaItn9ALP2nDTJ9Bf6eVGU1K70ZMoBab2CKAMMxg=
+    20260114000200_ldap_password_cache.up.sql h1:+XgF42Mwxtvgq6gTJtZazCLf8TrTOVmwrd7NQoMoZjE=
   20251220000100_init.up.sql: |
     CREATE TABLE sf_users (
       username text PRIMARY KEY,
@@ -549,3 +553,59 @@ data:
     
     ALTER TABLE sf_deployments DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
     ALTER TABLE sf_deployments ADD CONSTRAINT sf_deployments_type_check CHECK (type IN ('terraform','netlab','labpp','containerlab'));
+
+  20260112000100_task_events.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_task_events (
+      id bigserial PRIMARY KEY,
+      task_id bigint NOT NULL REFERENCES sf_tasks(id) ON DELETE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      event_type text NOT NULL,
+      payload jsonb NOT NULL DEFAULT '{}'::jsonb
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_task_events_task_idx ON sf_task_events(task_id, id);
+
+  20260113000300_forward_device_types.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_forward_device_types (
+      device_key text PRIMARY KEY,
+      forward_type text NOT NULL,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    -- Seed a few high-value defaults. Users/admin tooling can add/update mappings later.
+    INSERT INTO sf_forward_device_types (device_key, forward_type)
+    VALUES
+      ('linux', 'linux_os_ssh'),
+      ('eos', 'arista_eos_ssh')
+    ON CONFLICT (device_key) DO NOTHING;
+
+  20260114000100_node_metrics_and_heartbeats.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_node_metric_snapshots (
+      node TEXT NOT NULL,
+      metric_name TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL,
+      metric_json JSONB NOT NULL,
+      PRIMARY KEY (node, metric_name)
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_node_metric_snapshots_updated_at
+      ON sf_node_metric_snapshots (updated_at DESC);
+    
+    CREATE TABLE IF NOT EXISTS sf_taskworker_heartbeats (
+      instance TEXT PRIMARY KEY,
+      last_seen TIMESTAMPTZ NOT NULL
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_taskworker_heartbeats_last_seen
+      ON sf_taskworker_heartbeats (last_seen DESC);
+
+  20260114000200_ldap_password_cache.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_ldap_password_cache (
+      username TEXT PRIMARY KEY,
+      encrypted_password TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_ldap_password_cache_expires_at
+      ON sf_ldap_password_cache (expires_at DESC);

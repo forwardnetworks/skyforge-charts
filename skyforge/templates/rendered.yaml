@@ -122,10 +122,6 @@
   "__SKYFORGE_DB_NAME__" .Values.skyforge.db.name
   "__SKYFORGE_DB_USER__" .Values.skyforge.db.user
   "__SKYFORGE_DB_SSLMODE__" .Values.skyforge.db.sslmode
-  "__SKYFORGE_REDIS_ENABLED__" (printf "%v" .Values.skyforge.redis.enabled)
-  "__SKYFORGE_REDIS_ADDR__" .Values.skyforge.redis.addr
-  "__SKYFORGE_REDIS_DB__" (printf "%v" .Values.skyforge.redis.db)
-  "__SKYFORGE_REDIS_KEY_PREFIX__" .Values.skyforge.redis.keyPrefix
   "__SKYFORGE_HEALTH_HTTP_CHECKS__" $healthHttpChecks
   "__SKYFORGE_HEALTH_CODE_CHECKS__" .Values.skyforge.health.codeChecks
   "__SKYFORGE_MINIO_LDAP_CONSOLE_GROUP__" (dig "skyforge" "minio" "ldapConsoleGroup" "" $vals)
