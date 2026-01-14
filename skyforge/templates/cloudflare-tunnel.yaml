@@ -1,0 +1,120 @@
+{{- $cf := .Values.skyforge.cloudflareTunnel -}}
+{{- if $cf.enabled -}}
+{{- $fullname := include "skyforge.fullname" . -}}
+{{- $hostname := default .Values.skyforge.hostname $cf.hostname -}}
+{{- $service := default "http://traefik.kube-system.svc.cluster.local:80" $cf.service -}}
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $fullname }}-cloudflared
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+---
+{{- $tokenSecret := (trim $cf.tokenSecretName) -}}
+{{- if eq $tokenSecret "" -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullname }}-cloudflared
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    tunnel: {{ required "skyforge.cloudflareTunnel.tunnelId is required when tokenSecretName is empty" $cf.tunnelId }}
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    no-autoupdate: true
+    {{- if $cf.metrics }}
+    metrics: {{ $cf.metrics | quote }}
+    {{- end }}
+    ingress:
+      - hostname: {{ $hostname | quote }}
+        service: {{ $service | quote }}
+      {{- range $h := $cf.additionalHostnames }}
+      - hostname: {{ $h | quote }}
+        service: {{ $service | quote }}
+      {{- end }}
+      - service: http_status:404
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullname }}-cloudflared
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  replicas: {{ default 1 $cf.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "skyforge.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: cloudflared
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/component: cloudflared
+    spec:
+      serviceAccountName: {{ $fullname }}-cloudflared
+      containers:
+        - name: cloudflared
+          image: {{ .Values.images.cloudflared | quote }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65532
+            capabilities:
+              drop: ["ALL"]
+          {{- if $cf.metrics }}
+          ports:
+            - name: metrics
+              containerPort: {{ (splitList ":" $cf.metrics | last) | int }}
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          {{- end }}
+          {{- if $tokenSecret }}
+          args: ["tunnel", "--no-autoupdate", "run", "--token", "$(CLOUDFLARED_TOKEN)"]
+          env:
+            - name: CLOUDFLARED_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $tokenSecret | quote }}
+                  key: {{ default "token" $cf.tokenSecretKey | quote }}
+          {{- else }}
+          args: ["tunnel", "--config", "/etc/cloudflared/config/config.yaml", "run"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+          {{- end }}
+      volumes:
+        {{- if not $tokenSecret }}
+        - name: config
+          configMap:
+            name: {{ $fullname }}-cloudflared
+        - name: creds
+          secret:
+            secretName: {{ required "skyforge.cloudflareTunnel.credentialsSecretName is required when tokenSecretName is empty" $cf.credentialsSecretName }}
+            items:
+              - key: {{ default "credentials.json" $cf.credentialsSecretKey | quote }}
+                path: credentials.json
+        {{- end }}
+{{- end -}}

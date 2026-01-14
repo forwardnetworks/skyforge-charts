@@ -37,6 +37,7 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 - `skyforge.labpp.netboxMgmtSubnet`: NetBox management subnet CIDR for LabPP allocations.
 - `skyforge.labpp.s3Region`: Optional LabPP S3 region.
 - `skyforge.labpp.s3Bucket`: Optional LabPP S3 bucket.
+- `skyforge.cloudflareTunnel`: Optional `cloudflared` tunnel to expose Skyforge externally (see `charts/skyforge/docs/cloudflare-tunnel.md`).
 - `skyforge.labppProxy`: Optional Traefik proxy for exposing LabPP API endpoints via `https://<skyforge-hostname>/labpp/<name>/...`.
 - `skyforge.eveProxy`: Optional Traefik proxy for exposing EVE-NG UI via `https://<skyforge-hostname>/labs/<name>/...` (used for SSO).
 - `skyforge.pkiDefaultDays`: Default certificate TTL (days) for the PKI UI.

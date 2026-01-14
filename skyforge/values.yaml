@@ -167,6 +167,29 @@ skyforge:
     launcherImage: "ghcr.io/srl-labs/clabernetes/clabernetes-launcher:dev-latest"
     replicaCount: 1
 
+  # Optional: Cloudflare Tunnel (cloudflared) to expose Skyforge externally without opening inbound ports.
+  # Requires you to create the tunnel in Cloudflare and store either a tunnel token or credentials.json in a Secret.
+  cloudflareTunnel:
+    enabled: false
+    # External hostname to publish (defaults to skyforge.hostname).
+    hostname: ""
+    # Internal service URL to proxy to (Traefik handles routing by Host header).
+    service: "http://traefik.kube-system.svc.cluster.local:80"
+    # Optional extra hostnames to publish.
+    additionalHostnames: []
+    # Metrics/health endpoint (used for readiness/liveness probes).
+    metrics: "0.0.0.0:2000"
+    replicaCount: 1
+
+    # Token mode (recommended easiest path): create a Secret with key "token".
+    tokenSecretName: ""
+    tokenSecretKey: "token"
+
+    # Credentials mode: create a Secret containing credentials.json + set tunnelId.
+    tunnelId: ""
+    credentialsSecretName: ""
+    credentialsSecretKey: "credentials.json"
+
 images:
   alpine: "alpine:3.20"
   vector: "timberio/vector:0.44.0-debian"
@@ -192,6 +215,7 @@ images:
   # Defaults to the same image as skyforgeServer for local/dev workflows.
   skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260114-0447-dd7991f-worker"
   nsq: "nsqio/nsq:v1.2.1"
+  cloudflared: "cloudflare/cloudflared:2025.1.0"
 
 nsq:
   enabled: true
