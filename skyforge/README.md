@@ -42,6 +42,8 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 - `skyforge.eveProxy`: Optional Traefik proxy for exposing EVE-NG UI via `https://<skyforge-hostname>/labs/<name>/...` (used for SSO).
 - `skyforge.pkiDefaultDays`: Default certificate TTL (days) for the PKI UI.
 - `skyforge.sshDefaultDays`: Default SSH certificate TTL (days) for the PKI UI.
+- `skyforge.encoreRuntimeConfig`: Optional Encore runtime infrastructure config (`ENCORE_RUNTIME_CONFIG`).
+- `skyforge.encoreCfg`: Optional typed Encore config for the `skyforge` service (`ENCORE_CFG_SKYFORGE`).
 - `images.*`: Override container images.
 - `images.skyforgeServerWorker`: Dedicated task worker image (built with `-tags=skyforge_worker`).
 - `secrets.items`: Provide secret values (use `--set-file` for PEM/SSH keys).
@@ -53,6 +55,8 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
   k3s `k8s/overlays/k3s-traefik-secrets` overlay).
 
 See `charts/skyforge/values.yaml` for the full list of defaults.
+
+Typed Encore config (`config.Load`) can be injected via `skyforge.encoreCfg.*`; the chart base64url-encodes the JSON and sets `ENCORE_CFG_SKYFORGE`.
 
 ## Cron
 

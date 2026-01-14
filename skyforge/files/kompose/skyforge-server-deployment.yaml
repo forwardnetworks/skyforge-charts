@@ -68,6 +68,12 @@ spec:
               name: skyforge-encore-runtime-config
               key: skyforge-encore-runtime-config
               optional: true
+        - name: ENCORE_CFG_SKYFORGE
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-encore-cfg
+              key: ENCORE_CFG_SKYFORGE
+              optional: true
         - name: SKYFORGE_GITEA_PASSWORD
           valueFrom:
             secretKeyRef:

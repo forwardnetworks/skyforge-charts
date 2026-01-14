@@ -11,10 +11,18 @@ skyforge:
   # creates a separate Deployment that runs the task worker.
   workerReplicaCount: 0
 
-  # Optional: provide ENCORE_RUNTIME_CONFIG for typed Encore config values.
-  # Disabled by default to avoid surprising behavior changes; enable once you have
-  # validated the payload format for this app/runtime.
+  # Optional: provide ENCORE_RUNTIME_CONFIG for Encore runtime infrastructure config.
+  # NOTE: This is NOT the same as typed Encore config loaded via config.Load.
   encoreRuntimeConfig:
+    create: false
+    json: "{}"
+    workerCreate: false
+    workerJson: "{}"
+
+  # Optional: provide ENCORE_CFG_SKYFORGE for typed Encore config (config.Load).
+  # The value must be a JSON object; the chart will base64url-encode it.
+  # Keep it non-secret: do not include passwords/tokens here.
+  encoreCfg:
     create: false
     json: "{}"
     workerCreate: false

@@ -40,6 +40,12 @@ spec:
                   name: skyforge-encore-runtime-config-worker
                   key: skyforge-encore-runtime-config
                   optional: true
+            - name: ENCORE_CFG_SKYFORGE
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-encore-cfg-worker
+                  key: ENCORE_CFG_SKYFORGE
+                  optional: true
             - name: SKYFORGE_INTERNAL_TOKEN
               valueFrom:
                 secretKeyRef:
