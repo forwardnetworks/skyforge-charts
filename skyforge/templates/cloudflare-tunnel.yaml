@@ -4,6 +4,7 @@
 {{- $hostname := default .Values.skyforge.hostname $cf.hostname -}}
 {{- $service := default "http://traefik.kube-system.svc.cluster.local:80" $cf.service -}}
 {{- $mode := default "token" $cf.mode -}}
+{{- $httpHostHeader := default .Values.skyforge.hostname $cf.httpHostHeader -}}
 
 apiVersion: v1
 kind: ServiceAccount
@@ -89,7 +90,7 @@ spec:
             timeoutSeconds: 3
           {{- end }}
           {{- if eq $mode "quick" }}
-          args: ["tunnel", "--no-autoupdate", "--metrics", {{ $cf.metrics | quote }}, "--url", {{ $service | quote }}]
+          args: ["tunnel", "--no-autoupdate", "--metrics", {{ $cf.metrics | quote }}, "--url", {{ $service | quote }}, "--http-host-header", {{ $httpHostHeader | quote }}]
           {{- else if $tokenSecret }}
           args: ["tunnel", "--no-autoupdate", "--metrics", {{ $cf.metrics | quote }}, "run", "--token", "$(CLOUDFLARED_TOKEN)"]
           env:

@@ -50,6 +50,9 @@ skyforge:
     mode: quick
     # Optional; defaults to Traefik:
     # service: "http://traefik.kube-system.svc.cluster.local:80"
+    # Required in most setups: match Skyforge's normal hostname so Traefik routes correctly.
+    # Defaults to skyforge.hostname.
+    # httpHostHeader: "skyforge.local.forwardnetworks.com"
 ```
 
 2) Deploy the chart, then read the generated URL from logs:

@@ -176,6 +176,9 @@ skyforge:
     # - credentials: use credentials.json + tunnelId (stable hostnames, explicit ingress config)
     # - quick: unauthenticated trycloudflare.com URL (dynamic, changes on restart)
     mode: "token"
+    # For quick tunnel mode, set the HTTP Host header sent to Traefik.
+    # Defaults to skyforge.hostname.
+    httpHostHeader: ""
     # External hostname to publish (defaults to skyforge.hostname).
     hostname: ""
     # Internal service URL to proxy to (Traefik handles routing by Host header).
