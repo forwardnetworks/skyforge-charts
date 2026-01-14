@@ -32,9 +32,17 @@ data:
     ingress:
       - hostname: {{ $hostname | quote }}
         service: {{ $service | quote }}
+        originRequest:
+          httpHostHeader: {{ $hostname | quote }}
+          originServerName: {{ $hostname | quote }}
+          noTLSVerify: true
       {{- range $h := $cf.additionalHostnames }}
       - hostname: {{ $h | quote }}
         service: {{ $service | quote }}
+        originRequest:
+          httpHostHeader: {{ $hostname | quote }}
+          originServerName: {{ $hostname | quote }}
+          noTLSVerify: true
       {{- end }}
       - service: http_status:404
 ---
@@ -90,9 +98,29 @@ spec:
             timeoutSeconds: 3
           {{- end }}
           {{- if eq $mode "quick" }}
-          args: ["tunnel", "--no-autoupdate", "--metrics", {{ $cf.metrics | quote }}, "--url", {{ $service | quote }}, "--http-host-header", {{ $httpHostHeader | quote }}]
+          args:
+            - tunnel
+            - --no-autoupdate
+            - --metrics
+            - {{ $cf.metrics | quote }}
+            - --url
+            - {{ $service | quote }}
+            - --http-host-header
+            - {{ $httpHostHeader | quote }}
+            {{- if hasPrefix "https://" $service }}
+            - --origin-server-name
+            - {{ $httpHostHeader | quote }}
+            - --no-tls-verify
+            {{- end }}
           {{- else if $tokenSecret }}
-          args: ["tunnel", "--no-autoupdate", "--metrics", {{ $cf.metrics | quote }}, "run", "--token", "$(CLOUDFLARED_TOKEN)"]
+          args:
+            - tunnel
+            - --no-autoupdate
+            - --metrics
+            - {{ $cf.metrics | quote }}
+            - run
+            - --token
+            - $(CLOUDFLARED_TOKEN)
           env:
             - name: CLOUDFLARED_TOKEN
               valueFrom:
@@ -100,7 +128,13 @@ spec:
                   name: {{ $tokenSecret | quote }}
                   key: {{ default "token" $cf.tokenSecretKey | quote }}
           {{- else }}
-          args: ["tunnel", "--metrics", {{ $cf.metrics | quote }}, "--config", "/etc/cloudflared/config/config.yaml", "run"]
+          args:
+            - tunnel
+            - --metrics
+            - {{ $cf.metrics | quote }}
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - run
           volumeMounts:
             - name: config
               mountPath: /etc/cloudflared/config

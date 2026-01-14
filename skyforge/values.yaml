@@ -182,7 +182,9 @@ skyforge:
     # External hostname to publish (defaults to skyforge.hostname).
     hostname: ""
     # Internal service URL to proxy to (Traefik handles routing by Host header).
-    service: "http://traefik.kube-system.svc.cluster.local:80"
+    # NOTE: Skyforge's Traefik routes typically live on the HTTPS entrypoint.
+    # Use the HTTPS Traefik service by default.
+    service: "https://traefik.kube-system.svc.cluster.local:443"
     # Optional extra hostnames to publish.
     additionalHostnames: []
     # Metrics/health endpoint (used for readiness/liveness probes).
