@@ -3,6 +3,7 @@
 {{- $fullname := include "skyforge.fullname" . -}}
 {{- $hostname := default .Values.skyforge.hostname $cf.hostname -}}
 {{- $service := default "http://traefik.kube-system.svc.cluster.local:80" $cf.service -}}
+{{- $mode := default "token" $cf.mode -}}
 
 apiVersion: v1
 kind: ServiceAccount
@@ -12,7 +13,7 @@ metadata:
     {{- include "skyforge.labels" . | nindent 4 }}
 ---
 {{- $tokenSecret := (trim $cf.tokenSecretName) -}}
-{{- if eq $tokenSecret "" -}}
+{{- if and (ne $mode "quick") (eq $tokenSecret "") -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -87,8 +88,10 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 3
           {{- end }}
-          {{- if $tokenSecret }}
-          args: ["tunnel", "--no-autoupdate", "run", "--token", "$(CLOUDFLARED_TOKEN)"]
+          {{- if eq $mode "quick" }}
+          args: ["tunnel", "--no-autoupdate", "--metrics", {{ $cf.metrics | quote }}, "--url", {{ $service | quote }}]
+          {{- else if $tokenSecret }}
+          args: ["tunnel", "--no-autoupdate", "--metrics", {{ $cf.metrics | quote }}, "run", "--token", "$(CLOUDFLARED_TOKEN)"]
           env:
             - name: CLOUDFLARED_TOKEN
               valueFrom:
@@ -96,7 +99,7 @@ spec:
                   name: {{ $tokenSecret | quote }}
                   key: {{ default "token" $cf.tokenSecretKey | quote }}
           {{- else }}
-          args: ["tunnel", "--config", "/etc/cloudflared/config/config.yaml", "run"]
+          args: ["tunnel", "--metrics", {{ $cf.metrics | quote }}, "--config", "/etc/cloudflared/config/config.yaml", "run"]
           volumeMounts:
             - name: config
               mountPath: /etc/cloudflared/config
@@ -106,7 +109,7 @@ spec:
               readOnly: true
           {{- end }}
       volumes:
-        {{- if not $tokenSecret }}
+        {{- if and (ne $mode "quick") (not $tokenSecret) }}
         - name: config
           configMap:
             name: {{ $fullname }}-cloudflared

@@ -37,6 +37,29 @@ skyforge:
 4) Configure the **Public Hostname** mapping in Cloudflare to point the tunnel to your origin:
 - If you use Cloudflare’s Public Hostname UI, you can route the hostname directly to the tunnel (recommended).
 
+## Option C: quick tunnel (dynamic trycloudflare.com URL)
+
+This does **not** require a Cloudflare account, DNS, or a static hostname. The URL changes whenever the pod restarts.
+
+1) Enable the tunnel in values:
+
+```yaml
+skyforge:
+  cloudflareTunnel:
+    enabled: true
+    mode: quick
+    # Optional; defaults to Traefik:
+    # service: "http://traefik.kube-system.svc.cluster.local:80"
+```
+
+2) Deploy the chart, then read the generated URL from logs:
+
+```bash
+kubectl -n skyforge logs deploy/skyforge-cloudflared -f
+```
+
+Look for a line containing `trycloudflare.com`.
+
 ## Option B: credentials.json mode (explicit ingress rules in Kubernetes)
 
 1) Create the tunnel and download `credentials.json` (or copy it from your `~/.cloudflared/<TUNNEL_ID>.json`).
