@@ -4,8 +4,8 @@
 skyforge:
   serverReplicaCount: 1
   portalReplicaCount: 1
-  # When false, skyforge-server pods do not run worker-only subscriptions.
-  # Use workerReplicaCount>0 to drain the queue.
+  # Deprecated: use `skyforge.encoreCfg.workerJson` with `TaskWorkerEnabled=true` instead.
+  # This chart no longer injects `SKYFORGE_TASK_WORKER_ENABLED` by default.
   taskWorkerEnabled: false
   # Optional dedicated worker deployment replica count. When > 0, the chart
   # creates a separate Deployment that runs the task worker.

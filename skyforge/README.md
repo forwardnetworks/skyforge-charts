@@ -58,6 +58,8 @@ See `charts/skyforge/values.yaml` for the full list of defaults.
 
 Typed Encore config (`config.Load`) can be injected via `skyforge.encoreCfg.*`; the chart base64url-encodes the JSON and sets `ENCORE_CFG_SKYFORGE`.
 
+Note: the chart no longer sets `SKYFORGE_TASK_WORKER_ENABLED` by default. Prefer enabling the worker by setting `"TaskWorkerEnabled": true` in `skyforge.encoreCfg.workerJson` and running a dedicated worker deployment (`skyforge.workerReplicaCount > 0`).
+
 ## Cron
 
 Skyforge uses Encore cron jobs for periodic maintenance (queued-task reconcile, etc), so the Helm

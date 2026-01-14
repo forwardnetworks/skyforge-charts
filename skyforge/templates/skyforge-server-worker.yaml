@@ -84,8 +84,6 @@ spec:
                   name: skyforge-labpp-netbox-token
                   key: skyforge-labpp-netbox-token
                   optional: true
-            - name: SKYFORGE_TASK_WORKER_ENABLED
-              value: "true"
             - name: SKYFORGE_STATE_BACKEND
               valueFrom:
                 configMapKeyRef:

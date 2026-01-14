@@ -147,7 +147,6 @@
   "__SKYFORGE_CODER_PORTAL_REDIRECT_PATH__" .Values.skyforge.coder.portalRedirectPath
   "__SKYFORGE_SERVER_REPLICA_COUNT__" (printf "%v" .Values.skyforge.serverReplicaCount)
   "__SKYFORGE_PORTAL_REPLICA_COUNT__" (printf "%v" .Values.skyforge.portalReplicaCount)
-  "__SKYFORGE_TASK_WORKER_ENABLED__" (printf "%v" .Values.skyforge.taskWorkerEnabled)
   "__SKYFORGE_WORKER_REPLICA_COUNT__" (printf "%v" .Values.skyforge.workerReplicaCount)
   "__SKYFORGE_SESSION_COOKIE__" .Values.skyforge.sessionCookie
   "__SKYFORGE_SWAGGER_URL__" $swaggerUrl
