@@ -10,6 +10,15 @@ skyforge:
   # Optional dedicated worker deployment replica count. When > 0, the chart
   # creates a separate Deployment that runs the task worker.
   workerReplicaCount: 0
+
+  # Optional: provide ENCORE_RUNTIME_CONFIG for typed Encore config values.
+  # Disabled by default to avoid surprising behavior changes; enable once you have
+  # validated the payload format for this app/runtime.
+  encoreRuntimeConfig:
+    create: false
+    json: "{}"
+    workerCreate: false
+    workerJson: "{}"
   hostname: "skyforge.lab.local"
   domain: "lab.local"
   # Optional cookie Domain attribute. Leave empty for host-only cookies.

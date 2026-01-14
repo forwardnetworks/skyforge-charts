@@ -37,7 +37,7 @@ spec:
             - name: ENCORE_RUNTIME_CONFIG
               valueFrom:
                 secretKeyRef:
-                  name: skyforge-encore-runtime-config
+                  name: skyforge-encore-runtime-config-worker
                   key: skyforge-encore-runtime-config
                   optional: true
             - name: SKYFORGE_INTERNAL_TOKEN
