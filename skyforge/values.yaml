@@ -190,7 +190,7 @@ images:
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260114-0447-dd7991f"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server-worker:20260114-0447-dd7991f"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260114-0447-dd7991f-worker"
   nsq: "nsqio/nsq:v1.2.1"
 
 nsq:
