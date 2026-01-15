@@ -272,6 +272,8 @@ secrets:
     skyforge-eve-servers:
       skyforge-eve-servers: "[]"
     skyforge-netlab-servers:
+      # JSON array of netlab server configs. Example:
+      # [{"name":"netlab","apiUrl":"https://netlab.local.forwardnetworks.com/netlab","apiInsecure":false,"apiToken":"<bearer>"}]
       skyforge-netlab-servers: "[]"
     netlab-runner-rsa:
       netlab-runner-rsa: ""
