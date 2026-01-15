@@ -19,6 +19,22 @@ spec:
         checksum/values: "__SKYFORGE_VALUES_CHECKSUM__"
         checksum/infra-api: "__SKYFORGE_INFRA_API_CHECKSUM__"
     spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            io.kompose.service: skyforge-server
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  io.kompose.service: skyforge-server
       automountServiceAccountToken: true
       serviceAccountName: skyforge-server
       containers:
