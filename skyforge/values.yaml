@@ -23,7 +23,7 @@ skyforge:
   # The value must be a JSON object; the chart will base64url-encode it.
   # Keep it non-secret: do not include passwords/tokens here.
   encoreCfg:
-    create: false
+    create: true
     json: "{}"
     workerCreate: false
     # Note: when workerCreate is true, the chart forces `"TaskWorkerEnabled": true` in the worker config payload.
