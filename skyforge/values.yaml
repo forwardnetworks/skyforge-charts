@@ -26,6 +26,7 @@ skyforge:
     create: false
     json: "{}"
     workerCreate: false
+    # Note: when workerCreate is true, the chart forces `"TaskWorkerEnabled": true` in the worker config payload.
     workerJson: "{}"
   hostname: "skyforge.lab.local"
   domain: "lab.local"
