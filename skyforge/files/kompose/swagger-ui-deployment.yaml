@@ -5,15 +5,33 @@ metadata:
     io.kompose.service: swagger-ui
   name: swagger-ui
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       io.kompose.service: swagger-ui
+  strategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
         io.kompose.service: swagger-ui
     spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            io.kompose.service: swagger-ui
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  io.kompose.service: swagger-ui
       automountServiceAccountToken: false
       containers:
       - name: swagger-ui

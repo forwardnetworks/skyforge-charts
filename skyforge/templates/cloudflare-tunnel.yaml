@@ -54,7 +54,7 @@ metadata:
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
 spec:
-  replicas: {{ default 1 $cf.replicaCount }}
+  replicas: {{ default 2 $cf.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "skyforge.name" . }}
@@ -67,6 +67,26 @@ spec:
         app.kubernetes.io/component: cloudflared
     spec:
       serviceAccountName: {{ $fullname }}-cloudflared
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "skyforge.name" . }}
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/component: cloudflared
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: {{ include "skyforge.name" . }}
+                    app.kubernetes.io/instance: {{ .Release.Name }}
+                    app.kubernetes.io/component: cloudflared
       containers:
         - name: cloudflared
           image: {{ .Values.images.cloudflared | quote }}

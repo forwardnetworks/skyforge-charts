@@ -3,7 +3,7 @@
 
 skyforge:
   serverReplicaCount: 1
-  portalReplicaCount: 1
+  portalReplicaCount: 2
   # Deprecated: use `skyforge.encoreCfg.workerJson` with `TaskWorkerEnabled=true` instead.
   # This chart no longer injects `SKYFORGE_TASK_WORKER_ENABLED` by default.
   taskWorkerEnabled: false
@@ -207,7 +207,7 @@ skyforge:
     additionalHostnames: []
     # Metrics/health endpoint (used for readiness/liveness probes).
     metrics: "0.0.0.0:2000"
-    replicaCount: 1
+    replicaCount: 2
 
     # Token mode (recommended easiest path): create a Secret with key "token".
     tokenSecretName: ""
