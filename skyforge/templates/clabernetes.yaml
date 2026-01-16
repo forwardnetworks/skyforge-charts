@@ -51,6 +51,20 @@ rules:
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: clabernetes-launcher-role
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["clabernetes.containerlab.dev"]
+    resources: ["imagerequests"]
+    verbs: ["get", "create"]
+  - apiGroups: ["clabernetes.containerlab.dev"]
+    resources: ["connectivities"]
+    verbs: ["get", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: clabernetes-cluster-role
@@ -153,4 +167,3 @@ spec:
               memory: 128Mi
               cpu: 50m
 {{- end -}}
-
