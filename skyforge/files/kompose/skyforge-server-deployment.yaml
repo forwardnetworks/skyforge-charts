@@ -644,6 +644,8 @@ spec:
               path: skyforge/migrations/20260116000100_task_priority.up.sql
             - key: 20260116000200_deployment_types.up.sql
               path: skyforge/migrations/20260116000200_deployment_types.up.sql
+            - key: 20260116000300_ensure_legacy_workspace_id.up.sql
+              path: skyforge/migrations/20260116000300_ensure_legacy_workspace_id.up.sql
       initContainers:
       - name: skyforge-migrate
         image: arigaio/atlas:latest-alpine

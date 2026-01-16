@@ -21,7 +21,7 @@ data:
       }
     }
   atlas.sum: |
-    h1:iLfhJ/mJxaMyI/0b97og/k9W9cUqsVb2tXSNe0tHm6Y=
+    h1:O9AnubdV0Cr3EEq3ppUpYJSgLSlzp2vwk/8nc75Z5sA=
     20251220000100_init.up.sql h1:ZR4Y0ICXFcjlVW2XKzVYoSNksZP2tQ0ajHHNnh/1IoM=
     20251221000100_cloud_credentials.up.sql h1:Xb5agfyv110UYW/49J7WKrDhUCDZeS7EiMKgQUf+Tvs=
     20251222000100_project_visibility.up.sql h1:PDVyAxeOyGa1iSj+KXN2dlV1G2jxBK9A49c/1gXv4PQ=
@@ -42,14 +42,15 @@ data:
     20260103000100_workspace_rename.up.sql h1:q4ttxNo49clCFnVEaNuG41ll/k0qKB/0YKK+pQXZcbQ=
     20260110120000_rename_tofu_to_terraform.up.sql h1:/dic8pIb/fzn8TB3EHeqyJ8TgOupH2Jh1sR4OOWGc7Y=
     20260112000100_task_events.up.sql h1:Z0dqhyzNJPZ8Yc4OiItZMzXew4SyvypbJs0tnuB0RcA=
-    20260113000300_forward_device_types.up.sql h1:JarGi+wuj19+n8psqqMrlzG1TszihzGyi4l9M96vM/g=
-    20260114000100_node_metrics_and_heartbeats.up.sql h1:+7obkIGiRcr+Hj83T2NhSg3Q085I3jc9WZ/MDfFJX94=
-    20260114000200_ldap_password_cache.up.sql h1:ys4afLQq7BMNQJbdSqXICIt5WNAT6CPAfvFYPUxtrgM=
-    20260114000300_workspace_servers.up.sql h1:uBAK5cw6LBEZEVPyxPDIa+hFcnEaiB58FvmUvDRnEHI=
-    20260115000100_drop_legacy_workspace_id.up.sql h1:7+6zoX6ehQAWQuZdZbvGupvYwBb2nanCe4YqlvNDNzs=
-    20260115000200_workspace_template_sources.up.sql h1:Uv9/hpAykCGV2KaULmMVLMfX53MejVN/56TyG5i7I30=
-    20260116000100_task_priority.up.sql h1:wD7K3qPn1iblIWofEy3swTbKjtkT19g8nN7x0WGOtKU=
-    20260116000200_deployment_types.up.sql h1:+/ToEfINHvauMw4JAO4vZXhJ1voq0uJ5IC1Ix+5K9sc=
+    20260113000300_forward_device_types.up.sql h1:oXUDEFllD1rRIqYkLbcOKp3HVxnmgIxBQ2Egg6fOw1Q=
+    20260114000100_node_metrics_and_heartbeats.up.sql h1:rMDwaItn9ALP2nDTJ9Bf6eVGU1K70ZMoBab2CKAMMxg=
+    20260114000200_ldap_password_cache.up.sql h1:+XgF42Mwxtvgq6gTJtZazCLf8TrTOVmwrd7NQoMoZjE=
+    20260114000300_workspace_servers.up.sql h1:MTTFaa2JYMTZCRPI77jA225tlj5FTWcbIeLcxu9WaaU=
+    20260115000100_drop_legacy_workspace_id.up.sql h1:ulgmX/2DpDGr3QzQpJUY52iwOSsMwNcZrObdMFoH8DQ=
+    20260115000200_workspace_template_sources.up.sql h1:ToKfGZW/yyoSoJmS5D9rqKaOJENiIkZAs9uq0nh4loA=
+    20260116000100_task_priority.up.sql h1:bK+mnj/V9QdPImQhTZE8N9GXpSbtt1Tsa7sx9ZQcVgU=
+    20260116000200_deployment_types.up.sql h1:TRaRsuEJokMoFK6qQ/s90tK/40tEb8y9ZMl29uNVo0U=
+    20260116000300_ensure_legacy_workspace_id.up.sql h1:w4QAS4DNV7ulwQIMY675dKtbv94cR+q5L/Ckh40FOeE=
   20251220000100_init.up.sql: |
     CREATE TABLE sf_users (
       username text PRIMARY KEY,
@@ -684,3 +685,45 @@ data:
         'containerlab'::text,
         'clabernetes'::text
       ])));
+
+  20260116000300_ensure_legacy_workspace_id.up.sql: |
+    -- Ensure a legacy workspace ID column exists for backward compatibility.
+    --
+    -- Some code paths (or older deployments) may still reference legacy_workspace_id
+    -- during startup/bootstrap (e.g. dashboard snapshot generation). Keeping this
+    -- nullable column avoids hard failures while the rest of the legacy plumbing is
+    -- removed.
+    DO $$
+    BEGIN
+      IF to_regclass('sf_workspaces') IS NULL THEN
+        RETURN;
+      END IF;
+    
+      -- Older databases might still have legacy_project_id (pre-rename); preserve
+      -- values by renaming it rather than creating a new empty column.
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'sf_workspaces'
+          AND column_name = 'legacy_project_id'
+      ) AND NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'sf_workspaces'
+          AND column_name = 'legacy_workspace_id'
+      ) THEN
+        ALTER TABLE sf_workspaces RENAME COLUMN legacy_project_id TO legacy_workspace_id;
+      END IF;
+    
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'sf_workspaces'
+          AND column_name = 'legacy_workspace_id'
+      ) THEN
+        ALTER TABLE sf_workspaces ADD COLUMN legacy_workspace_id integer;
+      END IF;
+    END $$;
