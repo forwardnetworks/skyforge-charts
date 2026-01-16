@@ -22,7 +22,7 @@ spec:
         - name: skyforge-migrate
           image: arigaio/atlas:latest-alpine
           imagePullPolicy: Always
-          workingDir: /app
+          workingDir: /work
           command:
             - /bin/sh
             - -c
@@ -30,9 +30,32 @@ spec:
             - >-
               set -euo pipefail;
               db_url="postgres://${SKYFORGE_DB_USER}:${SKYFORGE_DB_PASSWORD}@${SKYFORGE_DB_HOST}:${SKYFORGE_DB_PORT}/${SKYFORGE_DB_NAME}?sslmode=${SKYFORGE_DB_SSLMODE}";
+              echo "Preparing Skyforge migrations...";
+              rm -rf /work/migrations;
+              mkdir -p /work/migrations;
+              cp -a /migrations-src/. /work/migrations/;
+              cat > /work/atlas.hcl <<'EOF'
+              variable "db_url" {
+                type = string
+              }
+
+              env "prod" {
+                url = var.db_url
+                migration {
+                  dir    = "file:///work/migrations"
+                  format = golang-migrate
+                }
+                format {
+                  migrate {
+                    diff = "{{ sql . \"  \" }}"
+                  }
+                }
+              }
+              EOF
+              atlas migrate hash --dir file:///work/migrations --format golang-migrate;
               echo "Running Skyforge migrations...";
               for i in $(seq 1 60); do
-                if atlas migrate apply --config file:///app/atlas.hcl --env prod --var db_url="${db_url}"; then
+                if atlas migrate apply --config file:///work/atlas.hcl --env prod --var db_url="${db_url}"; then
                   echo "Skyforge migrations complete.";
                   exit 0;
                 fi
@@ -57,17 +80,15 @@ spec:
                   key: db-skyforge-server-password
             - name: SKYFORGE_DB_SSLMODE
               value: disable
-            - name: ATLAS_CONFIG
-              value: /app/atlas.hcl
           volumeMounts:
-            - mountPath: /app/skyforge/migrations
+            - mountPath: /migrations-src
               name: skyforge-migrate-config
               readOnly: true
-            - mountPath: /app/atlas.hcl
-              name: skyforge-migrate-config
-              subPath: atlas.hcl
-              readOnly: true
+            - mountPath: /work
+              name: skyforge-migrate-work
       volumes:
         - name: skyforge-migrate-config
           configMap:
             name: skyforge-migrate-config
+        - name: skyforge-migrate-work
+          emptyDir: {}
