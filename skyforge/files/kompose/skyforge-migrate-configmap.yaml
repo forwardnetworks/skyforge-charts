@@ -25,7 +25,7 @@ data:
       }
     }
   atlas.sum: |
-    h1:IShBCnLkFgm/NbTRMwjefLyYm4nuw0ZXXix6ruJalp8=
+    h1:esTPhXidQSyssiTtpQ1u4mq7cIPmpqlZlKwvSEFvgiI=
     20251220000100_init.up.sql h1:ZR4Y0ICXFcjlVW2XKzVYoSNksZP2tQ0ajHHNnh/1IoM=
     20251221000100_cloud_credentials.up.sql h1:Xb5agfyv110UYW/49J7WKrDhUCDZeS7EiMKgQUf+Tvs=
     20251222000100_project_visibility.up.sql h1:PDVyAxeOyGa1iSj+KXN2dlV1G2jxBK9A49c/1gXv4PQ=
@@ -44,11 +44,15 @@ data:
     20260102000500_forward_collectors.up.sql h1:XpO8ZLkT7WzV6W9dAKqFGdxQL209nlIT0RxmSLGkiHs=
     20260102000600_pki_ssh_certs.up.sql h1:HuOwauibGEjWiJWF9oEMNkai+769epYXAPEQ7epAQ3Y=
     20260103000100_workspace_rename.up.sql h1:q4ttxNo49clCFnVEaNuG41ll/k0qKB/0YKK+pQXZcbQ=
-    20260110120000_rename_tofu_to_terraform.up.sql h1:/dic8pIb/fzn8TB3EHeqyJ8TgOupH2Jh1sR4OOWGc7Y=
-    20260112000100_task_events.up.sql h1:Z0dqhyzNJPZ8Yc4OiItZMzXew4SyvypbJs0tnuB0RcA=
-    20260113000300_forward_device_types.up.sql h1:JarGi+wuj19+n8psqqMrlzG1TszihzGyi4l9M96vM/g=
-    20260114000100_node_metrics_and_heartbeats.up.sql h1:+7obkIGiRcr+Hj83T2NhSg3Q085I3jc9WZ/MDfFJX94=
-    20260114000200_ldap_password_cache.up.sql h1:ys4afLQq7BMNQJbdSqXICIt5WNAT6CPAfvFYPUxtrgM=
+    20260110120000_rename_tofu_to_terraform.up.sql h1:k7uXrOthFmoDEUV9Opb4T8EoSh4oBEWPPlcq1alo/iA=
+    20260112000100_task_events.up.sql h1:TGNtvkxVht6idLTmrTMfjoXMuXWC+qkfARvZrAQqO5k=
+    20260113000300_forward_device_types.up.sql h1:17yNP28CyaGrmFzriV6TpChUAHBxR59ZhtxeDWXD1u4=
+    20260114000100_node_metrics_and_heartbeats.up.sql h1:EcW1HxP96bZN/6flASLznSHn21KqYN4g+mKYaG2N748=
+    20260114000200_ldap_password_cache.up.sql h1:n5GHEu5u6lgl2wzAAo+ZevvuBEfEHfNdTqNHx88rIkQ=
+    20260114000300_workspace_servers.up.sql h1:+bdqMJNQbG/EWtIQ0oLh/KIaiDDmHLmS2i7eaPKYlwc=
+    20260115000100_drop_legacy_workspace_id.up.sql h1:j3YKsFwlGqGuUT0Hk+pQYjT4x+R5srpLTrhw4nsNzIE=
+    20260115000200_workspace_template_sources.up.sql h1:KRbQ0g5jMvJvKTiqXfTaW4hgELSV7wL0PwHF/4kVH9g=
+    20260116000100_task_priority.up.sql h1:72JsMF/qzxMtaozuprdtJoNUajigMeeh2Iy4qSWsck4=
   20251220000100_init.up.sql: |
     CREATE TABLE sf_users (
       username text PRIMARY KEY,
@@ -609,3 +613,62 @@ data:
     
     CREATE INDEX IF NOT EXISTS idx_sf_ldap_password_cache_expires_at
       ON sf_ldap_password_cache (expires_at DESC);
+
+  20260114000300_workspace_servers.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_project_eve_servers (
+      id uuid PRIMARY KEY,
+      project_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      name text NOT NULL,
+      api_url text NOT NULL,
+      web_url text,
+      skip_tls_verify boolean NOT NULL DEFAULT false,
+      ssh_host text,
+      ssh_user text,
+      ssh_key text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      UNIQUE (project_id, name)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_project_eve_servers_project_idx ON sf_project_eve_servers(project_id);
+    
+    CREATE TABLE IF NOT EXISTS sf_project_netlab_servers (
+      id uuid PRIMARY KEY,
+      project_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      name text NOT NULL,
+      api_url text NOT NULL,
+      api_insecure boolean NOT NULL DEFAULT true,
+      api_token text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      UNIQUE (project_id, name)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_project_netlab_servers_project_idx ON sf_project_netlab_servers(project_id);
+
+  20260115000100_drop_legacy_workspace_id.up.sql: |
+    ALTER TABLE sf_workspaces DROP COLUMN IF EXISTS legacy_workspace_id;
+
+  20260115000200_workspace_template_sources.up.sql: |
+    ALTER TABLE sf_workspaces
+      ADD COLUMN IF NOT EXISTS allow_external_template_repos boolean NOT NULL DEFAULT false;
+    
+    ALTER TABLE sf_workspaces
+      ADD COLUMN IF NOT EXISTS allow_custom_eve_servers boolean NOT NULL DEFAULT false;
+    
+    ALTER TABLE sf_workspaces
+      ADD COLUMN IF NOT EXISTS allow_custom_netlab_servers boolean NOT NULL DEFAULT false;
+    
+    ALTER TABLE sf_workspaces
+      ADD COLUMN IF NOT EXISTS external_template_repos jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+  20260116000100_task_priority.up.sql: |
+    ALTER TABLE sf_tasks
+      ADD COLUMN IF NOT EXISTS priority integer NOT NULL DEFAULT 0;
+    
+    -- Optimized queue scans for oldest/highest-priority tasks.
+    CREATE INDEX IF NOT EXISTS sf_tasks_queue_idx
+      ON sf_tasks (workspace_id, status, priority DESC, id);
+    
+    CREATE INDEX IF NOT EXISTS sf_tasks_queue_deployment_idx
+      ON sf_tasks (workspace_id, deployment_id, status, priority DESC, id);
