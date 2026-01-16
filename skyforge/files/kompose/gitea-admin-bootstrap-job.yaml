@@ -1,6 +1,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
   labels:
     io.kompose.service: gitea-admin-bootstrap
   name: gitea-admin-bootstrap
@@ -13,6 +16,19 @@ spec:
     spec:
       automountServiceAccountToken: false
       enableServiceLinks: false
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  io.kompose.service: gitea
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - args:
             - |
@@ -23,6 +39,20 @@ spec:
               admin_email="${SKYFORGE_ADMIN_EMAIL:-}"
               admin_password="$(cat /run/secrets/skyforge-admin-shared | tr -d '\n')"
               config="/var/lib/gitea/custom/conf/app.ini"
+
+              # Wait for Gitea to write its config file so the CLI commands work on fresh installs.
+              for i in $(seq 1 60); do
+                if [ -f "${config}" ]; then
+                  break
+                fi
+                echo "Waiting for gitea config to exist at ${config} (${i}/60)..."
+                sleep 2
+              done
+
+              if [ ! -f "${config}" ]; then
+                echo "Gitea config not found at ${config}; skipping admin bootstrap."
+                exit 0
+              fi
 
               if [ -z "${admin_username}" ] || [ -z "${admin_password}" ]; then
                 echo "SKYFORGE admin username/password not set; skipping."
