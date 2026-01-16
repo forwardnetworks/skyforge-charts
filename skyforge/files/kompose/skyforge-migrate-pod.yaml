@@ -60,71 +60,14 @@ spec:
             - name: ATLAS_CONFIG
               value: /app/atlas.hcl
           volumeMounts:
-            - mountPath: /app
+            - mountPath: /app/skyforge/migrations
               name: skyforge-migrate-config
+              readOnly: true
+            - mountPath: /app/atlas.hcl
+              name: skyforge-migrate-config
+              subPath: atlas.hcl
               readOnly: true
       volumes:
         - name: skyforge-migrate-config
           configMap:
             name: skyforge-migrate-config
-            items:
-              - key: atlas.hcl
-                path: atlas.hcl
-              - key: atlas.sum
-                path: skyforge/migrations/atlas.sum
-              - key: 20251220000100_init.up.sql
-                path: skyforge/migrations/20251220000100_init.up.sql
-              - key: 20251221000100_cloud_credentials.up.sql
-                path: skyforge/migrations/20251221000100_cloud_credentials.up.sql
-              - key: 20251222000100_project_visibility.up.sql
-                path: skyforge/migrations/20251222000100_project_visibility.up.sql
-              - key: 20251223000100_governance_tables.up.sql
-                path: skyforge/migrations/20251223000100_governance_tables.up.sql
-              - key: 20251223000200_deployments.up.sql
-                path: skyforge/migrations/20251223000200_deployments.up.sql
-              - key: 20251224000100_labpp_templates.up.sql
-                path: skyforge/migrations/20251224000100_labpp_templates.up.sql
-              - key: 20251227000100_deployments_labpp.up.sql
-                path: skyforge/migrations/20251227000100_deployments_labpp.up.sql
-              - key: 20251229000100_dns_tokens.up.sql
-                path: skyforge/migrations/20251229000100_dns_tokens.up.sql
-              - key: 20251230000100_syslog_events.up.sql
-                path: skyforge/migrations/20251230000100_syslog_events.up.sql
-              - key: 20251230000200_webhooks_snmp.up.sql
-                path: skyforge/migrations/20251230000200_webhooks_snmp.up.sql
-              - key: 20251231000100_containerlab_templates.up.sql
-                path: skyforge/migrations/20251231000100_containerlab_templates.up.sql
-              - key: 20260101000100_pki_certs.up.sql
-                path: skyforge/migrations/20260101000100_pki_certs.up.sql
-              - key: 20260102000100_tasks.up.sql
-                path: skyforge/migrations/20260102000100_tasks.up.sql
-              - key: 20260102000200_variable_groups.up.sql
-                path: skyforge/migrations/20260102000200_variable_groups.up.sql
-              - key: 20260102000400_forward_credentials.up.sql
-                path: skyforge/migrations/20260102000400_forward_credentials.up.sql
-              - key: 20260102000500_forward_collectors.up.sql
-                path: skyforge/migrations/20260102000500_forward_collectors.up.sql
-              - key: 20260102000600_pki_ssh_certs.up.sql
-                path: skyforge/migrations/20260102000600_pki_ssh_certs.up.sql
-              - key: 20260103000100_workspace_rename.up.sql
-                path: skyforge/migrations/20260103000100_workspace_rename.up.sql
-              - key: 20260110120000_rename_tofu_to_terraform.up.sql
-                path: skyforge/migrations/20260110120000_rename_tofu_to_terraform.up.sql
-              - key: 20260112000100_task_events.up.sql
-                path: skyforge/migrations/20260112000100_task_events.up.sql
-              - key: 20260113000300_forward_device_types.up.sql
-                path: skyforge/migrations/20260113000300_forward_device_types.up.sql
-              - key: 20260114000100_node_metrics_and_heartbeats.up.sql
-                path: skyforge/migrations/20260114000100_node_metrics_and_heartbeats.up.sql
-              - key: 20260114000200_ldap_password_cache.up.sql
-                path: skyforge/migrations/20260114000200_ldap_password_cache.up.sql
-              - key: 20260114000300_workspace_servers.up.sql
-                path: skyforge/migrations/20260114000300_workspace_servers.up.sql
-              - key: 20260115000100_drop_legacy_workspace_id.up.sql
-                path: skyforge/migrations/20260115000100_drop_legacy_workspace_id.up.sql
-              - key: 20260115000200_workspace_template_sources.up.sql
-                path: skyforge/migrations/20260115000200_workspace_template_sources.up.sql
-              - key: 20260116000100_task_priority.up.sql
-                path: skyforge/migrations/20260116000100_task_priority.up.sql
-              - key: 20260116000200_deployment_types.up.sql
-                path: skyforge/migrations/20260116000200_deployment_types.up.sql
