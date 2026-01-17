@@ -177,6 +177,11 @@ skyforge:
       passwordSecretKey: "password"
     demo:
       enabled: false
+  dex:
+    # Optional: tweak Dex login page UX/branding. These settings are applied by an initContainer
+    # that patches the Dex config from the `dex-config` Secret at startup.
+    webTheme: ""
+    logoUrl: "/assets/skyforge/FN-logo.svg"
   clabernetes:
     # Experimental: deploy containerlab topologies to k8s via clabernetes.
     enabled: false

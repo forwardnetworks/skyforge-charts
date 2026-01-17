@@ -14,6 +14,27 @@ spec:
       labels:
         io.kompose.service: dex
     spec:
+      initContainers:
+        - name: patch-config
+          image: python:3.12-alpine
+          env:
+            - name: DEX_WEB_THEME
+              value: {{ .Values.skyforge.dex.webTheme | default "" | quote }}
+            - name: DEX_LOGO_URL
+              value: {{ .Values.skyforge.dex.logoUrl | default "" | quote }}
+          command:
+            - sh
+            - -c
+            - apk add --no-cache py3-yaml >/dev/null && python /config/patch.py
+          volumeMounts:
+            - name: dex-config-template
+              mountPath: /config
+              readOnly: true
+            - name: dex-config-src
+              mountPath: /etc/dex-src
+              readOnly: true
+            - name: dex-config
+              mountPath: /etc/dex
       containers:
         - name: dex
           image: {{ .Values.images.dex | quote }}
@@ -27,11 +48,16 @@ spec:
               readOnly: true
       volumes:
         - name: dex-config
+          emptyDir: {}
+        - name: dex-config-src
           secret:
             secretName: dex-config
             items:
               - key: config.yaml
                 path: config.yaml
+        - name: dex-config-template
+          configMap:
+            name: dex-config-patcher
 ---
 apiVersion: v1
 kind: Service
