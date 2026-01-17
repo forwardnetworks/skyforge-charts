@@ -102,6 +102,13 @@ skyforge:
   netlab:
     sshUser: "ubuntu"
     stateRoot: "/var/lib/skyforge/netlab"
+  netlabC9s:
+    # Netlab (cluster-native) uses an in-cluster generator Job to run `netlab create`
+    # and emit clabernetes-ready artifacts (ConfigMaps + manifest).
+    generatorImage: ""
+    generatorPullPolicy: "IfNotPresent"
+    ansibleImage: ""
+    ansiblePullPolicy: "IfNotPresent"
   dns:
     enabled: false
     # NodePort for UDP/TCP 53 on the k3s host.
