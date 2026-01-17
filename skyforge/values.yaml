@@ -88,9 +88,9 @@ skyforge:
     skipTlsVerify: false
     startTls: false
     baseDn: ""
-	  listenAddr: ":8085"
-	  maxGroups: 50
-	  ssoSkipTlsVerify: false
+  listenAddr: ":8085"
+  maxGroups: 50
+  ssoSkipTlsVerify: false
   netboxUrl: ""
   netboxMgmtSubnet: "10.255.0.0/24"
   nautobotUrl: ""
@@ -111,11 +111,11 @@ skyforge:
   workspacesDataDir: "/var/lib/skyforge"
   workspaceSyncSeconds: 300
   uiThemeDefault: ""
-	  sessionTtl: "8h"
-	  pkiDefaultDays: 365
-	  sshDefaultDays: 30
-	  cookieSecure: true
-	  swaggerUrl: ""
+  sessionTtl: "8h"
+  pkiDefaultDays: 365
+  sshDefaultDays: 30
+  cookieSecure: true
+  swaggerUrl: ""
   db:
     host: "db"
     port: 5432
