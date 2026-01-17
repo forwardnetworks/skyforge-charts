@@ -364,11 +364,6 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_WORKSPACES_DATA_DIR
-        - name: SKYFORGE_PLATFORM_DATA_DIR
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_PLATFORM_DATA_DIR
         - name: SKYFORGE_WORKSPACE_SYNC_SECONDS
           valueFrom:
             configMapKeyRef:
@@ -464,11 +459,6 @@ spec:
             secretKeyRef:
               name: skyforge-internal-token
               key: skyforge-internal-token
-        - name: SKYFORGE_STATE_BACKEND
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_STATE_BACKEND
         - name: SKYFORGE_DB_HOST
           valueFrom:
             configMapKeyRef:

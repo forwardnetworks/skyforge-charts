@@ -107,19 +107,17 @@
   "__SKYFORGE_YAADE_ADMIN_USERNAME__" .Values.skyforge.yaadeAdminUsername
   "__SKYFORGE_OBJECT_STORAGE_ENDPOINT__" .Values.skyforge.objectStorage.endpoint
   "__SKYFORGE_OBJECT_STORAGE_USE_SSL__" (printf "%v" .Values.skyforge.objectStorage.useSsl)
-  "__SKYFORGE_NETLAB_SSH_USER__" .Values.skyforge.netlab.sshUser
-  "__SKYFORGE_NETLAB_STATE_ROOT__" .Values.skyforge.netlab.stateRoot
-  "__SKYFORGE_WORKSPACES_DATA_DIR__" .Values.skyforge.workspacesDataDir
-  "__SKYFORGE_PLATFORM_DATA_DIR__" .Values.skyforge.platformDataDir
-  "__SKYFORGE_WORKSPACE_SYNC_SECONDS__" (printf "%v" .Values.skyforge.workspaceSyncSeconds)
+	  "__SKYFORGE_NETLAB_SSH_USER__" .Values.skyforge.netlab.sshUser
+	  "__SKYFORGE_NETLAB_STATE_ROOT__" .Values.skyforge.netlab.stateRoot
+	  "__SKYFORGE_WORKSPACES_DATA_DIR__" .Values.skyforge.workspacesDataDir
+	  "__SKYFORGE_WORKSPACE_SYNC_SECONDS__" (printf "%v" .Values.skyforge.workspaceSyncSeconds)
   "__SKYFORGE_PKI_DEFAULT_DAYS__" (printf "%v" .Values.skyforge.pkiDefaultDays)
   "__SKYFORGE_SSH_DEFAULT_DAYS__" (printf "%v" .Values.skyforge.sshDefaultDays)
   "__SKYFORGE_UI_THEME_DEFAULT__" .Values.skyforge.uiThemeDefault
-  "__SKYFORGE_SESSION_TTL__" .Values.skyforge.sessionTtl
-  "__SKYFORGE_COOKIE_SECURE__" (printf "%v" .Values.skyforge.cookieSecure)
-  "__SKYFORGE_COOKIE_DOMAIN__" $cookieDomain
-  "__SKYFORGE_STATE_BACKEND__" .Values.skyforge.stateBackend
-  "__SKYFORGE_DB_HOST__" .Values.skyforge.db.host
+	  "__SKYFORGE_SESSION_TTL__" .Values.skyforge.sessionTtl
+	  "__SKYFORGE_COOKIE_SECURE__" (printf "%v" .Values.skyforge.cookieSecure)
+	  "__SKYFORGE_COOKIE_DOMAIN__" $cookieDomain
+	  "__SKYFORGE_DB_HOST__" .Values.skyforge.db.host
   "__SKYFORGE_DB_PORT__" (printf "%v" .Values.skyforge.db.port)
   "__SKYFORGE_DB_NAME__" .Values.skyforge.db.name
   "__SKYFORGE_DB_USER__" .Values.skyforge.db.user

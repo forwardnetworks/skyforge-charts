@@ -43,8 +43,6 @@ spec:
           value: ''
         - name: NEXT_PUBLIC_ENV
           value: production
-        - name: SKYFORGE_SERVER_INTERNAL_URL
-          value: http://skyforge-server:8085
         - name: CODER_PORTAL_REDIRECT_PATH
           value: __SKYFORGE_CODER_PORTAL_REDIRECT_PATH__
         - name: SSL_CERT_FILE

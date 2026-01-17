@@ -64,11 +64,6 @@ spec:
                   name: skyforge-encore-cfg-worker
                   key: ENCORE_CFG_SKYFORGE
                   optional: true
-            - name: SKYFORGE_INTERNAL_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-internal-token
-                  key: skyforge-internal-token
             - name: SKYFORGE_SESSION_SECRET
               valueFrom:
                 secretKeyRef:
@@ -102,11 +97,6 @@ spec:
                   name: skyforge-labpp-netbox-token
                   key: skyforge-labpp-netbox-token
                   optional: true
-            - name: SKYFORGE_STATE_BACKEND
-              valueFrom:
-                configMapKeyRef:
-                  name: skyforge-config
-                  key: SKYFORGE_STATE_BACKEND
             - name: SKYFORGE_DB_HOST
               valueFrom:
                 configMapKeyRef:
