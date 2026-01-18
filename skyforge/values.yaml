@@ -200,7 +200,9 @@ skyforge:
     multus:
       # Install Multus (and the NetworkAttachmentDefinition CRD) into the cluster.
       # Required for connectivity=multus.
-      install: true
+      # NOTE: If Multus is already installed in your cluster (or managed outside Helm),
+      # keep this set to false to avoid Helm ownership conflicts.
+      install: false
       namespace: "kube-system"
       image: "ghcr.io/k8snetworkplumbingwg/multus-cni:snapshot-thick"
       imagePullPolicy: IfNotPresent
