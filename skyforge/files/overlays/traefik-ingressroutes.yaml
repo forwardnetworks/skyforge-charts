@@ -46,14 +46,14 @@ spec:
       kind: Rule
       priority: 300
       services:
-        - name: skyforge-logout
-          port: 8080
+        - name: skyforge-server
+          port: 8085
     - match: PathPrefix(`/nautobot/logout`)
       kind: Rule
       priority: 300
       services:
-        - name: skyforge-logout
-          port: 8080
+        - name: skyforge-server
+          port: 8085
     - match: PathPrefix(`/files/`)
       kind: Rule
       services:
@@ -65,8 +65,8 @@ spec:
       kind: Rule
       priority: 450
       services:
-        - name: skyforge-portal
-          port: 3000
+        - name: skyforge-server
+          port: 8085
     - match: PathPrefix(`/data/`)
       kind: Rule
       services:
@@ -84,8 +84,8 @@ spec:
       kind: Rule
       priority: 460
       services:
-        - name: skyforge-portal
-          port: 3000
+        - name: skyforge-server
+          port: 8085
       middlewares:
         - name: coder-portal-redirect
     - match: PathPrefix(`/workspaces`) || PathPrefix(`/templates`) || PathPrefix(`/tasks`) || PathPrefix(`/api/v2`) || PathPrefix(`/login`) || PathPrefix(`/@`) || PathPrefix(`/icon`) || PathPrefix(`/emojis`)
@@ -104,8 +104,8 @@ spec:
     - match: PathPrefix(`/`)
       kind: Rule
       services:
-        - name: skyforge-portal
-          port: 3000
+        - name: skyforge-server
+          port: 8085
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -274,8 +274,8 @@ spec:
       kind: Rule
       priority: 205
       services:
-        - name: skyforge-portal
-          port: 3000
+        - name: skyforge-server
+          port: 8085
       middlewares:
         - name: coder-portal-redirect
     - match: PathPrefix(`/templates`) || PathPrefix(`/tasks`)
@@ -340,7 +340,7 @@ spec:
     - match: PathPrefix(`/webhooks`)
       kind: Rule
       services:
-        - name: skyforge-portal
-          port: 3000
+        - name: skyforge-server
+          port: 8085
       middlewares:
         - name: skyforge-auth

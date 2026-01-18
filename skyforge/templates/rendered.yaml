@@ -5,7 +5,10 @@
   "gitea-admin-sync-deployment.yaml" true
   "netbox-admin-sync-deployment.yaml" true
   "nautobot-admin-sync-deployment.yaml" true
+  "skyforge-portal-deployment.yaml" true
+  "skyforge-portal-service.yaml" true
   "skyforge-server-rbac.yaml" true
+  "skyforge-logout.yaml" true
 -}}
 {{- $vals := fromYaml (toYaml .Values) -}}
 {{- $dnsEnabled := dig "skyforge" "dns" "enabled" false $vals -}}
@@ -186,15 +189,18 @@
 {{- end }}
 
 {{- range $path, $bytes := .Files.Glob "files/overlays/*.yaml" }}
-  {{- $content := toString $bytes -}}
-  {{- range $token, $value := $replacements }}
-    {{- $valueStr := printf "%v" $value -}}
-    {{- $content = replace $token $valueStr $content -}}
-  {{- end }}
-  {{- range $old, $new := $images }}
-    {{- $content = replace (printf "image: %s" $old) (printf "image: %s" $new) $content -}}
-  {{- end }}
-  {{- $content = replace "namespace: skyforge" (printf "namespace: %s" $.Release.Namespace) $content -}}
-  {{- $content | nindent 0 }}
+  {{- $name := base $path -}}
+  {{- if not (hasKey $skip $name) }}
+    {{- $content := toString $bytes -}}
+    {{- range $token, $value := $replacements }}
+      {{- $valueStr := printf "%v" $value -}}
+      {{- $content = replace $token $valueStr $content -}}
+    {{- end }}
+    {{- range $old, $new := $images }}
+      {{- $content = replace (printf "image: %s" $old) (printf "image: %s" $new) $content -}}
+    {{- end }}
+    {{- $content = replace "namespace: skyforge" (printf "namespace: %s" $.Release.Namespace) $content -}}
+    {{- $content | nindent 0 }}
 ---
+  {{- end }}
 {{- end }}
