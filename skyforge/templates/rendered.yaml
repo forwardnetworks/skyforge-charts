@@ -5,10 +5,7 @@
   "gitea-admin-sync-deployment.yaml" true
   "netbox-admin-sync-deployment.yaml" true
   "nautobot-admin-sync-deployment.yaml" true
-  "skyforge-portal-deployment.yaml" true
-  "skyforge-portal-service.yaml" true
   "skyforge-server-rbac.yaml" true
-  "skyforge-logout.yaml" true
 -}}
 {{- $vals := fromYaml (toYaml .Values) -}}
 {{- $dnsEnabled := dig "skyforge" "dns" "enabled" false $vals -}}
@@ -42,7 +39,6 @@
   "swaggerapi/swagger-ui:v5.11.0" .Values.images.swaggerUi
   "skyforge-nautobot:latest" .Values.images.skyforgeNautobot
   "skyforge-netbox:latest" .Values.images.skyforgeNetbox
-  "skyforge-portal:latest" .Values.images.skyforgePortal
   "skyforge-server:latest" .Values.images.skyforgeServer
 -}}
 {{- $hostname := .Values.skyforge.hostname | required "skyforge.hostname is required" -}}
