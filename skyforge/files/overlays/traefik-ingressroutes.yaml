@@ -88,6 +88,14 @@ spec:
           port: 8085
       middlewares:
         - name: coder-portal-redirect
+    - match: Path(`/`)
+      kind: Rule
+      priority: 470
+      services:
+        - name: skyforge-server
+          port: 8085
+      middlewares:
+        - name: skyforge-root-index
     - match: PathPrefix(`/workspaces`) || PathPrefix(`/templates`) || PathPrefix(`/tasks`) || PathPrefix(`/api/v2`) || PathPrefix(`/login`) || PathPrefix(`/@`) || PathPrefix(`/icon`) || PathPrefix(`/emojis`)
       kind: Rule
       priority: 455
