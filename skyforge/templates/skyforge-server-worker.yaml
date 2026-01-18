@@ -58,11 +58,11 @@ spec:
                   name: skyforge-encore-runtime-config-worker
                   key: skyforge-encore-runtime-config
                   optional: true
-            - name: ENCORE_CFG_SKYFORGE
+            - name: ENCORE_CFG_WORKER
               valueFrom:
                 secretKeyRef:
                   name: skyforge-encore-cfg-worker
-                  key: ENCORE_CFG_SKYFORGE
+                  key: ENCORE_CFG_WORKER
                   optional: true
             - name: SKYFORGE_SESSION_SECRET
               valueFrom:
