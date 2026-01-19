@@ -19,6 +19,8 @@ spec:
         checksum/values: "__SKYFORGE_VALUES_CHECKSUM__"
         checksum/infra-api: "__SKYFORGE_INFRA_API_CHECKSUM__"
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname
