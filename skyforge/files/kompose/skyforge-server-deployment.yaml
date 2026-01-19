@@ -217,13 +217,13 @@ spec:
         - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: object-storage-terraform-access-key
-              key: object-storage-terraform-access-key
+              name: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_NAME__
+              key: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_KEY__
         - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: object-storage-terraform-secret-key
-              key: object-storage-terraform-secret-key
+              name: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_NAME__
+              key: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_KEY__
         - name: SKYFORGE_OBJECT_STORAGE_USE_SSL
           valueFrom:
             configMapKeyRef:

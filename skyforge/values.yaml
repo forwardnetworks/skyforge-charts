@@ -69,6 +69,15 @@ skyforge:
   objectStorage:
     endpoint: "minio:9000"
     useSsl: false
+    # Kubernetes Secret (name/key) that holds the MinIO access key used by
+    # Terraform state + Skyforge artifact storage.
+    #
+    # Defaults match the existing secret names; you can rename the underlying
+    # Secrets (for example, dropping "-terraform") by overriding these values.
+    terraformAccessKeySecretName: "object-storage-terraform-access-key"
+    terraformAccessKeySecretKey: "object-storage-terraform-access-key"
+    terraformSecretKeySecretName: "object-storage-terraform-secret-key"
+    terraformSecretKeySecretKey: "object-storage-terraform-secret-key"
   terraform:
     path: ""
     version: ""

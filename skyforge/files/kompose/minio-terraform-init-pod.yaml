@@ -12,8 +12,8 @@ spec:
           set -euo pipefail
           root_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
           root_password="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
-          tf_user="$(cat /run/secrets/object-storage-terraform-access-key | tr -d '\r\n')"
-          tf_secret="$(cat /run/secrets/object-storage-terraform-secret-key | tr -d '\r\n')"
+          tf_user="$(cat /run/secrets/__SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_KEY__ | tr -d '\r\n')"
+          tf_secret="$(cat /run/secrets/__SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_KEY__ | tr -d '\r\n')"
 
           echo "Waiting for object storage..."
           for i in $(seq 1 60); do
@@ -75,11 +75,11 @@ spec:
               name: object-storage-root-password
           - secret:
               items:
-                - key: object-storage-terraform-access-key
-                  path: object-storage-terraform-access-key
-              name: object-storage-terraform-access-key
+                - key: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_KEY__
+                  path: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_KEY__
+              name: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_NAME__
           - secret:
               items:
-                - key: object-storage-terraform-secret-key
-                  path: object-storage-terraform-secret-key
-              name: object-storage-terraform-secret-key
+                - key: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_KEY__
+                  path: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_KEY__
+              name: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_NAME__
