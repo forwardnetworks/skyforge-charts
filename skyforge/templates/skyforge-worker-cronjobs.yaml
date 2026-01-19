@@ -1,0 +1,152 @@
+{{- if gt (int .Values.skyforge.workerReplicaCount) 0 }}
+{{- $curlCmd := "apk add --no-cache curl >/dev/null 2>&1; curl -sf --retry 3 --retry-delay 2 -X POST -H \"X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}\"" -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: skyforge-worker-heartbeat
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: curl
+              image: {{ .Values.images.alpine | quote }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: SKYFORGE_INTERNAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-internal-token
+                      key: skyforge-internal-token
+              command: ["sh", "-c"]
+              args:
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/worker/heartbeat" $curlCmd | quote }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: skyforge-worker-reconcile-queued
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: curl
+              image: {{ .Values.images.alpine | quote }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: SKYFORGE_INTERNAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-internal-token
+                      key: skyforge-internal-token
+              command: ["sh", "-c"]
+              args:
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/worker/tasks/reconcile" $curlCmd | quote }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: skyforge-worker-reconcile-running
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: curl
+              image: {{ .Values.images.alpine | quote }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: SKYFORGE_INTERNAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-internal-token
+                      key: skyforge-internal-token
+              command: ["sh", "-c"]
+              args:
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/worker/tasks/reconcile-running" $curlCmd | quote }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: skyforge-workspace-sync
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: curl
+              image: {{ .Values.images.alpine | quote }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: SKYFORGE_INTERNAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-internal-token
+                      key: skyforge-internal-token
+              command: ["sh", "-c"]
+              args:
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/workspaces/sync" $curlCmd | quote }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: skyforge-cloud-credential-checks
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: curl
+              image: {{ .Values.images.alpine | quote }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: SKYFORGE_INTERNAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-internal-token
+                      key: skyforge-internal-token
+              command: ["sh", "-c"]
+              args:
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/cloud/checks" $curlCmd | quote }}
+{{- end }}
