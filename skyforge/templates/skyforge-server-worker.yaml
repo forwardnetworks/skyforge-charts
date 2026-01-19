@@ -111,6 +111,16 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_DB_SSLMODE
+            - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: object-storage-terraform-access-key
+                  key: object-storage-terraform-access-key
+            - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: object-storage-terraform-secret-key
+                  key: object-storage-terraform-secret-key
             - name: SKYFORGE_NETLAB_SERVERS_FILE
               value: /run/secrets/skyforge-netlab-servers
             - name: SKYFORGE_NETLAB_SSH_KEY_FILE
