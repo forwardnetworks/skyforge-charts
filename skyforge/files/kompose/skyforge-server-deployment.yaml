@@ -159,6 +159,18 @@ spec:
             secretKeyRef:
               name: skyforge-ldap-url
               key: skyforge-ldap-url
+        - name: SKYFORGE_LDAP_LOOKUP_BINDDN
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-ldap-lookup-binddn
+              key: skyforge-ldap-lookup-binddn
+              optional: true
+        - name: SKYFORGE_LDAP_LOOKUP_BINDPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-ldap-lookup-bindpassword
+              key: skyforge-ldap-lookup-bindpassword
+              optional: true
         - name: SKYFORGE_LISTEN_ADDR
           valueFrom:
             configMapKeyRef:
@@ -432,6 +444,12 @@ spec:
             secretKeyRef:
               name: skyforge-internal-token
               key: skyforge-internal-token
+        - name: SKYFORGE_CONTAINERLAB_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-containerlab-jwt-secret
+              key: skyforge-containerlab-jwt-secret
+              optional: true
         - name: SKYFORGE_DB_HOST
           valueFrom:
             configMapKeyRef:

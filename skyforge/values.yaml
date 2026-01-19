@@ -90,8 +90,6 @@ skyforge:
     # and emit clabernetes-ready artifacts (ConfigMaps + manifest).
     generatorImage: ""
     generatorPullPolicy: "IfNotPresent"
-    ansibleImage: ""
-    ansiblePullPolicy: "IfNotPresent"
   dns:
     enabled: false
     adminUsername: "admin"
@@ -276,8 +274,20 @@ secrets:
       skyforge-ldap-url: ""
     skyforge-ldap-bind-template:
       skyforge-ldap-bind-template: ""
+    skyforge-ldap-lookup-binddn:
+      skyforge-ldap-lookup-binddn: ""
+    skyforge-ldap-lookup-bindpassword:
+      skyforge-ldap-lookup-bindpassword: ""
     skyforge-internal-token:
       skyforge-internal-token: ""
+    skyforge-containerlab-jwt-secret:
+      skyforge-containerlab-jwt-secret: ""
+    skyforge-pki-ca-cert:
+      skyforge-pki-ca-cert: ""
+    skyforge-pki-ca-key:
+      skyforge-pki-ca-key: ""
+    skyforge-ssh-ca-key:
+      skyforge-ssh-ca-key: ""
     skyforge-netlab-servers:
       # JSON array of netlab server configs. Example:
       # [{"name":"netlab","apiUrl":"https://netlab.local.forwardnetworks.com/netlab","apiInsecure":false,"apiToken":"<bearer>"}]

@@ -76,6 +76,40 @@ spec:
                 secretKeyRef:
                   name: skyforge-admin-shared
                   key: password
+            - name: SKYFORGE_OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-oidc-client-id
+                  key: skyforge-oidc-client-id
+                  optional: true
+            - name: SKYFORGE_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-oidc-client-secret
+                  key: skyforge-oidc-client-secret
+                  optional: true
+            - name: SKYFORGE_LDAP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-ldap-url
+                  key: skyforge-ldap-url
+            - name: SKYFORGE_LDAP_BIND_TEMPLATE
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-ldap-bind-template
+                  key: skyforge-ldap-bind-template
+            - name: SKYFORGE_LDAP_LOOKUP_BINDDN
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-ldap-lookup-binddn
+                  key: skyforge-ldap-lookup-binddn
+                  optional: true
+            - name: SKYFORGE_LDAP_LOOKUP_BINDPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-ldap-lookup-bindpassword
+                  key: skyforge-ldap-lookup-bindpassword
+                  optional: true
             - name: SKYFORGE_GITEA_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -121,6 +155,36 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.skyforge.objectStorage.secretKeySecretName | quote }}
                   key: {{ .Values.skyforge.objectStorage.secretKeySecretKey | quote }}
+            - name: SKYFORGE_INTERNAL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-internal-token
+                  key: skyforge-internal-token
+                  optional: true
+            - name: SKYFORGE_CONTAINERLAB_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-containerlab-jwt-secret
+                  key: skyforge-containerlab-jwt-secret
+                  optional: true
+            - name: SKYFORGE_PKI_CA_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-pki-ca-cert
+                  key: skyforge-pki-ca-cert
+                  optional: true
+            - name: SKYFORGE_PKI_CA_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-pki-ca-key
+                  key: skyforge-pki-ca-key
+                  optional: true
+            - name: SKYFORGE_SSH_CA_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-ssh-ca-key
+                  key: skyforge-ssh-ca-key
+                  optional: true
             - name: SKYFORGE_NETLAB_SERVERS_FILE
               value: /run/secrets/skyforge-netlab-servers
             - name: SKYFORGE_NETLAB_SSH_KEY_FILE
