@@ -12,8 +12,8 @@ spec:
           set -euo pipefail
           root_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
           root_password="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
-          tf_user="$(cat /run/secrets/__SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_KEY__ | tr -d '\r\n')"
-          tf_secret="$(cat /run/secrets/__SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_KEY__ | tr -d '\r\n')"
+          tf_user="$(cat /run/secrets/__SKYFORGE_OBJECT_STORAGE_ACCESS_SECRET_KEY__ | tr -d '\r\n')"
+          tf_secret="$(cat /run/secrets/__SKYFORGE_OBJECT_STORAGE_SECRET_SECRET_KEY__ | tr -d '\r\n')"
 
           echo "Waiting for object storage..."
           for i in $(seq 1 60); do
@@ -48,7 +48,7 @@ spec:
             --secret-key "${tf_secret}" \
             --policy /tmp/terraform-state.json \
             --name terraform-state >/dev/null 2>&1 || true
-          echo "Object storage terraform state ready (bucket terraform-state, service account ${tf_user})."
+          echo "Object storage state ready (bucket terraform-state, service account ${tf_user})."
       command:
         - /bin/sh
         - -lc
@@ -75,11 +75,11 @@ spec:
               name: object-storage-root-password
           - secret:
               items:
-                - key: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_KEY__
-                  path: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_KEY__
-              name: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_NAME__
+                - key: __SKYFORGE_OBJECT_STORAGE_ACCESS_SECRET_KEY__
+                  path: __SKYFORGE_OBJECT_STORAGE_ACCESS_SECRET_KEY__
+              name: __SKYFORGE_OBJECT_STORAGE_ACCESS_SECRET_NAME__
           - secret:
               items:
-                - key: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_KEY__
-                  path: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_KEY__
-              name: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_NAME__
+                - key: __SKYFORGE_OBJECT_STORAGE_SECRET_SECRET_KEY__
+                  path: __SKYFORGE_OBJECT_STORAGE_SECRET_SECRET_KEY__
+              name: __SKYFORGE_OBJECT_STORAGE_SECRET_SECRET_NAME__

@@ -74,10 +74,10 @@ skyforge:
     #
     # Defaults match the existing secret names; you can rename the underlying
     # Secrets (for example, dropping "-terraform") by overriding these values.
-    terraformAccessKeySecretName: "object-storage-terraform-access-key"
-    terraformAccessKeySecretKey: "object-storage-terraform-access-key"
-    terraformSecretKeySecretName: "object-storage-terraform-secret-key"
-    terraformSecretKeySecretKey: "object-storage-terraform-secret-key"
+    accessKeySecretName: "object-storage-access-key"
+    accessKeySecretKey: "object-storage-access-key"
+    secretKeySecretName: "object-storage-secret-key"
+    secretKeySecretKey: "object-storage-secret-key"
   terraform:
     path: ""
     version: ""
@@ -320,10 +320,10 @@ secrets:
       object-storage-root-user: ""
     object-storage-root-password:
       object-storage-root-password: ""
-    object-storage-terraform-access-key:
-      object-storage-terraform-access-key: ""
-    object-storage-terraform-secret-key:
-      object-storage-terraform-secret-key: ""
+    object-storage-access-key:
+      object-storage-access-key: ""
+    object-storage-secret-key:
+      object-storage-secret-key: ""
     netbox-superuser-api-token:
       netbox-superuser-api-token: ""
     netbox-api-token-peppers:

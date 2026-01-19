@@ -214,16 +214,16 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_OBJECT_STORAGE_ENDPOINT
-        - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_KEY
+        - name: SKYFORGE_OBJECT_STORAGE_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_NAME__
-              key: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_ACCESS_SECRET_KEY__
-        - name: SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_KEY
+              name: __SKYFORGE_OBJECT_STORAGE_ACCESS_SECRET_NAME__
+              key: __SKYFORGE_OBJECT_STORAGE_ACCESS_SECRET_KEY__
+        - name: SKYFORGE_OBJECT_STORAGE_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_NAME__
-              key: __SKYFORGE_OBJECT_STORAGE_TERRAFORM_SECRET_SECRET_KEY__
+              name: __SKYFORGE_OBJECT_STORAGE_SECRET_SECRET_NAME__
+              key: __SKYFORGE_OBJECT_STORAGE_SECRET_SECRET_KEY__
         - name: SKYFORGE_OBJECT_STORAGE_USE_SSL
           valueFrom:
             configMapKeyRef:
