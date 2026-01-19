@@ -36,31 +36,38 @@ spec:
               done
               mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null
 
-              cat > /tmp/terraform-state.json <<EOF
+              cat > /tmp/skyforge-object-storage.json <<EOF
               {
                 "Version": "2012-10-17",
                 "Statement": [
                   {
                     "Effect": "Allow",
                     "Action": ["s3:ListBucket"],
-                    "Resource": ["arn:aws:s3:::terraform-state"]
+                    "Resource": [
+                      "arn:aws:s3:::terraform-state",
+                      "arn:aws:s3:::skyforge-files"
+                    ]
                   },
                   {
                     "Effect": "Allow",
                     "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
-                    "Resource": ["arn:aws:s3:::terraform-state/*"]
+                    "Resource": [
+                      "arn:aws:s3:::terraform-state/*",
+                      "arn:aws:s3:::skyforge-files/*"
+                    ]
                   }
                 ]
               }
               EOF
               mc mb -p "local/terraform-state" >/dev/null 2>&1 || true
-              mc admin policy create local terraform-state /tmp/terraform-state.json >/dev/null 2>&1 || true
+              mc mb -p "local/skyforge-files" >/dev/null 2>&1 || true
+              mc admin policy create local skyforge-object-storage /tmp/skyforge-object-storage.json >/dev/null 2>&1 || true
               mc admin user svcacct add local "${root_user}" \
                 --access-key "${tf_user}" \
                 --secret-key "${tf_secret}" \
-                --policy /tmp/terraform-state.json \
-                --name terraform-state >/dev/null 2>&1 || true
-              echo "Object storage state ready (bucket terraform-state, service account ${tf_user})."
+                --policy /tmp/skyforge-object-storage.json \
+                --name skyforge-object-storage >/dev/null 2>&1 || true
+              echo "Object storage service account ready (${tf_user})."
           volumeMounts:
             - mountPath: /run/secrets
               name: run-secrets
