@@ -67,6 +67,10 @@ spec:
                 --secret-key "${tf_secret}" \
                 --policy /tmp/skyforge-object-storage.json \
                 --name skyforge-object-storage >/dev/null 2>&1 || true
+              # Ensure policy updates are applied even if the service account already exists.
+              mc admin user svcacct edit local "${tf_user}" \
+                --policy /tmp/skyforge-object-storage.json \
+                --name skyforge-object-storage >/dev/null 2>&1 || true
               echo "Object storage service account ready (${tf_user})."
           volumeMounts:
             - mountPath: /run/secrets
