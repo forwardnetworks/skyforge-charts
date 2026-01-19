@@ -79,24 +79,6 @@ spec:
                 secretKeyRef:
                   name: skyforge-admin-shared
                   key: password
-            - name: SKYFORGE_LABPP_NETBOX_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-labpp-netbox-username
-                  key: skyforge-labpp-netbox-username
-                  optional: true
-            - name: SKYFORGE_LABPP_NETBOX_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-labpp-netbox-password
-                  key: skyforge-labpp-netbox-password
-                  optional: true
-            - name: SKYFORGE_LABPP_NETBOX_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-labpp-netbox-token
-                  key: skyforge-labpp-netbox-token
-                  optional: true
             - name: SKYFORGE_DB_HOST
               valueFrom:
                 configMapKeyRef:
@@ -127,12 +109,8 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_DB_SSLMODE
-            - name: SKYFORGE_EVE_SERVERS_FILE
-              value: /run/secrets/skyforge-eve-servers
             - name: SKYFORGE_NETLAB_SERVERS_FILE
               value: /run/secrets/skyforge-netlab-servers
-            - name: SKYFORGE_EVE_SSH_KEY_FILE
-              value: /run/secrets/eve-runner-ssh-key
             - name: SKYFORGE_NETLAB_SSH_KEY_FILE
               value: /run/secrets/netlab-runner-rsa
             - name: PORT
@@ -161,12 +139,6 @@ spec:
           projected:
             sources:
               - secret:
-                  name: skyforge-eve-servers
-                  optional: true
-                  items:
-                    - key: skyforge-eve-servers
-                      path: skyforge-eve-servers
-              - secret:
                   name: skyforge-netlab-servers
                   optional: true
                   items:
@@ -178,12 +150,6 @@ spec:
                   items:
                     - key: netlab-runner-rsa
                       path: netlab-runner-rsa
-              - secret:
-                  name: eve-runner-ssh-key
-                  optional: true
-                  items:
-                    - key: eve-runner-ssh-key
-                      path: eve-runner-ssh-key
         - name: skyforge-server-data
           persistentVolumeClaim:
             claimName: skyforge-server-data

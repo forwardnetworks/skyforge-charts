@@ -4,9 +4,6 @@
 skyforge:
   serverReplicaCount: 1
   portalReplicaCount: 2
-  # Deprecated: use `skyforge.encoreCfg.workerJson` with `TaskWorkerEnabled=true` instead.
-  # This chart no longer injects `SKYFORGE_TASK_WORKER_ENABLED` by default.
-  taskWorkerEnabled: false
   # Optional dedicated worker deployment replica count. When > 0, the chart
   # creates a separate Deployment that runs the task worker.
   workerReplicaCount: 0
@@ -47,40 +44,10 @@ skyforge:
     allowedDomains: ""
   netboxSsoUrl: ""
   nautobotSsoUrl: ""
-  eveApiUrl: ""
-  eveUsername: ""
-  eveSkipTlsVerify: false
-  eveUrl: ""
-  eveSshUser: "root"
-  eveSshTunnelEnabled: true
-  labpp:
-    runnerImage: ""
-    runnerPullPolicy: "IfNotPresent"
-    runnerPvc: "skyforge-server-data"
-    configDirBase: "/var/lib/skyforge/labpp/configs"
-    configVersion: "1.0"
-    netboxUrl: ""
-    netboxMgmtSubnet: ""
-    s3Region: ""
-    s3Bucket: ""
-    s3Endpoint: ""
-    s3DisableSsl: true
-    s3DisableChecksum: false
-  # Optional (legacy): expose an external LabPP API through Traefik.
-  # Not required when using the bundled LabPP CLI runner.
-  labppProxy:
-    enabled: false
-    port: 443
-    serversTransport: "eve-servers-transport"
-    servers: []
-  # Optional: expose EVE-NG UI through Traefik on the Skyforge hostname.
-  # When enabled, this creates Services/Endpoints that point at external EVE hosts and routes:
-  #   https://<skyforge-hostname>/labs/<name>/*  ->  https://<eve-ip>:443/*
-  eveProxy:
-    enabled: false
-    port: 443
-    serversTransport: "eve-servers-transport"
-    servers: []
+  # Public base URL for Skyforge (used for webhook and SNMP instructions).
+  publicUrl: ""
+  # Deprecated: use `skyforge.publicUrl` instead.
+  labsPublicUrl: ""
   ldap:
     displayAttr: "cn"
     groupAttr: "memberOf"
@@ -88,6 +55,8 @@ skyforge:
     skipTlsVerify: false
     startTls: false
     baseDn: ""
+  oidc:
+    discoveryUrl: "http://dex:5556/dex"
   listenAddr: ":8085"
   maxGroups: 50
   ssoSkipTlsVerify: false
@@ -96,9 +65,14 @@ skyforge:
   nautobotUrl: ""
   yaadeUrl: "http://yaade"
   yaadeAdminUsername: "admin"
+  staticRoot: "/opt/skyforge/static"
   objectStorage:
     endpoint: "minio:9000"
     useSsl: false
+  terraform:
+    path: ""
+    version: ""
+    url: ""
   netlab:
     sshUser: "ubuntu"
     stateRoot: "/var/lib/skyforge/netlab"
@@ -111,13 +85,21 @@ skyforge:
     ansiblePullPolicy: "IfNotPresent"
   dns:
     enabled: false
+    adminUsername: "admin"
+    userZoneSuffix: "skyforge"
     # NodePort for UDP/TCP 53 on the k3s host.
     nodePort: 30053
     # NodePort for the DNS web UI on the k3s host.
     webNodePort: 30380
   workspacesDataDir: "/var/lib/skyforge"
+  workspaceDeleteMode: "live"
   workspaceSyncSeconds: 300
   uiThemeDefault: ""
+  # Typed config equivalent of SKYFORGE_NOTIFICATIONS_ENABLED. Default true.
+  notificationsEnabled: true
+  forward:
+    snmpPlaceholderEnabled: true
+    snmpCommunity: "public"
   sessionTtl: "8h"
   pkiDefaultDays: 365
   sshDefaultDays: 30
@@ -130,7 +112,7 @@ skyforge:
     user: "skyforge_server"
     sslmode: "disable"
   health:
-    httpChecks: "Edge|edge|http://skyforge-server:8085/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;EVE-NG|🧪|http://skyforge-server:8085/api/health/eve|/labs/;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/nautobot/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;Coder|coder|http://coder:7080/healthz|/coder/;API Testing|api|http://yaade/api-testing/|/api-testing/;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-server:8085/webhooks|/webhooks/"
+    httpChecks: "Edge|edge|http://skyforge-server:8085/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/nautobot/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;Coder|coder|http://coder:7080/healthz|/coder/;API Testing|api|http://yaade/api-testing/|/api-testing/;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-server:8085/webhooks|/webhooks/"
     codeChecks: "Postgres|postgres|pg|db;Redis|redis|redis|redis;RADIUS|radius|radius|freeradius"
   admin:
     username: "skyforge"
@@ -287,18 +269,12 @@ secrets:
       skyforge-ldap-bind-template: ""
     skyforge-internal-token:
       skyforge-internal-token: ""
-    skyforge-eve-password:
-      skyforge-eve-password: ""
-    skyforge-eve-servers:
-      skyforge-eve-servers: "[]"
     skyforge-netlab-servers:
       # JSON array of netlab server configs. Example:
       # [{"name":"netlab","apiUrl":"https://netlab.local.forwardnetworks.com/netlab","apiInsecure":false,"apiToken":"<bearer>"}]
       skyforge-netlab-servers: "[]"
     netlab-runner-rsa:
       netlab-runner-rsa: ""
-    eve-runner-ssh-key:
-      eve-runner-ssh-key: ""
     postgres-skyforge-password:
       postgres-skyforge-password: ""
     db-netbox-password:
@@ -321,8 +297,6 @@ secrets:
       skyforge-oidc-client-id: ""
     skyforge-oidc-client-secret:
       skyforge-oidc-client-secret: ""
-    skyforge-labpp-netbox-token:
-      skyforge-labpp-netbox-token: ""
     yaade-admin-password:
       yaade-admin-password: ""
     gitea-secret-key:

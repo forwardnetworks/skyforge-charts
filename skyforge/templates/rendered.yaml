@@ -74,24 +74,6 @@
   "__SKYFORGE_GITEA_REPO_PRIVATE__" (printf "%v" .Values.skyforge.gitea.repoPrivate)
   "__SKYFORGE_NETBOX_SSO_URL__" $netboxSsoUrl
   "__SKYFORGE_NAUTOBOT_SSO_URL__" $nautobotSsoUrl
-  "__SKYFORGE_EVE_API_URL__" .Values.skyforge.eveApiUrl
-  "__SKYFORGE_EVE_USERNAME__" .Values.skyforge.eveUsername
-  "__SKYFORGE_EVE_SKIP_TLS_VERIFY__" (printf "%v" .Values.skyforge.eveSkipTlsVerify)
-  "__SKYFORGE_EVE_URL__" .Values.skyforge.eveUrl
-  "__SKYFORGE_EVE_SSH_USER__" .Values.skyforge.eveSshUser
-  "__SKYFORGE_EVE_SSH_TUNNEL_ENABLED__" (printf "%v" .Values.skyforge.eveSshTunnelEnabled)
-  "__SKYFORGE_LABPP_RUNNER_IMAGE__" .Values.skyforge.labpp.runnerImage
-  "__SKYFORGE_LABPP_RUNNER_PULL_POLICY__" .Values.skyforge.labpp.runnerPullPolicy
-  "__SKYFORGE_LABPP_RUNNER_PVC__" .Values.skyforge.labpp.runnerPvc
-  "__SKYFORGE_LABPP_CONFIG_DIR_BASE__" .Values.skyforge.labpp.configDirBase
-  "__SKYFORGE_LABPP_CONFIG_VERSION__" .Values.skyforge.labpp.configVersion
-  "__SKYFORGE_LABPP_NETBOX_URL__" .Values.skyforge.labpp.netboxUrl
-  "__SKYFORGE_LABPP_NETBOX_MGMT_SUBNET__" .Values.skyforge.labpp.netboxMgmtSubnet
-  "__SKYFORGE_LABPP_S3_REGION__" .Values.skyforge.labpp.s3Region
-  "__SKYFORGE_LABPP_S3_BUCKET__" .Values.skyforge.labpp.s3Bucket
-  "__SKYFORGE_LABPP_S3_ENDPOINT__" .Values.skyforge.labpp.s3Endpoint
-  "__SKYFORGE_LABPP_S3_DISABLE_SSL__" (printf "%v" .Values.skyforge.labpp.s3DisableSsl)
-  "__SKYFORGE_LABPP_S3_DISABLE_CHECKSUM__" (printf "%v" .Values.skyforge.labpp.s3DisableChecksum)
   "__SKYFORGE_LDAP_DISPLAY_ATTR__" .Values.skyforge.ldap.displayAttr
   "__SKYFORGE_LDAP_GROUP_ATTR__" .Values.skyforge.ldap.groupAttr
   "__SKYFORGE_LDAP_MAIL_ATTR__" .Values.skyforge.ldap.mailAttr

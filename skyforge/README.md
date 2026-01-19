@@ -28,24 +28,13 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
 - `skyforge.hostname`: Public hostname for ingress routes.
 - `skyforge.domain`: Email/domain suffix used by default accounts.
 - `skyforge.workerReplicaCount`: Dedicated task worker replica count (processes queued runs from PubSub).
-- `skyforge.labpp.runnerImage`: LabPP runner image (job executed by skyforge-server).
-- `skyforge.labpp.runnerPullPolicy`: Image pull policy for the LabPP runner.
-- `skyforge.labpp.runnerPvc`: PVC name mounted at `/var/lib/skyforge` for templates/configs (default `skyforge-server-data`).
-- `skyforge.labpp.configDirBase`: LabPP config output dir (default `/var/lib/skyforge/labpp/configs`).
-- `skyforge.labpp.configVersion`: LabPP properties file version (default `1.0`).
-- `skyforge.labpp.netboxUrl`: NetBox base URL for LabPP allocations.
-- `skyforge.labpp.netboxMgmtSubnet`: NetBox management subnet CIDR for LabPP allocations.
-- `skyforge.labpp.s3Region`: Optional LabPP S3 region.
-- `skyforge.labpp.s3Bucket`: Optional LabPP S3 bucket.
 - `skyforge.cloudflareTunnel`: Optional `cloudflared` tunnel to expose Skyforge externally (see `charts/skyforge/docs/cloudflare-tunnel.md`).
-- `skyforge.labppProxy`: Optional Traefik proxy for exposing LabPP API endpoints via `https://<skyforge-hostname>/labpp/<name>/...`.
-- `skyforge.eveProxy`: Optional Traefik proxy for exposing EVE-NG UI via `https://<skyforge-hostname>/labs/<name>/...` (used for SSO).
 - `skyforge.pkiDefaultDays`: Default certificate TTL (days) for the PKI UI.
 - `skyforge.sshDefaultDays`: Default SSH certificate TTL (days) for the PKI UI.
 - `skyforge.encoreRuntimeConfig`: Optional Encore runtime infrastructure config (`ENCORE_RUNTIME_CONFIG`).
 - `skyforge.encoreCfg`: Optional typed Encore config for the `skyforge` service (`ENCORE_CFG_SKYFORGE`).
 - `images.*`: Override container images.
-- `images.skyforgeServerWorker`: Dedicated task worker image (built with `-tags=skyforge_worker`).
+- `images.skyforgeServerWorker`: Dedicated task worker image (built with `encore build docker --services=...` including the `worker` service).
 - `secrets.items`: Provide secret values (use `--set-file` for PEM/SSH keys).
 - `secrets.items.skyforge-admin-shared.password`: Shared admin password used to seed Skyforge, Gitea,
   NetBox and Nautobot.
@@ -58,7 +47,7 @@ See `charts/skyforge/values.yaml` for the full list of defaults.
 
 Typed Encore config (`config.Load`) can be injected via `skyforge.encoreCfg.*`; the chart base64url-encodes the JSON and sets `ENCORE_CFG_SKYFORGE`.
 
-Note: the chart no longer sets `SKYFORGE_TASK_WORKER_ENABLED` by default. When you enable a dedicated worker deployment (`skyforge.workerReplicaCount > 0` + `skyforge.encoreCfg.workerCreate=true`), the chart automatically forces `"TaskWorkerEnabled": true` in the worker’s `ENCORE_CFG_SKYFORGE` payload.
+Note: when you enable a dedicated worker deployment (`skyforge.workerReplicaCount > 0` + `skyforge.encoreCfg.workerCreate=true`), the chart automatically forces `"TaskWorkerEnabled": true` in the worker’s `ENCORE_CFG_WORKER` payload.
 
 ## Cron
 
