@@ -28,7 +28,7 @@ spec:
                       key: skyforge-internal-token
               command: ["sh", "-c"]
               args:
-                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/worker/heartbeat" $curlCmd | quote }}
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/bridge/worker/heartbeat" $curlCmd | quote }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -58,7 +58,7 @@ spec:
                       key: skyforge-internal-token
               command: ["sh", "-c"]
               args:
-                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/worker/tasks/reconcile" $curlCmd | quote }}
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/bridge/worker/tasks/reconcile" $curlCmd | quote }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -88,7 +88,7 @@ spec:
                       key: skyforge-internal-token
               command: ["sh", "-c"]
               args:
-                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/worker/tasks/reconcile-running" $curlCmd | quote }}
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/bridge/worker/tasks/reconcile-running" $curlCmd | quote }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -118,7 +118,7 @@ spec:
                       key: skyforge-internal-token
               command: ["sh", "-c"]
               args:
-                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/workspaces/sync" $curlCmd | quote }}
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/bridge/workspaces/sync" $curlCmd | quote }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -148,5 +148,5 @@ spec:
                       key: skyforge-internal-token
               command: ["sh", "-c"]
               args:
-                - {{ printf "%s http://skyforge-server-worker:8085/internal/cron/cloud/checks" $curlCmd | quote }}
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/bridge/cloud/checks" $curlCmd | quote }}
 {{- end }}
