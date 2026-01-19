@@ -18,6 +18,8 @@ spec:
       annotations:
         checksum/values: "__SKYFORGE_VALUES_CHECKSUM__"
         checksum/infra-api: "__SKYFORGE_INFRA_API_CHECKSUM__"
+        checksum/encore-cfg: "__SKYFORGE_ENCORE_CFG_CHECKSUM__"
+        checksum/encore-runtime: "__SKYFORGE_ENCORE_RUNTIME_CHECKSUM__"
     spec:
       imagePullSecrets:
         - name: ghcr-pull

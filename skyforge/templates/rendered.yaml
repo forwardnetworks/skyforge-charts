@@ -59,6 +59,8 @@
 {{- if eq $giteaAllowedDomains "" }}{{- $giteaAllowedDomains = printf "gitea,localhost,127.0.0.1,%s" $hostname -}}{{- end -}}
 {{- $valuesChecksum := sha256sum (toJson .Values) -}}
 {{- $infraAPIChecksum := sha256sum (.Files.Get "files/infra.api.config.json") -}}
+{{- $encoreCfgChecksum := sha256sum (include (print $.Template.BasePath "/encore-cfg-secret.yaml") .) -}}
+{{- $encoreRuntimeChecksum := sha256sum (include (print $.Template.BasePath "/encore-runtime-config-secret.yaml") .) -}}
 {{- $replacements := dict
   "__SKYFORGE_HOSTNAME__" $hostname
   "__SKYFORGE_DOMAIN__" $domain
@@ -134,6 +136,8 @@
   "__SKYFORGE_SWAGGER_URL__" $swaggerUrl
   "__SKYFORGE_VALUES_CHECKSUM__" $valuesChecksum
   "__SKYFORGE_INFRA_API_CHECKSUM__" $infraAPIChecksum
+  "__SKYFORGE_ENCORE_CFG_CHECKSUM__" $encoreCfgChecksum
+  "__SKYFORGE_ENCORE_RUNTIME_CHECKSUM__" $encoreRuntimeChecksum
 -}}
 
 {{- range $path, $bytes := .Files.Glob "files/kompose/*.yaml" }}

@@ -20,6 +20,8 @@ spec:
       annotations:
         checksum/values: {{ sha256sum (toJson .Values) | quote }}
         checksum/infra-worker: {{ sha256sum (.Files.Get "files/infra.config.json") | quote }}
+        checksum/encore-cfg-worker: {{ include (print $.Template.BasePath "/encore-cfg-worker-secret.yaml") . | sha256sum | quote }}
+        checksum/encore-runtime-worker: {{ include (print $.Template.BasePath "/encore-runtime-config-worker-secret.yaml") . | sha256sum | quote }}
     spec:
       serviceAccountName: skyforge-server
       imagePullSecrets:
