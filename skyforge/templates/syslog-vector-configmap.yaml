@@ -15,9 +15,14 @@ data:
   vector.yaml: |
     sources:
       syslog_udp:
-        type: syslog
+        # Use the generic UDP socket source and parse syslog in VRL.
+        # This is more tolerant across device NOS implementations and avoids strict
+        # parsing failures that can drop events.
+        type: socket
         mode: udp
         address: "0.0.0.0:{{ default 514 .Values.skyforge.syslog.hostPort }}"
+        decoding:
+          codec: bytes
 
     transforms:
       skyforge_syslog:
@@ -26,21 +31,30 @@ data:
           - syslog_udp
         source: |
           # Skyforge ingest expects a small normalized JSON shape.
-          # Vector syslog events vary slightly by version; be tolerant.
-          src = to_string(.source_ip ?? .metadata.source_ip ?? .sender.ip ?? .source.ip ?? "")
-          if src == "" {
-            src = to_string(.host ?? "")
+          raw = to_string!(.message ?? .)
+          parsed, err = parse_syslog(raw)
+          if err != null {
+            # Keep the raw line, but still forward it with a best-effort source ip.
+            parsed = {}
           }
+
+          # Socket source usually places the sender address in `host`.
+          src = to_string(.host ?? "")
+          # Some versions include a nested metadata object.
+          if src == "" {
+            src = to_string(.metadata.host ?? .metadata.source_ip ?? "")
+          }
+
           . = {
             "source_ip": src,
-            "hostname": to_string(.hostname ?? .host ?? ""),
-            "app_name": to_string(.appname ?? .app_name ?? ""),
-            "proc_id": to_string(.procid ?? .proc_id ?? ""),
-            "msg_id": to_string(.msgid ?? .msg_id ?? ""),
-            "facility": to_int(.facility) ?? null,
-            "severity": to_int(.severity) ?? null,
-            "message": to_string(.message ?? ""),
-            "raw": to_string(.raw ?? .message ?? ""),
+            "hostname": to_string(parsed.hostname ?? ""),
+            "app_name": to_string(parsed.appname ?? ""),
+            "proc_id": to_string(parsed.procid ?? ""),
+            "msg_id": to_string(parsed.msgid ?? ""),
+            "facility": to_int(parsed.facility) ?? null,
+            "severity": to_int(parsed.severity) ?? null,
+            "message": to_string(parsed.message ?? ""),
+            "raw": raw,
             "received_at": format_timestamp!(now(), "%+"),
           }
 
