@@ -33,7 +33,8 @@ data:
           # Skyforge ingest expects a small normalized JSON shape.
           raw = ""
           if exists(.message) {
-            raw = to_string!(.message)
+            # With `socket` + `bytes` decoding, `.message` is usually bytes.
+            raw = string!(.message)
           } else {
             raw = to_string!(.)
           }
@@ -47,27 +48,38 @@ data:
           # Socket source usually places the sender address in `host`.
           src = ""
           if exists(.host) {
-            src = to_string!(.host)
+            src = .host
           }
           # Some versions include a nested metadata object.
           if src == "" {
             if exists(.metadata.host) {
-              src = to_string!(.metadata.host)
+              src = .metadata.host
             } else if exists(.metadata.source_ip) {
-              src = to_string!(.metadata.source_ip)
+              src = .metadata.source_ip
             }
           }
 
+          # Ensure src is a string for match/split (socket sources can be loosely typed).
+          src = to_string!(src)
+
+          # Strip a trailing :port (common with socket sources).
+          if match(src, r'^\d+\.\d+\.\d+\.\d+:\d+$') {
+            src = split(src, ":")[0]
+          }
+          if src == "" {
+            src = "0.0.0.0"
+          }
+
           hostname = ""
-          if exists(parsed.hostname) { hostname = to_string!(parsed.hostname) }
+          if exists(parsed.hostname) { hostname = parsed.hostname }
           app_name = ""
-          if exists(parsed.appname) { app_name = to_string!(parsed.appname) }
+          if exists(parsed.appname) { app_name = parsed.appname }
           proc_id = ""
-          if exists(parsed.procid) { proc_id = to_string!(parsed.procid) }
+          if exists(parsed.procid) { proc_id = parsed.procid }
           msg_id = ""
-          if exists(parsed.msgid) { msg_id = to_string!(parsed.msgid) }
+          if exists(parsed.msgid) { msg_id = parsed.msgid }
           msg = ""
-          if exists(parsed.message) { msg = to_string!(parsed.message) }
+          if exists(parsed.message) { msg = parsed.message }
 
           . = {
             "source_ip": src,
@@ -75,8 +87,6 @@ data:
             "app_name": app_name,
             "proc_id": proc_id,
             "msg_id": msg_id,
-            "facility": to_int(parsed.facility) ?? null,
-            "severity": to_int(parsed.severity) ?? null,
             "message": msg,
             "raw": raw,
             "received_at": format_timestamp!(now(), "%+"),
@@ -91,12 +101,17 @@ data:
         method: post
         encoding:
           codec: json
+        framing:
+          method: newline_delimited
         request:
           headers:
+            Content-Type: "application/json"
             X-Skyforge-Internal-Token: "${SKYFORGE_INTERNAL_TOKEN}"
         healthcheck:
           enabled: true
         batch:
+          max_events: 1
           max_bytes: 1048576
           timeout_secs: 1
+
 {{- end }}
