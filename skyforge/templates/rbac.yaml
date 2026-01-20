@@ -53,6 +53,7 @@ subjects:
   - kind: ServiceAccount
     name: skyforge-server
 ---
+{{- if .Values.skyforge.clabernetes.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -106,3 +107,4 @@ subjects:
     name: skyforge-server
     namespace: {{ .Release.Namespace }}
 ---
+{{- end }}
