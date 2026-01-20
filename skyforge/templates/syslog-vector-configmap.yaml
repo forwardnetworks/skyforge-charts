@@ -33,9 +33,9 @@ data:
           # Skyforge ingest expects a small normalized JSON shape.
           raw = ""
           if exists(.message) {
-            raw = to_string(.message)
+            raw = to_string!(.message)
           } else {
-            raw = to_string(.)
+            raw = to_string!(.)
           }
 
           parsed, err = parse_syslog(raw)
@@ -47,26 +47,37 @@ data:
           # Socket source usually places the sender address in `host`.
           src = ""
           if exists(.host) {
-            src = to_string(.host)
+            src = to_string!(.host)
           }
           # Some versions include a nested metadata object.
           if src == "" {
             if exists(.metadata.host) {
-              src = to_string(.metadata.host)
+              src = to_string!(.metadata.host)
             } else if exists(.metadata.source_ip) {
-              src = to_string(.metadata.source_ip)
+              src = to_string!(.metadata.source_ip)
             }
           }
 
+          hostname = ""
+          if exists(parsed.hostname) { hostname = to_string!(parsed.hostname) }
+          app_name = ""
+          if exists(parsed.appname) { app_name = to_string!(parsed.appname) }
+          proc_id = ""
+          if exists(parsed.procid) { proc_id = to_string!(parsed.procid) }
+          msg_id = ""
+          if exists(parsed.msgid) { msg_id = to_string!(parsed.msgid) }
+          msg = ""
+          if exists(parsed.message) { msg = to_string!(parsed.message) }
+
           . = {
             "source_ip": src,
-            "hostname": to_string(parsed.hostname ?? ""),
-            "app_name": to_string(parsed.appname ?? ""),
-            "proc_id": to_string(parsed.procid ?? ""),
-            "msg_id": to_string(parsed.msgid ?? ""),
+            "hostname": hostname,
+            "app_name": app_name,
+            "proc_id": proc_id,
+            "msg_id": msg_id,
             "facility": to_int(parsed.facility) ?? null,
             "severity": to_int(parsed.severity) ?? null,
-            "message": to_string(parsed.message ?? ""),
+            "message": msg,
             "raw": raw,
             "received_at": format_timestamp!(now(), "%+"),
           }
