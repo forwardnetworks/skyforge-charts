@@ -168,6 +168,7 @@ skyforge:
     enabled: false
     interval: "10s"
   coder:
+    replicaCount: 1
     # Enables password auth for the bootstrap admin user (useful for demos).
     # Keep this true for strict SSO-only deployments.
     disablePasswordAuth: true

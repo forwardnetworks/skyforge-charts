@@ -5,7 +5,7 @@ metadata:
     io.kompose.service: coder
   name: coder
 spec:
-  replicas: 1
+  replicas: {{ .Values.skyforge.coder.replicaCount | default 1 }}
   selector:
     matchLabels:
       io.kompose.service: coder
