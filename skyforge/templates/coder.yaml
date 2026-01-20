@@ -5,7 +5,8 @@ metadata:
     io.kompose.service: coder
   name: coder
 spec:
-  replicas: {{ .Values.skyforge.coder.replicaCount | default 1 }}
+  # Helm's `default` treats 0 as "empty", so allow explicit 0 to disable Coder (e.g. QA).
+  replicas: {{ if hasKey .Values.skyforge.coder "replicaCount" }}{{ .Values.skyforge.coder.replicaCount }}{{ else }}1{{ end }}
   selector:
     matchLabels:
       io.kompose.service: coder
