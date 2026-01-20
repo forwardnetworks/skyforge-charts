@@ -33,6 +33,9 @@ rules:
     resources: ["pods", "pods/log"]
     verbs: ["get", "list"]
   - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+  - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "create", "patch", "update", "delete"]
 ---

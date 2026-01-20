@@ -107,6 +107,19 @@ skyforge:
   forward:
     snmpPlaceholderEnabled: true
     snmpCommunity: "public"
+  forwardCollector:
+    # Optional: enable the in-cluster Forward collector by configuring the image.
+    # When empty, Skyforge will not deploy a collector Pod (Collector page will
+    # show "not configured").
+    # Example:
+    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.1.0-05"
+    image: ""
+    pullPolicy: "IfNotPresent"
+    heapSizeGB: 0
+    # Optional: registry pull secret to use for the collector image. When empty,
+    # Skyforge falls back to the global Kubernetes imagePullSecret.
+    imagePullSecretName: ""
+    imagePullSecretNamespace: ""
   sessionTtl: "8h"
   pkiDefaultDays: 365
   sshDefaultDays: 30
@@ -248,10 +261,10 @@ images:
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260117-0634-67561fc"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260120-portal-fwd-byo"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260117-0634-67561fc-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260120-portal-fwd-byo"
   nsq: "nsqio/nsq:v1.2.1"
   cloudflared: "cloudflare/cloudflared:2025.1.0"
 
