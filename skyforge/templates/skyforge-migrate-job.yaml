@@ -1,1 +1,3 @@
-{{- .Files.Get "files/kompose/skyforge-migrate-pod.yaml" | nindent 0 }}
+{{- $content := .Files.Get "files/kompose/skyforge-migrate-pod.yaml" -}}
+{{- $content = replace "arigaio/atlas:latest-alpine" .Values.images.atlas $content -}}
+{{- $content | nindent 0 }}
