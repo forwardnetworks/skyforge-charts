@@ -209,6 +209,17 @@ skyforge:
       namespace: "kube-system"
       image: "ghcr.io/k8snetworkplumbingwg/multus-cni:snapshot-thick"
       imagePullPolicy: IfNotPresent
+    cniPlugins:
+      # Install required CNI plugin binaries onto each node's /opt/cni/bin.
+      #
+      # We rely on Multus to add per-link interfaces (net1/net2/...) to pods.
+      # Those attachments require standard CNI plugins like "bridge" and
+      # "host-local" to be present on the node.
+      install: true
+      namespace: "kube-system"
+      version: "v1.5.1"
+      image: "alpine:3.20"
+      imagePullPolicy: IfNotPresent
 
   # Optional: Cloudflare Tunnel (cloudflared) to expose Skyforge externally without opening inbound ports.
   # Requires you to create the tunnel in Cloudflare and store either a tunnel token or credentials.json in a Secret.

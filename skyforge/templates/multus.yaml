@@ -106,6 +106,38 @@ data:
         "socketDir": "/host/run/multus/"
     }
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: multus-primary-config
+  namespace: {{ $ns | quote }}
+  labels:
+    tier: node
+    app: multus
+    {{- include "skyforge.labels" . | nindent 4 }}
+data:
+  00-multus.conf: |
+    {
+      "cniVersion": "0.3.1",
+      "name": "multus-cni-network",
+      "type": "multus",
+      "kubeconfig": "/etc/cni/net.d/multus.d/multus.kubeconfig",
+      "cniConfDir": "/etc/cni/multus/net.d",
+      "delegates": [
+        {
+          "cniVersion": "0.3.1",
+          "name": "cilium",
+          "plugins": [
+            {
+              "type": "cilium-cni",
+              "enable-debug": false,
+              "log-file": "/var/run/cilium/cilium-cni.log"
+            }
+          ]
+        }
+      ]
+    }
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -139,6 +171,25 @@ spec:
           effect: NoExecute
       serviceAccountName: multus
       initContainers:
+        - name: install-multus-primary-conf
+          image: {{ .Values.images.alpine | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -lc
+            - |
+              set -euo pipefail
+              mkdir -p /host/etc/cni/net.d
+              cp -f /config/00-multus.conf /host/etc/cni/net.d/00-multus.conf
+              chmod 0600 /host/etc/cni/net.d/00-multus.conf
+          securityContext:
+            privileged: true
+          terminationMessagePolicy: FallbackToLogsOnError
+          volumeMounts:
+            - name: cni
+              mountPath: /host/etc/cni/net.d
+            - name: multus-primary-config
+              mountPath: /config
         - name: install-multus-binary
           image: {{ $image | quote }}
           imagePullPolicy: {{ $pullPolicy | quote }}
@@ -218,6 +269,9 @@ spec:
         - name: multus-daemon-config
           configMap:
             name: multus-daemon-config
+        - name: multus-primary-config
+          configMap:
+            name: multus-primary-config
         - name: hostroot
           hostPath:
             path: /
