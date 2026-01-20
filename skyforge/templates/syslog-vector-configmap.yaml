@@ -31,7 +31,13 @@ data:
           - syslog_udp
         source: |
           # Skyforge ingest expects a small normalized JSON shape.
-          raw = to_string!(.message ?? .)
+          raw = ""
+          if exists(.message) {
+            raw = to_string(.message)
+          } else {
+            raw = to_string(.)
+          }
+
           parsed, err = parse_syslog(raw)
           if err != null {
             # Keep the raw line, but still forward it with a best-effort source ip.
@@ -39,10 +45,17 @@ data:
           }
 
           # Socket source usually places the sender address in `host`.
-          src = to_string(.host ?? "")
+          src = ""
+          if exists(.host) {
+            src = to_string(.host)
+          }
           # Some versions include a nested metadata object.
           if src == "" {
-            src = to_string(.metadata.host ?? .metadata.source_ip ?? "")
+            if exists(.metadata.host) {
+              src = to_string(.metadata.host)
+            } else if exists(.metadata.source_ip) {
+              src = to_string(.metadata.source_ip)
+            }
           }
 
           . = {
