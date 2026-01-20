@@ -19,11 +19,36 @@ data:
         mode: udp
         address: "0.0.0.0:{{ default 514 .Values.skyforge.syslog.hostPort }}"
 
+    transforms:
+      skyforge_syslog:
+        type: remap
+        inputs:
+          - syslog_udp
+        source: |
+          # Skyforge ingest expects a small normalized JSON shape.
+          # Vector syslog events vary slightly by version; be tolerant.
+          src = to_string(.source_ip ?? .metadata.source_ip ?? .sender.ip ?? .source.ip ?? "")
+          if src == "" {
+            src = to_string(.host ?? "")
+          }
+          . = {
+            "source_ip": src,
+            "hostname": to_string(.hostname ?? .host ?? ""),
+            "app_name": to_string(.appname ?? .app_name ?? ""),
+            "proc_id": to_string(.procid ?? .proc_id ?? ""),
+            "msg_id": to_string(.msgid ?? .msg_id ?? ""),
+            "facility": to_int(.facility) ?? null,
+            "severity": to_int(.severity) ?? null,
+            "message": to_string(.message ?? ""),
+            "raw": to_string(.raw ?? .message ?? ""),
+            "received_at": format_timestamp!(now(), "%+"),
+          }
+
     sinks:
       skyforge_ingest:
         type: http
         inputs:
-          - syslog_udp
+          - skyforge_syslog
         uri: "http://skyforge-server:8085/ingest/syslog"
         method: post
         encoding:
