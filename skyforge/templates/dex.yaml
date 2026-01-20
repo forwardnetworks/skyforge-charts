@@ -16,7 +16,7 @@ spec:
     spec:
       initContainers:
         - name: patch-config
-          image: python:3.12-alpine
+          image: {{ .Values.images.python | quote }}
           env:
             - name: DEX_WEB_THEME
               value: {{ .Values.skyforge.dex.webTheme | default "" | quote }}

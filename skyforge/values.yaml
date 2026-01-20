@@ -245,6 +245,8 @@ skyforge:
 
 images:
   alpine: "alpine:3.20"
+  # Use GHCR mirrors for common base images to avoid Docker Hub rate limits on the cluster.
+  python: "ghcr.io/library/python:3.12-alpine"
   vector: "timberio/vector:0.44.0-debian"
   telegraf: "telegraf:1.33-alpine"
   freeradius: "freeradius/freeradius-server:3.2.5"
@@ -267,7 +269,7 @@ images:
   # Defaults to the same image as skyforgeServer for local/dev workflows.
   skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260120-portal-fwd-byo2"
   nsq: "nsqio/nsq:v1.2.1"
-  cloudflared: "cloudflare/cloudflared:2025.1.0"
+  cloudflared: "ghcr.io/cloudflare/cloudflared:2025.1.0"
 
 nsq:
   enabled: true
