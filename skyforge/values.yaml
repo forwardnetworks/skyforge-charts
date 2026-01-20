@@ -261,10 +261,10 @@ images:
   atlas: "docker.io/arigaio/atlas@sha256:1139e29a47364e642cc2f4912fd2ff7c8b31a23886fdbf7bfdfdf50b39625190"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260120-portal-fwd-byo"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260120-portal-fwd-byo2"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260120-portal-fwd-byo"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260120-portal-fwd-byo2"
   nsq: "nsqio/nsq:v1.2.1"
   cloudflared: "cloudflare/cloudflared:2025.1.0"
 
