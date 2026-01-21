@@ -22,7 +22,7 @@ spec:
               export SKYFORGE_ADMIN_PASSWORD_FILE="/run/secrets/skyforge-admin-shared"
 
               for i in $(seq 1 60); do
-                if python /opt/netbox/netbox/manage.py shell -c "print('ready')"; then
+                if python /opt/netbox/netbox/manage.py shell -c "from django.contrib.auth import get_user_model; get_user_model().objects.exists(); print('ready')"; then
                   break
                 fi
                 sleep 2

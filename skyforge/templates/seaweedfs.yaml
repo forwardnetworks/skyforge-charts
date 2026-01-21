@@ -1,0 +1,133 @@
+{{- $vals := fromYaml (toYaml .Values) -}}
+{{- $enabled := dig "skyforge" "seaweedfs" "enabled" false $vals -}}
+{{- if $enabled -}}
+{{- $image := dig "skyforge" "seaweedfs" "image" "ghcr.io/forwardnetworks/skyforge-seaweedfs:3.84" $vals -}}
+{{- $pullPolicy := dig "skyforge" "seaweedfs" "imagePullPolicy" "IfNotPresent" $vals -}}
+{{- $sc := dig "skyforge" "seaweedfs" "storageClassName" "longhorn" $vals -}}
+{{- $size := dig "skyforge" "seaweedfs" "volumeSize" "50Gi" $vals -}}
+{{- $s3Port := dig "skyforge" "seaweedfs" "s3" "port" 8333 $vals -}}
+{{- $initEnabled := dig "skyforge" "seaweedfs" "init" "enabled" true $vals -}}
+{{- $awsCliImage := dig "skyforge" "seaweedfs" "init" "awsCliImage" "public.ecr.aws/aws-cli/aws-cli:2.15.39" $vals -}}
+{{- $buckets := dig "skyforge" "seaweedfs" "init" "buckets" (list "skyforge-files" "skyforge-artifacts") $vals -}}
+
+# SeaweedFS (single-node) deployment.
+# We intentionally use `weed server -s3` to avoid multi-component wiring issues.
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: seaweedfs
+  ports:
+    - name: master
+      port: 9333
+      targetPort: 9333
+    - name: filer
+      port: 8888
+      targetPort: 8888
+    - name: s3
+      port: {{ $s3Port }}
+      targetPort: {{ $s3Port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seaweedfs
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app: seaweedfs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seaweedfs
+  template:
+    metadata:
+      labels:
+        app: seaweedfs
+        {{- include "skyforge.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: weed
+          image: {{ $image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          args:
+            - "server"
+            - "-ip=0.0.0.0"
+            - "-dir=/data"
+            - "-s3"
+            - "-s3.port={{ $s3Port }}"
+          ports:
+            - containerPort: 9333
+            - containerPort: 8888
+            - containerPort: {{ $s3Port }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: seaweedfs-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: seaweedfs-data
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: {{ $sc | quote }}
+  resources:
+    requests:
+      storage: {{ $size | quote }}
+---
+{{- if $initEnabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seaweedfs-s3-init-{{ (join "," $buckets | sha256sum | trunc 8) }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init
+          image: {{ $awsCliImage | quote }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.objectStorage.accessKeySecretName | quote }}
+                  key: {{ .Values.skyforge.objectStorage.accessKeySecretKey | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.objectStorage.secretKeySecretName | quote }}
+                  key: {{ .Values.skyforge.objectStorage.secretKeySecretKey | quote }}
+          command:
+            - /bin/sh
+            - -lc
+            - |
+              set -euo pipefail
+              endpoint="http://seaweedfs:{{ $s3Port }}"
+              echo "Waiting for SeaweedFS S3 to become reachable..."
+              for i in $(seq 1 90); do
+                aws --endpoint-url "$endpoint" s3 ls >/dev/null 2>&1 && break
+                sleep 2
+              done
+              {{- range $b := $buckets }}
+              aws --endpoint-url "$endpoint" s3 mb "s3://{{ $b }}" 2>/dev/null || true
+              {{- end }}
+              echo "SeaweedFS buckets ensured."
+{{- end -}}
+{{- end -}}

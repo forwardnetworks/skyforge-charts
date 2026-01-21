@@ -121,6 +121,53 @@ spec:
               key: GITEA_ALLOWED_DOMAINS
         - name: GITEA__migrations__SKIP_TLS_VERIFY
           value: 'true'
+        # Store large artifacts in object storage (SeaweedFS S3), while keeping
+        # repository data on the filesystem-backed PVC.
+        #
+        # Leave per-feature storage types unset so they derive from [storage].
+        - name: GITEA__storage__STORAGE_TYPE
+          value: minio
+        - name: GITEA__storage__MINIO_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_OBJECT_STORAGE_ENDPOINT
+        - name: GITEA__storage__MINIO_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: object-storage-access-key
+              key: object-storage-access-key
+        - name: GITEA__storage__MINIO_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: object-storage-secret-key
+              key: object-storage-secret-key
+        - name: GITEA__storage__MINIO_BUCKET
+          value: gitea
+        - name: GITEA__storage__MINIO_LOCATION
+          value: us-east-1
+        - name: GITEA__storage__MINIO_USE_SSL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_OBJECT_STORAGE_USE_SSL
+        - name: GITEA__storage__MINIO_BUCKET_LOOKUP_TYPE
+          value: path
+        - name: GITEA__attachment__STORAGE_TYPE
+          value: default
+        - name: GITEA__lfs__STORAGE_TYPE
+          value: default
+        # Allow Gitea to pick up S3 credentials automatically when using MinIO storage.
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: object-storage-access-key
+              key: object-storage-access-key
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: object-storage-secret-key
+              key: object-storage-secret-key
         - name: INSTALL_LOCK
           value: 'true'
         - name: USER_GID
@@ -129,7 +176,7 @@ spec:
           value: '1000'
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
-        image: gitea/gitea:1.22.3-rootless
+        image: ghcr.io/go-gitea/gitea:1.24.6-rootless
         livenessProbe:
           httpGet:
             path: /
@@ -196,3 +243,31 @@ spec:
           readOnly: true
         - name: skyforge-ca-bundle
           mountPath: /work
+      - name: gitea-storage-default
+        image: alpine:3.20
+        command:
+        - sh
+        - -lc
+        - |
+          set -euo pipefail
+          ini="/var/lib/gitea/custom/conf/app.ini"
+          mkdir -p "$(dirname "$ini")"
+          touch "$ini"
+          if ! grep -qE '^[[]storage[.]default[]]' "$ini"; then
+            printf '\n[storage.default]\nSTORAGE_TYPE = minio\nMINIO_ENDPOINT = %s\nMINIO_BUCKET = gitea\nMINIO_LOCATION = us-east-1\nMINIO_USE_SSL = %s\nMINIO_BUCKET_LOOKUP_TYPE = path\n' \
+              "$SKYFORGE_OBJECT_STORAGE_ENDPOINT" "$SKYFORGE_OBJECT_STORAGE_USE_SSL" >>"$ini"
+          fi
+        env:
+        - name: SKYFORGE_OBJECT_STORAGE_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_OBJECT_STORAGE_ENDPOINT
+        - name: SKYFORGE_OBJECT_STORAGE_USE_SSL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_OBJECT_STORAGE_USE_SSL
+        volumeMounts:
+        - name: gitea-data
+          mountPath: /var/lib/gitea

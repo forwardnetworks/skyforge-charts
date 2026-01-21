@@ -89,7 +89,7 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_ADMIN_EMAIL
-          image: gitea/gitea:1.22.3-rootless
+          image: ghcr.io/go-gitea/gitea:1.24.6-rootless
           name: gitea-admin-bootstrap
           securityContext:
             runAsGroup: 1000

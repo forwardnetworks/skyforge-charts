@@ -45,11 +45,15 @@ spec:
             - --tcp-address=0.0.0.0:4150
             - --http-address=0.0.0.0:4151
             - --mem-queue-size=10000
+            - --data-path=/var/lib/nsq
           ports:
             - name: tcp
               containerPort: 4150
             - name: http
               containerPort: 4151
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/nsq
           readinessProbe:
             tcpSocket:
               port: 4150
@@ -60,5 +64,7 @@ spec:
               port: 4150
             initialDelaySeconds: 10
             periodSeconds: 10
+      volumes:
+        - name: data
+          emptyDir: {}
 {{- end }}
-

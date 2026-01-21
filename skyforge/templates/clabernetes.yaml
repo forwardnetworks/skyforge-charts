@@ -43,6 +43,7 @@ rules:
       - secrets
       - configmaps
       - services
+      - endpoints
       - pods
       - persistentvolumeclaims
       - serviceaccounts
@@ -67,6 +68,12 @@ metadata:
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
 rules:
+  # Native + VXLAN launcher needs to resolve per-node tunnel endpoints via the
+  # Kubernetes API. This avoids relying on in-pod DNS, which can become
+  # unavailable once NOS containers mutate the network stack.
+  - apiGroups: [""]
+    resources: ["services", "endpoints"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["clabernetes.containerlab.dev"]
     resources: ["imagerequests"]
     verbs: ["get", "create"]

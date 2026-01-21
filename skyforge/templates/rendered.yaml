@@ -3,10 +3,43 @@
   "backup-postgres-s3-cronjob.yaml" true
   "replicate-minio-aws-s3-cronjob.yaml" true
   "gitea-admin-sync-deployment.yaml" true
-  "netbox-admin-sync-deployment.yaml" true
-  "nautobot-admin-sync-deployment.yaml" true
+  "freeradius-deployment.yaml" true
+  "freeradius-service.yaml" true
+  "swagger-ui-deployment.yaml" true
+  "swagger-ui-service.yaml" true
 -}}
 {{- $vals := fromYaml (toYaml .Values) -}}
+{{- $netboxEnabled := dig "skyforge" "netbox" "enabled" false $vals -}}
+{{- if not $netboxEnabled -}}
+  {{- $_ := set $skip "netbox-admin-bootstrap-job.yaml" true -}}
+  {{- $_ := set $skip "netbox-admin-sync-deployment.yaml" true -}}
+  {{- $_ := set $skip "netbox-deployment.yaml" true -}}
+  {{- $_ := set $skip "netbox-media-persistentvolumeclaim.yaml" true -}}
+  {{- $_ := set $skip "netbox-reports-persistentvolumeclaim.yaml" true -}}
+  {{- $_ := set $skip "netbox-scripts-persistentvolumeclaim.yaml" true -}}
+  {{- $_ := set $skip "netbox-service.yaml" true -}}
+{{- end -}}
+{{- $nautobotEnabled := dig "skyforge" "nautobot" "enabled" false $vals -}}
+{{- if not $nautobotEnabled -}}
+  {{- $_ := set $skip "nautobot-admin-bootstrap-job.yaml" true -}}
+  {{- $_ := set $skip "nautobot-admin-sync-deployment.yaml" true -}}
+  {{- $_ := set $skip "nautobot-deployment.yaml" true -}}
+  {{- $_ := set $skip "nautobot-init-pod.yaml" true -}}
+  {{- $_ := set $skip "nautobot-jobs-persistentvolumeclaim.yaml" true -}}
+  {{- $_ := set $skip "nautobot-media-persistentvolumeclaim.yaml" true -}}
+  {{- $_ := set $skip "nautobot-reports-persistentvolumeclaim.yaml" true -}}
+  {{- $_ := set $skip "nautobot-service.yaml" true -}}
+{{- end -}}
+{{- $seaweedEnabled := dig "skyforge" "seaweedfs" "enabled" false $vals -}}
+{{- if $seaweedEnabled -}}
+  {{- $_ := set $skip "minio-data-persistentvolumeclaim.yaml" true -}}
+  {{- $_ := set $skip "minio-deployment.yaml" true -}}
+  {{- $_ := set $skip "minio-init-pod.yaml" true -}}
+  {{- $_ := set $skip "minio-ldap-init-pod.yaml" true -}}
+  {{- $_ := set $skip "minio-service.yaml" true -}}
+  {{- $_ := set $skip "minio-skyforge-init-pod.yaml" true -}}
+  {{- $_ := set $skip "minio-terraform-init-pod.yaml" true -}}
+{{- end -}}
 {{- $dnsEnabled := dig "skyforge" "dns" "enabled" false $vals -}}
 {{- $dnsNodePort := dig "skyforge" "dns" "nodePort" 30053 $vals -}}
 {{- $dnsWebNodePort := dig "skyforge" "dns" "webNodePort" 30380 $vals -}}
