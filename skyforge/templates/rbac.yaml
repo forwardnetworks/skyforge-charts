@@ -60,6 +60,9 @@ metadata:
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
 rules:
+  - apiGroups: ["cilium.io"]
+    resources: ["ciliumnodes"]
+    verbs: ["get", "list", "watch"]
   {{- if .Values.skyforge.clabernetes.enabled }}
   - apiGroups: ["clabernetes.containerlab.dev"]
     resources: ["topologies"]

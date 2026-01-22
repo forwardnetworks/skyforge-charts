@@ -48,6 +48,8 @@ spec:
         - name: skyforge-server-worker
           image: {{ .Values.images.skyforgeServerWorker | default .Values.images.skyforgeServer | quote }}
           imagePullPolicy: IfNotPresent
+          resources:
+            {{- toYaml .Values.skyforge.workerResources | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: skyforge-config

@@ -8,6 +8,26 @@ skyforge:
   # creates a separate Deployment that runs the task worker.
   workerReplicaCount: 0
 
+  # Resources for the worker Deployment. Strongly recommended when using the HPA.
+  workerResources:
+    requests:
+      cpu: "250m"
+      memory: "1Gi"
+    limits: {}
+
+  # Optional autoscaling for the worker Deployment.
+  #
+  # Notes:
+  # - Requires metrics-server in the cluster.
+  # - CPU utilization requires `resources.requests.cpu` to be set (see workerResources).
+  workerAutoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+    # Set to 0 to disable.
+    targetMemoryUtilizationPercentage: 0
+
   # Optional: provide ENCORE_RUNTIME_CONFIG for Encore runtime infrastructure config.
   # NOTE: This is NOT the same as typed Encore config loaded via config.Load.
   encoreRuntimeConfig:
