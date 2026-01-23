@@ -6,41 +6,6 @@
 {{- $pullPolicy := dig "skyforge" "clabernetes" "multus" "imagePullPolicy" "IfNotPresent" $vals -}}
 # Based on the Multus "thick" quickstart manifest:
 # https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/deployments/multus-daemonset-thick.yml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  name: network-attachment-definitions.k8s.cni.cncf.io
-  labels:
-    {{- include "skyforge.labels" . | nindent 4 }}
-spec:
-  group: k8s.cni.cncf.io
-  scope: Namespaced
-  names:
-    plural: network-attachment-definitions
-    singular: network-attachment-definition
-    kind: NetworkAttachmentDefinition
-    shortNames:
-      - net-attach-def
-  versions:
-    - name: v1
-      served: true
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            apiVersion:
-              type: string
-            kind:
-              type: string
-            metadata:
-              type: object
-            spec:
-              type: object
-              properties:
-                config:
-                  type: string
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

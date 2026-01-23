@@ -149,4 +149,34 @@ spec:
               command: ["sh", "-c"]
               args:
                 - {{ printf "%s http://skyforge-server-worker:8085/internal/bridge/cloud/checks" $curlCmd | quote }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: skyforge-collector-reconcile
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: curl
+              image: {{ .Values.images.alpine | quote }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: SKYFORGE_INTERNAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-internal-token
+                      key: skyforge-internal-token
+              command: ["sh", "-c"]
+              args:
+                - {{ printf "%s http://skyforge-server:8085/internal/bridge/collector/reconcile" $curlCmd | quote }}
 {{- end }}

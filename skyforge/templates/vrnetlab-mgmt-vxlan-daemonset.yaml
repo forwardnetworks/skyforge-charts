@@ -1,0 +1,99 @@
+{{- $vals := fromYaml (toYaml .Values) -}}
+{{- if .Values.skyforge.clabernetes.enabled -}}
+{{- $enabled := dig "skyforge" "clabernetes" "vrnetlabMgmtVxlan" "enabled" false $vals -}}
+{{- if $enabled -}}
+{{- $ns := dig "skyforge" "clabernetes" "vrnetlabMgmtVxlan" "namespace" "kube-system" $vals -}}
+{{- $image := dig "skyforge" "clabernetes" "vrnetlabMgmtVxlan" "image" "public.ecr.aws/docker/library/alpine:3.20" $vals -}}
+{{- $pullPolicy := dig "skyforge" "clabernetes" "vrnetlabMgmtVxlan" "imagePullPolicy" "IfNotPresent" $vals -}}
+{{- $bridge := dig "skyforge" "clabernetes" "vrnetlabMgmtVxlan" "bridge" "br-vrmgmt" $vals -}}
+{{- $cniType := dig "skyforge" "clabernetes" "vrnetlabMgmtNAD" "type" "bridge" $vals -}}
+{{- $underlayDev := dig "skyforge" "clabernetes" "vrnetlabMgmtVxlan" "underlayDev" "ens33" $vals -}}
+{{- $vni := dig "skyforge" "clabernetes" "vrnetlabMgmtVxlan" "vni" 417 $vals -}}
+{{- $dstPort := dig "skyforge" "clabernetes" "vrnetlabMgmtVxlan" "dstPort" 4789 $vals -}}
+{{- $peers := dig "skyforge" "clabernetes" "vrnetlabMgmtVxlan" "peers" (list) $vals -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: skyforge-vrnetlab-mgmt-vxlan
+  namespace: {{ $ns | quote }}
+  labels:
+    app: skyforge-vrnetlab-mgmt-vxlan
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: skyforge-vrnetlab-mgmt-vxlan
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: skyforge-vrnetlab-mgmt-vxlan
+        {{- include "skyforge.labels" . | nindent 8 }}
+    spec:
+      hostNetwork: true
+      hostPID: true
+      tolerations:
+        - operator: Exists
+          effect: NoSchedule
+        - operator: Exists
+          effect: NoExecute
+      containers:
+        - name: vxlan
+          image: {{ $image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            privileged: true
+          env:
+            - name: VXLAN_PEERS
+              value: {{ join " " $peers | quote }}
+          command:
+            - /bin/sh
+            - -lc
+            - |
+              set -euo pipefail
+              apk add --no-cache iproute2 >/dev/null
+
+              BR={{ $bridge | quote }}
+              VX="vx-${BR}"
+              DEV={{ $underlayDev | quote }}
+              VNI={{ $vni | quote }}
+              PORT={{ $dstPort | quote }}
+              LOCAL="$(ip -4 -o addr show dev "$DEV" 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | head -n1 || true)"
+              if [ -z "${LOCAL}" ]; then
+                echo "ERROR: unable to determine IPv4 address for underlay dev ${DEV}" >&2
+                exit 1
+              fi
+
+              # Ensure the VXLAN interface exists with learning enabled.
+              # NOTE: We intentionally avoid `nolearning` here; with `nolearning` we observed
+              # encapsulated frames arriving on the underlay but not being delivered to local ports.
+              ip link set "$VX" down 2>/dev/null || true
+              ip link del "$VX" 2>/dev/null || true
+              ip link add "$VX" type vxlan id "$VNI" local "$LOCAL" dev "$DEV" dstport "$PORT"
+              ip link set "$VX" up
+
+              # When using the Multus `bridge` CNI, we want a real Linux bridge on each node
+              # to attach the veth endpoints (from Multus) and the VXLAN interface together.
+              if [ {{ $cniType | quote }} = "bridge" ]; then
+                ip link add "$BR" type bridge 2>/dev/null || true
+                ip link set "$BR" up
+                ip link set "$VX" master "$BR" 2>/dev/null || true
+              fi
+
+              for ip in ${VXLAN_PEERS}; do
+                [ "$ip" = "$LOCAL" ] && continue
+                bridge fdb append 00:00:00:00:00:00 dev "$VX" dst "$ip" 2>/dev/null || true
+              done
+
+              # Keep container alive; configuration is idempotent and can be re-applied by restarting DS.
+              sleep 365d
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+{{- end -}}
+{{- end -}}

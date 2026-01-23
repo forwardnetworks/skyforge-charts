@@ -45,7 +45,7 @@ spec:
               apk add --no-cache curl tar >/dev/null
 
               # Only install if required binaries are missing.
-              required="bridge host-local"
+              required="bridge host-local macvlan ipvlan"
               missing="0"
               for b in $required; do
                 if [ ! -x "/host/opt/cni/bin/$b" ]; then
@@ -64,7 +64,7 @@ spec:
               mkdir -p /tmp/cni-plugins
               tar -C /tmp/cni-plugins -xzf /tmp/cni-plugins.tgz
 
-              for b in bridge host-local loopback ptp tuning; do
+              for b in bridge host-local loopback ptp tuning macvlan ipvlan; do
                 if [ -f "/tmp/cni-plugins/$b" ]; then
                   cp -f "/tmp/cni-plugins/$b" "/host/opt/cni/bin/$b"
                   chmod 0755 "/host/opt/cni/bin/$b"
@@ -88,4 +88,3 @@ spec:
             path: /opt/cni/bin
 {{- end -}}
 {{- end -}}
-

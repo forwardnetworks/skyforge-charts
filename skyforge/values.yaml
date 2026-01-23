@@ -163,6 +163,11 @@ skyforge:
     # Skyforge falls back to the global Kubernetes imagePullSecret.
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
+    # Optional: attach extra Multus networks to the collector Pod (for example,
+    # to ensure it can reach lab management IPs on an underlay VLAN).
+    # Example:
+    #   - "kube-system/vrnetlab-mgmt"
+    multusNetworks: []
   sessionTtl: "8h"
   pkiDefaultDays: 365
   sshDefaultDays: 30
@@ -263,6 +268,54 @@ skyforge:
       version: "v1.5.1"
       image: "public.ecr.aws/docker/library/alpine:3.20"
       imagePullPolicy: IfNotPresent
+    whereabouts:
+      # Install Whereabouts IPAM (optional).
+      # This is typically paired with Multus when you want dynamic IP assignment
+      # for secondary network attachments.
+      install: false
+      namespace: "kube-system"
+      image: "ghcr.io/k8snetworkplumbingwg/whereabouts:v0.8.0"
+      imagePullPolicy: IfNotPresent
+      cronExpression: "30 4 * * *"
+      nodeSliceController:
+        enabled: true
+    vrnetlabMgmtNAD:
+      # Optional: install a shared NetworkAttachmentDefinition intended for
+      # vrnetlab mgmt NICs (secondary interface). This is only plumbing; Skyforge/clabernetes
+      # still have to request the attachment for a given pod.
+      install: false
+      namespace: "kube-system"
+      # CNI type for the mgmt network:
+      # - bridge: local-to-node L2 segment (pods must land on same node to talk)
+      # - macvlan: attaches directly to a host NIC (L2 across nodes on same VLAN)
+      # - ipvlan: like macvlan but shares the parent MAC (often avoids hypervisor "promisc/forged transmits" issues)
+      type: "bridge"
+      bridge: "br-vrnetlab-mgmt"
+      master: "ens33"
+      mode: "bridge"
+      gateway: ""
+      range: "172.31.255.0/24"
+
+    vrnetlabMgmtVxlan:
+      # Optional: create a host-level VXLAN overlay for the vrnetlab mgmt bridge,
+      # so pods on different nodes can reach each other on the vrnetlab mgmt subnet
+      # without requiring hypervisor/L2 support for macvlan.
+      #
+      # This is intended for vrnetlab management connectivity only (Forward collector ↔ devices).
+      enabled: false
+      namespace: "kube-system"
+      image: "public.ecr.aws/docker/library/alpine:3.20"
+      imagePullPolicy: IfNotPresent
+      # Host bridge used by the vrnetlab mgmt NAD (must be <= 15 chars).
+      bridge: "br-vrmgmt"
+      # Underlay device carrying host traffic (node NIC).
+      underlayDev: "ens33"
+      # VXLAN VNI and UDP port.
+      vni: 417
+      dstPort: 4789
+      # Optional explicit peer list (underlay node IPs). When empty, no peers are configured.
+      # NOTE: keep this list in sync with cluster nodes.
+      peers: []
 
   # Optional: Cloudflare Tunnel (cloudflared) to expose Skyforge externally without opening inbound ports.
   # Requires you to create the tunnel in Cloudflare and store either a tunnel token or credentials.json in a Secret.

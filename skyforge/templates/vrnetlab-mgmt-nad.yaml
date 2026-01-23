@@ -1,0 +1,42 @@
+{{- $vals := fromYaml (toYaml .Values) -}}
+{{- $install := dig "skyforge" "clabernetes" "vrnetlabMgmtNAD" "install" false $vals -}}
+{{- if and .Values.skyforge.clabernetes.enabled $install -}}
+{{- $ns := dig "skyforge" "clabernetes" "vrnetlabMgmtNAD" "namespace" "kube-system" $vals -}}
+{{- $cniType := dig "skyforge" "clabernetes" "vrnetlabMgmtNAD" "type" "bridge" $vals -}}
+{{- $range := dig "skyforge" "clabernetes" "vrnetlabMgmtNAD" "range" "172.31.255.0/24" $vals -}}
+{{- $gateway := dig "skyforge" "clabernetes" "vrnetlabMgmtNAD" "gateway" "" $vals -}}
+{{- $bridge := dig "skyforge" "clabernetes" "vrnetlabMgmtNAD" "bridge" "br-vrnetlab-mgmt" $vals -}}
+{{- $master := dig "skyforge" "clabernetes" "vrnetlabMgmtNAD" "master" "ens33" $vals -}}
+{{- $mode := dig "skyforge" "clabernetes" "vrnetlabMgmtNAD" "mode" "bridge" $vals -}}
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: vrnetlab-mgmt
+  namespace: {{ $ns | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  config: |
+    {
+      "cniVersion": "0.3.1",
+      "name": "vrnetlab-mgmt",
+      "type": {{ $cniType | quote }},
+      {{- if eq $cniType "bridge" }}
+      "bridge": {{ $bridge | quote }},
+      "isGateway": false,
+      "ipMasq": false,
+      "promiscMode": true,
+      {{- else if eq $cniType "macvlan" }}
+      "master": {{ $master | quote }},
+      "mode": {{ $mode | quote }},
+      {{- else if eq $cniType "ipvlan" }}
+      "master": {{ $master | quote }},
+      "mode": {{ $mode | quote }},
+      {{- end }}
+      "ipam": {
+        "type": "whereabouts",
+        "range": {{ $range | quote }}{{ if $gateway }},
+        "gateway": {{ $gateway | quote }}{{ end }}
+      }
+    }
+{{- end }}
