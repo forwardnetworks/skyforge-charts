@@ -387,6 +387,14 @@ kubernetes:
   # Optional image pull secrets to attach to service accounts created by the chart.
   # Example: ["ghcr-pull"] for private GHCR images.
   imagePullSecrets: []
+  imagePullSecret:
+    # Optional: create a pull secret in the release namespace.
+    # Useful for OSS-style installs where you want a single script to set up
+    # everything. Prefer supplying this via `--set-file` to avoid shell quoting.
+    create: false
+    name: "ghcr-pull"
+    # Raw docker config JSON (contents of ~/.docker/config.json), NOT base64.
+    dockerConfigJson: ""
 
 secrets:
   create: true
