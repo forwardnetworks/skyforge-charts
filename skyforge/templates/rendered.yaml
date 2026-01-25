@@ -30,16 +30,6 @@
   {{- $_ := set $skip "nautobot-reports-persistentvolumeclaim.yaml" true -}}
   {{- $_ := set $skip "nautobot-service.yaml" true -}}
 {{- end -}}
-{{- $seaweedEnabled := dig "skyforge" "seaweedfs" "enabled" false $vals -}}
-{{- if $seaweedEnabled -}}
-  {{- $_ := set $skip "minio-data-persistentvolumeclaim.yaml" true -}}
-  {{- $_ := set $skip "minio-deployment.yaml" true -}}
-  {{- $_ := set $skip "minio-init-pod.yaml" true -}}
-  {{- $_ := set $skip "minio-ldap-init-pod.yaml" true -}}
-  {{- $_ := set $skip "minio-service.yaml" true -}}
-  {{- $_ := set $skip "minio-skyforge-init-pod.yaml" true -}}
-  {{- $_ := set $skip "minio-terraform-init-pod.yaml" true -}}
-{{- end -}}
 {{- $dnsEnabled := dig "skyforge" "dns" "enabled" false $vals -}}
 {{- $dnsNodePort := dig "skyforge" "dns" "nodePort" 30053 $vals -}}
 {{- $dnsWebNodePort := dig "skyforge" "dns" "webNodePort" 30380 $vals -}}

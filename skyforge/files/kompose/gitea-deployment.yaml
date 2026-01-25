@@ -121,7 +121,7 @@ spec:
               key: GITEA_ALLOWED_DOMAINS
         - name: GITEA__migrations__SKIP_TLS_VERIFY
           value: 'true'
-        # Store large artifacts in object storage (SeaweedFS S3), while keeping
+        # Store large artifacts in object storage (S3), while keeping
         # repository data on the filesystem-backed PVC.
         #
         # Leave per-feature storage types unset so they derive from [storage].
@@ -253,10 +253,20 @@ spec:
           ini="/var/lib/gitea/custom/conf/app.ini"
           mkdir -p "$(dirname "$ini")"
           touch "$ini"
-          if ! grep -qE '^[[]storage[.]default[]]' "$ini"; then
-            printf '\n[storage.default]\nSTORAGE_TYPE = minio\nMINIO_ENDPOINT = %s\nMINIO_BUCKET = gitea\nMINIO_LOCATION = us-east-1\nMINIO_USE_SSL = %s\nMINIO_BUCKET_LOOKUP_TYPE = path\n' \
-              "$SKYFORGE_OBJECT_STORAGE_ENDPOINT" "$SKYFORGE_OBJECT_STORAGE_USE_SSL" >>"$ini"
+          # Always reconcile the default storage stanza. This file lives on a PVC,
+          # and leaving stale values (for example from prior experiments) can prevent
+          # Gitea from starting.
+          if grep -qE '^[[]storage[.]default[]]' "$ini"; then
+            awk '
+              BEGIN{skip=0}
+              /^[[]storage[.]default[]]/{skip=1; next}
+              /^[[]/{if(skip){skip=0}}
+              {if(!skip) print}
+            ' "$ini" > "${ini}.tmp"
+            mv "${ini}.tmp" "$ini"
           fi
+          printf '\n[storage.default]\nSTORAGE_TYPE = minio\nMINIO_ENDPOINT = %s\nMINIO_BUCKET = gitea\nMINIO_LOCATION = us-east-1\nMINIO_USE_SSL = %s\nMINIO_BUCKET_LOOKUP_TYPE = path\n' \
+            "$SKYFORGE_OBJECT_STORAGE_ENDPOINT" "$SKYFORGE_OBJECT_STORAGE_USE_SSL" >>"$ini"
         env:
         - name: SKYFORGE_OBJECT_STORAGE_ENDPOINT
           valueFrom:

@@ -102,25 +102,6 @@ skyforge:
     accessKeySecretKey: "object-storage-access-key"
     secretKeySecretName: "object-storage-secret-key"
     secretKeySecretKey: "object-storage-secret-key"
-
-  seaweedfs:
-    # Experimental: replace MinIO with SeaweedFS S3 gateway.
-    # Phase 1: SeaweedFS provides S3-compatible object storage; Longhorn still backs PV/PVC.
-    enabled: false
-    image: "ghcr.io/forwardnetworks/skyforge-seaweedfs:3.84"
-    imagePullPolicy: "IfNotPresent"
-    storageClassName: "longhorn"
-    volumeSize: "50Gi"
-    s3:
-      port: 8333
-    init:
-      # Create required buckets on first install.
-      enabled: true
-      awsCliImage: "public.ecr.aws/aws-cli/aws-cli:2.15.39"
-      buckets:
-        - "skyforge-files"
-        - "skyforge-artifacts"
-        - "gitea"
   terraform:
     path: ""
     version: ""
