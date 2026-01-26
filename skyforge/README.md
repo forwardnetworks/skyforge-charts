@@ -40,8 +40,7 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
   NetBox and Nautobot.
 - `secrets.items.skyforge-pki-ca-cert` / `secrets.items.skyforge-pki-ca-key`: Optional CA cert/key for PKI issuance.
 - `secrets.items.skyforge-ssh-ca-key`: Optional SSH CA key for SSH user certificates.
-- `secrets.create`: Set to `false` if you manage secrets out-of-band (for example, using the
-  k3s `k8s/overlays/k3s-traefik-secrets` overlay).
+- `secrets.create`: Set to `false` if you manage secrets out-of-band.
 
 See `charts/skyforge/values.yaml` for the full list of defaults.
 

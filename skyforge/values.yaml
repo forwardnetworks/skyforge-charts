@@ -144,11 +144,7 @@ skyforge:
     # Skyforge falls back to the global Kubernetes imagePullSecret.
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
-    # Optional: attach extra Multus networks to the collector Pod (for example,
-    # to ensure it can reach lab management IPs on an underlay VLAN).
-    # Example:
-    #   - "kube-system/vrnetlab-mgmt"
-    multusNetworks: []
+    # NOTE: Multus network attachments were removed from Skyforge charts.
   sessionTtl: "8h"
   pkiDefaultDays: 365
   sshDefaultDays: 30
@@ -227,76 +223,20 @@ skyforge:
     managerImage: "ghcr.io/srl-labs/clabernetes/clabernetes-manager:dev-latest"
     launcherImage: "ghcr.io/srl-labs/clabernetes/clabernetes-launcher:dev-latest"
     replicaCount: 1
-    # Clabernetes connectivity default (VXLAN is treated as legacy in Skyforge).
-    connectivity: "multus"
-    multus:
-      # Install Multus (and the NetworkAttachmentDefinition CRD) into the cluster.
-      # Required for connectivity=multus.
-      # NOTE: If Multus is already installed in your cluster (or managed outside Helm),
-      # keep this set to false to avoid Helm ownership conflicts.
-      install: false
-      namespace: "kube-system"
-      image: "ghcr.io/k8snetworkplumbingwg/multus-cni:snapshot-thick"
-      imagePullPolicy: IfNotPresent
+    # Clabernetes connectivity default.
+    #
+    # Skyforge uses clabernetes' built-in VXLAN connectivity manager for cross-node L2
+    # adjacency (LLDP, CDP, etc) without requiring Multus.
+    connectivity: "vxlan"
     cniPlugins:
       # Install required CNI plugin binaries onto each node's /opt/cni/bin.
       #
-      # We rely on Multus to add per-link interfaces (net1/net2/...) to pods.
-      # Those attachments require standard CNI plugins like "bridge" and
-      # "host-local" to be present on the node.
-      install: true
+      # This is not required for VXLAN mode (no Multus NAD attachments).
+      install: false
       namespace: "kube-system"
       version: "v1.5.1"
       image: "public.ecr.aws/docker/library/alpine:3.20"
       imagePullPolicy: IfNotPresent
-    whereabouts:
-      # Install Whereabouts IPAM (optional).
-      # This is typically paired with Multus when you want dynamic IP assignment
-      # for secondary network attachments.
-      install: false
-      namespace: "kube-system"
-      image: "ghcr.io/k8snetworkplumbingwg/whereabouts:v0.8.0"
-      imagePullPolicy: IfNotPresent
-      cronExpression: "30 4 * * *"
-      nodeSliceController:
-        enabled: true
-    vrnetlabMgmtNAD:
-      # Optional: install a shared NetworkAttachmentDefinition intended for
-      # vrnetlab mgmt NICs (secondary interface). This is only plumbing; Skyforge/clabernetes
-      # still have to request the attachment for a given pod.
-      install: false
-      namespace: "kube-system"
-      # CNI type for the mgmt network:
-      # - bridge: local-to-node L2 segment (pods must land on same node to talk)
-      # - macvlan: attaches directly to a host NIC (L2 across nodes on same VLAN)
-      # - ipvlan: like macvlan but shares the parent MAC (often avoids hypervisor "promisc/forged transmits" issues)
-      type: "bridge"
-      bridge: "br-vrnetlab-mgmt"
-      master: "ens33"
-      mode: "bridge"
-      gateway: ""
-      range: "172.31.255.0/24"
-
-    vrnetlabMgmtVxlan:
-      # Optional: create a host-level VXLAN overlay for the vrnetlab mgmt bridge,
-      # so pods on different nodes can reach each other on the vrnetlab mgmt subnet
-      # without requiring hypervisor/L2 support for macvlan.
-      #
-      # This is intended for vrnetlab management connectivity only (Forward collector ↔ devices).
-      enabled: false
-      namespace: "kube-system"
-      image: "public.ecr.aws/docker/library/alpine:3.20"
-      imagePullPolicy: IfNotPresent
-      # Host bridge used by the vrnetlab mgmt NAD (must be <= 15 chars).
-      bridge: "br-vrmgmt"
-      # Underlay device carrying host traffic (node NIC).
-      underlayDev: "ens33"
-      # VXLAN VNI and UDP port.
-      vni: 417
-      dstPort: 4789
-      # Optional explicit peer list (underlay node IPs). When empty, no peers are configured.
-      # NOTE: keep this list in sync with cluster nodes.
-      peers: []
 
   # Optional: Cloudflare Tunnel (cloudflared) to expose Skyforge externally without opening inbound ports.
   # Requires you to create the tunnel in Cloudflare and store either a tunnel token or credentials.json in a Secret.
@@ -307,15 +247,13 @@ skyforge:
     # - credentials: use credentials.json + tunnelId (stable hostnames, explicit ingress config)
     # - quick: unauthenticated trycloudflare.com URL (dynamic, changes on restart)
     mode: "token"
-    # For quick tunnel mode, set the HTTP Host header sent to Traefik.
+    # For quick tunnel mode, set the HTTP Host header sent to the Ingress controller.
     # Defaults to skyforge.hostname.
     httpHostHeader: ""
     # External hostname to publish (defaults to skyforge.hostname).
     hostname: ""
-    # Internal service URL to proxy to (Traefik handles routing by Host header).
-    # NOTE: Skyforge's Traefik routes typically live on the HTTPS entrypoint.
-    # Use the HTTPS Traefik service by default.
-    service: "https://traefik.kube-system.svc.cluster.local:443"
+    # Internal service URL to proxy to (Ingress handles routing by Host header).
+    service: "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
     # Optional extra hostnames to publish.
     additionalHostnames: []
     # Metrics/health endpoint (used for readiness/liveness probes).

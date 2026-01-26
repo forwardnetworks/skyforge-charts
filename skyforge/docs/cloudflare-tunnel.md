@@ -2,7 +2,7 @@
 
 This chart can optionally run `cloudflared` inside the cluster to expose Skyforge externally **without opening inbound ports** on the k3s host.
 
-Skyforge already routes HTTP via Traefik; the tunnel should forward traffic to Traefik so all existing host/path routing continues to work.
+Skyforge routes HTTP via Kubernetes Ingress; the tunnel should forward traffic to the Ingress controller so all existing host/path routing continues to work.
 
 ## Prereqs
 
@@ -48,9 +48,9 @@ skyforge:
   cloudflareTunnel:
     enabled: true
     mode: quick
-    # Optional; defaults to Traefik:
-    # service: "http://traefik.kube-system.svc.cluster.local:80"
-    # Required in most setups: match Skyforge's normal hostname so Traefik routes correctly.
+    # Optional; defaults to ingress-nginx:
+    # service: "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
+    # Required in most setups: match Skyforge's normal hostname so the Ingress routes correctly.
     # Defaults to skyforge.hostname.
     # httpHostHeader: "skyforge.local.forwardnetworks.com"
 ```
@@ -90,5 +90,5 @@ skyforge:
 
 ## Notes
 
-- The default `service` target is Traefik: `http://traefik.kube-system.svc.cluster.local:80`.
+- The default `service` target is `ingress-nginx-controller`: `http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80`.
 - Do not commit Cloudflare tokens or credentials files into git; always use Kubernetes Secrets.
