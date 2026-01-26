@@ -292,10 +292,10 @@ images:
   atlas: "ghcr.io/forwardnetworks/skyforge-atlas:20260120-1139e29a"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260126-linux-profile-f553e4f"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260126-colocate-288371b"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260126-linux-profile-f553e4f"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260126-colocate-288371b"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
   cloudflared: "ghcr.io/cloudflare/cloudflared:2025.1.0"
 
