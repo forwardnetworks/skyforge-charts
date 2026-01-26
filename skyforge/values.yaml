@@ -157,7 +157,7 @@ skyforge:
     user: "skyforge_server"
     sslmode: "disable"
   health:
-    httpChecks: "Edge|edge|http://skyforge-server:8085/|/;Skyforge Server|server|http://skyforge-server:8085/api/health|/skyforge-server/health;NetBox|netbox|http://netbox:8080/netbox/login/|/netbox/;Nautobot|nautobot|http://nautobot:8080/nautobot/login/|/nautobot/;Git|git|http://gitea:3000/|/git/;Coder|coder|http://coder:7080/healthz|/coder/;API Testing|api|http://yaade/api-testing/|/api-testing/;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-server:8085/webhooks|/webhooks/"
+    httpChecks: "Edge|edge|http://skyforge-server Server|server|http://skyforge-server Testing|api|http://yaade/api-testing/|/api-testing/;Swagger UI|swagger|http://swagger-ui:8080/|/swagger/;Webhook Inbox|webhooks|http://skyforge-server"
     codeChecks: "Postgres|postgres|pg|db;Redis|redis|redis|redis;RADIUS|radius|radius|freeradius"
   admin:
     username: "skyforge"
@@ -292,10 +292,10 @@ images:
   atlas: "ghcr.io/forwardnetworks/skyforge-atlas:20260120-1139e29a"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260120-portal-fwd-byo2"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260126-linux-profile-f553e4f"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260120-portal-fwd-byo2"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260126-linux-profile-f553e4f"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
   cloudflared: "ghcr.io/cloudflare/cloudflared:2025.1.0"
 
