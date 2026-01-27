@@ -32,6 +32,15 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
+  name: forwarded-proto-https
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
   name: strip-dns
 spec:
   stripPrefix:
@@ -236,7 +245,7 @@ spec:
           port: 8080
       middlewares:
         - name: skyforge-auth
-        - name: strip-nautobot
+        - name: forwarded-proto-https
     - match: Host(`{{ $host }}`) && PathPrefix(`/nautobot/media/`)
       kind: Rule
       priority: 400
@@ -245,7 +254,7 @@ spec:
           port: 8080
       middlewares:
         - name: skyforge-auth
-        - name: strip-nautobot
+        - name: forwarded-proto-https
     - match: Host(`{{ $host }}`) && PathPrefix(`/nautobot`)
       kind: Rule
       priority: 350
@@ -254,6 +263,7 @@ spec:
           port: 8080
       middlewares:
         - name: skyforge-auth
+        - name: forwarded-proto-https
         - name: strip-nautobot
     - match: Host(`{{ $host }}`) && PathPrefix(`/git`)
       kind: Rule

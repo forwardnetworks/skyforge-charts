@@ -1,86 +1,92 @@
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
   labels:
     io.kompose.service: minio-skyforge-init
   name: minio-skyforge-init
 spec:
-  automountServiceAccountToken: false
-  containers:
-    - args:
-        - |
-          set -euo pipefail
-          root_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
-          root_password="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
-          sf_user="$(cat /run/secrets/object-storage-artifacts-access-key | tr -d '\r\n')"
-          sf_secret="$(cat /run/secrets/object-storage-artifacts-secret-key | tr -d '\r\n')"
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        io.kompose.service: minio-skyforge-init
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - |
+              set -euo pipefail
+              root_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+              root_password="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+              sf_user="$(cat /run/secrets/object-storage-artifacts-access-key | tr -d '\r\n')"
+              sf_secret="$(cat /run/secrets/object-storage-artifacts-secret-key | tr -d '\r\n')"
 
-          echo "Waiting for object storage..."
-          for i in $(seq 1 60); do
-            if mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null 2>&1; then
-              break
-            fi
-            sleep 1
-          done
-          mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null
+              echo "Waiting for object storage..."
+              for i in $(seq 1 60); do
+                if mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null 2>&1; then
+                  break
+                fi
+                sleep 1
+              done
+              mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null
 
-          cat > /tmp/skyforge-artifacts.json <<EOF
-          {
-            "Version": "2012-10-17",
-            "Statement": [
+              cat > /tmp/skyforge-artifacts.json <<EOF
               {
-                "Effect": "Allow",
-                "Action": ["s3:ListBucket"],
-                "Resource": ["arn:aws:s3:::sf-artifacts-*"]
-              },
-              {
-                "Effect": "Allow",
-                "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
-                "Resource": ["arn:aws:s3:::sf-artifacts-*/*"]
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": ["s3:ListBucket"],
+                    "Resource": ["arn:aws:s3:::sf-artifacts-*"]
+                  },
+                  {
+                    "Effect": "Allow",
+                    "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+                    "Resource": ["arn:aws:s3:::sf-artifacts-*/*"]
+                  }
+                ]
               }
-            ]
-          }
-          EOF
+              EOF
 
-          mc admin policy create local skyforge-artifacts /tmp/skyforge-artifacts.json >/dev/null 2>&1 || true
-          mc admin user svcacct add local "${root_user}" \
-            --access-key "${sf_user}" \
-            --secret-key "${sf_secret}" \
-            --policy /tmp/skyforge-artifacts.json \
-            --name skyforge-artifacts >/dev/null 2>&1 || true
+              mc admin policy create local skyforge-artifacts /tmp/skyforge-artifacts.json >/dev/null 2>&1 || true
+              mc admin user svcacct add local "${root_user}" \
+                --access-key "${sf_user}" \
+                --secret-key "${sf_secret}" \
+                --policy /tmp/skyforge-artifacts.json \
+                --name skyforge-artifacts >/dev/null 2>&1 || true
 
-          echo "Object storage artifacts service account ready (${sf_user})."
-      command:
-        - /bin/sh
-        - -lc
-      image: quay.io/minio/mc:RELEASE.2024-11-17T19-35-25Z
-      name: minio-skyforge-init
-      volumeMounts:
-        - mountPath: /run/secrets
-          name: run-secrets
-          readOnly: true
-  restartPolicy: Never
-  volumes:
-    - name: run-secrets
-      projected:
-        sources:
-          - secret:
-              items:
-                - key: object-storage-root-user
-                  path: object-storage-root-user
-              name: object-storage-root-user
-          - secret:
-              items:
-                - key: object-storage-root-password
-                  path: object-storage-root-password
-              name: object-storage-root-password
-          - secret:
-              items:
-                - key: object-storage-artifacts-access-key
-                  path: object-storage-artifacts-access-key
-              name: object-storage-artifacts-access-key
-          - secret:
-              items:
-                - key: object-storage-artifacts-secret-key
-                  path: object-storage-artifacts-secret-key
-              name: object-storage-artifacts-secret-key
+              echo "Object storage artifacts service account ready (${sf_user})."
+          command:
+            - /bin/sh
+            - -lc
+          image: quay.io/minio/mc:RELEASE.2024-11-17T19-35-25Z
+          name: minio-skyforge-init
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+      restartPolicy: Never
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: object-storage-root-user
+                      path: object-storage-root-user
+                  name: object-storage-root-user
+              - secret:
+                  items:
+                    - key: object-storage-root-password
+                      path: object-storage-root-password
+                  name: object-storage-root-password
+              - secret:
+                  items:
+                    - key: object-storage-artifacts-access-key
+                      path: object-storage-artifacts-access-key
+                  name: object-storage-artifacts-access-key
+              - secret:
+                  items:
+                    - key: object-storage-artifacts-secret-key
+                      path: object-storage-artifacts-secret-key
+                  name: object-storage-artifacts-secret-key

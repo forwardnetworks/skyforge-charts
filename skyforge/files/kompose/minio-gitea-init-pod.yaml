@@ -1,88 +1,94 @@
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
   labels:
     io.kompose.service: minio-gitea-init
   name: minio-gitea-init
 spec:
-  automountServiceAccountToken: false
-  containers:
-    - args:
-        - |
-          set -euo pipefail
-          root_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
-          root_password="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
-          gitea_user="$(cat /run/secrets/object-storage-access-key | tr -d '\r\n')"
-          gitea_secret="$(cat /run/secrets/object-storage-secret-key | tr -d '\r\n')"
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        io.kompose.service: minio-gitea-init
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - |
+              set -euo pipefail
+              root_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+              root_password="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+              gitea_user="$(cat /run/secrets/object-storage-access-key | tr -d '\r\n')"
+              gitea_secret="$(cat /run/secrets/object-storage-secret-key | tr -d '\r\n')"
 
-          echo "Waiting for object storage..."
-          for i in $(seq 1 60); do
-            if mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null 2>&1; then
-              break
-            fi
-            sleep 1
-          done
-          mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null
+              echo "Waiting for object storage..."
+              for i in $(seq 1 60); do
+                if mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null 2>&1; then
+                  break
+                fi
+                sleep 1
+              done
+              mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null
 
-          mc mb -p "local/gitea" >/dev/null 2>&1 || true
+              mc mb -p "local/gitea" >/dev/null 2>&1 || true
 
-          cat > /tmp/gitea.json <<EOF
-          {
-            "Version": "2012-10-17",
-            "Statement": [
+              cat > /tmp/gitea.json <<EOF
               {
-                "Effect": "Allow",
-                "Action": ["s3:ListBucket"],
-                "Resource": ["arn:aws:s3:::gitea"]
-              },
-              {
-                "Effect": "Allow",
-                "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
-                "Resource": ["arn:aws:s3:::gitea/*"]
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": ["s3:ListBucket"],
+                    "Resource": ["arn:aws:s3:::gitea"]
+                  },
+                  {
+                    "Effect": "Allow",
+                    "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+                    "Resource": ["arn:aws:s3:::gitea/*"]
+                  }
+                ]
               }
-            ]
-          }
-          EOF
+              EOF
 
-          mc admin policy create local gitea /tmp/gitea.json >/dev/null 2>&1 || true
-          mc admin user svcacct add local "${root_user}" \
-            --access-key "${gitea_user}" \
-            --secret-key "${gitea_secret}" \
-            --policy /tmp/gitea.json \
-            --name gitea >/dev/null 2>&1 || true
+              mc admin policy create local gitea /tmp/gitea.json >/dev/null 2>&1 || true
+              mc admin user svcacct add local "${root_user}" \
+                --access-key "${gitea_user}" \
+                --secret-key "${gitea_secret}" \
+                --policy /tmp/gitea.json \
+                --name gitea >/dev/null 2>&1 || true
 
-          echo "Object storage gitea service account ready (${gitea_user})."
-      command:
-        - /bin/sh
-        - -lc
-      image: quay.io/minio/mc:RELEASE.2024-11-17T19-35-25Z
-      name: minio-gitea-init
-      volumeMounts:
-        - mountPath: /run/secrets
-          name: run-secrets
-          readOnly: true
-  restartPolicy: Never
-  volumes:
-    - name: run-secrets
-      projected:
-        sources:
-          - secret:
-              items:
-                - key: object-storage-root-user
-                  path: object-storage-root-user
-              name: object-storage-root-user
-          - secret:
-              items:
-                - key: object-storage-root-password
-                  path: object-storage-root-password
-              name: object-storage-root-password
-          - secret:
-              items:
-                - key: object-storage-access-key
-                  path: object-storage-access-key
-              name: object-storage-access-key
-          - secret:
-              items:
-                - key: object-storage-secret-key
-                  path: object-storage-secret-key
-              name: object-storage-secret-key
+              echo "Object storage gitea service account ready (${gitea_user})."
+          command:
+            - /bin/sh
+            - -lc
+          image: quay.io/minio/mc:RELEASE.2024-11-17T19-35-25Z
+          name: minio-gitea-init
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+      restartPolicy: Never
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: object-storage-root-user
+                      path: object-storage-root-user
+                  name: object-storage-root-user
+              - secret:
+                  items:
+                    - key: object-storage-root-password
+                      path: object-storage-root-password
+                  name: object-storage-root-password
+              - secret:
+                  items:
+                    - key: object-storage-access-key
+                      path: object-storage-access-key
+                  name: object-storage-access-key
+              - secret:
+                  items:
+                    - key: object-storage-secret-key
+                      path: object-storage-secret-key
+                  name: object-storage-secret-key
