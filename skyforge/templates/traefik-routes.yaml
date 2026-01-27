@@ -135,7 +135,8 @@ metadata:
 spec:
   entryPoints:
     - websecure
-  tls: {}
+  tls:
+    secretName: proxy-tls
   routes:
     - match: Host(`{{ $host }}`) && PathPrefix(`/assets/skyforge/`)
       kind: Rule
@@ -200,7 +201,8 @@ metadata:
 spec:
   entryPoints:
     - websecure
-  tls: {}
+  tls:
+    secretName: proxy-tls
   routes:
     - match: Host(`{{ $host }}`) && PathPrefix(`/minio-console`)
       kind: Rule
@@ -273,6 +275,18 @@ spec:
           port: 3000
       middlewares:
         - name: skyforge-auth
+        - name: strip-git
+    # Allow automation against the Gitea API (e.g. syncing the public blueprint catalog)
+    # using Gitea's own Basic Auth, without requiring a Skyforge SSO cookie.
+    #
+    # The Gitea web UI stays SSO-gated via the /git route above.
+    - match: Host(`{{ $host }}`) && PathPrefix(`/git/api/`)
+      kind: Rule
+      priority: 360
+      services:
+        - name: gitea
+          port: 3000
+      middlewares:
         - name: strip-git
     - match: Host(`{{ $host }}`) && PathPrefix(`/swagger`)
       kind: Rule
