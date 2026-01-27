@@ -147,7 +147,6 @@ skyforge:
     # Skyforge falls back to the global Kubernetes imagePullSecret.
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
-    # NOTE: Multus network attachments were removed from Skyforge charts.
   sessionTtl: "8h"
   pkiDefaultDays: 365
   sshDefaultDays: 30
@@ -223,23 +222,16 @@ skyforge:
   clabernetes:
     # Experimental: deploy containerlab topologies to k8s via clabernetes.
     enabled: false
-    managerImage: "ghcr.io/srl-labs/clabernetes/clabernetes-manager:dev-latest"
-    launcherImage: "ghcr.io/srl-labs/clabernetes/clabernetes-launcher:dev-latest"
+    # NOTE: Skyforge relies on a small set of patches for vrnetlab native-mode support.
+    # Override these in your `deploy/skyforge-values*.yaml` if you pin images by tag.
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:latest"
+    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:latest"
     replicaCount: 1
     # Clabernetes connectivity default.
     #
     # Skyforge uses clabernetes' built-in VXLAN connectivity manager for cross-node L2
-    # adjacency (LLDP, CDP, etc) without requiring Multus.
+    # adjacency (LLDP, CDP, etc) without requiring additional CNIs.
     connectivity: "vxlan"
-    cniPlugins:
-      # Install required CNI plugin binaries onto each node's /opt/cni/bin.
-      #
-      # This is not required for VXLAN mode (no Multus NAD attachments).
-      install: false
-      namespace: "kube-system"
-      version: "v1.5.1"
-      image: "public.ecr.aws/docker/library/alpine:3.20"
-      imagePullPolicy: IfNotPresent
 
   # Optional: Cloudflare Tunnel (cloudflared) to expose Skyforge externally without opening inbound ports.
   # Requires you to create the tunnel in Cloudflare and store either a tunnel token or credentials.json in a Secret.

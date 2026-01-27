@@ -57,26 +57,6 @@ spec:
                 echo "[coder-demo] creating template skyforge-demo from kubernetes example"
                 rm -rf /tmp/skyforge-demo-template
                 /opt/coder templates init --id kubernetes /tmp/skyforge-demo-template
-                # Ensure code-server workspace pods can reach vrnetlab mgmt IPs (IOL/vrnetlab devices).
-                # This attaches the workspace pod to the shared vrnetlab-mgmt Multus network.
-                #
-                # NOTE: In-browser terminals (kube exec) do not rely on this; this is for
-                # user-driven SSH from within VSCode/code-server.
-                awk '
-                  BEGIN { in_res=0; in_tmpl=0; injected=0 }
-                  $0 ~ /^resource \"kubernetes_deployment\" \"main\"/ { in_res=1 }
-                  in_res && $0 ~ /^    template \\{/ { in_tmpl=1 }
-                  in_res && in_tmpl && !injected && $0 ~ /^      metadata \\{/ {
-                    print
-                    print "        annotations = {"
-                    print "          \"k8s.v1.cni.cncf.io/networks\" = \"kube-system/vrnetlab-mgmt\""
-                    print "        }"
-                    injected=1
-                    next
-                  }
-                  { print }
-                ' /tmp/skyforge-demo-template/main.tf > /tmp/skyforge-demo-template/main.tf.new
-                mv /tmp/skyforge-demo-template/main.tf.new /tmp/skyforge-demo-template/main.tf
                 /opt/coder templates push skyforge-demo \
                   --directory /tmp/skyforge-demo-template \
                   --yes \
