@@ -18,6 +18,9 @@ spec:
               set -euo pipefail
               root_user="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
               root_password="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+              # Skyforge uses object storage credentials from `skyforge.objectStorage.*` which
+              # default to `object-storage-artifacts-access-key`/`object-storage-artifacts-secret-key`.
+              # Provision a MinIO service account with those credentials for artifact access.
               sf_user="$(cat /run/secrets/object-storage-artifacts-access-key | tr -d '\r\n')"
               sf_secret="$(cat /run/secrets/object-storage-artifacts-secret-key | tr -d '\r\n')"
 
@@ -30,32 +33,35 @@ spec:
               done
               mc alias set local http://minio:9000 "${root_user}" "${root_password}" >/dev/null
 
-              cat > /tmp/skyforge-artifacts.json <<EOF
+              mc mb -p "local/skyforge-files" >/dev/null 2>&1 || true
+
+              cat > /tmp/skyforge-files.json <<EOF
               {
                 "Version": "2012-10-17",
                 "Statement": [
                   {
                     "Effect": "Allow",
                     "Action": ["s3:ListBucket"],
-                    "Resource": ["arn:aws:s3:::sf-artifacts-*"]
+                    "Resource": ["arn:aws:s3:::skyforge-files"]
                   },
                   {
                     "Effect": "Allow",
                     "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
-                    "Resource": ["arn:aws:s3:::sf-artifacts-*/*"]
+                    "Resource": ["arn:aws:s3:::skyforge-files/*"]
                   }
                 ]
               }
               EOF
 
-              mc admin policy create local skyforge-artifacts /tmp/skyforge-artifacts.json >/dev/null 2>&1 || true
+              mc admin policy create local skyforge-files /tmp/skyforge-files.json >/dev/null 2>&1 || true
+              mc admin user svcacct rm local "${root_user}" "${sf_user}" >/dev/null 2>&1 || true
               mc admin user svcacct add local "${root_user}" \
                 --access-key "${sf_user}" \
                 --secret-key "${sf_secret}" \
-                --policy /tmp/skyforge-artifacts.json \
-                --name skyforge-artifacts >/dev/null 2>&1 || true
+                --policy /tmp/skyforge-files.json \
+                --name skyforge-files >/dev/null
 
-              echo "Object storage artifacts service account ready (${sf_user})."
+              echo "Object storage skyforge-files service account ready (${sf_user})."
           command:
             - /bin/sh
             - -lc

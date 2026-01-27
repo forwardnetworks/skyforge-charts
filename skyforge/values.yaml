@@ -94,14 +94,17 @@ skyforge:
     endpoint: "minio:9000"
     useSsl: false
     # Kubernetes Secret (name/key) that holds the MinIO access key used by
-    # Terraform state + Skyforge artifact storage.
+    # Skyforge artifact storage.
     #
     # Defaults match the existing secret names; you can rename the underlying
     # Secrets (for example, dropping "-terraform") by overriding these values.
-    accessKeySecretName: "object-storage-access-key"
-    accessKeySecretKey: "object-storage-access-key"
-    secretKeySecretName: "object-storage-secret-key"
-    secretKeySecretKey: "object-storage-secret-key"
+    #
+    # Note: Gitea uses its own object storage credentials (object-storage-access-key /
+    # object-storage-secret-key) scoped to the "gitea" bucket.
+    accessKeySecretName: "object-storage-artifacts-access-key"
+    accessKeySecretKey: "object-storage-artifacts-access-key"
+    secretKeySecretName: "object-storage-artifacts-secret-key"
+    secretKeySecretKey: "object-storage-artifacts-secret-key"
   terraform:
     path: ""
     version: ""
