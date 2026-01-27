@@ -54,12 +54,21 @@ spec:
               EOF
 
               mc admin policy create local skyforge-files /tmp/skyforge-files.json >/dev/null 2>&1 || true
-              mc admin user svcacct rm local "${root_user}" "${sf_user}" >/dev/null 2>&1 || true
-              mc admin user svcacct add local "${root_user}" \
+              svc_out=""
+              if ! svc_out="$(mc admin user svcacct add local "${root_user}" \
                 --access-key "${sf_user}" \
                 --secret-key "${sf_secret}" \
                 --policy /tmp/skyforge-files.json \
-                --name skyforge-files >/dev/null
+                --name skyforge-files 2>&1)"; then
+                # The service account may already exist on upgrades. Treat that case as success
+                # so rerunning this init job is idempotent.
+                if echo "${svc_out}" | grep -qi "access key already taken"; then
+                  echo "Object storage skyforge-files service account already exists (${sf_user})."
+                else
+                  echo "${svc_out}" >&2
+                  exit 1
+                fi
+              fi
 
               echo "Object storage skyforge-files service account ready (${sf_user})."
           command:
