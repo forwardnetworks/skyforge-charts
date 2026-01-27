@@ -154,7 +154,7 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-          image: minio/mc:RELEASE.2024-11-17T19-35-25Z
+          image: quay.io/minio/mc:RELEASE.2024-11-17T19-35-25Z
           name: minio-ldap-init
           volumeMounts:
             - mountPath: /run/secrets

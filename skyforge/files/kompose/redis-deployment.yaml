@@ -23,7 +23,7 @@ spec:
         - --save
         - '60'
         - '1'
-        image: redis:7-alpine
+        image: public.ecr.aws/docker/library/redis:7-alpine
         livenessProbe:
           tcpSocket:
             port: 6379

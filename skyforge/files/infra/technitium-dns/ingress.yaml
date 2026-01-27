@@ -4,7 +4,8 @@ metadata:
   name: technitium-dns
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;

@@ -4,11 +4,7 @@ metadata:
   name: skyforge
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/server-snippet: |
-      # Match legacy Traefik behavior.
-      rewrite ^/$ /index.html break;
-      rewrite ^/api/skyforge/(.*)$ /$1 break;
-      rewrite ^/skyforge-server/(.*)$ /api/$1 break;
+    nginx.ingress.kubernetes.io/app-root: "/index.html"
 spec:
   ingressClassName: nginx
   tls:
@@ -30,12 +26,39 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  name: skyforge-root
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: "/index.html"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - __SKYFORGE_HOSTNAME__
+      secretName: proxy-tls
+  rules:
+    - host: __SKYFORGE_HOSTNAME__
+      http:
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: skyforge-server
+                port:
+                  number: 8085
+---
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
   name: skyforge-git
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: "/$2"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;
@@ -65,7 +88,8 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: "/skyforge-files/$2"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;
@@ -95,7 +119,8 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: "/$2"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;
@@ -123,7 +148,8 @@ metadata:
   name: skyforge-api-testing
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;
@@ -151,7 +177,8 @@ metadata:
   name: skyforge-netbox
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;
@@ -181,7 +208,8 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: "/static/$2"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;
@@ -211,7 +239,8 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: "/media/$2"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;
@@ -241,7 +270,8 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: "/$2"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;
@@ -269,7 +299,8 @@ metadata:
   name: skyforge-coder
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/traefik"
+    nginx.ingress.kubernetes.io/auth-url: "http://skyforge-server.skyforge.svc.cluster.local:8085/api/session/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "/api/oidc/login?next=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Skyforge-Username,X-Skyforge-DisplayName,X-Skyforge-Email,X-Skyforge-Groups,X-Skyforge-First-Name,X-Skyforge-Last-Name,X-Forwarded-User,X-Forwarded-Email,X-Forwarded-First-Name,X-Forwarded-Last-Name,Remote-User,Remote-User-Email,Remote-User-First-Name,Remote-User-Last-Name"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Cookie $http_cookie;

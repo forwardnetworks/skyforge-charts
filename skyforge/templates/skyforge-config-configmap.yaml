@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skyforge-config
+data:
+  SKYFORGE_HOSTNAME: {{ .Values.skyforge.hostname | quote }}
+  SKYFORGE_ADMIN_USERS: {{ .Values.skyforge.adminUsers | quote }}
+  SKYFORGE_AWS_SSO_REGION: {{ .Values.skyforge.awsSsoRegion | quote }}
+  SKYFORGE_AWS_SSO_START_URL: {{ .Values.skyforge.awsSsoStartUrl | quote }}
+  SKYFORGE_GITEA_API_URL: {{ .Values.skyforge.gitea.apiUrl | quote }}
+  SKYFORGE_GITEA_URL: {{ .Values.skyforge.gitea.url | quote }}
+  SKYFORGE_GITEA_USERNAME: {{ .Values.skyforge.gitea.username | quote }}
+  SKYFORGE_SSO_SKIP_TLS_VERIFY: {{ .Values.skyforge.ssoSkipTlsVerify | quote }}
+  SKYFORGE_GITEA_REPO_PRIVATE: {{ .Values.skyforge.gitea.repoPrivate | quote }}
+  SKYFORGE_LDAP_DISPLAY_ATTR: {{ .Values.skyforge.ldap.displayAttr | quote }}
+  SKYFORGE_LDAP_GROUP_ATTR: {{ .Values.skyforge.ldap.groupAttr | quote }}
+  SKYFORGE_LDAP_MAIL_ATTR: {{ .Values.skyforge.ldap.mailAttr | quote }}
+  SKYFORGE_LDAP_SKIP_TLS_VERIFY: {{ .Values.skyforge.ldap.skipTlsVerify | quote }}
+  SKYFORGE_LDAP_STARTTLS: {{ .Values.skyforge.ldap.startTls | quote }}
+  SKYFORGE_LDAP_BASEDN: {{ .Values.skyforge.ldap.baseDn | quote }}
+  SKYFORGE_LISTEN_ADDR: {{ .Values.skyforge.listenAddr | quote }}
+  SKYFORGE_MAX_GROUPS: {{ .Values.skyforge.maxGroups | quote }}
+  SKYFORGE_NETBOX_URL: {{ .Values.skyforge.netboxUrl | quote }}
+  SKYFORGE_NETBOX_SSO_URL: {{ .Values.skyforge.netboxSsoUrl | quote }}
+  SKYFORGE_NETBOX_MGMT_SUBNET: {{ .Values.skyforge.netboxMgmtSubnet | quote }}
+  SKYFORGE_NAUTOBOT_URL: {{ .Values.skyforge.nautobotUrl | quote }}
+  SKYFORGE_NAUTOBOT_SSO_URL: {{ .Values.skyforge.nautobotSsoUrl | quote }}
+  SKYFORGE_YAADE_URL: {{ .Values.skyforge.yaadeUrl | quote }}
+  SKYFORGE_YAADE_ADMIN_USERNAME: {{ .Values.skyforge.yaadeAdminUsername | quote }}
+  SKYFORGE_OBJECT_STORAGE_ENDPOINT: {{ .Values.skyforge.objectStorage.endpoint | quote }}
+  SKYFORGE_OBJECT_STORAGE_USE_SSL: {{ .Values.skyforge.objectStorage.useSsl | quote }}
+  SKYFORGE_NETLAB_SSH_USER: {{ .Values.skyforge.netlab.sshUser | quote }}
+  SKYFORGE_NETLAB_STATE_ROOT: {{ .Values.skyforge.netlab.stateRoot | quote }}
+  SKYFORGE_LABPP_RUNNER_IMAGE: ""
+  SKYFORGE_LABPP_RUNNER_PULL_POLICY: ""
+  SKYFORGE_LABPP_RUNNER_PVC: ""
+  SKYFORGE_LABPP_CONFIG_DIR_BASE: ""
+  SKYFORGE_LABPP_CONFIG_VERSION: ""
+  SKYFORGE_LABPP_NETBOX_URL: ""
+  SKYFORGE_LABPP_NETBOX_MGMT_SUBNET: ""
+  SKYFORGE_LABPP_S3_REGION: ""
+  SKYFORGE_LABPP_S3_BUCKET: ""
+  SKYFORGE_LABPP_S3_ENDPOINT: ""
+  SKYFORGE_LABPP_S3_DISABLE_SSL: ""
+  SKYFORGE_LABPP_S3_DISABLE_CHECKSUM: ""
+  SKYFORGE_WORKSPACES_DATA_DIR: {{ .Values.skyforge.workspacesDataDir | quote }}
+  SKYFORGE_WORKSPACE_SYNC_SECONDS: {{ .Values.skyforge.workspaceSyncSeconds | quote }}
+  SKYFORGE_PKI_DEFAULT_DAYS: {{ .Values.skyforge.pkiDefaultDays | quote }}
+  SKYFORGE_SSH_DEFAULT_DAYS: {{ .Values.skyforge.sshDefaultDays | quote }}
+  SKYFORGE_UI_THEME_DEFAULT: {{ .Values.skyforge.ui.themeDefault | default "" | quote }}
+  SKYFORGE_SESSION_TTL: {{ .Values.skyforge.sessionTtl | quote }}
+  SKYFORGE_COOKIE_SECURE: {{ .Values.skyforge.cookieSecure | quote }}
+  SKYFORGE_COOKIE_DOMAIN: {{ .Values.skyforge.cookieDomain | quote }}
+  SKYFORGE_DB_HOST: {{ .Values.skyforge.db.host | quote }}
+  SKYFORGE_DB_PORT: {{ .Values.skyforge.db.port | quote }}
+  SKYFORGE_DB_NAME: {{ .Values.skyforge.db.name | quote }}
+  SKYFORGE_DB_USER: {{ .Values.skyforge.db.user | quote }}
+  SKYFORGE_DB_SSLMODE: {{ .Values.skyforge.db.sslmode | quote }}
+  SKYFORGE_HEALTH_HTTP_CHECKS: {{ .Values.skyforge.health.httpChecks | quote }}
+  SKYFORGE_HEALTH_CODE_CHECKS: {{ .Values.skyforge.health.codeChecks | quote }}
+  GITEA_ROOT_URL: {{ printf "https://%s/git/" .Values.skyforge.hostname | quote }}
+  GITEA_ADMIN_USERNAME: {{ .Values.skyforge.gitea.adminUsername | quote }}
+  GITEA_ALLOWED_DOMAINS: {{ .Values.skyforge.gitea.allowedDomains | quote }}
+  SKYFORGE_ADMIN_EMAIL: {{ printf "admin@%s" .Values.skyforge.domain | quote }}
+  SKYFORGE_ADMIN_USERNAME: {{ .Values.skyforge.admin.username | quote }}
+  SKYFORGE_ADMIN_NAME: {{ .Values.skyforge.admin.name | quote }}
+  SKYFORGE_PROVISIONER_EMAIL: {{ printf "%s@%s" .Values.skyforge.provisioner.login .Values.skyforge.domain | quote }}
+  SKYFORGE_PROVISIONER_LOGIN: {{ .Values.skyforge.provisioner.login | quote }}
+  SKYFORGE_PROVISIONER_NAME: {{ .Values.skyforge.provisioner.name | quote }}
+  SKYFORGE_CORP_EMAIL_DOMAIN: {{ .Values.skyforge.domain | quote }}
+  SKYFORGE_UI_PRODUCT_NAME: {{ .Values.skyforge.ui.productName | quote }}
+  SKYFORGE_UI_PRODUCT_SUBTITLE: {{ .Values.skyforge.ui.productSubtitle | quote }}
+  SKYFORGE_UI_LOGO_URL: {{ .Values.skyforge.ui.logoUrl | quote }}
+  SKYFORGE_UI_LOGO_ALT: {{ .Values.skyforge.ui.logoAlt | quote }}
+  SKYFORGE_UI_HEADER_BG_URL: {{ .Values.skyforge.ui.headerBgUrl | quote }}
+  SKYFORGE_UI_SUPPORT_TEXT: {{ .Values.skyforge.ui.supportText | quote }}
+  SKYFORGE_UI_SUPPORT_URL: {{ .Values.skyforge.ui.supportUrl | quote }}
+  YAADE_BASE_PATH: "/api-testing"
+  YAADE_ADMIN_USERNAME: "admin"
+  MINIO_BROWSER_REDIRECT_URL: {{ printf "https://%s/minio-console/" .Values.skyforge.hostname | quote }}
+  MINIO_CONSOLE_SUBPATH: {{ .Values.skyforge.minio.consoleSubpath | quote }}
+  SKYFORGE_MINIO_LDAP_CONSOLE_GROUP: {{ .Values.skyforge.minio.ldapConsoleGroup | quote }}
+  SKYFORGE_SWAGGER_URL: {{ default (printf "https://%s/swagger/openapi.json" .Values.skyforge.hostname) .Values.skyforge.swaggerUrl | quote }}
+  SKYFORGE_SESSION_COOKIE: {{ .Values.skyforge.sessionCookie | quote }}
+  SKYFORGE_OIDC_DISCOVERY_URL: {{ .Values.skyforge.oidc.discoveryUrl | quote }}
+  SKYFORGE_OIDC_ISSUER_URL: {{ default "" .Values.skyforge.oidc.issuerUrl | quote }}
+  SKYFORGE_OIDC_REDIRECT_URL: {{ default "" .Values.skyforge.oidc.redirectUrl | quote }}

@@ -45,7 +45,7 @@ spec:
               readOnly: true
       containers:
         - name: yaade
-          image: esperotech/yaade:latest
+          image: ghcr.io/esperotech/yaade:latest
           imagePullPolicy: Always
           env:
             - name: YAADE_ADMIN_USERNAME

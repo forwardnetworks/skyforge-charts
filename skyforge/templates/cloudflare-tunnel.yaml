@@ -2,7 +2,7 @@
 {{- if $cf.enabled -}}
 {{- $fullname := include "skyforge.fullname" . -}}
 {{- $hostname := default .Values.skyforge.hostname $cf.hostname -}}
-{{- $service := default "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80" $cf.service -}}
+{{- $service := default (printf "http://traefik.%s.svc.cluster.local:80" .Release.Namespace) $cf.service -}}
 {{- $mode := default "token" $cf.mode -}}
 {{- $httpHostHeader := default .Values.skyforge.hostname $cf.httpHostHeader -}}
 

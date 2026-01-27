@@ -51,7 +51,7 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_ADMIN_EMAIL
-          image: skyforge-nautobot:latest
+          image: ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135
           imagePullPolicy: IfNotPresent
           name: nautobot-admin-bootstrap
           volumeMounts:

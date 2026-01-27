@@ -58,7 +58,7 @@ spec:
       env:
         - name: SKYFORGE_FILES_BUCKET
           value: skyforge-files
-      image: minio/mc:latest
+      image: quay.io/minio/mc:RELEASE.2024-11-17T19-35-25Z
       name: minio-init
       volumeMounts:
         - mountPath: /run/secrets

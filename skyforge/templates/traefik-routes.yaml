@@ -1,0 +1,289 @@
+{{- $host := .Values.skyforge.hostname -}}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: skyforge-auth
+spec:
+  forwardAuth:
+    address: http://skyforge-server.{{ .Release.Namespace }}.svc.cluster.local:8085/api/session/nginx
+    trustForwardHeader: true
+    authResponseHeaders:
+      - X-Skyforge-Username
+      - X-Skyforge-DisplayName
+      - X-Skyforge-Email
+      - X-Skyforge-Groups
+      - X-Skyforge-First-Name
+      - X-Skyforge-Last-Name
+      - Remote-User
+      - Remote-User-Email
+      - Remote-User-First-Name
+      - Remote-User-Last-Name
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-nautobot
+spec:
+  stripPrefix:
+    prefixes:
+      - /nautobot
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-minio-console
+spec:
+  stripPrefix:
+    prefixes:
+      - /minio-console
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-git
+spec:
+  stripPrefix:
+    prefixes:
+      - /git
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-swagger
+spec:
+  stripPrefix:
+    prefixes:
+      - /swagger
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-coder
+spec:
+  stripPrefix:
+    prefixes:
+      - /coder
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-netbox-static
+spec:
+  replacePathRegex:
+    regex: ^/netbox/static/(.*)
+    replacement: /static/$1
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-netbox-media
+spec:
+  replacePathRegex:
+    regex: ^/netbox/media/(.*)
+    replacement: /media/$1
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-files
+spec:
+  replacePathRegex:
+    regex: ^/files/(.*)
+    replacement: /skyforge-files/$1
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: replace-root-index
+spec:
+  replacePathRegex:
+    regex: ^/$
+    replacement: /index.html
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-files
+spec:
+  stripPrefix:
+    prefixes:
+      - /files
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: skyforge-public
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: proxy-tls
+  routes:
+    - match: Host(`{{ $host }}`) && PathPrefix(`/assets/skyforge/`)
+      kind: Rule
+      priority: 600
+      services:
+        - name: skyforge-server
+          port: 8085
+    - match: Host(`{{ $host }}`) && PathPrefix(`/dex`)
+      kind: Rule
+      priority: 600
+      services:
+        - name: dex
+          port: 5556
+    - match: Host(`{{ $host }}`) && PathPrefix(`/healthz`)
+      kind: Rule
+      priority: 600
+      services:
+        - name: skyforge-server
+          port: 8085
+    - match: Host(`{{ $host }}`) && PathPrefix(`/health`)
+      kind: Rule
+      priority: 600
+      services:
+        - name: skyforge-server
+          port: 8085
+    - match: Host(`{{ $host }}`) && PathPrefix(`/files/`)
+      kind: Rule
+      priority: 400
+      services:
+        - name: minio
+          port: 9000
+      middlewares:
+        - name: skyforge-auth
+        - name: replace-files
+    - match: Host(`{{ $host }}`) && PathPrefix(`/api-testing`)
+      kind: Rule
+      priority: 500
+      services:
+        - name: yaade
+          port: 80
+      middlewares:
+        - name: skyforge-auth
+    - match: Host(`{{ $host }}`) && Path(`/`)
+      kind: Rule
+      priority: 450
+      services:
+        - name: skyforge-server
+          port: 8085
+      middlewares:
+        - name: replace-root-index
+    - match: Host(`{{ $host }}`) && PathPrefix(`/`)
+      kind: Rule
+      priority: 1
+      services:
+        - name: skyforge-server
+          port: 8085
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: skyforge-authenticated
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: proxy-tls
+  routes:
+    - match: Host(`{{ $host }}`) && PathPrefix(`/minio-console`)
+      kind: Rule
+      priority: 450
+      services:
+        - name: minio
+          port: 9001
+      middlewares:
+        - name: skyforge-auth
+        - name: strip-minio-console
+    - match: Host(`{{ $host }}`) && PathPrefix(`/netbox/static/`)
+      kind: Rule
+      priority: 400
+      services:
+        - name: netbox
+          port: 8080
+      middlewares:
+        - name: skyforge-auth
+        - name: replace-netbox-static
+    - match: Host(`{{ $host }}`) && PathPrefix(`/netbox/media/`)
+      kind: Rule
+      priority: 400
+      services:
+        - name: netbox
+          port: 8080
+      middlewares:
+        - name: skyforge-auth
+        - name: replace-netbox-media
+    - match: Host(`{{ $host }}`) && PathPrefix(`/netbox`)
+      kind: Rule
+      priority: 350
+      services:
+        - name: netbox
+          port: 8080
+      middlewares:
+        - name: skyforge-auth
+    - match: Host(`{{ $host }}`) && PathPrefix(`/nautobot/static/`)
+      kind: Rule
+      priority: 400
+      services:
+        - name: nautobot-static
+          port: 8080
+      middlewares:
+        - name: skyforge-auth
+    - match: Host(`{{ $host }}`) && PathPrefix(`/nautobot/media/`)
+      kind: Rule
+      priority: 400
+      services:
+        - name: nautobot-static
+          port: 8080
+      middlewares:
+        - name: skyforge-auth
+    - match: Host(`{{ $host }}`) && PathPrefix(`/nautobot`)
+      kind: Rule
+      priority: 350
+      services:
+        - name: nautobot
+          port: 8080
+      middlewares:
+        - name: skyforge-auth
+        - name: strip-nautobot
+    - match: Host(`{{ $host }}`) && PathPrefix(`/git`)
+      kind: Rule
+      priority: 300
+      services:
+        - name: gitea
+          port: 3000
+      middlewares:
+        - name: skyforge-auth
+        - name: strip-git
+    - match: Host(`{{ $host }}`) && PathPrefix(`/swagger`)
+      kind: Rule
+      priority: 300
+      services:
+        - name: swagger-ui
+          port: 8080
+      middlewares:
+        - name: skyforge-auth
+        - name: strip-swagger
+    - match: Host(`{{ $host }}`) && PathPrefix(`/coder`)
+      kind: Rule
+      priority: 300
+      services:
+        - name: coder
+          port: 7080
+      middlewares:
+        - name: skyforge-auth
+        - name: strip-coder
+    - match: Host(`{{ $host }}`) && PathPrefix(`/api/v2`)
+      kind: Rule
+      priority: 310
+      services:
+        - name: coder
+          port: 7080
+    - match: Host(`{{ $host }}`) && PathPrefix(`/labs`)
+      kind: Rule
+      priority: 300
+      services:
+        - name: skyforge-server
+          port: 8085
+      middlewares:
+        - name: skyforge-auth

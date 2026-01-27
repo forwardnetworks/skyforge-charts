@@ -96,7 +96,7 @@ spec:
           value: /etc/skyforge/ca/ca-certificates.crt
         - name: REQUESTS_CA_BUNDLE
           value: /etc/skyforge/ca/ca-certificates.crt
-        image: skyforge-nautobot:latest
+        image: ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135
         imagePullPolicy: IfNotPresent
         startupProbe:
           httpGet:
@@ -210,6 +210,20 @@ spec:
       - name: skyforge-ca-bundle
         emptyDir: {}
       initContainers:
+      - name: nautobot-init-volumes
+        image: alpine:3.20
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - set -euo pipefail; for dir in /opt/nautobot/media /opt/nautobot/reports /opt/nautobot/jobs; do echo "Initializing $dir"; mkdir -p "$dir"; chown -R 999:999 "$dir"; done; echo 'Nautobot volumes ready'
+        volumeMounts:
+        - mountPath: /opt/nautobot/media
+          name: nautobot-media
+        - mountPath: /opt/nautobot/reports
+          name: nautobot-reports
+        - mountPath: /opt/nautobot/jobs
+          name: nautobot-jobs
       - name: skyforge-ca-bundle
         image: alpine:3.20
         command:

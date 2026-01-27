@@ -1,0 +1,36 @@
+{{- $files := list
+  "backup-postgres-minio-cronjob.yaml"
+  "db-deployment.yaml"
+  "db-provision-job.yaml"
+  "db-service.yaml"
+  "gitea-admin-bootstrap-job.yaml"
+  "gitea-admin-sync-deployment.yaml"
+  "gitea-deployment.yaml"
+  "gitea-service.yaml"
+  "minio-deployment.yaml"
+  "minio-init-pod.yaml"
+  "minio-ldap-init-pod.yaml"
+  "minio-service.yaml"
+  "minio-skyforge-init-pod.yaml"
+  "nautobot-admin-bootstrap-job.yaml"
+  "nautobot-admin-sync-deployment.yaml"
+  "nautobot-deployment.yaml"
+  "nautobot-service.yaml"
+  "netbox-admin-bootstrap-job.yaml"
+  "netbox-admin-sync-deployment.yaml"
+  "netbox-deployment.yaml"
+  "netbox-service.yaml"
+  "redis-deployment.yaml"
+  "redis-service.yaml"
+  "swagger-ui-deployment.yaml"
+  "swagger-ui-service.yaml"
+  "yaade-deployment.yaml"
+  "yaade-service.yaml"
+  -}}
+{{- range $files }}
+{{- $path := printf "files/kompose/%s" . -}}
+{{- if $.Files.Get $path }}
+---
+{{ printf "%s\n" ($.Files.Get $path) }}
+{{ end }}
+{{- end }}

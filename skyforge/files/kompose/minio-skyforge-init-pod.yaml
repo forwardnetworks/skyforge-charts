@@ -53,7 +53,7 @@ spec:
       command:
         - /bin/sh
         - -lc
-      image: minio/mc:RELEASE.2024-11-17T19-35-25Z
+      image: quay.io/minio/mc:RELEASE.2024-11-17T19-35-25Z
       name: minio-skyforge-init
       volumeMounts:
         - mountPath: /run/secrets

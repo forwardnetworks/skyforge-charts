@@ -97,7 +97,7 @@ spec:
           value: /etc/skyforge/ca/ca-certificates.crt
         - name: REQUESTS_CA_BUNDLE
           value: /etc/skyforge/ca/ca-certificates.crt
-        image: skyforge-netbox:latest
+        image: ghcr.io/forwardnetworks/skyforge-netbox:4.5.0
         imagePullPolicy: IfNotPresent
         startupProbe:
           httpGet:

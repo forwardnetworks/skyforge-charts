@@ -29,7 +29,7 @@ spec:
           value: skyforge
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
-        image: postgres:15-alpine
+        image: public.ecr.aws/docker/library/postgres:15-alpine
         livenessProbe:
           tcpSocket:
             port: 5432
