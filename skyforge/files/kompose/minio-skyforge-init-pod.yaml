@@ -65,12 +65,15 @@ spec:
                 --name skyforge-files 2>&1)"; then
                 # The service account may already exist on upgrades. Treat that case as success
                 # so rerunning this init job is idempotent.
-                if echo "${svc_out}" | grep -qi "access key already taken"; then
+                case "${svc_out}" in
+                *[Aa]ccess\ key\ already\ taken*)
                   echo "Object storage skyforge-files service account already exists (${sf_user})."
-                else
+                  ;;
+                *)
                   echo "${svc_out}" >&2
                   exit 1
-                fi
+                  ;;
+                esac
               fi
 
               echo "Object storage skyforge-files service account ready (${sf_user})."
