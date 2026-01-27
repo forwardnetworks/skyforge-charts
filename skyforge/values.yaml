@@ -294,12 +294,12 @@ images:
   technitiumDns: "docker.io/technitium/dns-server@sha256:94f2b90d63f03181421152157a8099ea2752b13fa30b6c96833859be8e93dfa9"
   # Mirror Atlas on GHCR to avoid Docker Hub rate limits in-cluster.
   atlas: "ghcr.io/forwardnetworks/skyforge-atlas:20260120-1139e29a"
-  skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1114-whitenoise"
+  skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260127-forward-profiles-e947f7c5"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260127-1253-277c9dc4"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260127-forward-profiles-e947f7c5"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260127-1253-277c9dc4"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
   cloudflared: "cloudflare/cloudflared:2025.1.0"
   traefik: "ghcr.io/traefik/traefik:v3.6.7"
