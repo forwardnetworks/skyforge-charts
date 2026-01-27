@@ -1,6 +1,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
   labels:
     io.kompose.service: minio-skyforge-init
   name: minio-skyforge-init
