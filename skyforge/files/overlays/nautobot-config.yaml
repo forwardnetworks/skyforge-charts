@@ -73,6 +73,17 @@ data:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = False
     SECURE_HSTS_PRELOAD = False
 
+    # Serve static files directly from Nautobot without an nginx sidecar.
+    #
+    # Nautobot is hosted under a script prefix (/nautobot) and Skyforge proxies
+    # it behind Traefik. Django's development staticfiles handler can behave
+    # badly with SCRIPT_NAME/FORCE_SCRIPT_NAME; WhiteNoise avoids that path.
+    MIDDLEWARE = ["whitenoise.middleware.WhiteNoiseMiddleware", *MIDDLEWARE]
+    STORAGES["staticfiles"]["BACKEND"] = "whitenoise.storage.CompressedStaticFilesStorage"
+    # WhiteNoise serves assets at /static/* inside the container. Skyforge
+    # proxies /nautobot/static/* and strips the /nautobot prefix.
+    WHITENOISE_STATIC_PREFIX = "/static/"
+
     # Skyforge SSO (via Ingress auth subrequest + Remote-User headers).
     #
     # Nautobot has built-in support for remote header auth. It is enabled when

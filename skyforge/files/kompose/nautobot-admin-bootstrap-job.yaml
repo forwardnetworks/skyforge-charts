@@ -1,6 +1,10 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "0"
   labels:
     io.kompose.service: nautobot-admin-bootstrap
   name: nautobot-admin-bootstrap
@@ -51,7 +55,7 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_ADMIN_EMAIL
-          image: ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135
+          image: ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1114-whitenoise
           imagePullPolicy: IfNotPresent
           name: nautobot-admin-bootstrap
           volumeMounts:

@@ -35,7 +35,7 @@ spec:
 
           /docker-entrypoint.sh nautobot-server collectstatic --noinput
 
-          exec /docker-entrypoint.sh nautobot-server runserver 0.0.0.0:8080 --insecure
+          exec /docker-entrypoint.sh nautobot-server runserver 0.0.0.0:8080
 
           '
         command:
@@ -96,7 +96,7 @@ spec:
           value: /etc/skyforge/ca/ca-certificates.crt
         - name: REQUESTS_CA_BUNDLE
           value: /etc/skyforge/ca/ca-certificates.crt
-        image: ghcr.io/forwardnetworks/skyforge-nautobot:20260108-0135
+        image: ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1114-whitenoise
         imagePullPolicy: IfNotPresent
         startupProbe:
           httpGet:

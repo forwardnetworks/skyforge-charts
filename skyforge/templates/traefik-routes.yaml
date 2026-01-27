@@ -248,6 +248,7 @@ spec:
       middlewares:
         - name: skyforge-auth
         - name: forwarded-proto-https
+        - name: strip-nautobot
     - match: Host(`{{ $host }}`) && PathPrefix(`/nautobot/media/`)
       kind: Rule
       priority: 400
@@ -257,6 +258,7 @@ spec:
       middlewares:
         - name: skyforge-auth
         - name: forwarded-proto-https
+        - name: strip-nautobot
     - match: Host(`{{ $host }}`) && PathPrefix(`/nautobot`)
       kind: Rule
       priority: 350
