@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: technitium-dns
+  labels:
+    app: technitium-dns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: technitium-dns
+  template:
+    metadata:
+      labels:
+        app: technitium-dns
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: technitium-dns
+          image: technitium/dns-server:latest
+          ports:
+            - name: web
+              containerPort: 5380
+            - name: dns-udp
+              containerPort: 53
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+          env:
+            - name: DNS_SERVER_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_HOSTNAME
+            - name: DNS_SERVER_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-admin-shared
+                  key: password
+          volumeMounts:
+            - name: data
+              mountPath: /etc/dns
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5380
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5380
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: technitium-dns
+  labels:
+    app: technitium-dns
+spec:
+  type: ClusterIP
+  selector:
+    app: technitium-dns
+  ports:
+    - name: web
+      port: 5380
+      targetPort: 5380
+      protocol: TCP
+    - name: dns-udp
+      port: 53
+      targetPort: 53
+      protocol: UDP
+    - name: dns-tcp
+      port: 53
+      targetPort: 53
+      protocol: TCP

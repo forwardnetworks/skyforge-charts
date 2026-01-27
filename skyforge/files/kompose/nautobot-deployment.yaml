@@ -193,14 +193,11 @@ spec:
                 path: skyforge-ldap-bind-template
               name: skyforge-ldap-bind-template
       - name: nautobot-media
-        persistentVolumeClaim:
-          claimName: nautobot-media
+        emptyDir: {}
       - name: nautobot-reports
-        persistentVolumeClaim:
-          claimName: nautobot-reports
+        emptyDir: {}
       - name: nautobot-jobs
-        persistentVolumeClaim:
-          claimName: nautobot-jobs
+        emptyDir: {}
       - name: nautobot-config
         configMap:
           name: nautobot-config

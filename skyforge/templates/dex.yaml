@@ -46,8 +46,12 @@ spec:
             - name: dex-config
               mountPath: /etc/dex
               readOnly: true
+            - name: dex-data
+              mountPath: /var/dex
       volumes:
         - name: dex-config
+          emptyDir: {}
+        - name: dex-data
           emptyDir: {}
         - name: dex-config-src
           secret:

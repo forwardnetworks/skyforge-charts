@@ -9,6 +9,7 @@
   "gitea-service.yaml"
   "minio-deployment.yaml"
   "minio-init-pod.yaml"
+  "minio-gitea-init-pod.yaml"
   "minio-ldap-init-pod.yaml"
   "minio-service.yaml"
   "minio-skyforge-init-pod.yaml"
