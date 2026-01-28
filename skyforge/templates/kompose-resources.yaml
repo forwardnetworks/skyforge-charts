@@ -1,33 +1,59 @@
+{{- /*
+kompose-resources.yaml prints a set of pre-rendered manifests stored under
+charts/skyforge/files/kompose/*.yaml.
+
+Important: keep optional stacks (NetBox/Nautobot/etc) gated behind Helm values.
+Without gating, QA/OSS install drills cannot disable integrations and will hang
+pulling images or waiting on hooks.
+*/ -}}
+
 {{- $files := list
   "backup-postgres-minio-cronjob.yaml"
+
   "db-deployment.yaml"
   "db-provision-job.yaml"
   "db-service.yaml"
-  "gitea-admin-bootstrap-job.yaml"
-  "gitea-admin-sync-deployment.yaml"
-  "gitea-deployment.yaml"
-  "gitea-service.yaml"
+
+  "redis-deployment.yaml"
+  "redis-service.yaml"
+
   "minio-deployment.yaml"
   "minio-init-pod.yaml"
   "minio-gitea-init-pod.yaml"
   "minio-ldap-init-pod.yaml"
-  "minio-service.yaml"
   "minio-skyforge-init-pod.yaml"
-  "nautobot-admin-bootstrap-job.yaml"
-  "nautobot-admin-sync-deployment.yaml"
-  "nautobot-deployment.yaml"
-  "nautobot-service.yaml"
-  "netbox-admin-bootstrap-job.yaml"
-  "netbox-admin-sync-deployment.yaml"
-  "netbox-deployment.yaml"
-  "netbox-service.yaml"
-  "redis-deployment.yaml"
-  "redis-service.yaml"
+  "minio-service.yaml"
+
+  "gitea-admin-bootstrap-job.yaml"
+  "gitea-admin-sync-deployment.yaml"
+  "gitea-deployment.yaml"
+  "gitea-service.yaml"
+
   "swagger-ui-deployment.yaml"
   "swagger-ui-service.yaml"
+
   "yaade-deployment.yaml"
   "yaade-service.yaml"
   -}}
+
+{{- if .Values.skyforge.netbox.enabled }}
+  {{- $files = append $files
+    "netbox-admin-bootstrap-job.yaml"
+    "netbox-admin-sync-deployment.yaml"
+    "netbox-deployment.yaml"
+    "netbox-service.yaml"
+  -}}
+{{- end }}
+
+{{- if .Values.skyforge.nautobot.enabled }}
+  {{- $files = append $files
+    "nautobot-admin-bootstrap-job.yaml"
+    "nautobot-admin-sync-deployment.yaml"
+    "nautobot-deployment.yaml"
+    "nautobot-service.yaml"
+  -}}
+{{- end }}
+
 {{- range $files }}
 {{- $path := printf "files/kompose/%s" . -}}
 {{- if $.Files.Get $path }}
