@@ -1,0 +1,12 @@
+{{- /*
+Chart validation guardrails.
+
+This file intentionally renders no Kubernetes objects; it only fails Helm installs
+early when required configuration is missing.
+*/ -}}
+
+{{- if .Values.skyforge.encoreCfg.create -}}
+  {{- if not (trim (default "" .Values.skyforge.netlabC9s.generatorImage)) -}}
+    {{- fail "skyforge.netlabC9s.generatorImage must be set (required for netlab-c9s generator mode)" -}}
+  {{- end -}}
+{{- end -}}

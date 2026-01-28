@@ -6,7 +6,7 @@ metadata:
   name: skyforge-auth
 spec:
   forwardAuth:
-    address: http://skyforge-server.{{ .Release.Namespace }}.svc.cluster.local:8085/api/session/nginx
+    address: http://skyforge-server.{{ .Release.Namespace }}.svc.cluster.local:8085/api/session/forwardauth
     trustForwardHeader: true
     authResponseHeaders:
       - X-Skyforge-Username

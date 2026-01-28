@@ -16,10 +16,11 @@ spec:
       labels:
         io.kompose.service: skyforge-server
       annotations:
-        checksum/values: "{{ .Release.Revision }}"
-        checksum/infra-api: "{{ .Release.Revision }}"
-        checksum/encore-cfg: "{{ .Release.Revision }}"
-        checksum/encore-runtime: "{{ .Release.Revision }}"
+        checksum/skyforge-config: "{{ include (print $.Template.BasePath \"/skyforge-config-configmap.yaml\") . | sha256sum }}"
+        checksum/infra-config: "{{ include (print $.Template.BasePath \"/infra-config-configmap.yaml\") . | sha256sum }}"
+        checksum/encore-cfg: "{{ include (print $.Template.BasePath \"/encore-cfg-secret.yaml\") . | sha256sum }}"
+        checksum/encore-runtime: "{{ include (print $.Template.BasePath \"/encore-runtime-config-secret.yaml\") . | sha256sum }}"
+        checksum/extra-secrets: "{{ include (print $.Template.BasePath \"/secrets.yaml\") . | sha256sum }}"
     spec:
       imagePullSecrets:
         - name: ghcr-pull

@@ -115,7 +115,8 @@ skyforge:
   netlabC9s:
     # Netlab (cluster-native) uses an in-cluster generator Job to run `netlab create`
     # and emit clabernetes-ready artifacts (ConfigMaps + manifest).
-    generatorImage: ""
+    # NOTE: Override this with a pinned tag in your deploy values for reproducibility.
+    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:latest"
     generatorPullPolicy: "IfNotPresent"
   dns:
     enabled: false
