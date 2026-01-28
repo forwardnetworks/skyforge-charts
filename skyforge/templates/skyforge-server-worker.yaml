@@ -206,9 +206,9 @@ spec:
               name: run-secrets
               readOnly: true
             - mountPath: /var/lib/skyforge
-              name: skyforge-server-data
+              name: skyforge-worker-data
             - mountPath: /data
-              name: platform-data
+              name: skyforge-worker-platform
             - name: skyforge-ca-bundle
               mountPath: /etc/skyforge/ca
       volumes:
@@ -230,12 +230,10 @@ spec:
                   items:
                     - key: netlab-runner-rsa
                       path: netlab-runner-rsa
-        - name: skyforge-server-data
-          persistentVolumeClaim:
-            claimName: skyforge-server-data
-        - name: platform-data
-          persistentVolumeClaim:
-            claimName: platform-data
+        - name: skyforge-worker-data
+          emptyDir: {}
+        - name: skyforge-worker-platform
+          emptyDir: {}
         - name: skyforge-ca-cert
           secret:
             secretName: skyforge-ca-cert
