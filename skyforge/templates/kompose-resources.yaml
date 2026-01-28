@@ -37,21 +37,21 @@ pulling images or waiting on hooks.
   -}}
 
 {{- if .Values.skyforge.netbox.enabled }}
-  {{- $files = append $files
+  {{- $files = concat $files (list
     "netbox-admin-bootstrap-job.yaml"
     "netbox-admin-sync-deployment.yaml"
     "netbox-deployment.yaml"
     "netbox-service.yaml"
-  -}}
+  ) -}}
 {{- end }}
 
 {{- if .Values.skyforge.nautobot.enabled }}
-  {{- $files = append $files
+  {{- $files = concat $files (list
     "nautobot-admin-bootstrap-job.yaml"
     "nautobot-admin-sync-deployment.yaml"
     "nautobot-deployment.yaml"
     "nautobot-service.yaml"
-  -}}
+  ) -}}
 {{- end }}
 
 {{- range $files }}
