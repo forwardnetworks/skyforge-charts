@@ -308,6 +308,7 @@ spec:
       middlewares:
         - name: skyforge-auth
         - name: strip-coder
+{{- if .Values.skyforge.dns.enabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/dns`)
       kind: Rule
       priority: 300
@@ -317,6 +318,7 @@ spec:
       middlewares:
         - name: skyforge-auth
         - name: strip-dns
+{{- end }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/api/v2`)
       kind: Rule
       priority: 310

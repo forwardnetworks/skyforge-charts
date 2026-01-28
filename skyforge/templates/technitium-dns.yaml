@@ -1,3 +1,4 @@
+{{- if .Values.skyforge.dns.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -82,3 +83,4 @@ spec:
       port: 53
       targetPort: 53
       protocol: TCP
+{{- end }}
