@@ -1,4 +1,39 @@
-{{- range $path, $_ := .Files.Glob "files/kompose/*persistentvolumeclaim.yaml" }}
+{{- /*
+Render kompose PVC manifests, gated by feature flags.
+
+This avoids creating unused PVCs in OSS/minimal installs (and avoids Longhorn
+provisioning churn for services that are disabled).
+*/ -}}
+
+{{- $pvcs := list
+  "db-data-persistentvolumeclaim.yaml"
+  "platform-data-persistentvolumeclaim.yaml"
+  "redis-data-persistentvolumeclaim.yaml"
+  "skyforge-server-data-persistentvolumeclaim.yaml"
+  -}}
+
+{{- if .Values.skyforge.minio.enabled }}
+  {{- $pvcs = concat $pvcs (list "minio-data-persistentvolumeclaim.yaml") -}}
+{{- end }}
+{{- if .Values.skyforge.gitea.enabled }}
+  {{- $pvcs = concat $pvcs (list "gitea-data-persistentvolumeclaim.yaml") -}}
+{{- end }}
+{{- if .Values.skyforge.yaade.enabled }}
+  {{- $pvcs = concat $pvcs (list "yaade-data-persistentvolumeclaim.yaml") -}}
+{{- end }}
+
+{{- if .Values.skyforge.netbox.enabled }}
+  {{- $pvcs = concat $pvcs (list
+    "netbox-media-persistentvolumeclaim.yaml"
+    "netbox-reports-persistentvolumeclaim.yaml"
+    "netbox-scripts-persistentvolumeclaim.yaml"
+  ) -}}
+{{- end }}
+
+{{- range $pvcs }}
+{{- $path := printf "files/kompose/%s" . -}}
+{{- if $.Files.Get $path }}
 {{ $.Files.Get $path }}
 ---
+{{- end }}
 {{- end }}

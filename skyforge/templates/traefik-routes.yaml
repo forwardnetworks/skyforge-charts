@@ -1,4 +1,10 @@
 {{- $host := .Values.skyforge.hostname -}}
+{{- $giteaEnabled := .Values.skyforge.gitea.enabled -}}
+{{- $minioEnabled := .Values.skyforge.minio.enabled -}}
+{{- $yaadeEnabled := .Values.skyforge.yaade.enabled -}}
+{{- $swaggerEnabled := .Values.skyforge.swaggerUI.enabled -}}
+{{- $dexEnabled := .Values.skyforge.dex.enabled -}}
+{{- $coderEnabled := .Values.skyforge.coder.enabled -}}
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
@@ -144,12 +150,22 @@ spec:
       services:
         - name: skyforge-server
           port: 8085
+{{- if $dexEnabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/dex`)
       kind: Rule
       priority: 600
       services:
         - name: dex
           port: 5556
+{{- end }}
+{{- if $coderEnabled }}
+    - match: Host(`{{ $host }}`) && PathPrefix(`/dex-coder`)
+      kind: Rule
+      priority: 600
+      services:
+        - name: dex-coder
+          port: 5556
+{{- end }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/healthz`)
       kind: Rule
       priority: 600
@@ -162,6 +178,7 @@ spec:
       services:
         - name: skyforge-server
           port: 8085
+{{- if $minioEnabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/files/`)
       kind: Rule
       priority: 400
@@ -171,6 +188,8 @@ spec:
       middlewares:
         - name: skyforge-auth
         - name: replace-files
+{{- end }}
+{{- if $yaadeEnabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/api-testing`)
       kind: Rule
       priority: 500
@@ -179,6 +198,7 @@ spec:
           port: 80
       middlewares:
         - name: skyforge-auth
+{{- end }}
     - match: Host(`{{ $host }}`) && Path(`/`)
       kind: Rule
       priority: 450
@@ -204,6 +224,7 @@ spec:
   tls:
     secretName: proxy-tls
   routes:
+{{- if $minioEnabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/minio-console`)
       kind: Rule
       priority: 450
@@ -213,6 +234,8 @@ spec:
       middlewares:
         - name: skyforge-auth
         - name: strip-minio-console
+{{- end }}
+{{- if .Values.skyforge.netbox.enabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/netbox/static/`)
       kind: Rule
       priority: 400
@@ -239,6 +262,8 @@ spec:
           port: 8080
       middlewares:
         - name: skyforge-auth
+{{- end }}
+{{- if .Values.skyforge.nautobot.enabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/nautobot/static/`)
       kind: Rule
       priority: 400
@@ -269,6 +294,8 @@ spec:
         - name: skyforge-auth
         - name: forwarded-proto-https
         - name: strip-nautobot
+{{- end }}
+{{- if $giteaEnabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/git`)
       kind: Rule
       priority: 300
@@ -290,6 +317,8 @@ spec:
           port: 3000
       middlewares:
         - name: strip-git
+{{- end }}
+{{- if $swaggerEnabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/swagger`)
       kind: Rule
       priority: 300
@@ -299,6 +328,8 @@ spec:
       middlewares:
         - name: skyforge-auth
         - name: strip-swagger
+{{- end }}
+{{- if $coderEnabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/coder`)
       kind: Rule
       priority: 300
@@ -308,6 +339,7 @@ spec:
       middlewares:
         - name: skyforge-auth
         - name: strip-coder
+{{- end }}
 {{- if .Values.skyforge.dns.enabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/dns`)
       kind: Rule
@@ -319,12 +351,14 @@ spec:
         - name: skyforge-auth
         - name: strip-dns
 {{- end }}
+{{- if $coderEnabled }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/api/v2`)
       kind: Rule
       priority: 310
       services:
         - name: coder
           port: 7080
+{{- end }}
     - match: Host(`{{ $host }}`) && PathPrefix(`/labs`)
       kind: Rule
       priority: 300

@@ -10,3 +10,15 @@ early when required configuration is missing.
     {{- fail "skyforge.netlabC9s.generatorImage must be set (required for netlab-c9s generator mode)" -}}
   {{- end -}}
 {{- end -}}
+
+{{- if not .Values.skyforge.gitea.enabled -}}
+  {{- if not (trim (default "" .Values.skyforge.gitea.apiUrl)) -}}
+    {{- fail "skyforge.gitea.enabled=false requires skyforge.gitea.apiUrl to be set (external Git server API URL)" -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if not .Values.skyforge.minio.enabled -}}
+  {{- if eq (trim (default "" .Values.skyforge.objectStorage.endpoint)) "minio:9000" -}}
+    {{- fail "skyforge.minio.enabled=false requires skyforge.objectStorage.endpoint to be set to a non-MinIO S3 endpoint (not minio:9000)" -}}
+  {{- end -}}
+{{- end -}}

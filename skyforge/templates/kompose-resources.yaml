@@ -8,33 +8,54 @@ pulling images or waiting on hooks.
 */ -}}
 
 {{- $files := list
-  "backup-postgres-minio-cronjob.yaml"
-
   "db-deployment.yaml"
   "db-provision-job.yaml"
   "db-service.yaml"
 
   "redis-deployment.yaml"
   "redis-service.yaml"
-
-  "minio-deployment.yaml"
-  "minio-init-pod.yaml"
-  "minio-gitea-init-pod.yaml"
-  "minio-ldap-init-pod.yaml"
-  "minio-skyforge-init-pod.yaml"
-  "minio-service.yaml"
-
-  "gitea-admin-bootstrap-job.yaml"
-  "gitea-admin-sync-deployment.yaml"
-  "gitea-deployment.yaml"
-  "gitea-service.yaml"
-
-  "swagger-ui-deployment.yaml"
-  "swagger-ui-service.yaml"
-
-  "yaade-deployment.yaml"
-  "yaade-service.yaml"
   -}}
+
+{{- if .Values.skyforge.minio.enabled }}
+  {{- $files = concat $files (list
+    "backup-postgres-minio-cronjob.yaml"
+
+    "minio-deployment.yaml"
+    "minio-init-pod.yaml"
+    "minio-ldap-init-pod.yaml"
+    "minio-skyforge-init-pod.yaml"
+    "minio-service.yaml"
+  ) -}}
+{{- end }}
+
+{{- if and .Values.skyforge.minio.enabled .Values.skyforge.gitea.enabled }}
+  {{- $files = concat $files (list
+    "minio-gitea-init-pod.yaml"
+  ) -}}
+{{- end }}
+
+{{- if .Values.skyforge.gitea.enabled }}
+  {{- $files = concat $files (list
+    "gitea-admin-bootstrap-job.yaml"
+    "gitea-admin-sync-deployment.yaml"
+    "gitea-deployment.yaml"
+    "gitea-service.yaml"
+  ) -}}
+{{- end }}
+
+{{- if .Values.skyforge.swaggerUI.enabled }}
+  {{- $files = concat $files (list
+    "swagger-ui-deployment.yaml"
+    "swagger-ui-service.yaml"
+  ) -}}
+{{- end }}
+
+{{- if .Values.skyforge.yaade.enabled }}
+  {{- $files = concat $files (list
+    "yaade-deployment.yaml"
+    "yaade-service.yaml"
+  ) -}}
+{{- end }}
 
 {{- if .Values.skyforge.netbox.enabled }}
   {{- $files = concat $files (list

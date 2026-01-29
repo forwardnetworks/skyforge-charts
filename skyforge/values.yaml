@@ -56,6 +56,7 @@ skyforge:
   awsSsoRegion: "us-east-1"
   awsSsoStartUrl: ""
   gitea:
+    enabled: true
     apiUrl: ""
     url: ""
     username: "skyforge"
@@ -89,6 +90,8 @@ skyforge:
   nautobotUrl: ""
   yaadeUrl: "http://yaade"
   yaadeAdminUsername: "admin"
+  yaade:
+    enabled: true
   staticRoot: "/opt/skyforge/static"
   objectStorage:
     endpoint: "minio:9000"
@@ -133,6 +136,9 @@ skyforge:
   # Typed config equivalent of SKYFORGE_NOTIFICATIONS_ENABLED. Default true.
   notificationsEnabled: true
   forward:
+    # Enable Forward Networks integration (collector deployment + sync actions).
+    # When false, Skyforge hides Forward UI and disables Forward API endpoints.
+    enabled: true
     snmpPlaceholderEnabled: true
     snmpCommunity: "public"
   forwardCollector:
@@ -177,6 +183,7 @@ skyforge:
     supportText: "Need access? Contact your platform admin."
     supportUrl: ""
   minio:
+    enabled: true
     consoleSubpath: "/minio-console"
     # Optional: LDAP group to grant MinIO Console access + read/write bucket access.
     # If empty, LDAP users may be able to authenticate but lack permissions.
@@ -196,6 +203,7 @@ skyforge:
     enabled: false
     interval: "10s"
   coder:
+    enabled: true
     replicaCount: 1
     # Enables password auth for the bootstrap admin user (useful for demos).
     # Keep this true for strict SSO-only deployments.
@@ -216,10 +224,14 @@ skyforge:
     demo:
       enabled: false
   dex:
+    enabled: true
     # Optional: tweak Dex login page UX/branding. These settings are applied by an initContainer
     # that patches the Dex config from the `dex-config` Secret at startup.
     webTheme: ""
     logoUrl: "/assets/skyforge/FN-logo.svg"
+
+  swaggerUI:
+    enabled: true
   clabernetes:
     # Experimental: deploy containerlab topologies to k8s via clabernetes.
     enabled: false
