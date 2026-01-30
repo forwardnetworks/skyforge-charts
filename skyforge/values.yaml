@@ -92,6 +92,16 @@ skyforge:
   yaadeAdminUsername: "admin"
   yaade:
     enabled: true
+  gemini:
+    enabled: false
+    # Google OAuth client ID for per-user "Connect Gemini".
+    clientID: ""
+    # Optional override (default is derived from skyforge.publicUrl/hostname):
+    #   https://<skyforge.hostname>/api/user/integrations/gemini/callback
+    redirectURL: ""
+    # Kubernetes Secret (name/key) containing the OAuth client secret.
+    clientSecretSecretName: "skyforge-gemini-oauth-client-secret"
+    clientSecretSecretKey: "skyforge-gemini-oauth-client-secret"
   staticRoot: "/opt/skyforge/static"
   objectStorage:
     endpoint: "minio:9000"
@@ -225,10 +235,45 @@ skyforge:
       enabled: false
   dex:
     enabled: true
+    # When false, Dex config is expected to be provided via the `dex-config` Secret
+    # (for example, via deploy/skyforge-secrets.yaml). When true, the chart
+    # generates and manages `dex-config` based on the values below.
+    manageConfig: false
     # Optional: tweak Dex login page UX/branding. These settings are applied by an initContainer
     # that patches the Dex config from the `dex-config` Secret at startup.
     webTheme: ""
     logoUrl: "/assets/skyforge/FN-logo.svg"
+    # Auth mode for Skyforge (via Dex). Supported:
+    # - google: Google Workspace / Cloud Identity login (recommended for Forward)
+    # - ldap: LDAP login (optional for OSS installs)
+    authMode: "google"
+    google:
+      # Google OAuth client ID for Dex.
+      # Redirect URI to configure in Google Cloud:
+      #   https://<skyforge.hostname>/dex/callback
+      clientID: ""
+      # Optional restriction to specific Google Workspace domains.
+      hostedDomains:
+        - "forwardnetworks.com"
+      # Where to read the Google OAuth client secret from.
+      clientSecretSecretName: "dex-google-client-secret"
+      clientSecretSecretKey: "dex-google-client-secret"
+    # LDAP connector settings (used only when authMode=ldap).
+    # NOTE: This is intentionally unconfigured by default.
+    ldap:
+      host: ""
+      startTLS: false
+      insecureSkipVerify: false
+      bindDN: ""
+      bindPW: ""
+      usernamePrompt: "LDAP Username"
+      userSearch:
+        baseDN: ""
+        filter: "(objectClass=person)"
+        username: "uid"
+        idAttr: "uid"
+        emailAttr: "mail"
+        nameAttr: "cn"
 
   swaggerUI:
     enabled: true
@@ -368,16 +413,18 @@ secrets:
       db-dex-password: ""
     db-skyforge-server-password:
       db-skyforge-server-password: ""
-    dex-config:
-      config.yaml: ""
     dex-client-coder-secret:
       dex-client-coder-secret: ""
+    dex-google-client-secret:
+      dex-google-client-secret: ""
     skyforge-oidc-discovery-url:
       skyforge-oidc-discovery-url: ""
     skyforge-oidc-client-id:
       skyforge-oidc-client-id: ""
     skyforge-oidc-client-secret:
       skyforge-oidc-client-secret: ""
+    skyforge-gemini-oauth-client-secret:
+      skyforge-gemini-oauth-client-secret: ""
     yaade-admin-password:
       yaade-admin-password: ""
     gitea-secret-key:

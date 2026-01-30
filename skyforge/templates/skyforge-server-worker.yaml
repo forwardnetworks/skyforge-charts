@@ -92,16 +92,24 @@ spec:
                   name: skyforge-oidc-client-secret
                   key: skyforge-oidc-client-secret
                   optional: true
+            - name: SKYFORGE_GEMINI_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.gemini.clientSecretSecretName | quote }}
+                  key: {{ .Values.skyforge.gemini.clientSecretSecretKey | quote }}
+                  optional: true
             - name: SKYFORGE_LDAP_URL
               valueFrom:
                 secretKeyRef:
                   name: skyforge-ldap-url
                   key: skyforge-ldap-url
+                  optional: true
             - name: SKYFORGE_LDAP_BIND_TEMPLATE
               valueFrom:
                 secretKeyRef:
                   name: skyforge-ldap-bind-template
                   key: skyforge-ldap-bind-template
+                  optional: true
             - name: SKYFORGE_LDAP_LOOKUP_BINDDN
               valueFrom:
                 secretKeyRef:
