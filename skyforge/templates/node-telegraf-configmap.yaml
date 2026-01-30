@@ -3,7 +3,7 @@ Telegraf node metrics collector configuration.
 
 - Runs as a DaemonSet (multi-node ready).
 - Collects basic host metrics and forwards them to skyforge-server's internal ingest API.
-- Metrics are stored as a short-lived snapshot in Redis, not as time-series in Postgres.
+- Metrics are stored as a short-lived snapshot in Postgres, not as time-series in Prometheus.
 */ -}}
 {{- if and .Values.skyforge .Values.skyforge.nodeMetrics .Values.skyforge.nodeMetrics.enabled -}}
 {{- $interval := default "10s" .Values.skyforge.nodeMetrics.interval -}}
