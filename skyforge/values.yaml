@@ -283,7 +283,7 @@ images:
   alpine: "public.ecr.aws/docker/library/alpine:3.20"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
   vector: "ghcr.io/vectordotdev/vector:0.44.0-debian"
-  telegraf: "ghcr.io/influxdata/telegraf:1.33-alpine"
+  telegraf: "telegraf:1.33-alpine"
   freeradius: "ghcr.io/freeradius/freeradius-server:3.2.5"
   # Prefer GHCR (Docker Hub rate limits are painful in-cluster).
   gitea: "ghcr.io/go-gitea/gitea:1.24.6-rootless"
