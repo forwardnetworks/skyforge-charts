@@ -12,6 +12,9 @@ spec:
       io.kompose.service: dex
   template:
     metadata:
+      annotations:
+        checksum/dex-config: {{ include (print $.Template.BasePath "/dex-config-secret.yaml") . | sha256sum }}
+        checksum/dex-config-patcher: {{ include (print $.Template.BasePath "/dex-config-patcher.yaml") . | sha256sum }}
       labels:
         io.kompose.service: dex
     spec:
