@@ -574,7 +574,7 @@ spec:
         - -c
         args:
         - >-
-          set -euo pipefail;
+          set -e;
           db_url="postgres://${SKYFORGE_DB_USER}:${SKYFORGE_DB_PASSWORD}@${SKYFORGE_DB_HOST}:${SKYFORGE_DB_PORT}/${SKYFORGE_DB_NAME}?sslmode=${SKYFORGE_DB_SSLMODE}";
           echo "Preparing Skyforge migrations...";
           rm -rf /work/migrations;
@@ -586,12 +586,15 @@ spec:
           sed -i 's#file:///app/skyforge/migrations#file:///work/migrations#g' /work/atlas.hcl;
           atlas migrate hash --dir file:///work/migrations --dir-format golang-migrate;
           echo "Running Skyforge migrations...";
-          for i in $(seq 1 60); do
+          if [ ! -f /work/atlas.hcl ]; then echo "FATAL: /work/atlas.hcl missing" >&2; ls -la /work /migrations-src || true; exit 1; fi;
+          i=1;
+          while [ "${i}" -le 60 ]; do
             if atlas migrate apply --config file:///work/atlas.hcl --env prod --var db_url="${db_url}"; then
               echo "Skyforge migrations complete.";
               exit 0;
-            fi
+            fi;
             echo "Migrations not ready yet; retrying (${i}/60)...";
+            i=$((i+1));
             sleep 2;
           done;
           echo "Skyforge migrations failed after retries." >&2;
