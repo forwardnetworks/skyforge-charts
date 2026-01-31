@@ -8,6 +8,14 @@ skyforge:
   # creates a separate Deployment that runs the task worker.
   workerReplicaCount: 0
 
+  # Optional: run a standalone Atlas migration Job as a Helm hook.
+  #
+  # This is normally unnecessary because `skyforge-server` already runs migrations
+  # in an initContainer before starting the API. Keeping this disabled avoids
+  # hook-related upgrade failures when the cluster is temporarily unhealthy.
+  migrateJob:
+    enabled: false
+
   # Resources for the worker Deployment. Strongly recommended when using the HPA.
   workerResources:
     requests:
