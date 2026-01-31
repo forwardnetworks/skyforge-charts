@@ -107,9 +107,17 @@ skyforge:
     # Optional override (default is derived from skyforge.publicUrl/hostname):
     #   https://<skyforge.hostname>/api/user/integrations/gemini/callback
     redirectURL: ""
+    # Vertex AI settings used by the AI template generator.
+    # These are not required for OAuth connect/disconnect, but are required to
+    # actually call Gemini to generate templates.
+    projectId: ""
+    location: "us-central1"
+    model: "gemini-2.0-flash-001"
     # Kubernetes Secret (name/key) containing the OAuth client secret.
     clientSecretSecretName: "skyforge-gemini-oauth-client-secret"
     clientSecretSecretKey: "skyforge-gemini-oauth-client-secret"
+  ai:
+    enabled: false
   staticRoot: "/opt/skyforge/static"
   objectStorage:
     endpoint: "minio:9000"
