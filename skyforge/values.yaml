@@ -467,10 +467,6 @@ secrets:
       object-storage-artifacts-secret-key: ""
     aws-terraform-shared-credentials:
       aws-terraform-shared-credentials: ""
-    skyforge-pki-ca-cert:
-      skyforge-pki-ca-cert: ""
-    skyforge-pki-ca-key:
-      skyforge-pki-ca-key: ""
     proxy-tls:
       tls.crt: ""
       tls.key: ""
