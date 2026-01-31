@@ -33,7 +33,8 @@ spec:
               echo "Preparing Skyforge migrations...";
               rm -rf /work/migrations;
               mkdir -p /work/migrations;
-              cp -L /migrations-src/*.up.sql /work/migrations/;
+              # Atlas golang-migrate format expects paired *.up.sql/*.down.sql files.
+              cp -L /migrations-src/*.sql /work/migrations/;
               cp -L /migrations-src/atlas.hcl /work/atlas.hcl;
               sed -i 's#file:///app/skyforge/migrations#file:///work/migrations#g' /work/atlas.hcl;
               atlas migrate hash --dir file:///work/migrations --dir-format golang-migrate;
