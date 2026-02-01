@@ -71,6 +71,18 @@ skyforge:
     repoPrivate: true
     adminUsername: "skyforge"
     allowedDomains: ""
+  registry:
+    # Container image registry used by the Designer palette.
+    # Example: https://ghcr.io
+    url: ""
+    # Optional comma-separated prefixes to include (e.g. "forwardnetworks,lab").
+    repoPrefixes: ""
+    skipTlsVerify: false
+    # Optional registry credentials (Kubernetes Secret name/key).
+    usernameSecretName: "skyforge-registry-username"
+    usernameSecretKey: "skyforge-registry-username"
+    passwordSecretName: "skyforge-registry-password"
+    passwordSecretKey: "skyforge-registry-password"
   netboxSsoUrl: ""
   nautobotSsoUrl: ""
   # Public base URL for Skyforge (used for webhook and SNMP instructions).

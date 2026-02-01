@@ -12,6 +12,9 @@ data:
   SKYFORGE_GITEA_USERNAME: {{ .Values.skyforge.gitea.username | quote }}
   SKYFORGE_SSO_SKIP_TLS_VERIFY: {{ .Values.skyforge.ssoSkipTlsVerify | quote }}
   SKYFORGE_GITEA_REPO_PRIVATE: {{ .Values.skyforge.gitea.repoPrivate | quote }}
+  SKYFORGE_REGISTRY_URL: {{ .Values.skyforge.registry.url | quote }}
+  SKYFORGE_REGISTRY_REPO_PREFIXES: {{ .Values.skyforge.registry.repoPrefixes | quote }}
+  SKYFORGE_REGISTRY_SKIP_TLS_VERIFY: {{ .Values.skyforge.registry.skipTlsVerify | quote }}
   SKYFORGE_LDAP_DISPLAY_ATTR: {{ .Values.skyforge.ldap.displayAttr | quote }}
   SKYFORGE_LDAP_GROUP_ATTR: {{ .Values.skyforge.ldap.groupAttr | quote }}
   SKYFORGE_LDAP_MAIL_ATTR: {{ .Values.skyforge.ldap.mailAttr | quote }}
