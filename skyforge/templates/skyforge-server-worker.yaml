@@ -122,38 +122,38 @@ spec:
                   name: skyforge-ldap-lookup-bindpassword
                   key: skyforge-ldap-lookup-bindpassword
                   optional: true
-        - name: SKYFORGE_GITEA_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: skyforge-admin-shared
-              key: password
-        - name: SKYFORGE_REGISTRY_URL
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_REGISTRY_URL
-        - name: SKYFORGE_REGISTRY_REPO_PREFIXES
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_REGISTRY_REPO_PREFIXES
-        - name: SKYFORGE_REGISTRY_SKIP_TLS_VERIFY
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_REGISTRY_SKIP_TLS_VERIFY
-        - name: SKYFORGE_REGISTRY_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.skyforge.registry.usernameSecretName }}
-              key: {{ .Values.skyforge.registry.usernameSecretKey }}
-              optional: true
-        - name: SKYFORGE_REGISTRY_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.skyforge.registry.passwordSecretName }}
-              key: {{ .Values.skyforge.registry.passwordSecretKey }}
-              optional: true
+            - name: SKYFORGE_GITEA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-admin-shared
+                  key: password
+            - name: SKYFORGE_REGISTRY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_REGISTRY_URL
+            - name: SKYFORGE_REGISTRY_REPO_PREFIXES
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_REGISTRY_REPO_PREFIXES
+            - name: SKYFORGE_REGISTRY_SKIP_TLS_VERIFY
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_REGISTRY_SKIP_TLS_VERIFY
+            - name: SKYFORGE_REGISTRY_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.registry.usernameSecretName }}
+                  key: {{ .Values.skyforge.registry.usernameSecretKey }}
+                  optional: true
+            - name: SKYFORGE_REGISTRY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.registry.passwordSecretName }}
+                  key: {{ .Values.skyforge.registry.passwordSecretKey }}
+                  optional: true
             - name: SKYFORGE_DB_HOST
               valueFrom:
                 configMapKeyRef:
