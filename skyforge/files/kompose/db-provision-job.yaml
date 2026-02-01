@@ -55,7 +55,6 @@ spec:
               }
 
               NETBOX_DB_PASSWORD="$(read_secret db-netbox-password "${NETBOX_DB_PASSWORD:-netbox}")"
-              NETBOX_DB_PASSWORD="$(read_secret db-netbox-password "${NETBOX_DB_PASSWORD:-netbox}")"
               NAUTOBOT_DB_PASSWORD="$(read_secret db-nautobot-password "${NAUTOBOT_DB_PASSWORD:-nautobot}")"
               GITEA_DB_PASSWORD="$(read_secret db-gitea-password "${GITEA_DB_PASSWORD:-gitea}")"
               CODER_DB_PASSWORD="$(read_secret db-coder-password "${CODER_DB_PASSWORD:-coder}")"
@@ -92,7 +91,6 @@ spec:
               create_role skyforge_server "${SKYFORGE_SERVER_DB_PASSWORD}"
 
               create_db netbox netbox
-              create_db netbox netbox
               create_db nautobot nautobot
               create_db gitea gitea
               create_db coder coder
@@ -112,11 +110,6 @@ spec:
                     - key: postgres-skyforge-password
                       path: postgres-skyforge-password
                   name: postgres-skyforge-password
-              - secret:
-                  items:
-                    - key: db-netbox-password
-                      path: db-netbox-password
-                  name: db-netbox-password
               - secret:
                   items:
                     - key: db-netbox-password
