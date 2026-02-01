@@ -69,11 +69,6 @@ spec:
               name: db-netbox-password
           - secret:
               items:
-              - key: db-netbox-password
-                path: db-netbox-password
-              name: db-netbox-password
-          - secret:
-              items:
               - key: db-nautobot-password
                 path: db-nautobot-password
               name: db-nautobot-password
