@@ -104,6 +104,9 @@
     "SKYFORGE_ADMIN_PASSWORD": {
       "$env": "SKYFORGE_ADMIN_PASSWORD"
     },
+    "SKYFORGE_E2E_ADMIN_TOKEN": {
+      "$env": "SKYFORGE_E2E_ADMIN_TOKEN"
+    },
     "SKYFORGE_OIDC_CLIENT_ID": {
       "$env": "SKYFORGE_OIDC_CLIENT_ID"
     },
