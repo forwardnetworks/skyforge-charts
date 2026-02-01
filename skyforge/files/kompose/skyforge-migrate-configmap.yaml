@@ -1059,10 +1059,9 @@ data:
     
     DELETE FROM sf_forward_device_types WHERE device_key = 'srx';
 
-
   20260130001000_user_gemini_oauth.down.sql: |
     DROP TABLE IF EXISTS sf_user_gemini_oauth;
-
+    
 
   20260130001000_user_gemini_oauth.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_user_gemini_oauth (
@@ -1075,3 +1074,177 @@ data:
     );
     
     CREATE INDEX IF NOT EXISTS idx_sf_user_gemini_oauth_updated_at ON sf_user_gemini_oauth(updated_at);
+    
+
+  20260201000100_user_settings.down.sql: |
+    DROP TABLE IF EXISTS sf_user_settings;
+
+  20260201000100_user_settings.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_user_settings (
+      user_id TEXT PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
+      default_forward_collector_config_id TEXT NOT NULL DEFAULT '',
+      default_env_json TEXT NOT NULL DEFAULT '[]',
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+  20260201000200_user_cloud_credentials.down.sql: |
+    DROP TABLE IF EXISTS sf_user_gcp_credentials;
+    DROP TABLE IF EXISTS sf_user_azure_credentials;
+    DROP TABLE IF EXISTS sf_user_aws_static_credentials;
+    
+
+  20260201000200_user_cloud_credentials.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_user_aws_static_credentials (
+      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
+      access_key_id text NOT NULL,
+      secret_access_key text NOT NULL,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE TABLE IF NOT EXISTS sf_user_azure_credentials (
+      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
+      tenant_id text NOT NULL,
+      client_id text NOT NULL,
+      client_secret text NOT NULL,
+      subscription_id text,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE TABLE IF NOT EXISTS sf_user_gcp_credentials (
+      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
+      service_account_json text NOT NULL,
+      project_id_override text,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+
+  20260201000300_user_servers.down.sql: |
+    DROP TABLE IF EXISTS sf_user_eve_servers;
+    DROP TABLE IF EXISTS sf_user_netlab_servers;
+    
+
+  20260201000300_user_servers.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_user_netlab_servers (
+      id uuid PRIMARY KEY,
+      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
+      name text NOT NULL,
+      api_url text NOT NULL,
+      api_insecure boolean NOT NULL DEFAULT true,
+      api_user text,
+      api_password text,
+      api_token text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      UNIQUE (username, name)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_netlab_servers_username_idx ON sf_user_netlab_servers(username);
+    
+    CREATE TABLE IF NOT EXISTS sf_user_eve_servers (
+      id uuid PRIMARY KEY,
+      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
+      name text NOT NULL,
+      api_url text NOT NULL,
+      web_url text,
+      skip_tls_verify boolean NOT NULL DEFAULT false,
+      api_user text,
+      api_password text,
+      ssh_host text,
+      ssh_user text,
+      ssh_key text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      UNIQUE (username, name)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_eve_servers_username_idx ON sf_user_eve_servers(username);
+    
+
+  20260201000400_user_external_template_repos.down.sql: |
+    -- SQLite doesn't support DROP COLUMN easily; leave column in place.
+    
+
+  20260201000400_user_external_template_repos.up.sql: |
+    ALTER TABLE sf_user_settings
+      ADD COLUMN IF NOT EXISTS external_template_repos_json text NOT NULL DEFAULT '[]';
+    
+
+  20260201000500_user_aws_sso_credentials.down.sql: |
+    DROP TABLE IF EXISTS sf_user_aws_sso_credentials;
+    
+
+  20260201000500_user_aws_sso_credentials.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_user_aws_sso_credentials (
+      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
+      start_url text NOT NULL,
+      region text NOT NULL,
+      account_id text NOT NULL,
+      role_name text NOT NULL,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+
+  20260201000600_user_containerlab_servers.down.sql: |
+    DROP TABLE IF EXISTS sf_user_containerlab_servers;
+    
+
+  20260201000600_user_containerlab_servers.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_user_containerlab_servers (
+      id uuid PRIMARY KEY,
+      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
+      name text NOT NULL,
+      api_url text NOT NULL,
+      api_insecure boolean NOT NULL DEFAULT true,
+      api_user text,
+      api_password text,
+      api_token text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      UNIQUE (username, name)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_containerlab_servers_username_idx ON sf_user_containerlab_servers(username);
+    
+
+  20260201000700_workspace_allow_custom_containerlab_servers.down.sql: |
+    ALTER TABLE sf_workspaces
+      DROP COLUMN IF EXISTS allow_custom_containerlab_servers;
+    
+
+  20260201000700_workspace_allow_custom_containerlab_servers.up.sql: |
+    ALTER TABLE sf_workspaces
+      ADD COLUMN IF NOT EXISTS allow_custom_containerlab_servers boolean NOT NULL DEFAULT false;
+    
+
+  20260201000800_user_ibm_cloud_credentials.down.sql: |
+    DROP TABLE IF EXISTS sf_user_ibm_cloud_credentials;
+    
+
+  20260201000800_user_ibm_cloud_credentials.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_user_ibm_cloud_credentials (
+      username TEXT PRIMARY KEY,
+      api_key TEXT NOT NULL,
+      region TEXT NOT NULL,
+      resource_group_id TEXT NOT NULL DEFAULT '',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    
+
+  20260201000900_user_ai_generations.down.sql: |
+    DROP TABLE IF EXISTS sf_user_ai_generations;
+    
+
+  20260201000900_user_ai_generations.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_user_ai_generations (
+      id uuid PRIMARY KEY,
+      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
+      provider text NOT NULL,
+      kind text NOT NULL,
+      prompt text NOT NULL,
+      content text NOT NULL,
+      warnings jsonb NOT NULL DEFAULT '[]'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_user_ai_generations_user_created ON sf_user_ai_generations(username, created_at DESC);
+    
