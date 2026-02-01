@@ -69,7 +69,8 @@ spec:
               else
                 gitea admin user change-password --config "${config}" \
                   --username "${admin_username}" \
-                  --password "${admin_password}"
+                  --password "${admin_password}" \
+                  --must-change-password=false
                 echo "Gitea admin password updated: ${admin_username}"
               fi
 

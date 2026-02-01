@@ -54,35 +54,6 @@ spec:
                 '    print("SKYFORGE_NETBOX_SUPERUSER_TOKEN not set; skipping token sync")' \
               )"
 
-              python /opt/netbox/netbox/manage.py shell -c "$(printf '%s\n' \
-                'import os' \
-                'from django.contrib.contenttypes.models import ContentType' \
-                'from extras.models import CustomField' \
-                'from ipam.models import Prefix' \
-                'from ipam.choices import PrefixStatusChoices' \
-                '' \
-                'subnet = os.environ.get("SKYFORGE_NETBOX_MGMT_SUBNET", "").strip()' \
-                'if subnet:' \
-                '    ct = ContentType.objects.get(app_label="ipam", model="ipaddress")' \
-                '    cf, _ = CustomField.objects.get_or_create(' \
-                '        name="node_name",' \
-                '        defaults={' \
-                '            "type": "text",' \
-                '            "label": "Node Name",' \
-                '            "description": "LabPP node mapping",' \
-                '        },' \
-                '    )' \
-                '    cf.object_types.add(ct)' \
-                '    if not Prefix.objects.filter(prefix=subnet).exists():' \
-                '        Prefix.objects.create(' \
-                '            prefix=subnet,' \
-                '            status=PrefixStatusChoices.STATUS_ACTIVE,' \
-                '            description="LabPP management subnet",' \
-                '        )' \
-                '    print("netbox labpp bootstrap ok")' \
-                'else:' \
-                '    print("SKYFORGE_NETBOX_MGMT_SUBNET not set; skipping prefix/bootstrap")' \
-              )"
           command:
             - /bin/sh
             - -c

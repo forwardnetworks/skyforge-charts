@@ -31,18 +31,6 @@ data:
   SKYFORGE_OBJECT_STORAGE_USE_SSL: {{ .Values.skyforge.objectStorage.useSsl | quote }}
   SKYFORGE_NETLAB_SSH_USER: {{ .Values.skyforge.netlab.sshUser | quote }}
   SKYFORGE_NETLAB_STATE_ROOT: {{ .Values.skyforge.netlab.stateRoot | quote }}
-  SKYFORGE_LABPP_RUNNER_IMAGE: ""
-  SKYFORGE_LABPP_RUNNER_PULL_POLICY: ""
-  SKYFORGE_LABPP_RUNNER_PVC: ""
-  SKYFORGE_LABPP_CONFIG_DIR_BASE: ""
-  SKYFORGE_LABPP_CONFIG_VERSION: ""
-  SKYFORGE_LABPP_NETBOX_URL: ""
-  SKYFORGE_LABPP_NETBOX_MGMT_SUBNET: ""
-  SKYFORGE_LABPP_S3_REGION: ""
-  SKYFORGE_LABPP_S3_BUCKET: ""
-  SKYFORGE_LABPP_S3_ENDPOINT: ""
-  SKYFORGE_LABPP_S3_DISABLE_SSL: ""
-  SKYFORGE_LABPP_S3_DISABLE_CHECKSUM: ""
   SKYFORGE_WORKSPACES_DATA_DIR: {{ .Values.skyforge.workspacesDataDir | quote }}
   SKYFORGE_WORKSPACE_SYNC_SECONDS: {{ .Values.skyforge.workspaceSyncSeconds | quote }}
   SKYFORGE_PKI_DEFAULT_DAYS: {{ .Values.skyforge.pkiDefaultDays | quote }}
