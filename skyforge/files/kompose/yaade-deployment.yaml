@@ -17,7 +17,7 @@ spec:
       automountServiceAccountToken: false
       initContainers:
         - name: yaade-ca-init
-          image: eclipse-temurin:17-jre
+          image: public.ecr.aws/docker/library/eclipse-temurin:17-jre
           command:
             - /bin/sh
             - -c
