@@ -43,28 +43,13 @@
       "hosts": "nsq:4150",
       "topics": {
         "skyforge-task-cancel": {
-          "name": "skyforge-task-cancel",
-          "subscriptions": {
-            "skyforge-task-worker-cancel": {
-              "name": "skyforge-task-worker-cancel"
-            }
-          }
+          "name": "skyforge-task-cancel"
         },
         "skyforge-task-queue-interactive": {
-          "name": "skyforge-task-queue-interactive",
-          "subscriptions": {
-            "skyforge-task-worker": {
-              "name": "skyforge-task-worker"
-            }
-          }
+          "name": "skyforge-task-queue-interactive"
         },
         "skyforge-task-queue-background": {
-          "name": "skyforge-task-queue-background",
-          "subscriptions": {
-            "skyforge-task-worker-background": {
-              "name": "skyforge-task-worker-background"
-            }
-          }
+          "name": "skyforge-task-queue-background"
         },
         "skyforge-task-status": {
           "name": "skyforge-task-status",
@@ -75,12 +60,7 @@
           }
         },
         "skyforge-maintenance": {
-          "name": "skyforge-maintenance",
-          "subscriptions": {
-            "skyforge-maintenance-worker": {
-              "name": "skyforge-maintenance-worker"
-            }
-          }
+          "name": "skyforge-maintenance"
         }
       }
     }
