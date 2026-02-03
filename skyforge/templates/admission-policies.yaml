@@ -10,7 +10,7 @@ Kubernetes requirement: ValidatingAdmissionPolicy (v1.30+).
 {{- $ap := .Values.skyforge.admissionPolicies -}}
 {{- if and $ap.enabled (.Capabilities.APIVersions.Has "admissionregistration.k8s.io/v1/ValidatingAdmissionPolicy") -}}
 
-{{- if $ap.requireClabernetesNativeMode -}}
+{{ if $ap.requireClabernetesNativeMode }}
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
@@ -38,9 +38,9 @@ spec:
     namespaceSelector:
       matchLabels:
         {{ $ap.namespaceSelectorLabel }}: {{ $ap.namespaceSelectorValue | quote }}
-{{- end -}}
+{{ end }}
 
-{{- if $ap.forbidDockerSock -}}
+{{ if $ap.forbidDockerSock }}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
@@ -69,7 +69,6 @@ spec:
     namespaceSelector:
       matchLabels:
         {{ $ap.namespaceSelectorLabel }}: {{ $ap.namespaceSelectorValue | quote }}
-{{- end -}}
+{{ end }}
 
-{{- end -}}
-
+{{- end }}
