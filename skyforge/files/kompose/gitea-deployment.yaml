@@ -267,6 +267,11 @@ spec:
           fi
           printf '\n[storage.default]\nSTORAGE_TYPE = minio\nMINIO_ENDPOINT = %s\nMINIO_BUCKET = gitea\nMINIO_LOCATION = us-east-1\nMINIO_USE_SSL = %s\nMINIO_BUCKET_LOOKUP_TYPE = path\n' \
             "$SKYFORGE_OBJECT_STORAGE_ENDPOINT" "$SKYFORGE_OBJECT_STORAGE_USE_SSL" >>"$ini"
+          # The gitea image runs rootless (uid/gid 1000). Ensure the config file
+          # is writable by that user, otherwise `environment-to-ini` (run during
+          # the next init container) will fail and `gitea migrate` will never run.
+          chown 1000:1000 "$ini"
+          chmod 0640 "$ini"
         env:
         - name: SKYFORGE_OBJECT_STORAGE_ENDPOINT
           valueFrom:
@@ -292,6 +297,7 @@ spec:
             export GITEA_APP_INI=/var/lib/gitea/custom/conf/app.ini
             export GITEA__security__SECRET_KEY="$(cat /run/secrets/gitea-secret-key)"
             export GITEA__database__PASSWD="$(cat /run/secrets/db-gitea-password)"
+            export GITEA__security__INSTALL_LOCK=true
             /usr/local/bin/environment-to-ini >/dev/null
             # Gitea's --config flag is a *global* flag (must be before the subcommand).
             /usr/local/bin/gitea --config "${GITEA_APP_INI}" migrate

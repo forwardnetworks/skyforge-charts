@@ -20,7 +20,9 @@ spec:
       restartPolicy: Never
       containers:
         - name: db-provision
-          image: postgres:15-alpine
+          # Avoid DockerHub unauthenticated rate limits (429 Too Many Requests) by
+          # using the public ECR mirror.
+          image: public.ecr.aws/docker/library/postgres:15-alpine
           command:
             - /bin/sh
             - -lc
