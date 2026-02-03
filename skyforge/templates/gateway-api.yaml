@@ -1,0 +1,282 @@
+{{- if eq (default "traefik" .Values.skyforge.routing.provider) "cilium" -}}
+{{- $host := .Values.skyforge.hostname -}}
+{{- $giteaEnabled := .Values.skyforge.gitea.enabled -}}
+{{- $minioEnabled := .Values.skyforge.minio.enabled -}}
+{{- $yaadeEnabled := .Values.skyforge.yaade.enabled -}}
+{{- $swaggerEnabled := .Values.skyforge.swaggerUI.enabled -}}
+{{- $dexEnabled := .Values.skyforge.dex.enabled -}}
+{{- $coderEnabled := .Values.skyforge.coder.enabled -}}
+
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: skyforge
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  gatewayClassName: cilium
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: {{ $host | quote }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: skyforge
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: skyforge
+  hostnames:
+    - {{ $host | quote }}
+  rules:
+    # Core Skyforge endpoints
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /assets/skyforge/
+      backendRefs:
+        - name: skyforge-server
+          port: 8085
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /healthz
+        - path:
+            type: PathPrefix
+            value: /health
+      backendRefs:
+        - name: skyforge-server
+          port: 8085
+
+{{- if $dexEnabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /dex
+      backendRefs:
+        - name: dex
+          port: 5556
+{{- end }}
+{{- if $coderEnabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /dex-coder
+      backendRefs:
+        - name: dex-coder
+          port: 5556
+{{- end }}
+
+    # Root landing: / -> /index.html (matches Traefik behavior)
+    - matches:
+        - path:
+            type: Exact
+            value: /
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /index.html
+      backendRefs:
+        - name: skyforge-server
+          port: 8085
+
+    # Default catch-all to Skyforge server
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: skyforge-server
+          port: 8085
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: skyforge-tools
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: skyforge
+  hostnames:
+    - {{ $host | quote }}
+  rules:
+{{- if $minioEnabled }}
+    # /files/* -> minio:9000 /skyforge-files/*
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /files/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /skyforge-files/
+      backendRefs:
+        - name: minio
+          port: 9000
+
+    # /minio-console/* -> minio:9001 /*
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /minio-console
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: minio
+          port: 9001
+{{- end }}
+
+{{- if $yaadeEnabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api-testing
+      backendRefs:
+        - name: yaade
+          port: 80
+{{- end }}
+
+{{- if .Values.skyforge.netbox.enabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /netbox/static/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /static/
+      backendRefs:
+        - name: netbox
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /netbox/media/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /media/
+      backendRefs:
+        - name: netbox
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /netbox
+      backendRefs:
+        - name: netbox
+          port: 8080
+{{- end }}
+
+{{- if .Values.skyforge.nautobot.enabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /nautobot
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: nautobot
+          port: 8080
+{{- end }}
+
+{{- if $giteaEnabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /git
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: gitea
+          port: 3000
+{{- end }}
+
+{{- if $swaggerEnabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /swagger
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: swagger-ui
+          port: 8080
+{{- end }}
+
+{{- if $coderEnabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /coder
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: coder
+          port: 7080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v2
+      backendRefs:
+        - name: coder
+          port: 7080
+{{- end }}
+
+{{- if .Values.skyforge.dns.enabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /dns
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: technitium-dns
+          port: 5380
+{{- end }}
+{{- end -}}

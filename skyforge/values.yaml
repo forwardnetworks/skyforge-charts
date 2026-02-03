@@ -55,6 +55,12 @@ skyforge:
     workerJson: "{}"
   hostname: "skyforge.lab.local"
   domain: "lab.local"
+  routing:
+    # Routing provider for external HTTP(S) traffic into the cluster.
+    #
+    # - traefik: current default, uses Traefik CRDs + forwardAuth middleware
+    # - cilium: use Cilium Gateway API (requires Cilium Gateway API enabled)
+    provider: "traefik"
   # Optional cookie Domain attribute. Leave empty for host-only cookies.
   # If you enable any Skyforge tools on a subdomain (e.g. Hoppscotch at
   # `tool.<skyforge.hostname>`), set this to a common parent domain like
@@ -355,7 +361,8 @@ skyforge:
     # External hostname to publish (defaults to skyforge.hostname).
     hostname: ""
     # Internal service URL to proxy to (Ingress handles routing by Host header).
-    # When empty, the chart defaults this to the in-cluster Traefik service.
+    # When empty, the chart defaults this based on `skyforge.routing.provider`
+    # (Traefik service for provider=traefik, Cilium gateway service for provider=cilium).
     service: ""
     # Optional extra hostnames to publish.
     additionalHostnames: []

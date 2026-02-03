@@ -1,3 +1,4 @@
+{{- if eq (default "traefik" .Values.skyforge.routing.provider) "traefik" -}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -123,3 +124,4 @@ spec:
               port: 80
             initialDelaySeconds: 5
             periodSeconds: 10
+{{- end -}}

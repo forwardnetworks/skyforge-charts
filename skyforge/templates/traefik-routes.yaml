@@ -1,3 +1,4 @@
+{{- if eq (default "traefik" .Values.skyforge.routing.provider) "traefik" -}}
 {{- $host := .Values.skyforge.hostname -}}
 {{- $giteaEnabled := .Values.skyforge.gitea.enabled -}}
 {{- $minioEnabled := .Values.skyforge.minio.enabled -}}
@@ -359,11 +360,4 @@ spec:
         - name: coder
           port: 7080
 {{- end }}
-    - match: Host(`{{ $host }}`) && PathPrefix(`/labs`)
-      kind: Rule
-      priority: 300
-      services:
-        - name: skyforge-server
-          port: 8085
-      middlewares:
-        - name: skyforge-auth
+{{- end -}}
