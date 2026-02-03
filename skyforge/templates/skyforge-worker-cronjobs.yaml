@@ -1,5 +1,5 @@
 {{- if gt (int .Values.skyforge.workerReplicaCount) 0 }}
-{{- $curlCmd := "apk add --no-cache curl >/dev/null 2>&1; curl -sf --retry 3 --retry-delay 2 -X POST -H \"X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}\"" -}}
+{{- $curlCmd := "apk add --no-cache curl >/dev/null 2>&1; curl --fail-with-body -sS --retry 3 --retry-delay 2 -X POST -H \"X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}\"" -}}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -13,9 +13,11 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 55
       template:
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: Never
           containers:
             - name: curl
               image: {{ .Values.images.alpine | quote }}
@@ -43,9 +45,11 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 55
       template:
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: Never
           containers:
             - name: curl
               image: {{ .Values.images.alpine | quote }}
@@ -63,6 +67,38 @@ spec:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
+  name: skyforge-worker-poll-queued
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 55
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: curl
+              image: {{ .Values.images.alpine | quote }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: SKYFORGE_INTERNAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-internal-token
+                      key: skyforge-internal-token
+              command: ["sh", "-c"]
+              args:
+                - {{ printf "%s http://skyforge-server-worker:8085/internal/bridge/worker/tasks/poll" $curlCmd | quote }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
   name: skyforge-worker-reconcile-running
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
@@ -73,9 +109,11 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 55
       template:
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: Never
           containers:
             - name: curl
               image: {{ .Values.images.alpine | quote }}
@@ -103,9 +141,11 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 55
       template:
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: Never
           containers:
             - name: curl
               image: {{ .Values.images.alpine | quote }}
@@ -133,9 +173,11 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 55
       template:
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: Never
           containers:
             - name: curl
               image: {{ .Values.images.alpine | quote }}

@@ -44,6 +44,8 @@ spec:
       serviceAccountName: skyforge-server
       containers:
       - env:
+        - name: SKYFORGE_ROLE
+          value: "api"
         - name: SKYFORGE_ADMIN_USERS
           valueFrom:
             configMapKeyRef:

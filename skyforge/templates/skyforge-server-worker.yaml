@@ -54,6 +54,8 @@ spec:
             - configMapRef:
                 name: skyforge-config
           env:
+            - name: SKYFORGE_ROLE
+              value: "worker"
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:
