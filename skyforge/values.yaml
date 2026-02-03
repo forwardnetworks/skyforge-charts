@@ -130,6 +130,20 @@ skyforge:
     clientSecretSecretKey: "skyforge-gemini-oauth-client-secret"
   ai:
     enabled: false
+
+  # Optional Kubernetes admission policies that harden the cluster against
+  # accidental non-native clabernetes deployments (Docker-in-Docker / docker.sock).
+  #
+  # Requires Kubernetes v1.30+ (ValidatingAdmissionPolicy).
+  admissionPolicies:
+    enabled: false
+    # Namespace selector for enforcement (only namespaces matching this label are checked).
+    namespaceSelectorLabel: "skyforge-managed"
+    namespaceSelectorValue: "true"
+    # Require Topology.spec.deployment.nativeMode == true (deny CREATE/UPDATE otherwise).
+    requireClabernetesNativeMode: true
+    # Deny Pods that mount /var/run/docker.sock via hostPath.
+    forbidDockerSock: true
   staticRoot: "/opt/skyforge/static"
   objectStorage:
     endpoint: "minio:9000"

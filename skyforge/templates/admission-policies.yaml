@@ -1,0 +1,75 @@
+{{- /*
+Admission policies to enforce:
+  1) clabernetes Topology nativeMode is always true (no Docker-in-Docker fallback)
+  2) no Pods in Skyforge-managed namespaces can mount /var/run/docker.sock
+
+These are defense-in-depth controls; Skyforge also sets nativeMode=true in the Topology spec.
+
+Kubernetes requirement: ValidatingAdmissionPolicy (v1.30+).
+*/ -}}
+{{- $ap := .Values.skyforge.admissionPolicies -}}
+{{- if and $ap.enabled (.Capabilities.APIVersions.Has "admissionregistration.k8s.io/v1/ValidatingAdmissionPolicy") -}}
+
+{{- if $ap.requireClabernetesNativeMode -}}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: skyforge-clabernetes-native-mode
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["clabernetes.containerlab.dev"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["topologies"]
+  validations:
+    - expression: "has(object.spec.deployment) && has(object.spec.deployment.nativeMode) && object.spec.deployment.nativeMode == true"
+      message: "Skyforge requires clabernetes native mode (spec.deployment.nativeMode=true). Docker-in-Docker mode is not supported."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: skyforge-clabernetes-native-mode
+spec:
+  policyName: skyforge-clabernetes-native-mode
+  validationActions: ["Deny"]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        {{ $ap.namespaceSelectorLabel }}: {{ $ap.namespaceSelectorValue | quote }}
+{{- end -}}
+
+{{- if $ap.forbidDockerSock -}}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: skyforge-forbid-docker-sock
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: "!has(object.spec.volumes) || object.spec.volumes.all(v, !(has(v.hostPath) && v.hostPath.path == \"/var/run/docker.sock\"))"
+      message: "Skyforge forbids mounting /var/run/docker.sock (Docker-in-Docker / docker.sock mode is not supported)."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: skyforge-forbid-docker-sock
+spec:
+  policyName: skyforge-forbid-docker-sock
+  validationActions: ["Deny"]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        {{ $ap.namespaceSelectorLabel }}: {{ $ap.namespaceSelectorValue | quote }}
+{{- end -}}
+
+{{- end -}}
+
