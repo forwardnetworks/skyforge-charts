@@ -107,6 +107,11 @@ skyforge:
   netboxMgmtSubnet: "10.255.0.0/24"
   nautobot:
     enabled: false
+    bootstrap:
+      # Nautobot bootstrap is a one-time operation. Leaving this enabled causes Helm
+      # upgrades with `--wait` to hang/fail if the bootstrap job ever fails (and it is
+      # not required for steady-state operation).
+      enabled: false
   nautobotUrl: ""
   yaadeUrl: "http://yaade"
   yaadeAdminUsername: "admin"

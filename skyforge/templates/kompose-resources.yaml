@@ -67,8 +67,13 @@ pulling images or waiting on hooks.
 {{- end }}
 
 {{- if .Values.skyforge.nautobot.enabled }}
+  {{- if (default false .Values.skyforge.nautobot.bootstrap.enabled) }}
+    {{- $files = concat $files (list
+      "nautobot-admin-bootstrap-job.yaml"
+    ) -}}
+  {{- end }}
+
   {{- $files = concat $files (list
-    "nautobot-admin-bootstrap-job.yaml"
     "nautobot-admin-sync-deployment.yaml"
     "nautobot-deployment.yaml"
     "nautobot-service.yaml"
