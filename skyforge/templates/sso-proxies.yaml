@@ -2,11 +2,8 @@
 SSO reverse proxies for Gateway API deployments (Cilium).
 
 Why:
-- Traefik mode uses forwardAuth middleware to call Skyforge `/api/session/forwardauth`
-  and then forwards the resulting identity headers (Remote-User, X-Forwarded-User, etc)
-  to downstream tools (NetBox/Nautobot/Gitea).
-- Cilium Gateway API does not (currently) include an equivalent "forward auth" primitive
-  in our chart, so we run tiny NGINX proxies that:
+- Cilium Gateway API does not (currently) provide a built-in "forward auth" primitive
+  for injecting identity headers into upstream services, so we run tiny NGINX proxies that:
   1) call Skyforge forwardAuth via `auth_request`
   2) inject the returned identity headers into the upstream request
   3) redirect unauthenticated users to `/api/oidc/login?next=...`
@@ -170,8 +167,6 @@ spec:
       targetPort: 8080
 {{- end -}}
 
-{{- if eq (default "traefik" .Values.skyforge.routing.provider) "cilium" -}}
-
 {{- if .Values.skyforge.netbox.enabled }}
 {{ include "skyforge.ssoProxy" (dict "root" $ "name" "netbox-sso-proxy" "upstreamHost" "netbox" "upstreamPort" 8080 "externalPrefix" "") }}
 {{- end }}
@@ -183,5 +178,3 @@ spec:
 {{- if .Values.skyforge.gitea.enabled }}
 {{ include "skyforge.ssoProxy" (dict "root" $ "name" "gitea-sso-proxy" "upstreamHost" "gitea" "upstreamPort" 3000 "externalPrefix" "/git") }}
 {{- end }}
-
-{{- end -}}

@@ -1,4 +1,3 @@
-{{- if eq (default "traefik" .Values.skyforge.routing.provider) "cilium" -}}
 {{- $host := .Values.skyforge.hostname -}}
 {{- $giteaEnabled := .Values.skyforge.gitea.enabled -}}
 {{- $minioEnabled := .Values.skyforge.minio.enabled -}}
@@ -84,7 +83,7 @@ spec:
           port: 5556
 {{- end }}
 
-    # Root landing: / -> /index.html (matches Traefik behavior)
+    # Root landing: / -> /index.html
     - matches:
         - path:
             type: Exact
@@ -289,4 +288,3 @@ spec:
         - name: technitium-dns
           port: 5380
 {{- end }}
-{{- end -}}

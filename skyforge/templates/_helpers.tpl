@@ -22,13 +22,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
-{{- define "skyforge.traefikLabels" -}}
-app.kubernetes.io/name: traefik
-helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end -}}
-
 {{/*
 Read a value from an existing Secret (if present), otherwise use the provided
 fallback. This is used to keep Helm upgrades stable when secret values are

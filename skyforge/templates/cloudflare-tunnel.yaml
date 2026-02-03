@@ -4,11 +4,8 @@
 {{- $hostname := default .Values.skyforge.hostname $cf.hostname -}}
 {{- $service := $cf.service -}}
 {{- if eq (trim $service) "" -}}
-  {{- if eq (default "traefik" .Values.skyforge.routing.provider) "cilium" -}}
-    {{- $service = printf "http://cilium-gateway-skyforge.%s.svc.cluster.local:80" .Release.Namespace -}}
-  {{- else -}}
-    {{- $service = printf "http://traefik.%s.svc.cluster.local:80" .Release.Namespace -}}
-  {{- end -}}
+  {{- /* Skyforge uses Cilium Gateway API (no Traefik). */ -}}
+  {{- $service = printf "http://cilium-gateway-skyforge.%s.svc.cluster.local:80" .Release.Namespace -}}
 {{- end -}}
 {{- $mode := default "token" $cf.mode -}}
 {{- $httpHostHeader := default .Values.skyforge.hostname $cf.httpHostHeader -}}
