@@ -8,8 +8,7 @@ Why:
   2) inject the returned identity headers into the upstream request
   3) redirect unauthenticated users to `/api/oidc/login?next=...`
 
-These proxies are only created when:
-  skyforge.routing.provider == "cilium"
+These proxies are only used with Cilium Gateway API.
 */ -}}
 
 {{- define "skyforge.ssoProxy" -}}
