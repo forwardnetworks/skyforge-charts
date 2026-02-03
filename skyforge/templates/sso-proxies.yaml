@@ -1,0 +1,187 @@
+{{- /*
+SSO reverse proxies for Gateway API deployments (Cilium).
+
+Why:
+- Traefik mode uses forwardAuth middleware to call Skyforge `/api/session/forwardauth`
+  and then forwards the resulting identity headers (Remote-User, X-Forwarded-User, etc)
+  to downstream tools (NetBox/Nautobot/Gitea).
+- Cilium Gateway API does not (currently) include an equivalent "forward auth" primitive
+  in our chart, so we run tiny NGINX proxies that:
+  1) call Skyforge forwardAuth via `auth_request`
+  2) inject the returned identity headers into the upstream request
+  3) redirect unauthenticated users to `/api/oidc/login?next=...`
+
+These proxies are only created when:
+  skyforge.routing.provider == "cilium"
+*/ -}}
+
+{{- define "skyforge.ssoProxy" -}}
+{{- $root := .root -}}
+{{- $name := .name -}}
+{{- $upstreamHost := .upstreamHost -}}
+{{- $upstreamPort := .upstreamPort -}}
+{{- $externalPrefix := .externalPrefix -}}
+{{- $ns := $root.Release.Namespace -}}
+{{- $nginxImage := default "public.ecr.aws/docker/library/nginx:1.27-alpine" $root.Values.images.nginx -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}-nginx
+  labels:
+    {{- include "skyforge.labels" $root | nindent 4 }}
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        listen 8080;
+        server_tokens off;
+        client_max_body_size 50m;
+        # Preserve the external URL (https://skyforge...); Envoy talks to us over
+        # plain HTTP:8080 so absolute redirects would be wrong (http://...:8080).
+        absolute_redirect off;
+        port_in_redirect off;
+
+        # Probe endpoint (must not require auth).
+        location = /_healthz {
+          access_log off;
+          return 200 "ok\n";
+        }
+
+        # Skyforge forwardAuth check (Traefik-compatible).
+        location = /_auth {
+          internal;
+          proxy_pass http://skyforge-server.{{ $ns }}.svc.cluster.local:8085/api/session/forwardauth;
+          proxy_pass_request_body off;
+          proxy_set_header Content-Length "";
+          proxy_set_header Cookie $http_cookie;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Forwarded-Uri $request_uri;
+        }
+
+        # If not authenticated, bounce through Skyforge login.
+        location @unauthenticated {
+          return 302 /api/oidc/login?next={{ $externalPrefix }}$request_uri;
+        }
+
+        location / {
+          auth_request /_auth;
+          error_page 401 = @unauthenticated;
+
+          # Capture auth response headers from Skyforge.
+          auth_request_set $sso_user $upstream_http_remote_user;
+          auth_request_set $sso_user_email $upstream_http_remote_user_email;
+          auth_request_set $sso_user_first $upstream_http_remote_user_first_name;
+          auth_request_set $sso_user_last $upstream_http_remote_user_last_name;
+          auth_request_set $xfwd_user $upstream_http_x_forwarded_user;
+          auth_request_set $xfwd_email $upstream_http_x_forwarded_email;
+          auth_request_set $xfwd_first $upstream_http_x_forwarded_first_name;
+          auth_request_set $xfwd_last $upstream_http_x_forwarded_last_name;
+
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+
+          # Identity headers consumed by downstream tools.
+          proxy_set_header Remote-User $sso_user;
+          proxy_set_header Remote-User-Email $sso_user_email;
+          proxy_set_header Remote-User-First-Name $sso_user_first;
+          proxy_set_header Remote-User-Last-Name $sso_user_last;
+          proxy_set_header X-Forwarded-User $xfwd_user;
+          proxy_set_header X-Forwarded-Email $xfwd_email;
+          proxy_set_header X-Forwarded-First-Name $xfwd_first;
+          proxy_set_header X-Forwarded-Last-Name $xfwd_last;
+
+          proxy_http_version 1.1;
+          proxy_set_header Connection "";
+
+          proxy_pass http://{{ $upstreamHost }}.{{ $ns }}.svc.cluster.local:{{ $upstreamPort }};
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" $root | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $name }}
+      app.kubernetes.io/instance: {{ $root.Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/instance: {{ $root.Release.Name }}
+        app.kubernetes.io/component: sso-proxy
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: nginx
+          image: {{ $nginxImage | quote }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /_healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /_healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: {{ $name }}-nginx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" $root | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $root.Release.Name }}
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+{{- end -}}
+
+{{- if eq (default "traefik" .Values.skyforge.routing.provider) "cilium" -}}
+
+{{- if .Values.skyforge.netbox.enabled }}
+{{ include "skyforge.ssoProxy" (dict "root" $ "name" "netbox-sso-proxy" "upstreamHost" "netbox" "upstreamPort" 8080 "externalPrefix" "") }}
+{{- end }}
+
+{{- if .Values.skyforge.nautobot.enabled }}
+{{ include "skyforge.ssoProxy" (dict "root" $ "name" "nautobot-sso-proxy" "upstreamHost" "nautobot" "upstreamPort" 8080 "externalPrefix" "/nautobot") }}
+{{- end }}
+
+{{- if .Values.skyforge.gitea.enabled }}
+{{ include "skyforge.ssoProxy" (dict "root" $ "name" "gitea-sso-proxy" "upstreamHost" "gitea" "upstreamPort" 3000 "externalPrefix" "/git") }}
+{{- end }}
+
+{{- end -}}

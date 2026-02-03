@@ -19,14 +19,12 @@ spec:
     - name: http
       protocol: HTTP
       port: 80
-      hostname: {{ $host | quote }}
       allowedRoutes:
         namespaces:
           from: Same
     - name: https
       protocol: HTTPS
       port: 443
-      hostname: {{ $host | quote }}
       tls:
         mode: Terminate
         certificateRefs:
@@ -196,7 +194,7 @@ spec:
             type: PathPrefix
             value: /netbox
       backendRefs:
-        - name: netbox
+        - name: netbox-sso-proxy
           port: 8080
 {{- end }}
 
@@ -217,7 +215,7 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: nautobot
+        - name: nautobot-sso-proxy
           port: 8080
 {{- end }}
 
@@ -233,8 +231,8 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: gitea
-          port: 3000
+        - name: gitea-sso-proxy
+          port: 8080
 {{- end }}
 
 {{- if $swaggerEnabled }}
