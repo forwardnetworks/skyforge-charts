@@ -178,6 +178,8 @@ skyforge:
     # NOTE: Override this with a pinned tag in your deploy values for reproducibility.
     generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:latest"
     generatorPullPolicy: "IfNotPresent"
+    applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:latest"
+    applierPullPolicy: "IfNotPresent"
   dns:
     enabled: false
     adminUsername: "admin"
