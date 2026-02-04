@@ -47,7 +47,7 @@ spec:
         - name: BASE_PATH
           value: /netbox
         - name: REDIS_DATABASE
-          value: '0'
+          value: {{ .Values.skyforge.netbox.redisDatabase | quote }}
         - name: REDIS_HOST
           value: redis
         - name: REDIS_PORT

@@ -104,10 +104,16 @@ skyforge:
   ssoSkipTlsVerify: false
   netbox:
     enabled: false
+    # Redis database index for NetBox (shared Redis service).
+    # Keep distinct from Skyforge (0) and Nautobot (1).
+    redisDatabase: 2
   netboxUrl: ""
   netboxMgmtSubnet: "10.255.0.0/24"
   nautobot:
     enabled: false
+    # Redis database index for Nautobot (shared Redis service).
+    # Keep distinct from Skyforge (0) and NetBox (2).
+    redisDatabase: 1
     bootstrap:
       # Nautobot bootstrap is a one-time operation. Leaving this enabled causes Helm
       # upgrades with `--wait` to hang/fail if the bootstrap job ever fails (and it is

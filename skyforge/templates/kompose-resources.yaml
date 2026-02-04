@@ -84,6 +84,10 @@ pulling images or waiting on hooks.
 {{- $path := printf "files/kompose/%s" . -}}
 {{- if $.Files.Get $path }}
 ---
+{{- if has . (list "netbox-deployment.yaml" "netbox-admin-bootstrap-job.yaml" "nautobot-deployment.yaml") -}}
+{{ tpl ($.Files.Get $path) $ }}
+{{- else -}}
 {{ printf "%s\n" ($.Files.Get $path) }}
+{{- end -}}
 {{ end }}
 {{- end }}

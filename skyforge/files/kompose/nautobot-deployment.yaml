@@ -53,7 +53,7 @@ spec:
         - name: NAUTOBOT_DB_USER
           value: nautobot
         - name: NAUTOBOT_REDIS_DATABASE
-          value: '1'
+          value: {{ .Values.skyforge.nautobot.redisDatabase | quote }}
         - name: NAUTOBOT_REDIS_HOST
           value: redis
         - name: NAUTOBOT_REDIS_PORT
