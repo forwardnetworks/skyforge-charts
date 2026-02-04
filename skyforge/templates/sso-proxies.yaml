@@ -97,6 +97,7 @@ data:
                               allowed_upstream_headers:
                                 patterns:
                                   - exact: remote-user
+                                  - exact: remote-user-group
                                   - exact: remote-user-email
                                   - exact: remote-user-first-name
                                   - exact: remote-user-last-name
