@@ -1,106 +1,143 @@
 {{- /*
-SSO reverse proxies for Gateway API deployments (Cilium).
+SSO reverse proxies for tool UIs behind Cilium Gateway API.
 
-Why:
-- Cilium Gateway API does not provide a built-in, Helm-configurable "forward auth" primitive
-  for injecting identity headers into upstream services.
-- We run tiny NGINX proxies that:
-  1) call Skyforge forwardAuth via `auth_request`
+Goal:
+- No Traefik.
+- No NGINX.
+- Still enforce Skyforge SSO and inject identity headers for tools that don't natively speak OIDC.
+
+Approach:
+- Run small Envoy proxies per tool that:
+  1) call Skyforge auth endpoint via `envoy.filters.http.ext_authz`
   2) inject returned identity headers into the upstream request
   3) redirect unauthenticated users to `/api/oidc/login?next=...`
 
-These proxies are only used with Cilium Gateway API and keep Skyforge's internal
-service-to-service calls unaffected (Skyforge continues to talk to tools via their
-ClusterIP services).
+We keep these proxies per-tool so redirects preserve each tool's external prefix
+(/git, /nautobot, etc.) even when the Gateway URL-rewrites the prefix away.
 */ -}}
 
-{{- define "skyforge.ssoProxy" -}}
+{{- define "skyforge.ssoProxyEnvoy" -}}
 {{- $root := .root -}}
 {{- $name := .name -}}
 {{- $upstreamHost := .upstreamHost -}}
 {{- $upstreamPort := .upstreamPort -}}
 {{- $externalPrefix := .externalPrefix -}}
 {{- $ns := $root.Release.Namespace -}}
-{{- $nginxImage := default "public.ecr.aws/docker/library/nginx:1.27-alpine" $root.Values.images.nginx -}}
+{{- $envoyImage := default "envoyproxy/envoy:v1.31.2" $root.Values.images.envoy -}}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $name }}-nginx
+  name: {{ $name }}-envoy
   labels:
     {{- include "skyforge.labels" $root | nindent 4 }}
 data:
-  nginx.conf: |
-    events {}
-    http {
-      server {
-        listen 8080;
-        server_tokens off;
-        client_max_body_size 50m;
-        # Preserve the external URL (https://skyforge...); Envoy talks to us over
-        # plain HTTP:8080 so absolute redirects would be wrong (http://...:8080).
-        absolute_redirect off;
-        port_in_redirect off;
+  envoy.yaml: |
+    admin:
+      access_log_path: /tmp/admin_access.log
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 9901
 
-        # Probe endpoint (must not require auth).
-        location = /_healthz {
-          access_log off;
-          return 200 "ok\n";
-        }
+    static_resources:
+      listeners:
+        - name: listener_http
+          address:
+            socket_address:
+              address: 0.0.0.0
+              port_value: 8080
+          filter_chains:
+            - filters:
+                - name: envoy.filters.network.http_connection_manager
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                    stat_prefix: ingress_http
+                    normalize_path: true
+                    use_remote_address: true
+                    stream_idle_timeout: 300s
+                    upgrade_configs:
+                      - upgrade_type: websocket
+                    route_config:
+                      name: local_route
+                      virtual_hosts:
+                        - name: local_service
+                          domains: ["*"]
+                          routes:
+                            - match:
+                                prefix: /
+                              route:
+                                cluster: upstream
+                    http_filters:
+                      - name: envoy.filters.http.ext_authz
+                        typed_config:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                          transport_api_version: V3
+                          failure_mode_allow: false
+                          http_service:
+                            server_uri:
+                              uri: http://skyforge-server.{{ $ns }}.svc.cluster.local:8085
+                              cluster: skyforge_server
+                              timeout: 2s
+                            path_prefix: /api/session/forwardauth/envoy
+                            authorization_request:
+                              allowed_headers:
+                                patterns:
+                                  - exact: cookie
+                                  - exact: x-forwarded-proto
+                                  - exact: x-forwarded-host
+                                  - exact: x-forwarded-for
+                                  - exact: x-forwarded-uri
+                                  - exact: x-forwarded-prefix
+                                  - exact: user-agent
+                                  - exact: accept
+                                  - exact: accept-language
+                                  - exact: x-skyforge-external-prefix
+                            authorization_response:
+                              allowed_upstream_headers:
+                                patterns:
+                                  - exact: remote-user
+                                  - exact: remote-user-email
+                                  - exact: remote-user-first-name
+                                  - exact: remote-user-last-name
+                                  - exact: x-forwarded-user
+                                  - exact: x-forwarded-email
+                                  - exact: x-forwarded-first-name
+                                  - exact: x-forwarded-last-name
+                              allowed_client_headers:
+                                patterns:
+                                  - exact: location
+                      - name: envoy.filters.http.router
+                        typed_config:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
-        # Skyforge forwardAuth check (Traefik-compatible).
-        location = /_auth {
-          internal;
-          proxy_pass http://skyforge-server.{{ $ns }}.svc.cluster.local:8085/api/session/forwardauth;
-          proxy_pass_request_body off;
-          proxy_set_header Content-Length "";
-          proxy_set_header Cookie $http_cookie;
-          proxy_set_header X-Forwarded-Proto $scheme;
-          proxy_set_header X-Forwarded-Host $host;
-          proxy_set_header X-Forwarded-Uri $request_uri;
-        }
+      clusters:
+        - name: skyforge_server
+          type: STRICT_DNS
+          connect_timeout: 2s
+          load_assignment:
+            cluster_name: skyforge_server
+            endpoints:
+              - lb_endpoints:
+                  - endpoint:
+                      address:
+                        socket_address:
+                          address: skyforge-server.{{ $ns }}.svc.cluster.local
+                          port_value: 8085
 
-        # If not authenticated, bounce through Skyforge login.
-        location @unauthenticated {
-          return 302 /api/oidc/login?next={{ $externalPrefix }}$request_uri;
-        }
+        - name: upstream
+          type: STRICT_DNS
+          connect_timeout: 5s
+          load_assignment:
+            cluster_name: upstream
+            endpoints:
+              - lb_endpoints:
+                  - endpoint:
+                      address:
+                        socket_address:
+                          address: {{ $upstreamHost }}.{{ $ns }}.svc.cluster.local
+                          port_value: {{ $upstreamPort }}
 
-        location / {
-          auth_request /_auth;
-          error_page 401 = @unauthenticated;
-
-          # Capture auth response headers from Skyforge.
-          auth_request_set $sso_user $upstream_http_remote_user;
-          auth_request_set $sso_user_email $upstream_http_remote_user_email;
-          auth_request_set $sso_user_first $upstream_http_remote_user_first_name;
-          auth_request_set $sso_user_last $upstream_http_remote_user_last_name;
-          auth_request_set $xfwd_user $upstream_http_x_forwarded_user;
-          auth_request_set $xfwd_email $upstream_http_x_forwarded_email;
-          auth_request_set $xfwd_first $upstream_http_x_forwarded_first_name;
-          auth_request_set $xfwd_last $upstream_http_x_forwarded_last_name;
-
-          proxy_set_header Host $host;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto $scheme;
-
-          # Identity headers consumed by downstream tools.
-          proxy_set_header Remote-User $sso_user;
-          proxy_set_header Remote-User-Email $sso_user_email;
-          proxy_set_header Remote-User-First-Name $sso_user_first;
-          proxy_set_header Remote-User-Last-Name $sso_user_last;
-          proxy_set_header X-Forwarded-User $xfwd_user;
-          proxy_set_header X-Forwarded-Email $xfwd_email;
-          proxy_set_header X-Forwarded-First-Name $xfwd_first;
-          proxy_set_header X-Forwarded-Last-Name $xfwd_last;
-
-          proxy_http_version 1.1;
-          proxy_set_header Connection "";
-
-          proxy_pass http://{{ $upstreamHost }}.{{ $ns }}.svc.cluster.local:{{ $upstreamPort }};
-        }
-      }
-    }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -123,34 +160,39 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-        - name: nginx
-          image: {{ $nginxImage | quote }}
+        - name: envoy
+          image: {{ $envoyImage | quote }}
           imagePullPolicy: IfNotPresent
+          args:
+            - "-c"
+            - "/etc/envoy/envoy.yaml"
           ports:
             - name: http
               containerPort: 8080
+            - name: admin
+              containerPort: 9901
           readinessProbe:
             httpGet:
-              path: /_healthz
-              port: 8080
+              path: /ready
+              port: 9901
             initialDelaySeconds: 2
             periodSeconds: 5
             timeoutSeconds: 2
           livenessProbe:
             httpGet:
-              path: /_healthz
-              port: 8080
+              path: /ready
+              port: 9901
             initialDelaySeconds: 5
             periodSeconds: 10
             timeoutSeconds: 2
           volumeMounts:
-            - name: nginx-conf
-              mountPath: /etc/nginx/nginx.conf
-              subPath: nginx.conf
+            - name: envoy-conf
+              mountPath: /etc/envoy/envoy.yaml
+              subPath: envoy.yaml
       volumes:
-        - name: nginx-conf
+        - name: envoy-conf
           configMap:
-            name: {{ $name }}-nginx
+            name: {{ $name }}-envoy
 ---
 apiVersion: v1
 kind: Service
@@ -170,13 +212,13 @@ spec:
 {{- end -}}
 
 {{- if .Values.skyforge.netbox.enabled }}
-{{ include "skyforge.ssoProxy" (dict "root" $ "name" "netbox-sso-proxy" "upstreamHost" "netbox" "upstreamPort" 8080 "externalPrefix" "") }}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "netbox-sso-proxy" "upstreamHost" "netbox" "upstreamPort" 8080 "externalPrefix" "") }}
 {{- end }}
 
 {{- if .Values.skyforge.nautobot.enabled }}
-{{ include "skyforge.ssoProxy" (dict "root" $ "name" "nautobot-sso-proxy" "upstreamHost" "nautobot" "upstreamPort" 8080 "externalPrefix" "/nautobot") }}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "nautobot-sso-proxy" "upstreamHost" "nautobot" "upstreamPort" 8080 "externalPrefix" "/nautobot") }}
 {{- end }}
 
 {{- if .Values.skyforge.gitea.enabled }}
-{{ include "skyforge.ssoProxy" (dict "root" $ "name" "gitea-sso-proxy" "upstreamHost" "gitea" "upstreamPort" 3000 "externalPrefix" "/git") }}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "gitea-sso-proxy" "upstreamHost" "gitea" "upstreamPort" 3000 "externalPrefix" "/git") }}
 {{- end }}

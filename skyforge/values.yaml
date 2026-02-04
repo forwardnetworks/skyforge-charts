@@ -376,6 +376,7 @@ skyforge:
 images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
   alpine: "public.ecr.aws/docker/library/alpine:3.20"
+  envoy: "envoyproxy/envoy:v1.31.2"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
   vector: "ghcr.io/vectordotdev/vector:0.44.0-debian"
   telegraf: "ghcr.io/forwardnetworks/skyforge-telegraf:1.33-alpine"

@@ -208,6 +208,8 @@ spec:
             set:
               - name: X-Forwarded-Proto
                 value: https
+              - name: X-Skyforge-External-Prefix
+                value: /nautobot
         - type: URLRewrite
           urlRewrite:
             path:
@@ -224,6 +226,11 @@ spec:
             type: PathPrefix
             value: /git
       filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /git
         - type: URLRewrite
           urlRewrite:
             path:
