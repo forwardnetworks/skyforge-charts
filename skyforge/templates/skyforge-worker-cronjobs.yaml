@@ -1,5 +1,5 @@
 {{- if gt (int .Values.skyforge.workerReplicaCount) 0 }}
-{{- $curlCmd := "apk add --no-cache curl >/dev/null 2>&1; curl --fail-with-body -sS --retry 3 --retry-delay 2 -X POST -H \"X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}\"" -}}
+{{- $curlCmd := "curl --fail-with-body -sS --retry 3 --retry-delay 2 -X POST -H \"X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}\"" -}}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -20,7 +20,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: curl
-              image: {{ .Values.images.alpine | quote }}
+              image: {{ .Values.images.curl | quote }}
               imagePullPolicy: IfNotPresent
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
@@ -52,7 +52,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: curl
-              image: {{ .Values.images.alpine | quote }}
+              image: {{ .Values.images.curl | quote }}
               imagePullPolicy: IfNotPresent
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
@@ -84,7 +84,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: curl
-              image: {{ .Values.images.alpine | quote }}
+              image: {{ .Values.images.curl | quote }}
               imagePullPolicy: IfNotPresent
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
@@ -116,7 +116,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: curl
-              image: {{ .Values.images.alpine | quote }}
+              image: {{ .Values.images.curl | quote }}
               imagePullPolicy: IfNotPresent
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
@@ -148,7 +148,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: curl
-              image: {{ .Values.images.alpine | quote }}
+              image: {{ .Values.images.curl | quote }}
               imagePullPolicy: IfNotPresent
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
@@ -180,7 +180,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: curl
-              image: {{ .Values.images.alpine | quote }}
+              image: {{ .Values.images.curl | quote }}
               imagePullPolicy: IfNotPresent
               env:
                 - name: SKYFORGE_INTERNAL_TOKEN
