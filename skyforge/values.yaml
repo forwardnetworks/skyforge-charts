@@ -383,7 +383,8 @@ images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
   alpine: "public.ecr.aws/docker/library/alpine:3.20"
   # Used by internal CronJobs to call Skyforge worker endpoints (no runtime apk installs).
-  curl: "curlimages/curl:8.6.0"
+  # Note: use GHCR mirror to avoid Docker Hub pull rate limits in k3s/containerd.
+  curl: "ghcr.io/forwardnetworks/skyforge-curl:8.6.0"
   envoy: "envoyproxy/envoy:v1.31.2"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
   vector: "ghcr.io/vectordotdev/vector:0.44.0-debian"
