@@ -23,6 +23,17 @@ helm upgrade --install skyforge ./charts/skyforge -n skyforge --create-namespace
   -f values.yaml
 ```
 
+Production profile for `skyforge.local.forwardnetworks.com`:
+
+```bash
+helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
+  -n skyforge --create-namespace \
+  -f values.yaml \
+  -f values-prod-skyforge-local.yaml \
+  -f /path/to/skyforge-secrets.yaml \
+  --wait --timeout 15m
+```
+
 ## Configuration
 
 - `skyforge.hostname`: Public hostname for ingress routes.

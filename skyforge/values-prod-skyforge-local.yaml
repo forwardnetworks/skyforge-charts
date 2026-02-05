@@ -1,0 +1,32 @@
+skyforge:
+  hostname: skyforge.local.forwardnetworks.com
+  domain: forwardnetworks.com
+  publicUrl: https://skyforge.local.forwardnetworks.com
+
+  netbox:
+    enabled: true
+  netboxUrl: https://skyforge.local.forwardnetworks.com/netbox
+  netboxSsoUrl: https://skyforge.local.forwardnetworks.com/netbox
+
+  nautobot:
+    enabled: true
+  nautobotUrl: https://skyforge.local.forwardnetworks.com/nautobot
+  nautobotSsoUrl: https://skyforge.local.forwardnetworks.com/nautobot
+
+  elastic:
+    enabled: true
+    kibanaSubpath: /kibana
+
+  # Swagger image pulls can be rate-limited on Docker Hub; keep this disabled
+  # in production unless you pin a mirrored image.
+  swaggerUI:
+    enabled: false
+
+  # Keep registry integration enabled for GHCR-backed workflows.
+  registry:
+    url: https://ghcr.io
+
+  # Current LDAP endpoint in this environment requires skipping TLS verification
+  # for MinIO LDAP hook success. Set to false once LDAP cert trust is fixed.
+  ldap:
+    skipTlsVerify: true
