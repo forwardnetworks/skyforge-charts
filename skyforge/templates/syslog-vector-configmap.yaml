@@ -114,4 +114,16 @@ data:
           max_bytes: 1048576
           timeout_secs: 1
 
+{{- if or (and .Values.skyforge .Values.skyforge.elastic .Values.skyforge.elastic.enabled) (and .Values.skyforge .Values.skyforge.syslog .Values.skyforge.syslog.elasticsearch .Values.skyforge.syslog.elasticsearch.enabled) }}
+      elasticsearch:
+        type: elasticsearch
+        inputs:
+          - skyforge_syslog
+        endpoints:
+          - "http://elasticsearch:9200"
+        mode: bulk
+        bulk:
+          index: "skyforge-syslog-%Y.%m.%d"
+{{- end }}
+
 {{- end }}

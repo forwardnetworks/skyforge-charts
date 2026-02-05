@@ -143,6 +143,33 @@ skyforge:
   ai:
     enabled: false
 
+  elastic:
+    # Optional: in-cluster Elasticsearch + Kibana (SSO-protected via Envoy ext_authz).
+    #
+    # NOTE: Elastic images are under the Elastic license (not Apache 2.0). Keep this
+    # disabled by default for OSS-friendly installs unless you explicitly want Elastic.
+    enabled: false
+    kibanaSubpath: "/kibana"
+    elasticsearch:
+      # Single-node dev settings.
+      javaOpts: "-Xms1g -Xmx1g"
+      storage:
+        enabled: true
+        size: "50Gi"
+        # Optional: set to your storageClass (e.g. longhorn). Empty uses cluster default.
+        storageClassName: ""
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "2Gi"
+        limits: {}
+    kibana:
+      resources:
+        requests:
+          cpu: "250m"
+          memory: "512Mi"
+        limits: {}
+
   # Optional Kubernetes admission policies that harden the cluster against
   # accidental non-native clabernetes deployments (Docker-in-Docker / docker.sock).
   #
@@ -260,6 +287,9 @@ skyforge:
     # Syslog events are collected via Vector (DaemonSet, hostNetwork).
     # Host port to bind on each node (UDP); defaults to 514.
     hostPort: 514
+    elasticsearch:
+      # Optional: also forward syslog to in-cluster Elasticsearch (for demos).
+      enabled: false
   snmpTraps:
     enabled: false
     # SNMP trap events are collected via Telegraf (DaemonSet, hostNetwork).
@@ -387,7 +417,9 @@ images:
   curl: "ghcr.io/forwardnetworks/skyforge-curl:8.6.0-1"
   envoy: "envoyproxy/envoy:v1.31.2"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
-  vector: "ghcr.io/vectordotdev/vector:0.44.0-debian"
+  # Vector publishes official images under `timberio/vector` (Docker Hub).
+  # NOTE: If Docker Hub rate limits are a concern, mirror this image into your registry.
+  vector: "timberio/vector:0.44.0-debian"
   telegraf: "ghcr.io/forwardnetworks/skyforge-telegraf:1.33-alpine"
   freeradius: "ghcr.io/freeradius/freeradius-server:3.2.5"
   # Prefer GHCR (Docker Hub rate limits are painful in-cluster).
@@ -400,6 +432,9 @@ images:
   minioMcRelease: "quay.io/minio/mc:RELEASE.2024-11-17T19-35-25Z"
   postgres: "public.ecr.aws/docker/library/postgres:15-alpine"
   redis: "public.ecr.aws/docker/library/redis:7-alpine"
+  # Optional: Elastic Stack (disabled by default).
+  elasticsearch: "docker.elastic.co/elasticsearch/elasticsearch:8.17.2"
+  kibana: "docker.elastic.co/kibana/kibana:8.17.2"
   swaggerUi: "swaggerapi/swagger-ui:v5.11.0"
   technitiumDns: "docker.io/technitium/dns-server@sha256:94f2b90d63f03181421152157a8099ea2752b13fa30b6c96833859be8e93dfa9"
   # Mirror Atlas on GHCR to avoid Docker Hub rate limits in-cluster.

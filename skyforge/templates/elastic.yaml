@@ -1,0 +1,186 @@
+{{- $elastic := (get .Values.skyforge "elastic" | default (dict)) -}}
+{{- if (get $elastic "enabled" | default false) -}}
+{{- $ns := .Release.Namespace -}}
+{{- $host := .Values.skyforge.hostname -}}
+{{- $kibanaSubpath := default "/kibana" (get $elastic "kibanaSubpath") -}}
+{{- $es := (get $elastic "elasticsearch" | default (dict)) -}}
+{{- $kb := (get $elastic "kibana" | default (dict)) -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-config
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+data:
+  elasticsearch.yml: |
+    cluster.name: skyforge
+    network.host: 0.0.0.0
+    discovery.type: single-node
+    xpack.security.enabled: false
+    node.store.allow_mmap: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: elasticsearch
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: 9200
+      targetPort: 9200
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  serviceName: elasticsearch
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: elasticsearch
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: elasticsearch
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: elasticsearch
+          image: {{ default "docker.elastic.co/elasticsearch/elasticsearch:8.17.2" .Values.images.elasticsearch | quote }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9200
+          env:
+            - name: ES_JAVA_OPTS
+              value: {{ (get $es "javaOpts" | default "-Xms1g -Xmx1g") | quote }}
+          {{- with (get $es "resources") }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /_cluster/health?wait_for_status=yellow&timeout=1s
+              port: 9200
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /_cluster/health
+              port: 9200
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: elasticsearch-config
+              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+            - name: data
+              mountPath: /usr/share/elasticsearch/data
+      volumes:
+        - name: elasticsearch-config
+          configMap:
+            name: elasticsearch-config
+        {{- $esStorage := (get $es "storage" | default (dict)) -}}
+        {{- if not (get $esStorage "enabled" | default true) }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
+  {{- $esStorage := (get $es "storage" | default (dict)) -}}
+  {{- if (get $esStorage "enabled" | default true) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ (get $esStorage "size" | default "50Gi") | quote }}
+        {{- with (get $esStorage "storageClassName") }}
+        {{- if ne (trim .) "" }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        {{- end }}
+  {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: kibana
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: 5601
+      targetPort: 5601
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kibana
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kibana
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: kibana
+          image: {{ default "docker.elastic.co/kibana/kibana:8.17.2" .Values.images.kibana | quote }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5601
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: "http://elasticsearch.{{ $ns }}.svc.cluster.local:9200"
+            - name: SERVER_BASEPATH
+              value: {{ $kibanaSubpath | quote }}
+            - name: SERVER_REWRITEBASEPATH
+              value: "true"
+            - name: SERVER_PUBLICBASEURL
+              value: {{ printf "https://%s%s" $host $kibanaSubpath | quote }}
+          {{- with (get $kb "resources") }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: {{ printf "%s/api/status" $kibanaSubpath | quote }}
+              port: 5601
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: {{ printf "%s/api/status" $kibanaSubpath | quote }}
+              port: 5601
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+{{- end -}}

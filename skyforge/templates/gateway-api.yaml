@@ -295,3 +295,22 @@ spec:
         - name: technitium-dns
           port: 5380
 {{- end }}
+
+{{- $elastic := (get .Values.skyforge "elastic" | default (dict)) -}}
+{{- if (get $elastic "enabled" | default false) }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ default "/kibana" (get $elastic "kibanaSubpath") | quote }}
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Skyforge-External-Prefix
+                value: {{ default "/kibana" (get $elastic "kibanaSubpath") | quote }}
+      backendRefs:
+        - name: kibana-sso-proxy
+          port: 8080
+{{- end }}

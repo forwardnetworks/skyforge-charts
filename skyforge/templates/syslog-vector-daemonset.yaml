@@ -14,8 +14,6 @@ spec:
       labels:
         app.kubernetes.io/name: skyforge-syslog-vector
     spec:
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
       {{- with .Values.kubernetes.imagePullSecrets }}
       imagePullSecrets:
         {{- range . }}
@@ -59,4 +57,3 @@ spec:
           configMap:
             name: skyforge-syslog-vector
 {{- end }}
-

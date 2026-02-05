@@ -223,3 +223,8 @@ spec:
 {{- if .Values.skyforge.gitea.enabled }}
 {{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "gitea-sso-proxy" "upstreamHost" "gitea" "upstreamPort" 3000 "externalPrefix" "/git") }}
 {{- end }}
+
+{{- $elastic := (get .Values.skyforge "elastic" | default (dict)) -}}
+{{- if (get $elastic "enabled" | default false) }}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "kibana-sso-proxy" "upstreamHost" "kibana" "upstreamPort" 5601 "externalPrefix" (default "/kibana" (get $elastic "kibanaSubpath"))) }}
+{{- end }}
