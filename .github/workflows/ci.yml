@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  charts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Helm lint
+        run: helm lint skyforge
+
+      - name: Helm template (no secrets)
+        run: helm template skyforge ./skyforge -n skyforge --set secrets.create=false > /dev/null
