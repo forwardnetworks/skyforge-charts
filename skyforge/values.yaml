@@ -136,7 +136,10 @@ skyforge:
     # actually call Gemini to generate templates.
     projectId: ""
     location: "us-central1"
-    model: "gemini-2.0-flash-001"
+    # Primary and fallback model IDs passed to the Vertex AI publisher endpoint.
+    # We default to Gemini 3.0, with a pro -> flash fallback.
+    model: "gemini-3.0-pro"
+    fallbackModel: "gemini-3.0-flash"
     # Kubernetes Secret (name/key) containing the OAuth client secret.
     clientSecretSecretName: "skyforge-gemini-oauth-client-secret"
     clientSecretSecretKey: "skyforge-gemini-oauth-client-secret"

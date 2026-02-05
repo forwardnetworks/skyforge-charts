@@ -63,11 +63,15 @@ rules:
   - apiGroups: ["cilium.io"]
     resources: ["ciliumnodes"]
     verbs: ["get", "list", "watch"]
-  {{- if .Values.skyforge.clabernetes.enabled }}
+  # Skyforge manages clabernetes Topology CRs in per-workspace namespaces.
+  # Grant these permissions even if the chart doesn't install the clabernetes
+  # controller (it may be deployed separately).
   - apiGroups: ["clabernetes.containerlab.dev"]
     resources: ["topologies"]
     verbs: ["get", "list", "create", "update", "patch", "delete", "deletecollection", "watch"]
-  {{- end }}
+  - apiGroups: ["clabernetes.containerlab.dev"]
+    resources: ["topologies/status", "topologies/finalizers"]
+    verbs: ["get", "update", "patch"]
   - apiGroups: ["batch"]
     resources: ["jobs"]
     verbs: ["get", "list", "create", "update", "patch", "delete", "deletecollection", "watch"]
