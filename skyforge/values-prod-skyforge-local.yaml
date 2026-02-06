@@ -29,8 +29,12 @@ skyforge:
   # Enable Gitea provisioning for blueprint-backed workflows and E2E tests.
   # API URL is in-cluster; UI URL is the SSO-proxied external path.
   gitea:
-    apiUrl: http://gitea:3000
+    apiUrl: http://gitea:3000/api/v1
     url: https://skyforge.local.forwardnetworks.com/gitea
+
+  # Pin netlab-c9s generator image so `netlab initial` has the artifacts it needs.
+  netlabC9s:
+    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260206-netlaboutput"
 
   # Current LDAP endpoint in this environment requires skipping TLS verification
   # for MinIO LDAP hook success. Set to false once LDAP cert trust is fixed.
@@ -39,5 +43,5 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260206-88259f9"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260206-88259f9"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260206-f0786fb"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260206-f0786fb"
