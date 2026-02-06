@@ -3,6 +3,11 @@ skyforge:
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
 
+  # Run a dedicated worker Deployment to process NSQ tasks and internal reconciles.
+  # Keep this separate from the API Deployment to avoid "queued" runs caused by
+  # non-worker pods grabbing subscriptions.
+  workerReplicaCount: 1
+
   netbox:
     enabled: true
   netboxUrl: https://skyforge.local.forwardnetworks.com/netbox
