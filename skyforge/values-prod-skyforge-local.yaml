@@ -26,6 +26,12 @@ skyforge:
   registry:
     url: https://ghcr.io
 
+  # Enable Gitea provisioning for blueprint-backed workflows and E2E tests.
+  # API URL is in-cluster; UI URL is the SSO-proxied external path.
+  gitea:
+    apiUrl: http://gitea:3000
+    url: https://skyforge.local.forwardnetworks.com/gitea
+
   # Current LDAP endpoint in this environment requires skipping TLS verification
   # for MinIO LDAP hook success. Set to false once LDAP cert trust is fixed.
   ldap:
