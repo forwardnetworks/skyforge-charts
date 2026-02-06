@@ -52,6 +52,13 @@ skyforge:
   netlabC9s:
     generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260206-968a5af"
 
+  # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
+  # This must be enabled for E2E deploy tests and user deployments to reconcile.
+  clabernetes:
+    enabled: true
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260204-ceos-fastcli-3113843"
+    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260205-native-vxlan-localip-txoff-readyonly"
+
   # Current LDAP endpoint in this environment requires skipping TLS verification
   # for MinIO LDAP hook success. Set to false once LDAP cert trust is fixed.
   ldap:
@@ -61,3 +68,7 @@ images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260206-968a5af"
   skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260206-968a5af"
+
+kubernetes:
+  # Ensure private GHCR images can be pulled in the release namespace.
+  imagePullSecrets: ["ghcr-pull"]
