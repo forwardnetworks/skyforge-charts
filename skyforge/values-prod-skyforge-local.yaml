@@ -44,7 +44,7 @@ skyforge:
 
   # Pin netlab-c9s generator image so `netlab initial` has the artifacts it needs.
   netlabC9s:
-    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260206-netlaboutput"
+    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260206-075f942"
 
   # Current LDAP endpoint in this environment requires skipping TLS verification
   # for MinIO LDAP hook success. Set to false once LDAP cert trust is fixed.
@@ -53,5 +53,5 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260206-f0786fb"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260206-f0786fb"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260206-075f942"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260206-075f942"
