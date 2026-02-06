@@ -33,5 +33,5 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260206-80fe8f7"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260206-80fe8f7"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260206-88259f9"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260206-88259f9"
