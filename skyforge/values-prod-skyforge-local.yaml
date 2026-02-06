@@ -3,6 +3,11 @@ skyforge:
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
 
+  encoreCfg:
+    # Ensure the worker service gets the same Helm-driven typed config as the API.
+    # Without this, the worker falls back to whatever was baked into its image.
+    workerCreate: true
+
   # Run a dedicated worker Deployment to process NSQ tasks and internal reconciles.
   # Keep this separate from the API Deployment to avoid "queued" runs caused by
   # non-worker pods grabbing subscriptions.
