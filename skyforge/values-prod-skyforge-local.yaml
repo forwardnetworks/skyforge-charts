@@ -11,8 +11,11 @@ skyforge:
   # Provide ENCORE_RUNTIME_CONFIG from the chart's `files/infra.config.json`.
   # This keeps Skyforge server images portable (no baked-in infra config).
   encoreRuntimeConfig:
-    create: true
-    workerCreate: true
+    # Deprecated: prefer `ENCORE_INFRA_CONFIG_PATH` which points at the mounted
+    # `infra.config.json` ConfigMap. Leave these disabled to avoid version skew
+    # and base64 encoding pitfalls across Encore runtime versions.
+    create: false
+    workerCreate: false
 
   # Run a dedicated worker Deployment to process NSQ tasks and internal reconciles.
   # Keep this separate from the API Deployment to avoid "queued" runs caused by

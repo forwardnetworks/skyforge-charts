@@ -85,12 +85,10 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_SSO_SKIP_TLS_VERIFY
-        - name: ENCORE_RUNTIME_CONFIG
-          valueFrom:
-            secretKeyRef:
-              name: skyforge-encore-runtime-config
-              key: skyforge-encore-runtime-config
-              optional: true
+        # Prefer passing an infra config file path instead of ENCORE_RUNTIME_CONFIG.
+        # This keeps the Helm config schema-aligned across Encore versions.
+        - name: ENCORE_INFRA_CONFIG_PATH
+          value: /encore/infra.config.json
         - name: ENCORE_CFG_SKYFORGE
           valueFrom:
             secretKeyRef:
