@@ -55,7 +55,7 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 
 See `charts/skyforge/values.yaml` for the full list of defaults.
 
-Typed Encore config (`config.Load`) can be injected via `skyforge.encoreCfg.*`; the chart base64url-encodes the JSON and sets `ENCORE_CFG_SKYFORGE`.
+Typed Encore config (`config.Load`) can be injected via `skyforge.encoreCfg.*`; the chart encodes the JSON as base64url without padding (Encore expects `base64.RawURLEncoding`) and sets `ENCORE_CFG_SKYFORGE`.
 
 Note: when you enable a dedicated worker deployment (`skyforge.workerReplicaCount > 0` + `skyforge.encoreCfg.workerCreate=true`), the chart automatically forces `"TaskWorkerEnabled": true` in the worker’s `ENCORE_CFG_WORKER` payload.
 
