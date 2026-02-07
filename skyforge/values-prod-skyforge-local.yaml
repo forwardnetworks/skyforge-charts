@@ -3,6 +3,10 @@ skyforge:
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
 
+  # Comma-separated usernames/emails that should see admin-only UI + APIs.
+  # NOTE: Server-side admin checks are exact-match (no wildcards).
+  adminUsers: "skyforge,craigjohnson,craigjohnson@forwardnetworks.com"
+
   encoreCfg:
     # Ensure the worker service gets the same Helm-driven typed config as the API.
     # Without this, the worker falls back to whatever was baked into its image.
@@ -50,6 +54,17 @@ skyforge:
   gitea:
     apiUrl: http://gitea:3000/api/v1
     url: https://skyforge.local.forwardnetworks.com/gitea
+
+  # Enable the AI template generator UI + APIs.
+  ai:
+    enabled: true
+
+  # Enable per-user "Connect Gemini" and Gemini-backed template generation.
+  # NOTE: `clientID` and `projectId` must be set for full functionality.
+  gemini:
+    enabled: true
+    clientID: ""
+    projectId: ""
 
   # Pin netlab-c9s generator image so `netlab initial` has the artifacts it needs.
   netlabC9s:
