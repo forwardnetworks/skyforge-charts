@@ -70,6 +70,14 @@ spec:
                   name: skyforge-encore-cfg-worker
                   key: ENCORE_CFG_WORKER
                   optional: true
+            # Back-compat: some Encore runtime builds expect a generic ENCORE_CFG env var.
+            # Keep it in sync with the service-specific config.
+            - name: ENCORE_CFG
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-encore-cfg-worker
+                  key: ENCORE_CFG_WORKER
+                  optional: true
             - name: SKYFORGE_SESSION_SECRET
               valueFrom:
                 secretKeyRef:

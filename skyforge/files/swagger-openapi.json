@@ -301,6 +301,47 @@
         ],
         "type": "object"
       },
+      "skyforge.CapacityHardwareTcamRow": {
+        "properties": {
+          "commandText": {
+            "type": "string"
+          },
+          "deviceName": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "os": {
+            "type": "string"
+          },
+          "tcamTotal": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "tcamUsed": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "vendor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceName",
+          "vendor",
+          "os",
+          "model",
+          "tcamUsed",
+          "tcamTotal",
+          "commandText",
+          "evidence"
+        ],
+        "type": "object"
+      },
       "skyforge.CapacityInterfaceInventoryRow": {
         "properties": {
           "adminStatus": {
@@ -361,6 +402,29 @@
           "interfaceType",
           "mtu",
           "speedMbps"
+        ],
+        "type": "object"
+      },
+      "skyforge.CapacityInterfaceVrfRow": {
+        "properties": {
+          "deviceName": {
+            "type": "string"
+          },
+          "ifaceName": {
+            "type": "string"
+          },
+          "subIfaceName": {
+            "type": "string"
+          },
+          "vrf": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceName",
+          "vrf",
+          "ifaceName",
+          "subIfaceName"
         ],
         "type": "object"
       },
@@ -1720,6 +1784,187 @@
         ],
         "type": "object"
       },
+      "skyforge.PolicyReportException": {
+        "properties": {
+          "approvedBy": {
+            "type": "string"
+          },
+          "checkId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "findingId": {
+            "type": "string"
+          },
+          "forwardNetworkId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "justification": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "ticketUrl": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "forwardNetworkId",
+          "findingId",
+          "checkId",
+          "status",
+          "justification",
+          "ticketUrl",
+          "expiresAt",
+          "createdBy",
+          "approvedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "skyforge.PolicyReportFlowImpact": {
+        "properties": {
+          "afterDecision": {
+            "type": "string"
+          },
+          "afterIndex": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "afterRule": {
+            "type": "string"
+          },
+          "beforeDecision": {
+            "type": "string"
+          },
+          "beforeIndex": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "beforeRule": {
+            "type": "string"
+          },
+          "changed": {
+            "type": "boolean"
+          },
+          "device": {
+            "type": "string"
+          },
+          "flow": {
+            "$ref": "#/components/schemas/skyforge.PolicyReportFlowTuple"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "device",
+          "flow",
+          "beforeDecision",
+          "afterDecision",
+          "beforeRule",
+          "afterRule",
+          "beforeIndex",
+          "afterIndex",
+          "changed",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "skyforge.PolicyReportFlowTuple": {
+        "properties": {
+          "dstIp": {
+            "type": "string"
+          },
+          "dstPort": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ipProto": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "srcIp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "srcIp",
+          "dstIp",
+          "ipProto",
+          "dstPort"
+        ],
+        "type": "object"
+      },
+      "skyforge.PolicyReportForwardNetwork": {
+        "properties": {
+          "collectorConfigId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "forwardNetworkId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "forwardNetworkId",
+          "name",
+          "description",
+          "collectorConfigId",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "skyforge.PolicyReportNQEResponse": {
         "properties": {
           "results": {
@@ -1826,6 +2071,257 @@
           "newSamples",
           "oldSamples",
           "changedSamples"
+        ],
+        "type": "object"
+      },
+      "skyforge.PolicyReportProposedRule": {
+        "properties": {
+          "action": {
+            "title": "PERMIT or DENY\n",
+            "type": "string"
+          },
+          "index": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ipProto": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "title": "empty = any\n",
+            "type": "array"
+          },
+          "ipv4Dst": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipv4Src": {
+            "items": {
+              "type": "string"
+            },
+            "title": "CIDR strings, empty = any\n",
+            "type": "array"
+          },
+          "tpDst": {
+            "items": {
+              "type": "string"
+            },
+            "title": "entries like \"443\" or \"443-445\"; empty = any\n",
+            "type": "array"
+          }
+        },
+        "required": [
+          "index",
+          "action",
+          "ipv4Src",
+          "ipv4Dst",
+          "ipProto",
+          "tpDst"
+        ],
+        "type": "object"
+      },
+      "skyforge.PolicyReportRecertAssignment": {
+        "properties": {
+          "assigneeUsername": {
+            "type": "string"
+          },
+          "attestedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "checkCategory": {
+            "type": "string"
+          },
+          "checkId": {
+            "type": "string"
+          },
+          "checkSeverity": {
+            "type": "string"
+          },
+          "checkTitle": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "finding": {
+            "type": "object"
+          },
+          "findingAssetKey": {
+            "type": "string"
+          },
+          "findingId": {
+            "type": "string"
+          },
+          "findingRiskReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "findingRiskScore": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "justification": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "campaignId",
+          "workspaceId",
+          "findingId",
+          "checkId",
+          "assigneeUsername",
+          "status",
+          "justification",
+          "attestedAt",
+          "finding",
+          "createdAt",
+          "updatedAt",
+          "checkTitle",
+          "checkCategory",
+          "checkSeverity",
+          "findingRiskScore",
+          "findingRiskReasons",
+          "findingAssetKey"
+        ],
+        "type": "object"
+      },
+      "skyforge.PolicyReportRecertCampaign": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dueAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "forwardNetworkId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "packId": {
+            "type": "string"
+          },
+          "snapshotId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "name",
+          "description",
+          "forwardNetworkId",
+          "snapshotId",
+          "packId",
+          "status",
+          "dueAt",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "skyforge.PolicyReportRecertCampaignCounts": {
+        "properties": {
+          "attested": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pending": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "waived": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "pending",
+          "attested",
+          "waived"
+        ],
+        "type": "object"
+      },
+      "skyforge.PolicyReportRecertCampaignWithCounts": {
+        "properties": {
+          "campaign": {
+            "$ref": "#/components/schemas/skyforge.PolicyReportRecertCampaign"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/skyforge.PolicyReportRecertCampaignCounts"
+          }
+        },
+        "required": [
+          "campaign",
+          "counts"
+        ],
+        "type": "object"
+      },
+      "skyforge.PolicyReportRuleChange": {
+        "properties": {
+          "op": {
+            "title": "ADD, REMOVE, MODIFY\n",
+            "type": "string"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/skyforge.PolicyReportProposedRule"
+          }
+        },
+        "required": [
+          "op",
+          "rule"
         ],
         "type": "object"
       },
@@ -14018,6 +14514,18 @@
                     "forwardNetworkId": {
                       "type": "string"
                     },
+                    "hardwareTcam": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityHardwareTcamRow"
+                      },
+                      "type": "array"
+                    },
+                    "interfaceVrfs": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityInterfaceVrfRow"
+                      },
+                      "type": "array"
+                    },
                     "interfaces": {
                       "items": {
                         "$ref": "#/components/schemas/skyforge.CapacityInterfaceInventoryRow"
@@ -14045,6 +14553,8 @@
                     "snapshotId",
                     "devices",
                     "interfaces",
+                    "interfaceVrfs",
+                    "hardwareTcam",
                     "routeScale",
                     "bgpNeighbors"
                   ],
@@ -17160,6 +17670,1084 @@
         "summary": "DeleteWorkspaceEveServer deletes a workspace-scoped EVE-NG server.\n"
       }
     },
+    "/api/workspaces/{id}/forward-networks": {
+      "get": {
+        "operationId": "GET:skyforge.ListWorkspaceForwardNetworks",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "networks": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.PolicyReportForwardNetwork"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "networks"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListWorkspaceForwardNetworks lists saved Forward networks for a workspace.\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.CreateWorkspaceForwardNetwork",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "collectorConfigId": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "forwardNetworkId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "forwardNetworkId",
+                  "name",
+                  "description",
+                  "collectorConfigId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "collectorConfigId": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "createdBy": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "workspaceId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "workspaceId",
+                    "forwardNetworkId",
+                    "name",
+                    "description",
+                    "collectorConfigId",
+                    "createdBy",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateWorkspaceForwardNetwork stores a Forward network id for a workspace.\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteWorkspaceForwardNetwork",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteWorkspaceForwardNetwork deletes a saved Forward network (by uuid id or by\nforwardNetworkId).\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}/capacity/growth": {
+      "get": {
+        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacityGrowth",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "metric",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "window",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "objectType",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "compareHours",
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "asOf": {
+                      "type": "string"
+                    },
+                    "compareAsOf": {
+                      "type": "string"
+                    },
+                    "compareHours": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "metric": {
+                      "type": "string"
+                    },
+                    "networkRef": {
+                      "type": "string"
+                    },
+                    "objectType": {
+                      "type": "string"
+                    },
+                    "rows": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityGrowthRow"
+                      },
+                      "type": "array"
+                    },
+                    "window": {
+                      "type": "string"
+                    },
+                    "workspaceId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "workspaceId",
+                    "networkRef",
+                    "forwardNetworkId",
+                    "metric",
+                    "window",
+                    "objectType",
+                    "asOf",
+                    "compareAsOf",
+                    "compareHours",
+                    "rows"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetWorkspaceForwardNetworkCapacityGrowth compares the latest rollup bucket to an\nearlier one and returns deltas.\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}/capacity/inventory": {
+      "get": {
+        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacityInventory",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "asOf": {
+                      "type": "string"
+                    },
+                    "bgpNeighbors": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityBgpNeighborRow"
+                      },
+                      "type": "array"
+                    },
+                    "devices": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityDeviceInventoryRow"
+                      },
+                      "type": "array"
+                    },
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "hardwareTcam": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityHardwareTcamRow"
+                      },
+                      "type": "array"
+                    },
+                    "interfaceVrfs": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityInterfaceVrfRow"
+                      },
+                      "type": "array"
+                    },
+                    "interfaces": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityInterfaceInventoryRow"
+                      },
+                      "type": "array"
+                    },
+                    "networkRef": {
+                      "type": "string"
+                    },
+                    "routeScale": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityRouteScaleRow"
+                      },
+                      "type": "array"
+                    },
+                    "snapshotId": {
+                      "type": "string"
+                    },
+                    "workspaceId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "workspaceId",
+                    "networkRef",
+                    "forwardNetworkId",
+                    "asOf",
+                    "snapshotId",
+                    "devices",
+                    "interfaces",
+                    "interfaceVrfs",
+                    "hardwareTcam",
+                    "routeScale",
+                    "bgpNeighbors"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetWorkspaceForwardNetworkCapacityInventory returns the latest cached NQE\nresults for inventory/routing scale.\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}/capacity/perf/device-metrics-history": {
+      "post": {
+        "operationId": "POST:skyforge.PostWorkspaceForwardNetworkCapacityDeviceMetricsHistory",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "days": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "devices": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "endTime": {
+                    "type": "string"
+                  },
+                  "maxSamples": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "startTime": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "days",
+                  "startTime",
+                  "endTime",
+                  "maxSamples",
+                  "devices"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "body": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "body"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PostWorkspaceForwardNetworkCapacityDeviceMetricsHistory proxies Forward's\ndevice-metrics-history endpoint.\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}/capacity/perf/interface-metrics": {
+      "get": {
+        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacityInterfaceMetrics",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "days",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "interface",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "interfaceFilter",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "snapshotId",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "endTime",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "body": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "body"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetWorkspaceForwardNetworkCapacityInterfaceMetrics proxies Forward's\ninterface-metrics endpoint.\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}/capacity/perf/interface-metrics-history": {
+      "post": {
+        "operationId": "POST:skyforge.PostWorkspaceForwardNetworkCapacityInterfaceMetricsHistory",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "days": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "endTime": {
+                    "type": "string"
+                  },
+                  "interfaces": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CapacityInterfaceWithDirection"
+                    },
+                    "type": "array"
+                  },
+                  "maxSamples": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "startTime": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "days",
+                  "startTime",
+                  "endTime",
+                  "maxSamples",
+                  "interfaces"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "body": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "body"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PostWorkspaceForwardNetworkCapacityInterfaceMetricsHistory proxies Forward's\ninterface-metrics-history endpoint.\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}/capacity/perf/unhealthy-devices": {
+      "get": {
+        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacityUnhealthyDevices",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "snapshotId",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "endTime",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "body": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "body"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetWorkspaceForwardNetworkCapacityUnhealthyDevices proxies Forward's\nunhealthy-devices endpoint.\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}/capacity/perf/unhealthy-interfaces": {
+      "post": {
+        "operationId": "POST:skyforge.PostWorkspaceForwardNetworkCapacityUnhealthyInterfaces",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "snapshotId",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "endTime",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "devices": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "devices"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "body": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "body"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PostWorkspaceForwardNetworkCapacityUnhealthyInterfaces proxies Forward's\nunhealthy-interfaces endpoint.\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}/capacity/rollups/refresh": {
+      "post": {
+        "operationId": "POST:skyforge.RefreshWorkspaceForwardNetworkCapacityRollups",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "networkRef": {
+                      "type": "string"
+                    },
+                    "run": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "workspaceId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "workspaceId",
+                    "networkRef",
+                    "run"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RefreshWorkspaceForwardNetworkCapacityRollups enqueues a background rollup task\nfor the saved Forward network.\n"
+      }
+    },
+    "/api/workspaces/{id}/forward-networks/{networkRef}/capacity/summary": {
+      "get": {
+        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacitySummary",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "asOf": {
+                      "type": "string"
+                    },
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "networkRef": {
+                      "type": "string"
+                    },
+                    "rollups": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CapacityRollupRow"
+                      },
+                      "type": "array"
+                    },
+                    "stale": {
+                      "type": "boolean"
+                    },
+                    "workspaceId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "workspaceId",
+                    "networkRef",
+                    "forwardNetworkId",
+                    "asOf",
+                    "rollups",
+                    "stale"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetWorkspaceForwardNetworkCapacitySummary returns the latest stored capacity\nrollups for a saved Forward network.\n"
+      }
+    },
     "/api/workspaces/{id}/integrations/forward": {
       "delete": {
         "operationId": "DELETE:skyforge.DeleteWorkspaceForwardConfig",
@@ -18798,6 +20386,112 @@
         "summary": "GetWorkspacePolicyReportCatalog returns the embedded Policy Reports check\ncatalog.\n"
       }
     },
+    "/api/workspaces/{id}/policy-reports/change-planning/simulate": {
+      "post": {
+        "description": "This endpoint is intentionally stubbed for now. Earlier iterations depended on fast-changing NQE output shapes and would become brittle quickly.\n",
+        "operationId": "POST:skyforge.SimulateWorkspacePolicyReportChangePlanning",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "change": {
+                    "$ref": "#/components/schemas/skyforge.PolicyReportRuleChange"
+                  },
+                  "deviceName": {
+                    "title": "optional filter\n",
+                    "type": "string"
+                  },
+                  "firewallsOnly": {
+                    "type": "boolean"
+                  },
+                  "flows": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.PolicyReportFlowTuple"
+                    },
+                    "type": "array"
+                  },
+                  "includeImplicitDefault": {
+                    "type": "boolean"
+                  },
+                  "networkId": {
+                    "type": "string"
+                  },
+                  "snapshotId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "networkId",
+                  "snapshotId",
+                  "firewallsOnly",
+                  "includeImplicitDefault",
+                  "deviceName",
+                  "flows",
+                  "change"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "changedCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "impacts": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.PolicyReportFlowImpact"
+                      },
+                      "type": "array"
+                    },
+                    "totalDevices": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "totalFlows": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "totalFlows",
+                    "totalDevices",
+                    "changedCount",
+                    "impacts"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "SimulateWorkspacePolicyReportChangePlanning simulates a rule change against a\nset of flows (no config push).\n"
+      }
+    },
     "/api/workspaces/{id}/policy-reports/checks": {
       "get": {
         "operationId": "GET:skyforge.GetWorkspacePolicyReportChecks",
@@ -18993,6 +20687,1262 @@
           }
         },
         "summary": "GetWorkspacePolicyReportCheck returns the .nqe file content for a given check.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/governance/assignments": {
+      "get": {
+        "operationId": "GET:skyforge.ListWorkspacePolicyReportRecertAssignments",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "campaignId",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "assignee",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "assignments": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.PolicyReportRecertAssignment"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "assignments"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListWorkspacePolicyReportRecertAssignments lists assignments.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/governance/assignments/{assignmentId}/attest": {
+      "post": {
+        "operationId": "POST:skyforge.AttestWorkspacePolicyReportRecertAssignment",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "assignmentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "justification": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "justification"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "AttestWorkspacePolicyReportRecertAssignment marks an assignment as attested.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/governance/assignments/{assignmentId}/waive": {
+      "post": {
+        "operationId": "POST:skyforge.WaiveWorkspacePolicyReportRecertAssignment",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "assignmentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "justification": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "justification"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "WaiveWorkspacePolicyReportRecertAssignment marks an assignment as waived.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/governance/campaigns": {
+      "get": {
+        "operationId": "GET:skyforge.ListWorkspacePolicyReportRecertCampaigns",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "campaigns": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.PolicyReportRecertCampaignWithCounts"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "campaigns"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListWorkspacePolicyReportRecertCampaigns lists recertification campaigns.\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.CreateWorkspacePolicyReportRecertCampaign",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "dueAt": {
+                    "title": "RFC3339\n",
+                    "type": "string"
+                  },
+                  "forwardNetworkId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "packId": {
+                    "type": "string"
+                  },
+                  "snapshotId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "description",
+                  "forwardNetworkId",
+                  "snapshotId",
+                  "packId",
+                  "dueAt"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "campaign": {
+                      "$ref": "#/components/schemas/skyforge.PolicyReportRecertCampaign"
+                    },
+                    "counts": {
+                      "$ref": "#/components/schemas/skyforge.PolicyReportRecertCampaignCounts"
+                    }
+                  },
+                  "required": [
+                    "campaign",
+                    "counts"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateWorkspacePolicyReportRecertCampaign creates a recertification campaign for\na given Forward network/snapshot/pack.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/governance/campaigns/{campaignId}": {
+      "get": {
+        "operationId": "GET:skyforge.GetWorkspacePolicyReportRecertCampaign",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "campaignId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "campaign": {
+                      "$ref": "#/components/schemas/skyforge.PolicyReportRecertCampaign"
+                    },
+                    "counts": {
+                      "$ref": "#/components/schemas/skyforge.PolicyReportRecertCampaignCounts"
+                    }
+                  },
+                  "required": [
+                    "campaign",
+                    "counts"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetWorkspacePolicyReportRecertCampaign gets one campaign plus assignment counts.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/governance/campaigns/{campaignId}/generate": {
+      "post": {
+        "operationId": "POST:skyforge.GenerateWorkspacePolicyReportRecertAssignments",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "campaignId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "assigneeUsername": {
+                    "type": "string"
+                  },
+                  "maxPerCheck": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "maxTotal": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "queryOptions": {
+                    "$ref": "#/components/schemas/skyforge.JSONMap"
+                  }
+                },
+                "required": [
+                  "assigneeUsername",
+                  "maxPerCheck",
+                  "maxTotal",
+                  "queryOptions"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "campaignId": {
+                      "type": "string"
+                    },
+                    "created": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "campaignId",
+                    "created"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GenerateWorkspacePolicyReportRecertAssignments runs the campaign pack and stores\nresulting findings as assignments.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/governance/exceptions": {
+      "get": {
+        "operationId": "GET:skyforge.ListWorkspacePolicyReportExceptions",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "forwardNetworkId",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "exceptions": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.PolicyReportException"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "exceptions"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListWorkspacePolicyReportExceptions lists exceptions.\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.CreateWorkspacePolicyReportException",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "checkId": {
+                    "type": "string"
+                  },
+                  "expiresAt": {
+                    "title": "RFC3339\n",
+                    "type": "string"
+                  },
+                  "findingId": {
+                    "type": "string"
+                  },
+                  "forwardNetworkId": {
+                    "type": "string"
+                  },
+                  "justification": {
+                    "type": "string"
+                  },
+                  "ticketUrl": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "forwardNetworkId",
+                  "findingId",
+                  "checkId",
+                  "justification",
+                  "ticketUrl",
+                  "expiresAt"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "approvedBy": {
+                      "type": "string"
+                    },
+                    "checkId": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "createdBy": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "findingId": {
+                      "type": "string"
+                    },
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "justification": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "ticketUrl": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "workspaceId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "workspaceId",
+                    "forwardNetworkId",
+                    "findingId",
+                    "checkId",
+                    "status",
+                    "justification",
+                    "ticketUrl",
+                    "expiresAt",
+                    "createdBy",
+                    "approvedBy",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateWorkspacePolicyReportException proposes an exception for a finding.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/governance/exceptions/{exceptionId}/approve": {
+      "post": {
+        "operationId": "POST:skyforge.ApproveWorkspacePolicyReportException",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "exceptionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ApproveWorkspacePolicyReportException approves an exception (owner/admin only).\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/governance/exceptions/{exceptionId}/reject": {
+      "post": {
+        "operationId": "POST:skyforge.RejectWorkspacePolicyReportException",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "exceptionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RejectWorkspacePolicyReportException rejects an exception (owner/admin only).\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/networks": {
+      "get": {
+        "operationId": "GET:skyforge.ListWorkspacePolicyReportForwardNetworks",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "networks": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.PolicyReportForwardNetwork"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "networks"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListWorkspacePolicyReportForwardNetworks lists saved Forward networks for Policy\nReports.\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.CreateWorkspacePolicyReportForwardNetwork",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "collectorConfigId": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "forwardNetworkId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "forwardNetworkId",
+                  "name",
+                  "description",
+                  "collectorConfigId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "collectorConfigId": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "createdBy": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "workspaceId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "workspaceId",
+                    "forwardNetworkId",
+                    "name",
+                    "description",
+                    "collectorConfigId",
+                    "createdBy",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateWorkspacePolicyReportForwardNetwork stores a Forward network id for Policy\nReports.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/networks/{forwardNetworkId}/credentials": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteWorkspacePolicyReportForwardNetworkCredentials",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "forwardNetworkId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteWorkspacePolicyReportForwardNetworkCredentials clears the current user's\ncredentials for a Forward network.\n"
+      },
+      "get": {
+        "operationId": "GET:skyforge.GetWorkspacePolicyReportForwardNetworkCredentials",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "forwardNetworkId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "skipTlsVerify": {
+                      "type": "boolean"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "baseUrl",
+                    "skipTlsVerify",
+                    "username",
+                    "hasPassword",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetWorkspacePolicyReportForwardNetworkCredentials returns the current user's\ncredentials status for a Forward network.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.PutWorkspacePolicyReportForwardNetworkCredentials",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "forwardNetworkId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "baseUrl": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "skipTlsVerify": {
+                    "type": "boolean"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "baseUrl",
+                  "skipTlsVerify",
+                  "username",
+                  "password"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "skipTlsVerify": {
+                      "type": "boolean"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "baseUrl",
+                    "skipTlsVerify",
+                    "username",
+                    "hasPassword",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutWorkspacePolicyReportForwardNetworkCredentials upserts the current user's\ncredentials for a Forward network.\n"
+      }
+    },
+    "/api/workspaces/{id}/policy-reports/networks/{networkRef}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteWorkspacePolicyReportForwardNetwork",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteWorkspacePolicyReportForwardNetwork deletes a saved Forward network (by\nuuid id or by forwardNetworkId).\n"
       }
     },
     "/api/workspaces/{id}/policy-reports/nqe": {

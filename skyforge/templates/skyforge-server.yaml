@@ -95,6 +95,14 @@ spec:
               name: skyforge-encore-cfg
               key: ENCORE_CFG_SKYFORGE
               optional: true
+        # Back-compat: some Encore runtime builds expect a generic ENCORE_CFG env var.
+        # Keep it in sync with the service-specific config.
+        - name: ENCORE_CFG
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-encore-cfg
+              key: ENCORE_CFG_SKYFORGE
+              optional: true
         - name: SKYFORGE_GITEA_PASSWORD
           valueFrom:
             secretKeyRef:

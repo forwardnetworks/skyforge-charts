@@ -8,6 +8,9 @@ skyforge:
   adminUsers: "skyforge,craigjohnson,craigjohnson@forwardnetworks.com"
 
   encoreCfg:
+    # Manage the API service typed config secret via Helm so feature flags and
+    # defaults (Gemini/Elastic/etc.) reliably propagate into the running pods.
+    create: true
     # Ensure the worker service gets the same Helm-driven typed config as the API.
     # Without this, the worker falls back to whatever was baked into its image.
     workerCreate: true
@@ -85,8 +88,8 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260207-ebda292"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260207-ebda292"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260207-umbrella-8ddde255"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260207-umbrella-8ddde255-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.
