@@ -41,6 +41,10 @@ skyforge:
 
   elastic:
     enabled: true
+    indexingMode: per_user
+    autosleep:
+      enabled: true
+      idleMinutes: 30
     kibanaSubpath: /kibana
 
   # Swagger image pulls can be rate-limited on Docker Hub; keep this disabled
@@ -88,8 +92,8 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260207-umbrella-f3d58d02"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260207-umbrella-f3d58d02-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260207-iosvfix8-a69f725"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260207-iosvfix8-a69f725-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

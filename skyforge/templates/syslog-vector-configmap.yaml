@@ -114,7 +114,7 @@ data:
           max_bytes: 1048576
           timeout_secs: 1
 
-{{- if or (and .Values.skyforge .Values.skyforge.elastic .Values.skyforge.elastic.enabled) (and .Values.skyforge .Values.skyforge.syslog .Values.skyforge.syslog.elasticsearch .Values.skyforge.syslog.elasticsearch.enabled) }}
+{{- if and .Values.skyforge .Values.skyforge.syslog .Values.skyforge.syslog.elasticsearch .Values.skyforge.syslog.elasticsearch.enabled }}
       elasticsearch:
         type: elasticsearch
         inputs:

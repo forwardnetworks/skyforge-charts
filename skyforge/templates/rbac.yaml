@@ -24,7 +24,7 @@ rules:
     resourceNames: ["yaade"]
     verbs: ["get", "patch", "update"]
   - apiGroups: ["apps"]
-    resources: ["deployments"]
+    resources: ["deployments", "statefulsets"]
     verbs: ["get", "list", "create", "patch", "update", "delete"]
   - apiGroups: ["batch"]
     resources: ["jobs"]
