@@ -3,6 +3,32 @@ skyforge:
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
 
+  # Comma-separated usernames/emails that should see admin-only UI + APIs.
+  # NOTE: Server-side admin checks are exact-match (no wildcards).
+  adminUsers: "skyforge,craigjohnson,craigjohnson@forwardnetworks.com"
+
+  encoreCfg:
+    # Manage the API service typed config secret via Helm so feature flags and
+    # defaults (Gemini/Elastic/etc.) reliably propagate into the running pods.
+    create: true
+    # Ensure the worker service gets the same Helm-driven typed config as the API.
+    # Without this, the worker falls back to whatever was baked into its image.
+    workerCreate: true
+
+  # Provide ENCORE_RUNTIME_CONFIG from the chart's `files/infra.config.json`.
+  # This keeps Skyforge server images portable (no baked-in infra config).
+  encoreRuntimeConfig:
+    # Deprecated: prefer `ENCORE_INFRA_CONFIG_PATH` which points at the mounted
+    # `infra.config.json` ConfigMap. Leave these disabled to avoid version skew
+    # and base64 encoding pitfalls across Encore runtime versions.
+    create: false
+    workerCreate: false
+
+  # Run a dedicated worker Deployment to process NSQ tasks and internal reconciles.
+  # Keep this separate from the API Deployment to avoid "queued" runs caused by
+  # non-worker pods grabbing subscriptions.
+  workerReplicaCount: 1
+
   netbox:
     enabled: true
   netboxUrl: https://skyforge.local.forwardnetworks.com/netbox
@@ -15,6 +41,10 @@ skyforge:
 
   elastic:
     enabled: true
+    indexingMode: per_user
+    autosleep:
+      enabled: true
+      idleMinutes: 30
     kibanaSubpath: /kibana
 
   # Swagger image pulls can be rate-limited on Docker Hub; keep this disabled
@@ -26,7 +56,45 @@ skyforge:
   registry:
     url: https://ghcr.io
 
+  # Enable Gitea provisioning for blueprint-backed workflows and E2E tests.
+  # API URL is in-cluster; UI URL is the SSO-proxied external path.
+  gitea:
+    apiUrl: http://gitea:3000/api/v1
+    url: https://skyforge.local.forwardnetworks.com/gitea
+
+  # Enable the AI template generator UI + APIs.
+  ai:
+    enabled: true
+
+  # Enable per-user "Connect Gemini" and Gemini-backed template generation.
+  # NOTE: `clientID` and `projectId` must be set for full functionality.
+  gemini:
+    enabled: true
+    clientID: ""
+    projectId: ""
+
+  # Pin netlab-c9s generator image so `netlab initial` has the artifacts it needs.
+  netlabC9s:
+    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260206-5b326c1"
+    applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:20260206-b6a1937"
+
+  # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
+  # This must be enabled for E2E deploy tests and user deployments to reconcile.
+  clabernetes:
+    enabled: true
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260204-ceos-fastcli-3113843"
+    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260205-native-vxlan-localip-txoff-readyonly"
+
   # Current LDAP endpoint in this environment requires skipping TLS verification
   # for MinIO LDAP hook success. Set to false once LDAP cert trust is fixed.
   ldap:
     skipTlsVerify: true
+
+images:
+  # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260207-iosvfix8-a69f725"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260207-iosvfix8-a69f725-worker"
+
+kubernetes:
+  # Ensure private GHCR images can be pulled in the release namespace.
+  imagePullSecrets: ["ghcr-pull"]

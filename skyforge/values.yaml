@@ -152,6 +152,22 @@ skyforge:
     # NOTE: Elastic images are under the Elastic license (not Apache 2.0). Keep this
     # disabled by default for OSS-friendly installs unless you explicitly want Elastic.
     enabled: false
+    # Optional override for the in-cluster ES URL used by Skyforge for indexing ingest events.
+    # When empty and enabled=true, defaults to "http://elasticsearch:9200".
+    url: ""
+    # Prefix for Skyforge-managed indices (e.g. "<prefix>-syslog-YYYY.MM.DD").
+    indexPrefix: "skyforge"
+    # Index naming mode:
+    # - "instance": <indexPrefix>-<category>-YYYY.MM.DD
+    # - "per_user": <indexPrefix>-u-<username>-<category>-YYYY.MM.DD
+    indexingMode: "instance"
+    autosleep:
+      # Demo-friendly autosleep for in-cluster Elasticsearch + Kibana.
+      enabled: false
+      # Idle minutes before scaling both Elasticsearch and Kibana to 0 replicas.
+      idleMinutes: 30
+      # Cron schedule for autosleep checks.
+      schedule: "*/5 * * * *"
     kibanaSubpath: "/kibana"
     elasticsearch:
       # Single-node dev settings.
