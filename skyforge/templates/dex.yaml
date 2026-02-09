@@ -26,6 +26,23 @@ spec:
               value: {{ .Values.skyforge.dex.webTheme | default "" | quote }}
             - name: DEX_LOGO_URL
               value: {{ .Values.skyforge.dex.logoUrl | default "" | quote }}
+            - name: DEX_OKTA_ENABLED
+              value: {{ ternary "true" "false" (default false .Values.skyforge.dex.okta.enabled) | quote }}
+{{- if (default false .Values.skyforge.dex.okta.enabled) }}
+            - name: DEX_OKTA_NAME
+              value: {{ default "Okta" .Values.skyforge.dex.okta.name | quote }}
+            - name: DEX_OKTA_ISSUER
+              value: {{ default "" .Values.skyforge.dex.okta.issuer | quote }}
+            - name: DEX_OKTA_CLIENT_ID
+              value: {{ default "" .Values.skyforge.dex.okta.clientID | quote }}
+            - name: DEX_OKTA_SCOPES
+              value: {{ join "," (default (list) .Values.skyforge.dex.okta.scopes) | quote }}
+            - name: DEX_OKTA_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default "dex-okta-client-secret" .Values.skyforge.dex.okta.clientSecretSecretName | quote }}
+                  key: {{ default "dex-okta-client-secret" .Values.skyforge.dex.okta.clientSecretSecretKey | quote }}
+{{- end }}
           command:
             - sh
             - -c
