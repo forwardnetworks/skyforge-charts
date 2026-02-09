@@ -351,6 +351,7 @@ skyforge:
     # Auth mode for Skyforge (via Dex). Supported:
     # - google: Google Workspace / Cloud Identity login (recommended for Forward)
     # - ldap: LDAP login (optional for OSS installs)
+    # - okta: Okta login via Dex's generic OIDC connector
     authMode: "google"
     google:
       # Google OAuth client ID for Dex.
@@ -363,6 +364,26 @@ skyforge:
       # Where to read the Google OAuth client secret from.
       clientSecretSecretName: "dex-google-client-secret"
       clientSecretSecretKey: "dex-google-client-secret"
+    # Optional: enable Okta login alongside the primary authMode connector.
+    #
+    # This adds an additional "Okta" button on the Dex login page; it does NOT
+    # disable Google.
+    okta:
+      enabled: false
+      name: "Okta"
+      # OIDC issuer URL for your Okta auth server. Common defaults:
+      # - "https://<your-domain>.okta.com/oauth2/default" (default auth server)
+      # - "https://<your-domain>.okta.com/oauth2/<authServerId>" (custom auth server)
+      issuer: ""
+      clientID: ""
+      # Where to read the Okta OIDC client secret from.
+      clientSecretSecretName: "dex-okta-client-secret"
+      clientSecretSecretKey: "dex-okta-client-secret"
+      # Optional scopes to request from Okta.
+      scopes:
+        - "openid"
+        - "profile"
+        - "email"
     # LDAP connector settings (used only when authMode=ldap).
     # NOTE: This is intentionally unconfigured by default.
     ldap:
@@ -530,6 +551,8 @@ secrets:
       dex-client-coder-secret: ""
     dex-google-client-secret:
       dex-google-client-secret: ""
+    dex-okta-client-secret:
+      dex-okta-client-secret: ""
     skyforge-oidc-discovery-url:
       skyforge-oidc-discovery-url: ""
     skyforge-oidc-client-id:
