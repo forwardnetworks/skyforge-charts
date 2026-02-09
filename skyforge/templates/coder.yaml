@@ -17,6 +17,22 @@ spec:
         io.kompose.service: coder
     spec:
       serviceAccountName: coder
+      initContainers:
+        - name: ca-bundle
+          image: {{ .Values.images.python | quote }}
+          command:
+            - sh
+            - -c
+            # Coder's OIDC client uses system roots. Add Skyforge's extra CA(s) to a
+            # synthetic bundle and point Go's x509 loader at it via SSL_CERT_FILE.
+            - set -euo pipefail; cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+          volumeMounts:
+            - name: ca-work
+              mountPath: /work
+            - name: skyforge-ca-cert
+              mountPath: /etc/skyforge/skyforge-ca-cert
+              subPath: skyforge-ca-cert
+              readOnly: true
       containers:
         - name: coder
           image: {{ .Values.images.coder | quote }}
@@ -41,8 +57,8 @@ spec:
                 secretKeyRef:
                   name: dex-client-coder-secret
                   key: dex-client-coder-secret
-            - name: CODER_OIDC_CA_CERT
-              value: "/etc/ssl/certs/skyforge-ca.crt"
+            - name: SSL_CERT_FILE
+              value: "/work/ca-certificates.crt"
             - name: CODER_OIDC_AUTO_LOGIN
               value: {{ .Values.skyforge.coder.oidcAutoLogin | quote }}
             - name: CODER_DISABLE_PASSWORD_AUTH
@@ -70,14 +86,15 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/coder
               name: coder-data
-            - mountPath: /etc/ssl/certs/skyforge-ca.crt
-              name: skyforge-ca-cert
-              subPath: skyforge-ca-cert
+            - name: ca-work
+              mountPath: /work
               readOnly: true
       volumes:
         - name: coder-data
           persistentVolumeClaim:
             claimName: coder-data
+        - name: ca-work
+          emptyDir: {}
         - name: skyforge-ca-cert
           secret:
             secretName: skyforge-ca-cert
