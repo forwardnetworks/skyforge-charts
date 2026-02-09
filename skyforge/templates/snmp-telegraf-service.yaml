@@ -1,0 +1,17 @@
+{{- if and .Values.skyforge .Values.skyforge.snmpTraps .Values.skyforge.snmpTraps.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: skyforge-snmp-trap
+  labels:
+    app.kubernetes.io/name: skyforge-snmp-trap
+spec:
+  selector:
+    app.kubernetes.io/name: skyforge-snmp-telegraf
+  ports:
+    - name: snmptrap
+      port: {{ default 162 .Values.skyforge.snmpTraps.hostPort }}
+      targetPort: {{ default 162 .Values.skyforge.snmpTraps.hostPort }}
+      protocol: UDP
+{{- end }}
+

@@ -14,48 +14,28 @@ spec:
     metadata:
       annotations:
         checksum/dex-config: {{ include (print $.Template.BasePath "/dex-config-secret.yaml") . | sha256sum }}
-        checksum/dex-config-patcher: {{ include (print $.Template.BasePath "/dex-config-patcher.yaml") . | sha256sum }}
       labels:
         io.kompose.service: dex
     spec:
+      {{- /*
+      Dex config patching used to install Python deps at runtime, which fails in
+      clusters without outbound internet access. Instead:
+      - When manageConfig=true, Helm renders the full Dex config Secret.
+      - When manageConfig=false, we simply copy the existing Secret into the
+        expected path.
+      */ -}}
+      {{- if not .Values.skyforge.dex.manageConfig }}
       initContainers:
         - name: patch-config
           image: {{ .Values.images.python | quote }}
-          env:
-            - name: DEX_WEB_THEME
-              value: {{ .Values.skyforge.dex.webTheme | default "" | quote }}
-            - name: DEX_LOGO_URL
-              value: {{ .Values.skyforge.dex.logoUrl | default "" | quote }}
-            - name: DEX_OKTA_ENABLED
-              value: {{ ternary "true" "false" (default false .Values.skyforge.dex.okta.enabled) | quote }}
-{{- if (default false .Values.skyforge.dex.okta.enabled) }}
-            - name: DEX_OKTA_NAME
-              value: {{ default "Okta" .Values.skyforge.dex.okta.name | quote }}
-            - name: DEX_OKTA_ISSUER
-              value: {{ default "" .Values.skyforge.dex.okta.issuer | quote }}
-            - name: DEX_OKTA_CLIENT_ID
-              value: {{ default "" .Values.skyforge.dex.okta.clientID | quote }}
-            - name: DEX_OKTA_SCOPES
-              value: {{ join "," (default (list) .Values.skyforge.dex.okta.scopes) | quote }}
-            - name: DEX_OKTA_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ default "dex-okta-client-secret" .Values.skyforge.dex.okta.clientSecretSecretName | quote }}
-                  key: {{ default "dex-okta-client-secret" .Values.skyforge.dex.okta.clientSecretSecretKey | quote }}
-{{- end }}
-          command:
-            - sh
-            - -c
-            - python -m pip install --no-cache-dir pyyaml >/dev/null && python /config/patch.py
+          command: ["sh", "-c", "cp /etc/dex-src/config.yaml /etc/dex/config.yaml"]
           volumeMounts:
-            - name: dex-config-template
-              mountPath: /config
-              readOnly: true
             - name: dex-config-src
               mountPath: /etc/dex-src
               readOnly: true
             - name: dex-config
               mountPath: /etc/dex
+      {{- end }}
       containers:
         - name: dex
           image: {{ .Values.images.dex | quote }}
@@ -80,9 +60,6 @@ spec:
             items:
               - key: config.yaml
                 path: config.yaml
-        - name: dex-config-template
-          configMap:
-            name: dex-config-patcher
 ---
 apiVersion: v1
 kind: Service
