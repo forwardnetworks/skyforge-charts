@@ -92,8 +92,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260207-iosvfix8-a69f725"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260207-iosvfix8-a69f725-worker"
+  # NOTE: Keep these tags in sync with images that actually exist in GHCR.
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:dev-iosfix-20260208-4"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:dev-iosfix-20260208-4-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.
