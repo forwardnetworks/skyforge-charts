@@ -8,7 +8,7 @@ data:
     variable "db_url" {
       type = string
     }
-    
+
     env "prod" {
       url = var.db_url
       migration {
@@ -21,7 +21,7 @@ data:
         }
       }
     }
-    
+
 
   atlas.sum: |
     h1:fd5m4Af5HYnusYXtM7bHdp73VZ7bWdM2A6vK7Zk9Rv4=
@@ -91,7 +91,7 @@ data:
       created_at timestamptz NOT NULL DEFAULT now(),
       last_seen_at timestamptz
     );
-    
+
     CREATE TABLE sf_projects (
       id text PRIMARY KEY,
       slug text NOT NULL UNIQUE,
@@ -119,9 +119,9 @@ data:
       gitea_repo text NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE INDEX sf_projects_created_by_idx ON sf_projects(created_by);
-    
+
     CREATE TABLE sf_project_members (
       project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
       username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
@@ -129,9 +129,9 @@ data:
       granted_at timestamptz NOT NULL DEFAULT now(),
       PRIMARY KEY (project_id, username)
     );
-    
+
     CREATE INDEX sf_project_members_user_idx ON sf_project_members(username);
-    
+
     CREATE TABLE sf_project_groups (
       project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
       group_name text NOT NULL,
@@ -139,9 +139,9 @@ data:
       granted_at timestamptz NOT NULL DEFAULT now(),
       PRIMARY KEY (project_id, group_name)
     );
-    
+
     CREATE INDEX sf_project_groups_project_idx ON sf_project_groups(project_id);
-    
+
     CREATE TABLE sf_aws_sso_tokens (
       username text PRIMARY KEY,
       start_url text NOT NULL,
@@ -156,7 +156,7 @@ data:
       last_authenticated_at_utc timestamptz,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE TABLE sf_project_aws_static_credentials (
       project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
       access_key_id text NOT NULL,
@@ -164,7 +164,7 @@ data:
       session_token text,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE TABLE sf_audit_log (
       id bigserial PRIMARY KEY,
       created_at timestamptz NOT NULL DEFAULT now(),
@@ -175,10 +175,10 @@ data:
       project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
       details text
     );
-    
+
     CREATE INDEX sf_audit_log_created_at_idx ON sf_audit_log(created_at DESC);
     CREATE INDEX sf_audit_log_actor_idx ON sf_audit_log(actor_username);
-    
+
     CREATE TABLE sf_notifications (
       id uuid PRIMARY KEY,
       username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
@@ -192,9 +192,9 @@ data:
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE INDEX sf_notifications_user_idx ON sf_notifications(username, created_at DESC);
-    
+
     CREATE TABLE sf_settings (
       key text PRIMARY KEY,
       value text NOT NULL,
@@ -211,7 +211,7 @@ data:
       subscription_id text,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE TABLE sf_project_gcp_credentials (
       project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
       service_account_json text NOT NULL,
@@ -242,11 +242,11 @@ data:
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE UNIQUE INDEX IF NOT EXISTS sf_resources_provider_uq ON sf_resources(provider, resource_id);
     CREATE INDEX IF NOT EXISTS sf_resources_project_idx ON sf_resources(project_id);
     CREATE INDEX IF NOT EXISTS sf_resources_owner_idx ON sf_resources(owner_username);
-    
+
     CREATE TABLE IF NOT EXISTS sf_resource_events (
       id uuid PRIMARY KEY,
       resource_id uuid REFERENCES sf_resources(id) ON DELETE CASCADE,
@@ -258,10 +258,10 @@ data:
       details jsonb NOT NULL DEFAULT '{}'::jsonb,
       created_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_resource_events_resource_idx ON sf_resource_events(resource_id, created_at DESC);
     CREATE INDEX IF NOT EXISTS sf_resource_events_project_idx ON sf_resource_events(project_id, created_at DESC);
-    
+
     CREATE TABLE IF NOT EXISTS sf_cost_snapshots (
       id uuid PRIMARY KEY,
       resource_id uuid REFERENCES sf_resources(id) ON DELETE SET NULL,
@@ -275,10 +275,10 @@ data:
       metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
       created_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_cost_snapshots_project_idx ON sf_cost_snapshots(project_id, period_end DESC);
     CREATE INDEX IF NOT EXISTS sf_cost_snapshots_provider_idx ON sf_cost_snapshots(provider, period_end DESC);
-    
+
     CREATE TABLE IF NOT EXISTS sf_usage_snapshots (
       id uuid PRIMARY KEY,
       project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
@@ -291,7 +291,7 @@ data:
       metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
       collected_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_usage_snapshots_project_idx ON sf_usage_snapshots(project_id, collected_at DESC);
     CREATE INDEX IF NOT EXISTS sf_usage_snapshots_provider_idx ON sf_usage_snapshots(provider, collected_at DESC);
 
@@ -311,7 +311,7 @@ data:
       last_started_at timestamptz,
       last_finished_at timestamptz
     );
-    
+
     CREATE UNIQUE INDEX IF NOT EXISTS sf_deployments_project_name_uq ON sf_deployments(project_id, name);
     CREATE INDEX IF NOT EXISTS sf_deployments_project_idx ON sf_deployments(project_id, updated_at DESC);
 
@@ -321,7 +321,7 @@ data:
   20251227000100_deployments_eve_ng.up.sql: |
     ALTER TABLE sf_deployments
       DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
-    
+
     ALTER TABLE sf_deployments
       ADD CONSTRAINT sf_deployments_type_check CHECK (type IN ('terraform','netlab','eve_ng'));
 
@@ -347,10 +347,10 @@ data:
       message text,
       raw text NOT NULL
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_syslog_events_received_at_idx ON sf_syslog_events(received_at DESC);
     CREATE INDEX IF NOT EXISTS sf_syslog_events_source_ip_idx ON sf_syslog_events(source_ip);
-    
+
     CREATE TABLE IF NOT EXISTS sf_syslog_routes (
       source_cidr cidr PRIMARY KEY,
       owner_username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
@@ -358,7 +358,7 @@ data:
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_syslog_routes_owner_idx ON sf_syslog_routes(owner_username);
 
   20251230000200_webhooks_snmp.up.sql: |
@@ -367,7 +367,7 @@ data:
       token text NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE TABLE IF NOT EXISTS sf_webhook_events (
       id bigserial PRIMARY KEY,
       received_at timestamptz NOT NULL DEFAULT now(),
@@ -379,16 +379,16 @@ data:
       headers_json text,
       body text
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_webhook_events_received_at_idx ON sf_webhook_events(received_at DESC);
     CREATE INDEX IF NOT EXISTS sf_webhook_events_username_idx ON sf_webhook_events(username, received_at DESC);
-    
+
     CREATE TABLE IF NOT EXISTS sf_snmp_trap_tokens (
       username text PRIMARY KEY REFERENCES sf_users(username) ON UPDATE CASCADE,
       community text NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE TABLE IF NOT EXISTS sf_snmp_trap_events (
       id bigserial PRIMARY KEY,
       received_at timestamptz NOT NULL DEFAULT now(),
@@ -399,7 +399,7 @@ data:
       vars_json text,
       raw_hex text
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_snmp_trap_events_received_at_idx ON sf_snmp_trap_events(received_at DESC);
     CREATE INDEX IF NOT EXISTS sf_snmp_trap_events_username_idx ON sf_snmp_trap_events(username, received_at DESC);
 
@@ -419,7 +419,7 @@ data:
       expires_at timestamptz NOT NULL,
       revoked_at timestamptz
     );
-    
+
     CREATE INDEX sf_pki_certs_user_idx ON sf_pki_certs(username, issued_at DESC);
     CREATE INDEX sf_pki_certs_project_idx ON sf_pki_certs(project_id);
 
@@ -438,10 +438,10 @@ data:
       finished_at timestamptz,
       error text
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_tasks_project_idx ON sf_tasks(project_id, created_at DESC);
     CREATE INDEX IF NOT EXISTS sf_tasks_deployment_idx ON sf_tasks(deployment_id, created_at DESC);
-    
+
     CREATE TABLE IF NOT EXISTS sf_task_logs (
       id bigserial PRIMARY KEY,
       task_id bigint NOT NULL REFERENCES sf_tasks(id) ON DELETE CASCADE,
@@ -449,7 +449,7 @@ data:
       stream text NOT NULL DEFAULT 'stdout',
       output text NOT NULL
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_task_logs_task_idx ON sf_task_logs(task_id, created_at);
 
   20260102000200_variable_groups.up.sql: |
@@ -461,7 +461,7 @@ data:
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE UNIQUE INDEX IF NOT EXISTS sf_project_variable_groups_name_uq ON sf_project_variable_groups(project_id, name);
     CREATE INDEX IF NOT EXISTS sf_project_variable_groups_project_idx ON sf_project_variable_groups(project_id, updated_at DESC);
 
@@ -498,50 +498,50 @@ data:
       expires_at TIMESTAMPTZ NOT NULL,
       revoked_at TIMESTAMPTZ NULL
     );
-    
+
     CREATE INDEX sf_pki_ssh_certs_user_idx ON sf_pki_ssh_certs(username, issued_at DESC);
     CREATE INDEX sf_pki_ssh_certs_project_idx ON sf_pki_ssh_certs(project_id);
 
   20260103000100_workspace_rename.up.sql: |
     ALTER TABLE sf_projects RENAME TO sf_workspaces;
     ALTER TABLE sf_workspaces RENAME COLUMN legacy_project_id TO legacy_workspace_id;
-    
+
     ALTER TABLE sf_project_members RENAME TO sf_workspace_members;
     ALTER TABLE sf_workspace_members RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_project_groups RENAME TO sf_workspace_groups;
     ALTER TABLE sf_workspace_groups RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_project_aws_static_credentials RENAME TO sf_workspace_aws_static_credentials;
     ALTER TABLE sf_workspace_aws_static_credentials RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_project_azure_credentials RENAME TO sf_workspace_azure_credentials;
     ALTER TABLE sf_workspace_azure_credentials RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_project_gcp_credentials RENAME TO sf_workspace_gcp_credentials;
     ALTER TABLE sf_workspace_gcp_credentials RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_project_forward_credentials RENAME TO sf_workspace_forward_credentials;
     ALTER TABLE sf_workspace_forward_credentials RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_project_variable_groups RENAME TO sf_workspace_variable_groups;
     ALTER TABLE sf_workspace_variable_groups RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_deployments RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_deployments RENAME COLUMN last_task_project_id TO last_task_workspace_id;
-    
+
     ALTER TABLE sf_tasks RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_resources RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_resource_events RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_cost_snapshots RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_usage_snapshots RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_pki_certs RENAME COLUMN project_id TO workspace_id;
     ALTER TABLE sf_pki_ssh_certs RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER TABLE sf_audit_log RENAME COLUMN project_id TO workspace_id;
-    
+
     ALTER INDEX IF EXISTS sf_projects_created_by_idx RENAME TO sf_workspaces_created_by_idx;
     ALTER INDEX IF EXISTS sf_project_members_user_idx RENAME TO sf_workspace_members_user_idx;
     ALTER INDEX IF EXISTS sf_project_groups_project_idx RENAME TO sf_workspace_groups_workspace_idx;
@@ -566,33 +566,33 @@ data:
         EXCEPTION WHEN undefined_column THEN
           NULL;
         END;
-    
+
         BEGIN
           ALTER TABLE sf_projects RENAME COLUMN tofu_plan_template_id TO terraform_plan_template_id;
         EXCEPTION WHEN undefined_column THEN
           NULL;
         END;
-    
+
         BEGIN
           ALTER TABLE sf_projects RENAME COLUMN tofu_apply_template_id TO terraform_apply_template_id;
         EXCEPTION WHEN undefined_column THEN
           NULL;
         END;
       END IF;
-    
+
       IF to_regclass('sf_workspaces') IS NOT NULL THEN
         BEGIN
           ALTER TABLE sf_workspaces RENAME COLUMN tofu_init_template_id TO terraform_init_template_id;
         EXCEPTION WHEN undefined_column THEN
           NULL;
         END;
-    
+
         BEGIN
           ALTER TABLE sf_workspaces RENAME COLUMN tofu_plan_template_id TO terraform_plan_template_id;
         EXCEPTION WHEN undefined_column THEN
           NULL;
         END;
-    
+
         BEGIN
           ALTER TABLE sf_workspaces RENAME COLUMN tofu_apply_template_id TO terraform_apply_template_id;
         EXCEPTION WHEN undefined_column THEN
@@ -600,9 +600,9 @@ data:
         END;
       END IF;
     END $$;
-    
+
     UPDATE sf_deployments SET type='terraform' WHERE type='tofu';
-    
+
     ALTER TABLE sf_deployments DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
     ALTER TABLE sf_deployments ADD CONSTRAINT sf_deployments_type_check CHECK (type IN ('terraform','netlab','eve_ng','containerlab'));
 
@@ -614,7 +614,7 @@ data:
       event_type text NOT NULL,
       payload jsonb NOT NULL DEFAULT '{}'::jsonb
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_task_events_task_idx ON sf_task_events(task_id, id);
 
   20260113000300_forward_device_types.up.sql: |
@@ -623,7 +623,7 @@ data:
       forward_type text NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     -- Seed a few high-value defaults. Users/admin tooling can add/update mappings later.
     INSERT INTO sf_forward_device_types (device_key, forward_type)
     VALUES
@@ -652,18 +652,18 @@ data:
       metric_json JSONB NOT NULL,
       PRIMARY KEY (node, metric_name)
     );
-    
+
     CREATE INDEX IF NOT EXISTS idx_sf_node_metric_snapshots_updated_at
       ON sf_node_metric_snapshots (updated_at DESC);
-    
+
     CREATE TABLE IF NOT EXISTS sf_taskworker_heartbeats (
       instance TEXT PRIMARY KEY,
       last_seen TIMESTAMPTZ NOT NULL
     );
-    
+
     CREATE INDEX IF NOT EXISTS idx_sf_taskworker_heartbeats_last_seen
       ON sf_taskworker_heartbeats (last_seen DESC);
-    
+
 
   20260114000200_ldap_password_cache.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_ldap_password_cache (
@@ -672,15 +672,15 @@ data:
       expires_at TIMESTAMPTZ NOT NULL,
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
-    
+
     CREATE INDEX IF NOT EXISTS idx_sf_ldap_password_cache_expires_at
       ON sf_ldap_password_cache (expires_at DESC);
-    
+
 
   20260114000300_workspace_servers.down.sql: |
     DROP TABLE IF EXISTS sf_project_netlab_servers;
     DROP TABLE IF EXISTS sf_project_eve_servers;
-    
+
 
   20260114000300_workspace_servers.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_project_eve_servers (
@@ -697,9 +697,9 @@ data:
       updated_at timestamptz NOT NULL DEFAULT now(),
       UNIQUE (project_id, name)
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_project_eve_servers_project_idx ON sf_project_eve_servers(project_id);
-    
+
     CREATE TABLE IF NOT EXISTS sf_project_netlab_servers (
       id uuid PRIMARY KEY,
       project_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
@@ -711,7 +711,7 @@ data:
       updated_at timestamptz NOT NULL DEFAULT now(),
       UNIQUE (project_id, name)
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_project_netlab_servers_project_idx ON sf_project_netlab_servers(project_id);
 
   20260115000100_drop_legacy_workspace_id.up.sql: |
@@ -720,31 +720,31 @@ data:
   20260115000200_workspace_template_sources.up.sql: |
     ALTER TABLE sf_workspaces
       ADD COLUMN IF NOT EXISTS allow_external_template_repos boolean NOT NULL DEFAULT false;
-    
+
     ALTER TABLE sf_workspaces
       ADD COLUMN IF NOT EXISTS allow_custom_eve_servers boolean NOT NULL DEFAULT false;
-    
+
     ALTER TABLE sf_workspaces
       ADD COLUMN IF NOT EXISTS allow_custom_netlab_servers boolean NOT NULL DEFAULT false;
-    
+
     ALTER TABLE sf_workspaces
       ADD COLUMN IF NOT EXISTS external_template_repos jsonb NOT NULL DEFAULT '[]'::jsonb;
 
   20260116000100_task_priority.up.sql: |
     ALTER TABLE sf_tasks
       ADD COLUMN IF NOT EXISTS priority integer NOT NULL DEFAULT 0;
-    
+
     -- Optimized queue scans for oldest/highest-priority tasks.
     CREATE INDEX IF NOT EXISTS sf_tasks_queue_idx
       ON sf_tasks (workspace_id, status, priority DESC, id);
-    
+
     CREATE INDEX IF NOT EXISTS sf_tasks_queue_deployment_idx
       ON sf_tasks (workspace_id, deployment_id, status, priority DESC, id);
 
   20260116000200_deployment_types.up.sql: |
     ALTER TABLE sf_deployments
       DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
-    
+
     ALTER TABLE sf_deployments
       ADD CONSTRAINT sf_deployments_type_check
       CHECK ((type = ANY (ARRAY[
@@ -768,7 +768,7 @@ data:
       IF to_regclass('sf_workspaces') IS NULL THEN
         RETURN;
       END IF;
-    
+
       -- Older databases might still have legacy_project_id (pre-rename); preserve
       -- values by renaming it rather than creating a new empty column.
       IF EXISTS (
@@ -786,7 +786,7 @@ data:
       ) THEN
         ALTER TABLE sf_workspaces RENAME COLUMN legacy_project_id TO legacy_workspace_id;
       END IF;
-    
+
       IF NOT EXISTS (
         SELECT 1
         FROM information_schema.columns
@@ -811,19 +811,19 @@ data:
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       PRIMARY KEY (kind, owner, repo, branch, dir)
     );
-    
+
     CREATE INDEX IF NOT EXISTS idx_sf_template_indexes_updated_at
       ON sf_template_indexes (updated_at DESC);
-    
+
 
   20260117000300_fix_deployment_type_check.up.sql: |
     UPDATE sf_deployments
     SET type='terraform'
     WHERE type='tofu';
-    
+
     ALTER TABLE sf_deployments
       DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
-    
+
     ALTER TABLE sf_deployments
       ADD CONSTRAINT sf_deployments_type_check
       CHECK ((type = ANY (ARRAY[
@@ -867,34 +867,34 @@ data:
       event_type TEXT NOT NULL DEFAULT '',
       payload JSONB NOT NULL DEFAULT '{}'::jsonb
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_deployment_ui_events_lookup
       ON sf_deployment_ui_events (workspace_id, deployment_id, id DESC);
-    
+
 
   20260119000200_workspace_server_api_credentials.down.sql: |
     ALTER TABLE sf_project_netlab_servers
       DROP COLUMN IF EXISTS api_user,
       DROP COLUMN IF EXISTS api_password;
-    
+
     ALTER TABLE sf_project_eve_servers
       DROP COLUMN IF EXISTS api_user,
       DROP COLUMN IF EXISTS api_password;
-    
+
 
   20260119000200_workspace_server_api_credentials.up.sql: |
     ALTER TABLE sf_project_netlab_servers
       ADD COLUMN IF NOT EXISTS api_user text,
       ADD COLUMN IF NOT EXISTS api_password text;
-    
+
     ALTER TABLE sf_project_eve_servers
       ADD COLUMN IF NOT EXISTS api_user text,
       ADD COLUMN IF NOT EXISTS api_password text;
-    
+
 
   20260119000300_user_git_credentials.down.sql: |
     DROP TABLE IF EXISTS sf_user_git_credentials;
-    
+
 
   20260119000300_user_git_credentials.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_user_git_credentials (
@@ -906,11 +906,11 @@ data:
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
 
   20260128000100_user_forward_collectors.down.sql: |
     DROP TABLE IF EXISTS sf_user_forward_collectors;
-    
+
 
   20260128000100_user_forward_collectors.up.sql: |
     CREATE TABLE sf_user_forward_collectors (
@@ -929,14 +929,14 @@ data:
       last_used_at timestamptz,
       is_default boolean NOT NULL DEFAULT false
     );
-    
+
     CREATE UNIQUE INDEX sf_user_forward_collectors_username_name
       ON sf_user_forward_collectors (username, name);
-    
+
     CREATE UNIQUE INDEX sf_user_forward_collectors_username_default
       ON sf_user_forward_collectors (username)
       WHERE is_default;
-    
+
 
   20260128000200_drop_legacy_workspace_id_final.up.sql: |
     -- Drop legacy workspace ID columns.
@@ -949,7 +949,7 @@ data:
       IF to_regclass('sf_workspaces') IS NULL THEN
         RETURN;
       END IF;
-    
+
       -- Extremely old DBs could still have legacy_project_id.
       IF EXISTS (
         SELECT 1
@@ -960,7 +960,7 @@ data:
       ) THEN
         ALTER TABLE sf_workspaces DROP COLUMN legacy_project_id;
       END IF;
-    
+
       IF EXISTS (
         SELECT 1
         FROM information_schema.columns
@@ -971,7 +971,7 @@ data:
         ALTER TABLE sf_workspaces DROP COLUMN legacy_workspace_id;
       END IF;
     END $$;
-    
+
 
   20260129000100_auth_flow_state.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_aws_device_auth_requests (
@@ -987,9 +987,9 @@ data:
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_aws_device_auth_requests_user_idx ON sf_aws_device_auth_requests(username, expires_at DESC);
-    
+
     CREATE TABLE IF NOT EXISTS sf_cloud_credential_status (
       key text PRIMARY KEY,
       ok boolean NOT NULL,
@@ -999,7 +999,7 @@ data:
   20260129000200_forward_device_types_firewalls.up.sql: |
     -- Seed Forward device types for firewall platforms used by Skyforge.
     -- Keep this additive (do not edit earlier migrations).
-    
+
     INSERT INTO sf_forward_device_types (device_key, forward_type)
     VALUES
       ('fortios', 'fortinet_ssh'),
@@ -1007,12 +1007,12 @@ data:
       ('vsrx', 'juniper_srx_ssh'),
       ('srx', 'juniper_srx_ssh')
     ON CONFLICT (device_key) DO NOTHING;
-    
+
 
   20260130000100_forward_device_types_juniper_junos.up.sql: |
     -- Seed Forward device types for Juniper routers/switches.
     -- Netlab uses vjunos-* and vmx device keys; Forward expects explicit classic types.
-    
+
     INSERT INTO sf_forward_device_types (device_key, forward_type)
     VALUES
       ('vjunos-switch', 'juniper_junos_ssh'),
@@ -1020,11 +1020,11 @@ data:
       ('vmx',           'juniper_junos_ssh'),
       ('junos',         'juniper_junos_ssh')
     ON CONFLICT (device_key) DO UPDATE SET forward_type = EXCLUDED.forward_type;
-    
+
 
   20260130000200_user_servicenow_configs.down.sql: |
     DROP TABLE IF EXISTS sf_user_servicenow_configs;
-    
+
 
   20260130000200_user_servicenow_configs.up.sql: |
     CREATE TABLE sf_user_servicenow_configs (
@@ -1041,33 +1041,33 @@ data:
       last_install_finished_at timestamptz,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
 
   20260130000300_servicenow_forward_collector_id.down.sql: |
     ALTER TABLE sf_user_servicenow_configs
       DROP COLUMN IF EXISTS forward_collector_config_id;
-    
+
 
   20260130000300_servicenow_forward_collector_id.up.sql: |
     ALTER TABLE sf_user_servicenow_configs
       ADD COLUMN forward_collector_config_id text NOT NULL DEFAULT '';
-    
+
 
   20260130000400_forward_device_types_remove_srx.down.sql: |
     -- Restore legacy alias key for Juniper SRX if needed.
-    
+
     INSERT INTO sf_forward_device_types (device_key, forward_type)
     VALUES ('srx', 'juniper_srx_ssh')
     ON CONFLICT (device_key) DO NOTHING;
 
   20260130000400_forward_device_types_remove_srx.up.sql: |
     -- Collapse Juniper SRX keys to a single canonical device_key (vsrx).
-    
+
     DELETE FROM sf_forward_device_types WHERE device_key = 'srx';
 
   20260130001000_user_gemini_oauth.down.sql: |
     DROP TABLE IF EXISTS sf_user_gemini_oauth;
-    
+
 
   20260130001000_user_gemini_oauth.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_user_gemini_oauth (
@@ -1078,9 +1078,9 @@ data:
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
-    
+
     CREATE INDEX IF NOT EXISTS idx_sf_user_gemini_oauth_updated_at ON sf_user_gemini_oauth(updated_at);
-    
+
 
   20260201000100_user_settings.down.sql: |
     DROP TABLE IF EXISTS sf_user_settings;
@@ -1097,7 +1097,7 @@ data:
     DROP TABLE IF EXISTS sf_user_gcp_credentials;
     DROP TABLE IF EXISTS sf_user_azure_credentials;
     DROP TABLE IF EXISTS sf_user_aws_static_credentials;
-    
+
 
   20260201000200_user_cloud_credentials.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_user_aws_static_credentials (
@@ -1106,7 +1106,7 @@ data:
       secret_access_key text NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE TABLE IF NOT EXISTS sf_user_azure_credentials (
       username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
       tenant_id text NOT NULL,
@@ -1115,19 +1115,19 @@ data:
       subscription_id text,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE TABLE IF NOT EXISTS sf_user_gcp_credentials (
       username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
       service_account_json text NOT NULL,
       project_id_override text,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
 
   20260201000300_user_servers.down.sql: |
     DROP TABLE IF EXISTS sf_user_eve_servers;
     DROP TABLE IF EXISTS sf_user_netlab_servers;
-    
+
 
   20260201000300_user_servers.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_user_netlab_servers (
@@ -1143,9 +1143,9 @@ data:
       updated_at timestamptz NOT NULL DEFAULT now(),
       UNIQUE (username, name)
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_user_netlab_servers_username_idx ON sf_user_netlab_servers(username);
-    
+
     CREATE TABLE IF NOT EXISTS sf_user_eve_servers (
       id uuid PRIMARY KEY,
       username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
@@ -1162,22 +1162,22 @@ data:
       updated_at timestamptz NOT NULL DEFAULT now(),
       UNIQUE (username, name)
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_user_eve_servers_username_idx ON sf_user_eve_servers(username);
-    
+
 
   20260201000400_user_external_template_repos.down.sql: |
     -- SQLite doesn't support DROP COLUMN easily; leave column in place.
-    
+
 
   20260201000400_user_external_template_repos.up.sql: |
     ALTER TABLE sf_user_settings
       ADD COLUMN IF NOT EXISTS external_template_repos_json text NOT NULL DEFAULT '[]';
-    
+
 
   20260201000500_user_aws_sso_credentials.down.sql: |
     DROP TABLE IF EXISTS sf_user_aws_sso_credentials;
-    
+
 
   20260201000500_user_aws_sso_credentials.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_user_aws_sso_credentials (
@@ -1188,11 +1188,11 @@ data:
       role_name text NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
 
   20260201000600_user_containerlab_servers.down.sql: |
     DROP TABLE IF EXISTS sf_user_containerlab_servers;
-    
+
 
   20260201000600_user_containerlab_servers.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_user_containerlab_servers (
@@ -1208,23 +1208,23 @@ data:
       updated_at timestamptz NOT NULL DEFAULT now(),
       UNIQUE (username, name)
     );
-    
+
     CREATE INDEX IF NOT EXISTS sf_user_containerlab_servers_username_idx ON sf_user_containerlab_servers(username);
-    
+
 
   20260201000700_workspace_allow_custom_containerlab_servers.down.sql: |
     ALTER TABLE sf_workspaces
       DROP COLUMN IF EXISTS allow_custom_containerlab_servers;
-    
+
 
   20260201000700_workspace_allow_custom_containerlab_servers.up.sql: |
     ALTER TABLE sf_workspaces
       ADD COLUMN IF NOT EXISTS allow_custom_containerlab_servers boolean NOT NULL DEFAULT false;
-    
+
 
   20260201000800_user_ibm_cloud_credentials.down.sql: |
     DROP TABLE IF EXISTS sf_user_ibm_cloud_credentials;
-    
+
 
   20260201000800_user_ibm_cloud_credentials.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_user_ibm_cloud_credentials (
@@ -1234,11 +1234,11 @@ data:
       resource_group_id TEXT NOT NULL DEFAULT '',
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
-    
+
 
   20260201000900_user_ai_generations.down.sql: |
     DROP TABLE IF EXISTS sf_user_ai_generations;
-    
+
 
   20260201000900_user_ai_generations.up.sql: |
     CREATE TABLE IF NOT EXISTS sf_user_ai_generations (
@@ -1251,9 +1251,9 @@ data:
       warnings jsonb NOT NULL DEFAULT '[]'::jsonb,
       created_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE INDEX IF NOT EXISTS idx_sf_user_ai_generations_user_created ON sf_user_ai_generations(username, created_at DESC);
-    
+
 
   20260201001000_user_variable_groups.down.sql: |
     DROP TABLE IF EXISTS sf_user_variable_groups;
@@ -1267,10 +1267,10 @@ data:
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
-    
+
     CREATE UNIQUE INDEX IF NOT EXISTS sf_user_variable_groups_name_uq
       ON sf_user_variable_groups(username, name);
-    
+
     CREATE INDEX IF NOT EXISTS sf_user_variable_groups_username_idx
       ON sf_user_variable_groups(username, updated_at DESC);
 
@@ -1283,14 +1283,14 @@ data:
     -- NOTE: This is a best-effort rollback and may drop data if the column is in use.
     ALTER TABLE IF EXISTS sf_workspaces
       DROP COLUMN IF EXISTS eve_ng_run_template_id;
-    
+
 
   20260201001300_workspaces_eve_ng_run_template_id.up.sql: |
     -- Ensure sf_workspaces has eve_ng_run_template_id (Skyforge uses this for the EVE-NG template pointer).
     -- Older DBs may still only have labpp_run_template_id, so backfill from that when present.
     ALTER TABLE IF EXISTS sf_workspaces
       ADD COLUMN IF NOT EXISTS eve_ng_run_template_id integer;
-    
+
     DO $$
     BEGIN
       IF EXISTS (
@@ -1308,12 +1308,1112 @@ data:
         $q$;
       END IF;
     END $$;
-    
+
+  20260207000100_user_elastic_config.down.sql: |
+    DROP TABLE IF EXISTS sf_user_elastic_config;
+
+
+  20260207000100_user_elastic_config.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_user_elastic_config (
+      username TEXT PRIMARY KEY,
+      url TEXT NOT NULL,
+      auth_type TEXT NOT NULL DEFAULT 'none', -- none | api_key | basic
+      api_key_enc TEXT NOT NULL DEFAULT '',
+      basic_username TEXT NOT NULL DEFAULT '',
+      basic_password_enc TEXT NOT NULL DEFAULT '',
+      index_prefix TEXT NOT NULL DEFAULT 'skyforge',
+      verify_tls BOOLEAN NOT NULL DEFAULT true,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sf_user_elastic_config_updated_at ON sf_user_elastic_config(updated_at);
+
+
+  20260207000200_capacity_tables.down.sql: |
+    DROP TABLE IF EXISTS sf_capacity_nqe_cache;
+    DROP TABLE IF EXISTS sf_capacity_rollups;
+
+
+  20260207000200_capacity_tables.up.sql: |
+    -- Keep this additive (do not edit earlier migrations).
+
+    -- Capacity rollups store computed time-window summaries derived from Forward perf history.
+    -- period_end is the "as-of" timestamp for a rollup run (bucketed to the hour).
+    CREATE TABLE IF NOT EXISTS sf_capacity_rollups (
+      id bigserial PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      deployment_id uuid NOT NULL REFERENCES sf_deployments(id) ON DELETE CASCADE,
+      forward_network_id text NOT NULL,
+      object_type text NOT NULL,
+      object_id text NOT NULL,
+      metric text NOT NULL,
+      window_label text NOT NULL,
+      period_end timestamptz NOT NULL,
+      samples integer NOT NULL DEFAULT 0,
+      avg double precision,
+      p95 double precision,
+      p99 double precision,
+      max double precision,
+      slope_per_day double precision,
+      forecast_crossing_ts timestamptz,
+      threshold double precision,
+      details jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    -- One row per (object, metric, window) per rollup run.
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_capacity_rollups_uq
+      ON sf_capacity_rollups(workspace_id, deployment_id, object_type, object_id, metric, window_label, period_end);
+
+    CREATE INDEX IF NOT EXISTS sf_capacity_rollups_lookup_idx
+      ON sf_capacity_rollups(workspace_id, deployment_id, metric, window_label, period_end DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_capacity_rollups_object_idx
+      ON sf_capacity_rollups(workspace_id, deployment_id, object_type, object_id);
+
+    -- Cache for capacity-related NQE query outputs (inventory, route scale, BGP scale).
+    -- snapshot_id is intentionally defaulted to '' to allow a stable "latest" cache entry.
+    CREATE TABLE IF NOT EXISTS sf_capacity_nqe_cache (
+      id bigserial PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      deployment_id uuid NOT NULL REFERENCES sf_deployments(id) ON DELETE CASCADE,
+      forward_network_id text NOT NULL,
+      query_id text NOT NULL,
+      snapshot_id text NOT NULL DEFAULT '',
+      payload jsonb NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_capacity_nqe_cache_uq
+      ON sf_capacity_nqe_cache(workspace_id, deployment_id, query_id, snapshot_id);
+
+    CREATE INDEX IF NOT EXISTS sf_capacity_nqe_cache_lookup_idx
+      ON sf_capacity_nqe_cache(workspace_id, deployment_id, query_id, created_at DESC);
+
+  20260207000300_policy_reports_governance.down.sql: |
+    DROP TABLE IF EXISTS sf_policy_report_audit_log;
+    DROP TABLE IF EXISTS sf_policy_report_exceptions;
+    DROP TABLE IF EXISTS sf_policy_report_recert_assignments;
+    DROP TABLE IF EXISTS sf_policy_report_recert_campaigns;
+
+
+  20260207000300_policy_reports_governance.up.sql: |
+    -- Policy Reports governance primitives (recert + exceptions).
+    -- Read-only by design: these tables track review/attestation state, not config changes.
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_recert_campaigns (
+      id uuid PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      name text NOT NULL,
+      description text,
+      forward_network_id text NOT NULL,
+      snapshot_id text NOT NULL DEFAULT '',
+      pack_id text NOT NULL,
+      status text NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN','CLOSED')),
+      due_at timestamptz,
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_rc_campaigns_ws_idx
+      ON sf_policy_report_recert_campaigns(workspace_id, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_recert_assignments (
+      id uuid PRIMARY KEY,
+      campaign_id uuid NOT NULL REFERENCES sf_policy_report_recert_campaigns(id) ON DELETE CASCADE,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      finding_id text NOT NULL,
+      check_id text NOT NULL,
+      assignee_username text REFERENCES sf_users(username) ON UPDATE CASCADE,
+      status text NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','ATTESTED','WAIVED')),
+      justification text,
+      attested_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_rc_assignments_campaign_idx
+      ON sf_policy_report_recert_assignments(campaign_id, status, created_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_rc_assignments_ws_finding_idx
+      ON sf_policy_report_recert_assignments(workspace_id, finding_id);
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_exceptions (
+      id uuid PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      finding_id text NOT NULL,
+      check_id text NOT NULL,
+      status text NOT NULL DEFAULT 'PROPOSED' CHECK (status IN ('PROPOSED','APPROVED','REJECTED','EXPIRED')),
+      justification text NOT NULL,
+      ticket_url text,
+      expires_at timestamptz,
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      approved_by text REFERENCES sf_users(username) ON UPDATE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_exceptions_ws_idx
+      ON sf_policy_report_exceptions(workspace_id, status, created_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_exceptions_ws_finding_idx
+      ON sf_policy_report_exceptions(workspace_id, finding_id);
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_audit_log (
+      id bigserial PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      actor_username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      action text NOT NULL,
+      details jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_audit_ws_created_idx
+      ON sf_policy_report_audit_log(workspace_id, created_at DESC);
+
+
+  20260207000400_policy_reports_governance_finding_json.down.sql: |
+    DROP INDEX IF EXISTS sf_pr_exceptions_ws_finding_check_uniq;
+    DROP INDEX IF EXISTS sf_pr_rc_assignments_campaign_finding_check_uniq;
+
+    ALTER TABLE sf_policy_report_recert_assignments
+      DROP COLUMN IF EXISTS finding;
+
+
+  20260207000400_policy_reports_governance_finding_json.up.sql: |
+    -- Add finding JSON blobs and uniqueness constraints for Policy Reports governance.
+
+    ALTER TABLE sf_policy_report_recert_assignments
+      ADD COLUMN IF NOT EXISTS finding jsonb NOT NULL DEFAULT '{}'::jsonb;
+
+    -- Prevent duplicate assignments for the same finding within a campaign.
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_rc_assignments_campaign_finding_check_uniq
+      ON sf_policy_report_recert_assignments(campaign_id, finding_id, check_id);
+
+    -- Avoid a pile-up of identical exceptions per finding.
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_exceptions_ws_finding_check_uniq
+      ON sf_policy_report_exceptions(workspace_id, finding_id, check_id);
+
+
+  20260207000500_policy_reports_exceptions_forward_network.down.sql: |
+    -- Undo Forward network scoping for Policy Reports exceptions.
+
+    DROP INDEX IF EXISTS sf_pr_exceptions_ws_network_status_updated_idx;
+    DROP INDEX IF EXISTS sf_pr_exceptions_ws_network_finding_check_uniq;
+
+    ALTER TABLE sf_policy_report_exceptions
+      DROP COLUMN IF EXISTS forward_network_id;
+
+    -- Restore pre-existing uniqueness constraint.
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_exceptions_ws_finding_check_uniq
+      ON sf_policy_report_exceptions(workspace_id, finding_id, check_id);
+
+
+  20260207000500_policy_reports_exceptions_forward_network.up.sql: |
+    -- Scope Policy Reports exceptions to a Forward network id.
+
+    ALTER TABLE sf_policy_report_exceptions
+      ADD COLUMN IF NOT EXISTS forward_network_id text NOT NULL DEFAULT '';
+
+    -- Allow identical findingId/checkId exceptions across different Forward networks.
+    DROP INDEX IF EXISTS sf_pr_exceptions_ws_finding_check_uniq;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_exceptions_ws_network_finding_check_uniq
+      ON sf_policy_report_exceptions(workspace_id, forward_network_id, finding_id, check_id);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_exceptions_ws_network_status_updated_idx
+      ON sf_policy_report_exceptions(workspace_id, forward_network_id, status, updated_at DESC);
+
+
+  20260207000600_policy_reports_forward_networks.down.sql: |
+    DROP INDEX IF EXISTS sf_pr_forward_networks_ws_created_idx;
+    DROP TABLE IF EXISTS sf_policy_report_forward_networks;
+
+
+  20260207000600_policy_reports_forward_networks.up.sql: |
+    -- Persist Forward networks (by id) for Policy Reports so users can manage multiple networks per workspace.
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_forward_networks (
+      id uuid PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      forward_network_id text NOT NULL,
+      name text NOT NULL,
+      description text,
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      UNIQUE (workspace_id, forward_network_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_forward_networks_ws_created_idx
+      ON sf_policy_report_forward_networks(workspace_id, created_at DESC);
+
+
+  20260207000700_policy_reports_forward_network_credentials.down.sql: |
+    DROP INDEX IF EXISTS sf_pr_fwd_net_creds_ws_user_updated_idx;
+    DROP TABLE IF EXISTS sf_policy_report_forward_network_credentials;
+
+
+  20260207000700_policy_reports_forward_network_credentials.up.sql: |
+    -- Store per-user Forward credentials scoped to a Forward network id for Policy Reports.
+    -- Secrets are encrypted at rest by the application using the session secret key.
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_forward_network_credentials (
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      forward_network_id text NOT NULL,
+      base_url_enc text NOT NULL,
+      forward_username_enc text NOT NULL,
+      forward_password_enc text NOT NULL,
+      skip_tls_verify boolean NOT NULL DEFAULT false,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (workspace_id, username, forward_network_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_fwd_net_creds_ws_user_updated_idx
+      ON sf_policy_report_forward_network_credentials(workspace_id, username, updated_at DESC);
+
+
+  20260207000800_policy_reports_forward_networks_collector_config.down.sql: |
+    ALTER TABLE sf_policy_report_forward_networks
+      DROP COLUMN IF EXISTS collector_config_id;
+
+
+  20260207000800_policy_reports_forward_networks_collector_config.up.sql: |
+    ALTER TABLE sf_policy_report_forward_networks
+      ADD COLUMN IF NOT EXISTS collector_config_id text;
+
+
+  20260207000900_capacity_tables_forward_network_scope.down.sql: |
+    DROP INDEX IF EXISTS sf_capacity_rollups_fwd_uq;
+    DROP INDEX IF EXISTS sf_capacity_rollups_fwd_lookup_idx;
+    DROP INDEX IF EXISTS sf_capacity_rollups_fwd_object_idx;
+    DROP INDEX IF EXISTS sf_capacity_nqe_cache_fwd_uq;
+    DROP INDEX IF EXISTS sf_capacity_nqe_cache_fwd_lookup_idx;
+
+    -- Best-effort. This will fail if NULL rows exist.
+    ALTER TABLE sf_capacity_rollups ALTER COLUMN deployment_id SET NOT NULL;
+    ALTER TABLE sf_capacity_nqe_cache ALTER COLUMN deployment_id SET NOT NULL;
+
+
+  20260207000900_capacity_tables_forward_network_scope.up.sql: |
+    -- Allow capacity rollups and NQE cache rows to be keyed by Forward Network ID alone
+    -- (deployment_id is NULL) to support user-managed Forward networks.
+
+    ALTER TABLE sf_capacity_rollups ALTER COLUMN deployment_id DROP NOT NULL;
+    ALTER TABLE sf_capacity_nqe_cache ALTER COLUMN deployment_id DROP NOT NULL;
+
+    -- Enforce uniqueness for network-scoped rows (deployment_id IS NULL).
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_capacity_rollups_fwd_uq
+      ON sf_capacity_rollups(workspace_id, forward_network_id, object_type, object_id, metric, window_label, period_end)
+      WHERE deployment_id IS NULL;
+
+    CREATE INDEX IF NOT EXISTS sf_capacity_rollups_fwd_lookup_idx
+      ON sf_capacity_rollups(workspace_id, forward_network_id, metric, window_label, period_end DESC)
+      WHERE deployment_id IS NULL;
+
+    CREATE INDEX IF NOT EXISTS sf_capacity_rollups_fwd_object_idx
+      ON sf_capacity_rollups(workspace_id, forward_network_id, object_type, object_id)
+      WHERE deployment_id IS NULL;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_capacity_nqe_cache_fwd_uq
+      ON sf_capacity_nqe_cache(workspace_id, forward_network_id, query_id, snapshot_id)
+      WHERE deployment_id IS NULL;
+
+    CREATE INDEX IF NOT EXISTS sf_capacity_nqe_cache_fwd_lookup_idx
+      ON sf_capacity_nqe_cache(workspace_id, forward_network_id, query_id, created_at DESC)
+      WHERE deployment_id IS NULL;
+
+
+  20260207001000_policy_reports_runs_and_zones.down.sql: |
+    DROP TABLE IF EXISTS sf_policy_report_zones;
+    DROP TABLE IF EXISTS sf_policy_report_findings_agg;
+    DROP TABLE IF EXISTS sf_policy_report_run_findings;
+    DROP TABLE IF EXISTS sf_policy_report_run_checks;
+    DROP TABLE IF EXISTS sf_policy_report_runs;
+
+
+  20260207001000_policy_reports_runs_and_zones.up.sql: |
+    -- Policy Reports: stored runs + normalized findings + simple "zones" (CIDR sets).
+    -- These tables remain read-only with respect to device config; they only store
+    -- execution outputs and governance metadata.
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_runs (
+      id uuid PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      forward_network_id text NOT NULL,
+      snapshot_id text NOT NULL DEFAULT '',
+      pack_id text NOT NULL,
+      title text NOT NULL DEFAULT '',
+      status text NOT NULL DEFAULT 'RUNNING' CHECK (status IN ('RUNNING','SUCCEEDED','FAILED')),
+      error text,
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      started_at timestamptz NOT NULL DEFAULT now(),
+      finished_at timestamptz,
+      request jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_runs_ws_started_idx
+      ON sf_policy_report_runs(workspace_id, started_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_runs_ws_net_started_idx
+      ON sf_policy_report_runs(workspace_id, forward_network_id, started_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_runs_ws_pack_started_idx
+      ON sf_policy_report_runs(workspace_id, pack_id, started_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_runs_ws_status_started_idx
+      ON sf_policy_report_runs(workspace_id, status, started_at DESC);
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_run_checks (
+      run_id uuid NOT NULL REFERENCES sf_policy_report_runs(id) ON DELETE CASCADE,
+      check_id text NOT NULL,
+      total integer NOT NULL DEFAULT 0,
+      PRIMARY KEY (run_id, check_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_run_checks_run_idx
+      ON sf_policy_report_run_checks(run_id);
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_run_findings (
+      run_id uuid NOT NULL REFERENCES sf_policy_report_runs(id) ON DELETE CASCADE,
+      check_id text NOT NULL,
+      finding_id text NOT NULL,
+      risk_score integer NOT NULL DEFAULT 0,
+      asset_key text,
+      finding jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (run_id, check_id, finding_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_run_findings_run_check_idx
+      ON sf_policy_report_run_findings(run_id, check_id);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_run_findings_run_risk_idx
+      ON sf_policy_report_run_findings(run_id, risk_score DESC);
+
+    -- Aggregate / current posture view for findings (per Forward network).
+    CREATE TABLE IF NOT EXISTS sf_policy_report_findings_agg (
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      forward_network_id text NOT NULL,
+      check_id text NOT NULL,
+      finding_id text NOT NULL,
+      status text NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','RESOLVED')),
+      risk_score integer NOT NULL DEFAULT 0,
+      asset_key text,
+      finding jsonb NOT NULL DEFAULT '{}'::jsonb,
+      first_seen_at timestamptz NOT NULL DEFAULT now(),
+      last_seen_at timestamptz NOT NULL DEFAULT now(),
+      resolved_at timestamptz,
+      last_run_id uuid,
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (workspace_id, forward_network_id, check_id, finding_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_findings_agg_ws_net_status_idx
+      ON sf_policy_report_findings_agg(workspace_id, forward_network_id, status, last_seen_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_findings_agg_ws_status_risk_idx
+      ON sf_policy_report_findings_agg(workspace_id, status, risk_score DESC);
+
+    -- "Zones" are user-defined CIDR sets used as inputs to segmentation checks.
+    CREATE TABLE IF NOT EXISTS sf_policy_report_zones (
+      id uuid PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      forward_network_id text NOT NULL,
+      name text NOT NULL,
+      description text,
+      subnets jsonb NOT NULL DEFAULT '[]'::jsonb,
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_zones_ws_net_idx
+      ON sf_policy_report_zones(workspace_id, forward_network_id, created_at DESC);
+
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_zones_ws_net_name_uq
+      ON sf_policy_report_zones(workspace_id, forward_network_id, lower(name));
+
+
+  20260207001100_policy_reports_presets.down.sql: |
+    DROP TABLE IF EXISTS sf_policy_report_presets;
+
+
+  20260207001100_policy_reports_presets.up.sql: |
+    -- Policy Reports: scheduled presets (saved recurring runs) per Forward network ID and owner user.
+
+    CREATE TABLE IF NOT EXISTS sf_policy_report_presets (
+      id uuid PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      forward_network_id text NOT NULL,
+      name text NOT NULL,
+      description text,
+      kind text NOT NULL DEFAULT 'PACK' CHECK (kind IN ('PACK','CUSTOM')),
+      pack_id text NOT NULL DEFAULT '',
+      title_template text NOT NULL DEFAULT '',
+      snapshot_id text NOT NULL DEFAULT '',
+      checks jsonb NOT NULL DEFAULT '[]'::jsonb,
+      query_options jsonb NOT NULL DEFAULT '{}'::jsonb,
+      max_per_check integer NOT NULL DEFAULT 0,
+      max_total integer NOT NULL DEFAULT 0,
+      enabled boolean NOT NULL DEFAULT true,
+      interval_minutes integer NOT NULL DEFAULT 1440, -- daily
+      next_run_at timestamptz,
+      last_run_id uuid,
+      last_run_at timestamptz,
+      last_error text,
+      owner_username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_pr_presets_ws_idx
+      ON sf_policy_report_presets(workspace_id, created_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_presets_ws_net_idx
+      ON sf_policy_report_presets(workspace_id, forward_network_id, updated_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_pr_presets_due_idx
+      ON sf_policy_report_presets(enabled, next_run_at);
+
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_presets_ws_net_name_uq
+      ON sf_policy_report_presets(workspace_id, forward_network_id, lower(name));
+
+
+  20260208000100_policy_reports_presets_paths_kind.down.sql: |
+    -- Policy Reports: revert presets.kind check constraint (remove PATHS).
+
+    DO $$
+    DECLARE
+      t regclass;
+    BEGIN
+      t := to_regclass('public.sf_policy_report_presets');
+      IF t IS NULL THEN
+        RETURN;
+      END IF;
+
+      IF EXISTS (
+        SELECT 1 FROM pg_constraint
+         WHERE conrelid=t AND conname='sf_policy_report_presets_kind_check'
+      ) THEN
+        EXECUTE 'ALTER TABLE sf_policy_report_presets DROP CONSTRAINT sf_policy_report_presets_kind_check';
+      END IF;
+
+      EXECUTE 'ALTER TABLE sf_policy_report_presets ADD CONSTRAINT sf_policy_report_presets_kind_check CHECK (kind IN (''PACK'',''CUSTOM''))';
+    END $$;
+
+
+  20260208000100_policy_reports_presets_paths_kind.up.sql: |
+    -- Policy Reports: extend presets.kind to include PATHS (for scheduled Paths Assurance suites).
+
+    DO $$
+    DECLARE
+      t regclass;
+      c record;
+    BEGIN
+      t := to_regclass('public.sf_policy_report_presets');
+      IF t IS NULL THEN
+        RETURN;
+      END IF;
+
+      -- Drop the existing kind check constraint if present (name depends on how it was created).
+      IF EXISTS (
+        SELECT 1 FROM pg_constraint
+         WHERE conrelid=t AND conname='sf_policy_report_presets_kind_check'
+      ) THEN
+        EXECUTE 'ALTER TABLE sf_policy_report_presets DROP CONSTRAINT sf_policy_report_presets_kind_check';
+      END IF;
+
+      -- Defensive: drop any other CHECK constraints that mention "kind" and this table.
+      FOR c IN
+        SELECT conname
+          FROM pg_constraint
+         WHERE conrelid=t AND contype='c'
+           AND pg_get_constraintdef(oid) ILIKE '%kind%'
+      LOOP
+        EXECUTE format('ALTER TABLE sf_policy_report_presets DROP CONSTRAINT %I', c.conname);
+      END LOOP;
+
+      -- Re-add with PATHS support.
+      EXECUTE 'ALTER TABLE sf_policy_report_presets ADD CONSTRAINT sf_policy_report_presets_kind_check CHECK (kind IN (''PACK'',''CUSTOM'',''PATHS''))';
+    END $$;
+
+
+  20260208010000_assurance_studio_scenarios.down.sql: |
+    DROP TABLE IF EXISTS sf_assurance_studio_scenarios;
+
+
+  20260208010000_assurance_studio_scenarios.up.sql: |
+    -- Assurance Studio: server-side saved scenarios per workspace + Forward network.
+    -- Keep this additive (do not edit earlier migrations).
+
+    CREATE TABLE IF NOT EXISTS sf_assurance_studio_scenarios (
+      id uuid PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      network_ref uuid NOT NULL REFERENCES sf_policy_report_forward_networks(id) ON DELETE CASCADE,
+      forward_network_id text NOT NULL,
+      name text NOT NULL,
+      description text,
+      spec jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    -- Postgres requires a unique index for expression-based uniqueness.
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_assurance_scenarios_ws_net_name_uq
+      ON sf_assurance_studio_scenarios (workspace_id, network_ref, lower(name));
+
+    CREATE INDEX IF NOT EXISTS sf_assurance_scenarios_ws_net_updated_idx
+      ON sf_assurance_studio_scenarios(workspace_id, network_ref, updated_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_assurance_scenarios_ws_fwd_updated_idx
+      ON sf_assurance_studio_scenarios(workspace_id, forward_network_id, updated_at DESC);
+
+  20260208011000_assurance_studio_runs.down.sql: |
+    DROP TABLE IF EXISTS sf_assurance_studio_runs;
+
+
+  20260208011000_assurance_studio_runs.up.sql: |
+    -- Assurance Studio: saved run artifacts for scenarios (routing/capacity/security outputs).
+    -- Keep this additive (do not edit earlier migrations).
+
+    CREATE TABLE IF NOT EXISTS sf_assurance_studio_runs (
+      id uuid PRIMARY KEY,
+      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      network_ref uuid NOT NULL REFERENCES sf_policy_report_forward_networks(id) ON DELETE CASCADE,
+      forward_network_id text NOT NULL,
+      scenario_id uuid REFERENCES sf_assurance_studio_scenarios(id) ON DELETE SET NULL,
+      title text NOT NULL DEFAULT '',
+      status text NOT NULL DEFAULT 'SUCCEEDED' CHECK (status IN ('SUCCEEDED','PARTIAL','FAILED')),
+      error text,
+      request jsonb NOT NULL DEFAULT '{}'::jsonb,
+      results jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
+      started_at timestamptz NOT NULL DEFAULT now(),
+      finished_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_assurance_runs_ws_net_started_idx
+      ON sf_assurance_studio_runs(workspace_id, network_ref, started_at DESC);
+
+    CREATE INDEX IF NOT EXISTS sf_assurance_runs_ws_fwd_started_idx
+      ON sf_assurance_studio_runs(workspace_id, forward_network_id, started_at DESC);
+
+
+  20260209000100_forward_assurance_summaries.down.sql: |
+    DROP TABLE IF EXISTS sf_forward_assurance_summaries;
+
+
+  20260209000100_forward_assurance_summaries.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_forward_assurance_summaries (
+      id bigserial PRIMARY KEY,
+      workspace_id text NOT NULL,
+      forward_network_id text NOT NULL,
+      network_ref text NOT NULL,
+      snapshot_id text NOT NULL DEFAULT '',
+      generated_at timestamptz NOT NULL DEFAULT now(),
+      summary_json jsonb NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sf_forward_assurance_summaries_ws_fwd_generated_at
+      ON sf_forward_assurance_summaries (workspace_id, forward_network_id, generated_at DESC);
+
+    CREATE INDEX IF NOT EXISTS idx_sf_forward_assurance_summaries_ws_netref_generated_at
+      ON sf_forward_assurance_summaries (workspace_id, network_ref, generated_at DESC);
+
+
+  20260209002000_user_api_tokens.down.sql: |
+    DROP TABLE IF EXISTS sf_user_api_tokens;
+
+
+  20260209002000_user_api_tokens.up.sql: |
+    -- User API tokens (PATs) for non-browser auth (MCP, scripts, etc).
+
+    CREATE TABLE IF NOT EXISTS sf_user_api_tokens (
+      id uuid PRIMARY KEY,
+      username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE ON DELETE CASCADE,
+      name text NOT NULL DEFAULT '',
+      token_prefix text NOT NULL,
+      token_hash bytea NOT NULL,
+      used_count bigint NOT NULL DEFAULT 0,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      last_used_at timestamptz,
+      revoked_at timestamptz
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_user_api_tokens_hash_uq
+      ON sf_user_api_tokens(token_hash);
+
+    CREATE INDEX IF NOT EXISTS sf_user_api_tokens_user_created_idx
+      ON sf_user_api_tokens(username, created_at DESC);
+
+
+  20260209003000_credentials_sets.down.sql: |
+    ALTER TABLE sf_workspace_forward_credentials
+      DROP COLUMN IF EXISTS credential_id;
+
+    ALTER TABLE sf_policy_report_forward_network_credentials
+      DROP COLUMN IF EXISTS credential_id;
+
+    ALTER TABLE sf_user_forward_collectors
+      DROP COLUMN IF EXISTS credential_id;
+
+    DROP TABLE IF EXISTS sf_credentials;
+
+  20260209003000_credentials_sets.up.sql: |
+    -- Single credentials table (initially used for Forward). Secrets are encrypted at rest by the application.
+
+    CREATE TABLE IF NOT EXISTS sf_credentials (
+      id text PRIMARY KEY,
+      owner_username text REFERENCES sf_users(username) ON DELETE CASCADE,
+      workspace_id text REFERENCES sf_workspaces(id) ON DELETE CASCADE,
+      provider text NOT NULL,
+      name text NOT NULL,
+
+      -- Forward (and friends): store encrypted-at-rest fields as "enc:" blobs.
+      base_url_enc text,
+      skip_tls_verify boolean NOT NULL DEFAULT false,
+      forward_username_enc text,
+      forward_password_enc text,
+
+      collector_id_enc text,
+      collector_username_enc text,
+      authorization_key_enc text,
+
+      device_username_enc text,
+      device_password_enc text,
+
+      jump_host_enc text,
+      jump_username_enc text,
+      jump_private_key_enc text,
+      jump_cert_enc text,
+
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+
+      CONSTRAINT sf_credentials_scope_chk CHECK (
+        (owner_username IS NOT NULL AND workspace_id IS NULL) OR
+        (owner_username IS NULL AND workspace_id IS NOT NULL)
+      )
+    );
+
+    CREATE INDEX IF NOT EXISTS sf_credentials_owner_provider_updated_idx
+      ON sf_credentials(owner_username, provider, updated_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_credentials_workspace_provider_updated_idx
+      ON sf_credentials(workspace_id, provider, updated_at DESC);
+
+    ALTER TABLE sf_user_forward_collectors
+      ADD COLUMN IF NOT EXISTS credential_id text REFERENCES sf_credentials(id) ON DELETE RESTRICT;
+
+    ALTER TABLE sf_policy_report_forward_network_credentials
+      ADD COLUMN IF NOT EXISTS credential_id text REFERENCES sf_credentials(id) ON DELETE RESTRICT;
+
+    ALTER TABLE sf_workspace_forward_credentials
+      ADD COLUMN IF NOT EXISTS credential_id text REFERENCES sf_credentials(id) ON DELETE RESTRICT;
+
+    -- Allow referencing sf_credentials without duplicating secrets in legacy columns.
+    ALTER TABLE sf_user_forward_collectors
+      ALTER COLUMN base_url DROP NOT NULL,
+      ALTER COLUMN forward_username DROP NOT NULL,
+      ALTER COLUMN forward_password DROP NOT NULL;
+
+    ALTER TABLE sf_policy_report_forward_network_credentials
+      ALTER COLUMN base_url_enc DROP NOT NULL,
+      ALTER COLUMN forward_username_enc DROP NOT NULL,
+      ALTER COLUMN forward_password_enc DROP NOT NULL;
+
+    ALTER TABLE sf_workspace_forward_credentials
+      ALTER COLUMN base_url DROP NOT NULL,
+      ALTER COLUMN username DROP NOT NULL,
+      ALTER COLUMN password DROP NOT NULL;
+
+    -- Backfill: create credential sets for existing rows and link via credential_id.
+    -- We generate deterministic UUID-ish ids using md5 so the migration is idempotent without extensions.
+
+    -- sf_user_forward_collectors -> sf_credentials (user-scoped)
+    WITH src AS (
+      SELECT
+        ufc.id AS collector_config_id,
+        ufc.username AS owner_username,
+        md5('forward:collector:' || ufc.username || ':' || ufc.id) AS h,
+        ufc.name AS name,
+        ufc.base_url AS base_url_enc,
+        COALESCE(ufc.skip_tls_verify, false) AS skip_tls_verify,
+        ufc.forward_username AS forward_username_enc,
+        ufc.forward_password AS forward_password_enc,
+        ufc.collector_id AS collector_id_enc,
+        ufc.collector_username AS collector_username_enc,
+        ufc.authorization_key AS authorization_key_enc,
+        ufc.created_at AS created_at,
+        ufc.updated_at AS updated_at
+      FROM sf_user_forward_collectors ufc
+      WHERE ufc.credential_id IS NULL
+    ),
+    ins AS (
+      INSERT INTO sf_credentials (
+        id, owner_username, provider, name,
+        base_url_enc, skip_tls_verify, forward_username_enc, forward_password_enc,
+        collector_id_enc, collector_username_enc, authorization_key_enc,
+        created_at, updated_at
+      )
+      SELECT
+        substr(h,1,8)||'-'||substr(h,9,4)||'-'||substr(h,13,4)||'-'||substr(h,17,4)||'-'||substr(h,21,12) AS id,
+        owner_username,
+        'forward' AS provider,
+        name,
+        base_url_enc,
+        skip_tls_verify,
+        forward_username_enc,
+        forward_password_enc,
+        NULLIF(collector_id_enc, ''),
+        NULLIF(collector_username_enc, ''),
+        NULLIF(authorization_key_enc, ''),
+        COALESCE(created_at, now()),
+        COALESCE(updated_at, now())
+      FROM src
+      ON CONFLICT (id) DO NOTHING
+      RETURNING id
+    )
+    UPDATE sf_user_forward_collectors ufc
+    SET credential_id = substr(src.h,1,8)||'-'||substr(src.h,9,4)||'-'||substr(src.h,13,4)||'-'||substr(src.h,17,4)||'-'||substr(src.h,21,12)
+    FROM src
+    WHERE ufc.id = src.collector_config_id
+      AND ufc.username = src.owner_username
+      AND ufc.credential_id IS NULL;
+
+    -- sf_policy_report_forward_network_credentials -> sf_credentials (user-scoped)
+    WITH src AS (
+      SELECT
+        pr.workspace_id,
+        pr.username AS owner_username,
+        pr.forward_network_id,
+        md5('forward:policy-reports:' || pr.workspace_id || ':' || pr.username || ':' || pr.forward_network_id) AS h,
+        ('policy-reports ' || pr.forward_network_id) AS name,
+        pr.base_url_enc AS base_url_enc,
+        COALESCE(pr.skip_tls_verify, false) AS skip_tls_verify,
+        pr.forward_username_enc AS forward_username_enc,
+        pr.forward_password_enc AS forward_password_enc,
+        pr.created_at AS created_at,
+        pr.updated_at AS updated_at
+      FROM sf_policy_report_forward_network_credentials pr
+      WHERE pr.credential_id IS NULL
+    ),
+    ins AS (
+      INSERT INTO sf_credentials (
+        id, owner_username, provider, name,
+        base_url_enc, skip_tls_verify, forward_username_enc, forward_password_enc,
+        created_at, updated_at
+      )
+      SELECT
+        substr(h,1,8)||'-'||substr(h,9,4)||'-'||substr(h,13,4)||'-'||substr(h,17,4)||'-'||substr(h,21,12) AS id,
+        owner_username,
+        'forward' AS provider,
+        name,
+        base_url_enc,
+        skip_tls_verify,
+        forward_username_enc,
+        forward_password_enc,
+        COALESCE(created_at, now()),
+        COALESCE(updated_at, now())
+      FROM src
+      ON CONFLICT (id) DO NOTHING
+      RETURNING id
+    )
+    UPDATE sf_policy_report_forward_network_credentials pr
+    SET credential_id = substr(src.h,1,8)||'-'||substr(src.h,9,4)||'-'||substr(src.h,13,4)||'-'||substr(src.h,17,4)||'-'||substr(src.h,21,12)
+    FROM src
+    WHERE pr.workspace_id = src.workspace_id
+      AND pr.username = src.owner_username
+      AND pr.forward_network_id = src.forward_network_id
+      AND pr.credential_id IS NULL;
+
+    -- sf_workspace_forward_credentials -> sf_credentials (workspace-scoped)
+    WITH src AS (
+      SELECT
+        wfc.workspace_id,
+        md5('forward:workspace:' || wfc.workspace_id) AS h,
+        'workspace forward' AS name,
+        wfc.base_url AS base_url_enc,
+        wfc.username AS forward_username_enc,
+        wfc.password AS forward_password_enc,
+        wfc.collector_id AS collector_id_enc,
+        wfc.collector_username AS collector_username_enc,
+        wfc.device_username AS device_username_enc,
+        wfc.device_password AS device_password_enc,
+        wfc.jump_host AS jump_host_enc,
+        wfc.jump_username AS jump_username_enc,
+        wfc.jump_private_key AS jump_private_key_enc,
+        wfc.jump_cert AS jump_cert_enc,
+        wfc.updated_at AS updated_at
+      FROM sf_workspace_forward_credentials wfc
+      WHERE wfc.credential_id IS NULL
+    ),
+    ins AS (
+      INSERT INTO sf_credentials (
+        id, workspace_id, provider, name,
+        base_url_enc, forward_username_enc, forward_password_enc,
+        collector_id_enc, collector_username_enc,
+        device_username_enc, device_password_enc,
+        jump_host_enc, jump_username_enc, jump_private_key_enc, jump_cert_enc,
+        created_at, updated_at
+      )
+      SELECT
+        substr(h,1,8)||'-'||substr(h,9,4)||'-'||substr(h,13,4)||'-'||substr(h,17,4)||'-'||substr(h,21,12) AS id,
+        workspace_id,
+        'forward' AS provider,
+        name,
+        base_url_enc,
+        forward_username_enc,
+        forward_password_enc,
+        NULLIF(collector_id_enc, ''),
+        NULLIF(collector_username_enc, ''),
+        NULLIF(device_username_enc, ''),
+        NULLIF(device_password_enc, ''),
+        NULLIF(jump_host_enc, ''),
+        NULLIF(jump_username_enc, ''),
+        NULLIF(jump_private_key_enc, ''),
+        NULLIF(jump_cert_enc, ''),
+        now(),
+        COALESCE(updated_at, now())
+      FROM src
+      ON CONFLICT (id) DO NOTHING
+      RETURNING id
+    )
+    UPDATE sf_workspace_forward_credentials wfc
+    SET credential_id = substr(src.h,1,8)||'-'||substr(src.h,9,4)||'-'||substr(src.h,13,4)||'-'||substr(src.h,17,4)||'-'||substr(src.h,21,12)
+    FROM src
+    WHERE wfc.workspace_id = src.workspace_id
+      AND wfc.credential_id IS NULL;
+
+  20260209005000_servicenow_forward_credential_id.down.sql: |
+    ALTER TABLE sf_user_servicenow_configs
+      DROP COLUMN IF EXISTS forward_credential_id;
+
+
+  20260209005000_servicenow_forward_credential_id.up.sql: |
+    ALTER TABLE sf_user_servicenow_configs
+      ADD COLUMN IF NOT EXISTS forward_credential_id text NOT NULL DEFAULT '';
+
+
+  20260209090000_drop_user_forward_credentials.down.sql: |
+    -- Re-create legacy Forward credentials table (backward-compat only).
+
+    CREATE TABLE IF NOT EXISTS sf_user_forward_credentials (
+      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
+      base_url text NOT NULL,
+      forward_username text NOT NULL,
+      forward_password text NOT NULL,
+      collector_id text,
+      collector_username text,
+      authorization_key text,
+      skip_tls_verify boolean NOT NULL DEFAULT false,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+
+  20260209090000_drop_user_forward_credentials.up.sql: |
+    -- Drop legacy single-row Forward credentials table.
+    -- Before dropping, migrate any remaining rows into sf_credentials + sf_user_forward_collectors
+    -- so existing installs keep working after the table removal.
+
+    -- Migrate only for users that have no collector configs yet.
+    WITH legacy AS (
+      SELECT
+        u.username,
+        md5('forward:legacy-collector-config:' || u.username) AS cfg_h,
+        md5('forward:legacy-credential-set:' || u.username) AS cred_h,
+        u.base_url AS base_url_enc,
+        COALESCE(u.skip_tls_verify, false) AS skip_tls_verify,
+        u.forward_username AS forward_username_enc,
+        u.forward_password AS forward_password_enc,
+        COALESCE(u.collector_id, '') AS collector_id_enc,
+        COALESCE(u.collector_username, '') AS collector_username_enc,
+        COALESCE(u.authorization_key, '') AS authorization_key_enc,
+        COALESCE(u.updated_at, now()) AS updated_at
+      FROM sf_user_forward_credentials u
+      WHERE NOT EXISTS (
+        SELECT 1 FROM sf_user_forward_collectors c WHERE c.username=u.username
+      )
+    ),
+    cred_ins AS (
+      INSERT INTO sf_credentials (
+        id, owner_username, workspace_id, provider, name,
+        base_url_enc, skip_tls_verify, forward_username_enc, forward_password_enc,
+        collector_id_enc, collector_username_enc, authorization_key_enc,
+        created_at, updated_at
+      )
+      SELECT
+        substr(cred_h,1,8)||'-'||substr(cred_h,9,4)||'-'||substr(cred_h,13,4)||'-'||substr(cred_h,17,4)||'-'||substr(cred_h,21,12) AS id,
+        username,
+        NULL,
+        'forward',
+        'Collector: Default',
+        base_url_enc,
+        skip_tls_verify,
+        forward_username_enc,
+        forward_password_enc,
+        NULLIF(collector_id_enc,''),
+        NULLIF(collector_username_enc,''),
+        NULLIF(authorization_key_enc,''),
+        updated_at,
+        updated_at
+      FROM legacy
+      ON CONFLICT (id) DO NOTHING
+      RETURNING id
+    ),
+    cfg_ins AS (
+      INSERT INTO sf_user_forward_collectors (
+        id, username, name,
+        credential_id,
+        base_url, skip_tls_verify, forward_username, forward_password,
+        collector_id, collector_username, authorization_key,
+        created_at, updated_at, is_default
+      )
+      SELECT
+        substr(cfg_h,1,8)||'-'||substr(cfg_h,9,4)||'-'||substr(cfg_h,13,4)||'-'||substr(cfg_h,17,4)||'-'||substr(cfg_h,21,12) AS id,
+        username,
+        'Default',
+        substr(cred_h,1,8)||'-'||substr(cred_h,9,4)||'-'||substr(cred_h,13,4)||'-'||substr(cred_h,17,4)||'-'||substr(cred_h,21,12) AS credential_id,
+        NULL,
+        skip_tls_verify,
+        NULL, NULL,
+        NULL, NULL, NULL,
+        updated_at,
+        updated_at,
+        true
+      FROM legacy
+      ON CONFLICT (id) DO NOTHING
+      RETURNING id, username
+    )
+    INSERT INTO sf_user_settings (user_id, default_forward_collector_config_id, default_env_json, external_template_repos_json, updated_at)
+    SELECT username, id, '[]', '[]', now()
+    FROM cfg_ins
+    ON CONFLICT (user_id) DO UPDATE SET
+      default_forward_collector_config_id=EXCLUDED.default_forward_collector_config_id,
+      updated_at=now();
+
+    DROP TABLE IF EXISTS sf_user_forward_credentials;
+
+
+  20260209101000_policy_reports_forward_networks_user_scope.down.sql: |
+    -- Revert user-scoped Forward networks support.
+    --
+    -- This is best-effort: it deletes user-scoped rows first.
+
+    DELETE FROM sf_policy_report_forward_networks
+     WHERE workspace_id IS NULL;
+
+    DROP INDEX IF EXISTS sf_pr_forward_networks_owner_created_idx;
+    DROP INDEX IF EXISTS sf_pr_forward_networks_owner_forward_uniq;
+    DROP INDEX IF EXISTS sf_pr_forward_networks_ws_forward_uniq;
+
+    ALTER TABLE sf_policy_report_forward_networks
+      DROP CONSTRAINT IF EXISTS sf_pr_forward_networks_scope_chk;
+
+    ALTER TABLE sf_policy_report_forward_networks
+      DROP COLUMN IF EXISTS owner_username;
+
+    ALTER TABLE sf_policy_report_forward_networks
+      ALTER COLUMN workspace_id SET NOT NULL;
+
+    -- Restore legacy uniqueness (workspace scoped).
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+          FROM pg_constraint
+         WHERE conrelid = 'sf_policy_report_forward_networks'::regclass
+           AND contype = 'u'
+      ) THEN
+        ALTER TABLE sf_policy_report_forward_networks
+          ADD CONSTRAINT sf_policy_report_forward_networks_workspace_forward_key
+          UNIQUE (workspace_id, forward_network_id);
+      END IF;
+    END $$;
+
+
+  20260209101000_policy_reports_forward_networks_user_scope.up.sql: |
+    -- Allow saved Forward networks to be user-scoped (not tied to a workspace).
+    --
+    -- Rationale:
+    -- - Forward networks are naturally owned by a Forward account/user.
+    -- - Skyforge workspaces are primarily a storage/permission boundary for cached results.
+    -- - We still support workspace-scoped saved networks, but also allow user-scoped ones.
+
+    ALTER TABLE sf_policy_report_forward_networks
+      ADD COLUMN IF NOT EXISTS owner_username text REFERENCES sf_users(username) ON UPDATE CASCADE;
+
+    -- Workspace is optional when the network is user-scoped.
+    ALTER TABLE sf_policy_report_forward_networks
+      ALTER COLUMN workspace_id DROP NOT NULL;
+
+    -- Drop the legacy UNIQUE(workspace_id, forward_network_id) constraint so we can replace it with
+    -- scope-aware unique indexes.
+    DO $$
+    DECLARE
+      c record;
+      cols text[];
+    BEGIN
+      FOR c IN
+        SELECT conname, conkey
+          FROM pg_constraint
+         WHERE conrelid = 'sf_policy_report_forward_networks'::regclass
+           AND contype = 'u'
+      LOOP
+        SELECT array_agg(a.attname ORDER BY u.ord)
+          INTO cols
+          FROM unnest(c.conkey) WITH ORDINALITY AS u(attnum, ord)
+          JOIN pg_attribute a
+            ON a.attrelid = 'sf_policy_report_forward_networks'::regclass
+           AND a.attnum = u.attnum;
+
+        -- Only drop the legacy UNIQUE(workspace_id, forward_network_id) constraint.
+        IF cols IS NOT NULL AND array_length(cols, 1) = 2 AND cols @> ARRAY['workspace_id','forward_network_id'] THEN
+          EXECUTE format('ALTER TABLE sf_policy_report_forward_networks DROP CONSTRAINT IF EXISTS %I', c.conname);
+        END IF;
+      END LOOP;
+    END $$;
+
+    -- Exactly one scope must be set: workspace_id XOR owner_username.
+    ALTER TABLE sf_policy_report_forward_networks
+      ADD CONSTRAINT sf_pr_forward_networks_scope_chk
+      CHECK ( (workspace_id IS NOT NULL) <> (owner_username IS NOT NULL) )
+      NOT VALID;
+
+    ALTER TABLE sf_policy_report_forward_networks
+      VALIDATE CONSTRAINT sf_pr_forward_networks_scope_chk;
+
+    -- Uniqueness per-scope.
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_forward_networks_ws_forward_uniq
+      ON sf_policy_report_forward_networks(workspace_id, forward_network_id)
+      WHERE workspace_id IS NOT NULL;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_forward_networks_owner_forward_uniq
+      ON sf_policy_report_forward_networks(owner_username, forward_network_id)
+      WHERE owner_username IS NOT NULL;
+
+    CREATE INDEX IF NOT EXISTS sf_pr_forward_networks_owner_created_idx
+      ON sf_policy_report_forward_networks(owner_username, created_at DESC)
+      WHERE owner_username IS NOT NULL;
+
+  20260210000100_user_settings_forward_defaults.down.sql: |
+    -- SQLite doesn't support DROP COLUMN easily; leave columns in place.
+
+
   20260210000100_user_settings_forward_defaults.up.sql: |
     -- Add default Forward credential + network id pointers to user settings.
     -- This lets the UI present a single "Forward account" in My Settings while
     -- keeping secrets stored in sf_credentials (provider='forward').
-    
+
     ALTER TABLE sf_user_settings
       ADD COLUMN IF NOT EXISTS default_forward_credential_id text,
       ADD COLUMN IF NOT EXISTS default_forward_network_id text NOT NULL DEFAULT '';
+

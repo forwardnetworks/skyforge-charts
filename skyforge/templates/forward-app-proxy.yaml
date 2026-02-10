@@ -7,6 +7,7 @@
 {{- $upSvc := (get $cfg "upstreamService" | default "fwd-appserver") -}}
 {{- $upPort := (get $cfg "upstreamPort" | default 8080) -}}
 {{- $requireAuth := (get $cfg "requireAuth" | default true) -}}
+{{- $sessionCookie := (.Values.skyforge.sessionCookie | default "skyforge_session") -}}
 {{- $autosleep := (get $cfg "autosleep" | default dict) -}}
 {{- $autosleepEnabled := (get $autosleep "enabled" | default false) -}}
 
@@ -70,6 +71,73 @@ data:
                                 prefix_rewrite: /
 {{- end }}
                     http_filters:
+                      # If the browser isn't already logged into Skyforge, Envoy's ext_authz
+                      # filter will deny with a 403 (it can't forward a 302).
+                      #
+                      # Make /fwd behave like other SSO proxies by redirecting to Skyforge
+                      # login when the session cookie is missing.
+                      #
+                      # This runs before ext_authz and also performs best-effort Location
+                      # rewriting on responses from the Forward upstream.
+                      - name: envoy.filters.http.lua
+                        typed_config:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                          inline_code: |
+                            local function url_encode(str)
+                              if str == nil then
+                                return ""
+                              end
+                              -- Encode everything except a conservative set plus '/' so paths stay readable.
+                              return (string.gsub(str, "([^%w%-_%.~/%])", function(c)
+                                return string.format("%%%02X", string.byte(c))
+                              end))
+                            end
+
+                            function envoy_on_request(handle)
+                              local require_auth = {{ ternary "true" "false" $requireAuth }}
+                              if not require_auth then
+                                return
+                              end
+
+                              local cookie = handle:headers():get("cookie")
+                              if cookie ~= nil and string.find(cookie, "{{ $sessionCookie }}=") ~= nil then
+                                return
+                              end
+
+                              local uri = handle:headers():get("x-forwarded-uri")
+                              if uri == nil or uri == "" then
+                                uri = handle:headers():get(":path")
+                              end
+                              if uri == nil or uri == "" then
+                                uri = "/"
+                              end
+
+                              handle:respond(
+                                {
+                                  [":status"] = "302",
+                                  ["location"] = "/api/oidc/login?next=" .. url_encode(uri),
+                                  ["cache-control"] = "no-store",
+                                },
+                                "redirecting to login\\n"
+                              )
+                            end
+
+                            function envoy_on_response(handle)
+                              local loc = handle:headers():get("location")
+                              if loc == nil then
+                                return
+                              end
+                              if string.sub(loc, 1, 1) ~= "/" then
+                                return
+                              end
+                              if string.sub(loc, 1, 14) == "/api/oidc/login" then
+                                return
+                              end
+                              if string.sub(loc, 1, {{ add (len $pathPrefix) 1 }}) == "{{ $pathPrefix }}/" or loc == "{{ $pathPrefix }}" then
+                                return
+                              end
+                              handle:headers():replace("location", "{{ $pathPrefix }}" .. loc)
+                            end
 {{- if $requireAuth }}
                       - name: envoy.filters.http.ext_authz
                         typed_config:
@@ -111,31 +179,6 @@ data:
                                 patterns:
                                   - exact: location
 {{- end }}
-                      # Best-effort: if the upstream returns absolute redirects (/login, /app, ...),
-                      # re-prefix them so the browser stays under /fwd.
-                      #
-                      # Important: don't touch Skyforge login redirects (they start with /api/oidc/login).
-                      - name: envoy.filters.http.lua
-                        typed_config:
-                          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
-                          inline_code: |
-                            function envoy_on_response(handle)
-                              local loc = handle:headers():get("location")
-                              if loc == nil then
-                                return
-                              end
-                              if string.sub(loc, 1, 1) ~= "/" then
-                                return
-                              end
-                              if string.sub(loc, 1, 14) == "/api/oidc/login" then
-                                return
-                              end
-                              if string.sub(loc, 1, {{ add (len $pathPrefix) 1 }}) == "{{ $pathPrefix }}/" or loc == "{{ $pathPrefix }}" then
-                                return
-                              end
-                              handle:headers():replace("location", "{{ $pathPrefix }}" .. loc)
-                            end
-
                       - name: envoy.filters.http.router
                         typed_config:
                           "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
