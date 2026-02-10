@@ -1,0 +1,47 @@
+{{- $cfg := (get .Values.skyforge "forwardApp" | default dict) -}}
+{{- $autosleep := (get $cfg "autosleep" | default dict) -}}
+{{- if (get $cfg "enabled" | default false) -}}
+{{- $ns := (get $cfg "upstreamNamespace" | default "forward") -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: skyforge-forward-app-scaler
+  namespace: {{ $ns | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames:
+      - fwd-backend-master
+      - fwd-appserver
+      - fwd-collector
+      - fwd-cbr-agent
+      - fwd-cbr-s3-agent
+      - fwd-cbr-server
+    verbs: ["get", "patch", "update"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    resourceNames:
+      - fwd-compute-worker
+      - fwd-search-worker
+      - fwd-log-aggregator
+    verbs: ["get", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: skyforge-forward-app-scaler
+  namespace: {{ $ns | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: skyforge-forward-app-scaler
+subjects:
+  - kind: ServiceAccount
+    name: skyforge-server
+    namespace: {{ .Release.Namespace | quote }}
+{{- end -}}
+

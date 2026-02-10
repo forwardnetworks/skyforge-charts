@@ -3,6 +3,8 @@
 {{- $minioEnabled := .Values.skyforge.minio.enabled -}}
 {{- $yaadeEnabled := .Values.skyforge.yaade.enabled -}}
 {{- $swaggerEnabled := .Values.skyforge.swaggerUI.enabled -}}
+{{- $apiDocsCfg := (get .Values.skyforge "apiDocs" | default dict) -}}
+{{- $apiDocsEnabled := (get $apiDocsCfg "enabled" | default $swaggerEnabled) -}}
 {{- $dexEnabled := .Values.skyforge.dex.enabled -}}
 {{- $coderEnabled := .Values.skyforge.coder.enabled -}}
 {{- $forwardApp := (get .Values.skyforge "forwardApp" | default dict) -}}
@@ -120,6 +122,18 @@ spec:
   hostnames:
     - {{ $host | quote }}
   rules:
+    # Always serve the OpenAPI schema from Skyforge, even when the API docs UI is enabled.
+    # (We route this Exact match before any PathPrefix rewrite rules.)
+    - matches:
+        - path:
+            type: Exact
+            value: /openapi.json
+        - path:
+            type: Exact
+            value: /swagger/openapi.json
+      backendRefs:
+        - name: skyforge-server
+          port: 8085
 {{- if (get $forwardApp "enabled" | default false) }}
     - matches:
         - path:
@@ -261,11 +275,11 @@ spec:
           port: 8080
 {{- end }}
 
-{{- if $swaggerEnabled }}
+{{- if $apiDocsEnabled }}
     - matches:
         - path:
             type: PathPrefix
-            value: /swagger
+            value: /docs
       filters:
         - type: URLRewrite
           urlRewrite:
@@ -273,7 +287,7 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: swagger-ui
+        - name: api-docs
           port: 8080
 {{- end }}
 

@@ -556,7 +556,9 @@ spec:
 
           i=1
           while [ "$i" -le 60 ]; do
-            if atlas migrate apply --dir file:///work/migrations --url "$db_url"; then
+            # Allow applying migrations that were introduced with versions lower than the
+            # current DB head (we have historically shipped migrations out-of-order).
+            if atlas migrate apply --exec-order non-linear --dir file:///work/migrations --url "$db_url"; then
               echo "Skyforge migrations complete."
               exit 0
             fi

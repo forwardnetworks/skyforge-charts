@@ -492,10 +492,10 @@ spec:
           atlas migrate hash --dir file:///work/migrations --dir-format golang-migrate;
           echo "Running Skyforge migrations...";
           for i in $(seq 1 60); do
-            if atlas migrate apply --config file:///work/atlas.hcl --env prod --var db_url="${db_url}"; then
-              echo "Skyforge migrations complete.";
-              exit 0;
-            fi
+	            if atlas migrate apply --exec-order non-linear --config file:///work/atlas.hcl --env prod --var db_url="${db_url}"; then
+	              echo "Skyforge migrations complete.";
+	              exit 0;
+	            fi
             echo "Migrations not ready yet; retrying (${i}/60)...";
             sleep 2;
           done;

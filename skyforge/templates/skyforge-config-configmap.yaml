@@ -72,7 +72,8 @@ data:
   MINIO_BROWSER_REDIRECT_URL: {{ printf "https://%s/minio-console/" .Values.skyforge.hostname | quote }}
   MINIO_CONSOLE_SUBPATH: {{ .Values.skyforge.minio.consoleSubpath | quote }}
   SKYFORGE_MINIO_LDAP_CONSOLE_GROUP: {{ .Values.skyforge.minio.ldapConsoleGroup | quote }}
-  SKYFORGE_SWAGGER_URL: {{ default (printf "https://%s/swagger/openapi.json" .Values.skyforge.hostname) .Values.skyforge.swaggerUrl | quote }}
+  SKYFORGE_OPENAPI_URL: {{ default (printf "https://%s/openapi.json" .Values.skyforge.hostname) .Values.skyforge.swaggerUrl | quote }}
+  SKYFORGE_SWAGGER_URL: {{ default (printf "https://%s/openapi.json" .Values.skyforge.hostname) .Values.skyforge.swaggerUrl | quote }}
   SKYFORGE_SESSION_COOKIE: {{ .Values.skyforge.sessionCookie | quote }}
   SKYFORGE_OIDC_DISCOVERY_URL: {{ .Values.skyforge.oidc.discoveryUrl | quote }}
   SKYFORGE_OIDC_ISSUER_URL: {{ default "" .Values.skyforge.oidc.issuerUrl | quote }}

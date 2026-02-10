@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-docs
+data:
+  index.html: |
+{{ .Files.Get "files/redoc/index.html" | nindent 4 }}
+  redoc.standalone.js: |
+{{ .Files.Get "files/redoc/redoc.standalone.js" | nindent 4 }}

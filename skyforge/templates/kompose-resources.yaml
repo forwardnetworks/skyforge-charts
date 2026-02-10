@@ -43,10 +43,15 @@ pulling images or waiting on hooks.
   ) -}}
 {{- end }}
 
-{{- if .Values.skyforge.swaggerUI.enabled }}
+{{- $swaggerEnabled := .Values.skyforge.swaggerUI.enabled -}}
+{{- $apiDocsCfg := (get .Values.skyforge "apiDocs" | default dict) -}}
+{{- $apiDocsEnabled := (get $apiDocsCfg "enabled" | default $swaggerEnabled) -}}
+
+{{- if $apiDocsEnabled }}
   {{- $files = concat $files (list
-    "swagger-ui-deployment.yaml"
-    "swagger-ui-service.yaml"
+    "api-docs-configmap.yaml"
+    "api-docs-deployment.yaml"
+    "api-docs-service.yaml"
   ) -}}
 {{- end }}
 
@@ -84,7 +89,7 @@ pulling images or waiting on hooks.
 {{- $path := printf "files/kompose/%s" . -}}
 {{- if $.Files.Get $path }}
 ---
-{{ if has . (list "netbox-deployment.yaml" "netbox-admin-bootstrap-job.yaml" "nautobot-deployment.yaml") -}}
+{{ if has . (list "netbox-deployment.yaml" "netbox-admin-bootstrap-job.yaml" "nautobot-deployment.yaml" "api-docs-configmap.yaml" "api-docs-deployment.yaml") -}}
 {{ printf "%s\n" (tpl ($.Files.Get $path) $) -}}
 {{ else -}}
 {{ printf "%s\n" ($.Files.Get $path) -}}

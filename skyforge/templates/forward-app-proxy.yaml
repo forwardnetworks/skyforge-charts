@@ -1,7 +1,6 @@
+{{- define "skyforge.forwardAppProxyEnvoyConfig" -}}
 {{- $cfg := (get .Values.skyforge "forwardApp" | default dict) -}}
-{{- if (get $cfg "enabled" | default false) -}}
 {{- $ns := .Release.Namespace -}}
-{{- $envoyImage := default "envoyproxy/envoy:v1.31.2" .Values.images.envoy -}}
 {{- $pathPrefix := (get $cfg "pathPrefix" | default "/fwd") -}}
 {{- $upNs := (get $cfg "upstreamNamespace" | default "forward") -}}
 {{- $upSvc := (get $cfg "upstreamService" | default "fwd-appserver") -}}
@@ -10,6 +9,201 @@
 {{- $sessionCookie := (.Values.skyforge.sessionCookie | default "skyforge_session") -}}
 {{- $autosleep := (get $cfg "autosleep" | default dict) -}}
 {{- $autosleepEnabled := (get $autosleep "enabled" | default false) -}}
+admin:
+  access_log_path: /tmp/admin_access.log
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
+
+static_resources:
+  listeners:
+    - name: listener_http
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8080
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                normalize_path: true
+                use_remote_address: true
+                stream_idle_timeout: 300s
+                upgrade_configs:
+                  - upgrade_type: websocket
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: forward_app
+                      domains: ["*"]
+                      routes:
+                        # Canonicalize /fwd -> /fwd/ (nice URLs and consistent relative paths).
+                        - match:
+                            path: {{ $pathPrefix | quote }}
+                          redirect:
+                            path_redirect: {{ printf "%s/" $pathPrefix | quote }}
+                        - match:
+                            prefix: {{ printf "%s/" $pathPrefix | quote }}
+                          route:
+{{- if $autosleepEnabled }}
+                            # When autosleep is enabled, route to Skyforge server which
+                            # wakes Forward workloads and then reverse-proxies to the
+                            # in-cluster Forward appserver.
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/
+{{- else }}
+                            cluster: forward_upstream
+                            # Strip /fwd from incoming requests to the upstream.
+                            prefix_rewrite: /
+{{- end }}
+                http_filters:
+                  # If the browser isn't already logged into Skyforge, Envoy's ext_authz
+                  # filter will deny with a 403 (it can't forward a 302).
+                  #
+                  # Make /fwd behave like other SSO proxies by redirecting to Skyforge
+                  # login when the session cookie is missing.
+                  #
+                  # This runs before ext_authz and also performs best-effort Location
+                  # rewriting on responses from the Forward upstream.
+                  - name: envoy.filters.http.lua
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                      inline_code: |
+                        local function url_encode(str)
+                          if str == nil then
+                            return ""
+                          end
+                          -- Encode everything except a conservative set plus '/' so paths stay readable.
+                          return (string.gsub(str, "([^%w%-%_%.%~/%/])", function(c)
+                            return string.format("%%%02X", string.byte(c))
+                          end))
+                        end
+
+                        function envoy_on_request(handle)
+                          local require_auth = {{ ternary "true" "false" $requireAuth }}
+                          if not require_auth then
+                            return
+                          end
+
+                          local cookie = handle:headers():get("cookie")
+                          if cookie ~= nil and string.find(cookie, "{{ $sessionCookie }}=") ~= nil then
+                            return
+                          end
+
+                          local uri = handle:headers():get("x-forwarded-uri")
+                          if uri == nil or uri == "" then
+                            uri = handle:headers():get(":path")
+                          end
+                          if uri == nil or uri == "" then
+                            uri = "/"
+                          end
+
+                          handle:respond(
+                            {
+                              [":status"] = "302",
+                              ["location"] = "/api/oidc/login?next=" .. url_encode(uri),
+                              ["cache-control"] = "no-store",
+                            },
+                            "redirecting to login\\n"
+                          )
+                        end
+
+                        function envoy_on_response(handle)
+                          local loc = handle:headers():get("location")
+                          if loc == nil then
+                            return
+                          end
+                          if string.sub(loc, 1, 1) ~= "/" then
+                            return
+                          end
+                          local login_prefix = "/api/oidc/login"
+                          if string.sub(loc, 1, string.len(login_prefix)) == login_prefix then
+                            return
+                          end
+                          if string.sub(loc, 1, {{ add (len $pathPrefix) 1 }}) == "{{ $pathPrefix }}/" or loc == "{{ $pathPrefix }}" then
+                            return
+                          end
+                          handle:headers():replace("location", "{{ $pathPrefix }}" .. loc)
+                        end
+{{- if $requireAuth }}
+                  - name: envoy.filters.http.ext_authz
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                      transport_api_version: V3
+                      failure_mode_allow: false
+                      http_service:
+                        server_uri:
+                          uri: http://skyforge-server.{{ $ns }}.svc.cluster.local:8085
+                          cluster: skyforge_server
+                          timeout: 2s
+                        path_prefix: /api/session/forwardauth/envoy
+                        authorization_request:
+                          allowed_headers:
+                            patterns:
+                              - exact: cookie
+                              - exact: x-forwarded-proto
+                              - exact: x-forwarded-host
+                              - exact: x-forwarded-for
+                              - exact: x-forwarded-uri
+                              - exact: x-forwarded-prefix
+                              - exact: user-agent
+                              - exact: accept
+                              - exact: accept-language
+                              - exact: x-skyforge-external-prefix
+                        authorization_response:
+                          allowed_upstream_headers:
+                            patterns:
+                              - exact: remote-user
+                              - exact: remote-user-group
+                              - exact: remote-user-email
+                              - exact: remote-user-first-name
+                              - exact: remote-user-last-name
+                              - exact: x-forwarded-user
+                              - exact: x-forwarded-email
+                              - exact: x-forwarded-first-name
+                              - exact: x-forwarded-last-name
+                          allowed_client_headers:
+                            patterns:
+                              - exact: location
+{{- end }}
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+    - name: skyforge_server
+      type: STRICT_DNS
+      connect_timeout: 2s
+      load_assignment:
+        cluster_name: skyforge_server
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: skyforge-server.{{ $ns }}.svc.cluster.local
+                      port_value: 8085
+
+    - name: forward_upstream
+      type: STRICT_DNS
+      connect_timeout: 5s
+      load_assignment:
+        cluster_name: forward_upstream
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: {{ $upSvc }}.{{ $upNs }}.svc.cluster.local
+                      port_value: {{ $upPort }}
+{{- end -}}
+
+{{- $cfg := (get .Values.skyforge "forwardApp" | default dict) -}}
+{{- if (get $cfg "enabled" | default false) -}}
+{{- $envoyImage := default "envoyproxy/envoy:v1.31.2" .Values.images.envoy -}}
 
 ---
 apiVersion: v1
@@ -20,195 +214,7 @@ metadata:
     {{- include "skyforge.labels" . | nindent 4 }}
 data:
   envoy.yaml: |
-    admin:
-      access_log_path: /tmp/admin_access.log
-      address:
-        socket_address:
-          address: 0.0.0.0
-          port_value: 9901
-
-    static_resources:
-      listeners:
-        - name: listener_http
-          address:
-            socket_address:
-              address: 0.0.0.0
-              port_value: 8080
-          filter_chains:
-            - filters:
-                - name: envoy.filters.network.http_connection_manager
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-                    stat_prefix: ingress_http
-                    normalize_path: true
-                    use_remote_address: true
-                    stream_idle_timeout: 300s
-                    upgrade_configs:
-                      - upgrade_type: websocket
-                    route_config:
-                      name: local_route
-                      virtual_hosts:
-                        - name: forward_app
-                          domains: ["*"]
-                          routes:
-                            # Canonicalize /fwd -> /fwd/ (nice URLs and consistent relative paths).
-                            - match:
-                                path: {{ $pathPrefix | quote }}
-                              redirect:
-                                path_redirect: {{ printf "%s/" $pathPrefix | quote }}
-                            - match:
-                                prefix: {{ printf "%s/" $pathPrefix | quote }}
-                              route:
-{{- if $autosleepEnabled }}
-                                # When autosleep is enabled, route to Skyforge server which
-                                # wakes Forward workloads and then reverse-proxies to the
-                                # in-cluster Forward appserver.
-                                cluster: skyforge_server
-                                prefix_rewrite: /api/forward/onprem/proxy/
-{{- else }}
-                                cluster: forward_upstream
-                                # Strip /fwd from incoming requests to the upstream.
-                                prefix_rewrite: /
-{{- end }}
-                    http_filters:
-                      # If the browser isn't already logged into Skyforge, Envoy's ext_authz
-                      # filter will deny with a 403 (it can't forward a 302).
-                      #
-                      # Make /fwd behave like other SSO proxies by redirecting to Skyforge
-                      # login when the session cookie is missing.
-                      #
-                      # This runs before ext_authz and also performs best-effort Location
-                      # rewriting on responses from the Forward upstream.
-                      - name: envoy.filters.http.lua
-                        typed_config:
-                          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
-                          inline_code: |
-                            local function url_encode(str)
-                              if str == nil then
-                                return ""
-                              end
-                              -- Encode everything except a conservative set plus '/' so paths stay readable.
-                              return (string.gsub(str, "([^%w%-_%.~/%])", function(c)
-                                return string.format("%%%02X", string.byte(c))
-                              end))
-                            end
-
-                            function envoy_on_request(handle)
-                              local require_auth = {{ ternary "true" "false" $requireAuth }}
-                              if not require_auth then
-                                return
-                              end
-
-                              local cookie = handle:headers():get("cookie")
-                              if cookie ~= nil and string.find(cookie, "{{ $sessionCookie }}=") ~= nil then
-                                return
-                              end
-
-                              local uri = handle:headers():get("x-forwarded-uri")
-                              if uri == nil or uri == "" then
-                                uri = handle:headers():get(":path")
-                              end
-                              if uri == nil or uri == "" then
-                                uri = "/"
-                              end
-
-                              handle:respond(
-                                {
-                                  [":status"] = "302",
-                                  ["location"] = "/api/oidc/login?next=" .. url_encode(uri),
-                                  ["cache-control"] = "no-store",
-                                },
-                                "redirecting to login\\n"
-                              )
-                            end
-
-                            function envoy_on_response(handle)
-                              local loc = handle:headers():get("location")
-                              if loc == nil then
-                                return
-                              end
-                              if string.sub(loc, 1, 1) ~= "/" then
-                                return
-                              end
-                              if string.sub(loc, 1, 14) == "/api/oidc/login" then
-                                return
-                              end
-                              if string.sub(loc, 1, {{ add (len $pathPrefix) 1 }}) == "{{ $pathPrefix }}/" or loc == "{{ $pathPrefix }}" then
-                                return
-                              end
-                              handle:headers():replace("location", "{{ $pathPrefix }}" .. loc)
-                            end
-{{- if $requireAuth }}
-                      - name: envoy.filters.http.ext_authz
-                        typed_config:
-                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
-                          transport_api_version: V3
-                          failure_mode_allow: false
-                          http_service:
-                            server_uri:
-                              uri: http://skyforge-server.{{ $ns }}.svc.cluster.local:8085
-                              cluster: skyforge_server
-                              timeout: 2s
-                            path_prefix: /api/session/forwardauth/envoy
-                            authorization_request:
-                              allowed_headers:
-                                patterns:
-                                  - exact: cookie
-                                  - exact: x-forwarded-proto
-                                  - exact: x-forwarded-host
-                                  - exact: x-forwarded-for
-                                  - exact: x-forwarded-uri
-                                  - exact: x-forwarded-prefix
-                                  - exact: user-agent
-                                  - exact: accept
-                                  - exact: accept-language
-                                  - exact: x-skyforge-external-prefix
-                            authorization_response:
-                              allowed_upstream_headers:
-                                patterns:
-                                  - exact: remote-user
-                                  - exact: remote-user-group
-                                  - exact: remote-user-email
-                                  - exact: remote-user-first-name
-                                  - exact: remote-user-last-name
-                                  - exact: x-forwarded-user
-                                  - exact: x-forwarded-email
-                                  - exact: x-forwarded-first-name
-                                  - exact: x-forwarded-last-name
-                              allowed_client_headers:
-                                patterns:
-                                  - exact: location
-{{- end }}
-                      - name: envoy.filters.http.router
-                        typed_config:
-                          "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-
-      clusters:
-        - name: skyforge_server
-          type: STRICT_DNS
-          connect_timeout: 2s
-          load_assignment:
-            cluster_name: skyforge_server
-            endpoints:
-              - lb_endpoints:
-                  - endpoint:
-                      address:
-                        socket_address:
-                          address: skyforge-server.{{ $ns }}.svc.cluster.local
-                          port_value: 8085
-
-        - name: forward_upstream
-          type: STRICT_DNS
-          connect_timeout: 5s
-          load_assignment:
-            cluster_name: forward_upstream
-            endpoints:
-              - lb_endpoints:
-                  - endpoint:
-                      address:
-                        socket_address:
-                          address: {{ $upSvc }}.{{ $upNs }}.svc.cluster.local
-                          port_value: {{ $upPort }}
+{{ include "skyforge.forwardAppProxyEnvoyConfig" . | nindent 4 }}
 
 ---
 apiVersion: apps/v1
@@ -229,6 +235,8 @@ spec:
         app.kubernetes.io/name: forward-app-proxy
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: sso-proxy
+      annotations:
+        checksum/forward-app-proxy-envoy: {{ include "skyforge.forwardAppProxyEnvoyConfig" . | sha256sum }}
     spec:
       automountServiceAccountToken: false
       containers:
