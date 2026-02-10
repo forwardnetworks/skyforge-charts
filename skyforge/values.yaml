@@ -366,6 +366,10 @@ skyforge:
     # (for example, via deploy/skyforge-secrets.yaml). When true, the chart
     # generates and manages `dex-config` based on the values below.
     manageConfig: false
+    # Force Dex to always show the login/provider chooser screen, even if it
+    # could auto-select based on prior sessions. Recommended when enabling
+    # multiple connectors (for example, Google + Okta) so users can choose.
+    alwaysShowLoginScreen: false
     # Optional: tweak Dex login page UX/branding. These settings are applied by an initContainer
     # that patches the Dex config from the `dex-config` Secret at startup.
     webTheme: ""

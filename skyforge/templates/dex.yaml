@@ -51,15 +51,25 @@ spec:
               mountPath: /var/dex
       volumes:
         - name: dex-config
+          {{- if .Values.skyforge.dex.manageConfig }}
+          secret:
+            secretName: dex-config
+            items:
+              - key: config.yaml
+                path: config.yaml
+          {{- else }}
           emptyDir: {}
+          {{- end }}
         - name: dex-data
           emptyDir: {}
+        {{- if not .Values.skyforge.dex.manageConfig }}
         - name: dex-config-src
           secret:
             secretName: dex-config
             items:
               - key: config.yaml
                 path: config.yaml
+        {{- end }}
 ---
 apiVersion: v1
 kind: Service
