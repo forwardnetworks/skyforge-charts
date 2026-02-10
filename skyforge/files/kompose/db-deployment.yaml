@@ -30,6 +30,11 @@ spec:
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
         image: public.ecr.aws/docker/library/postgres:15-alpine
+        # Forward on-prem workloads are connection-heavy; keep headroom when sharing
+        # this Postgres instance across Skyforge + Forward.
+        args:
+        - -c
+        - max_connections=300
         livenessProbe:
           tcpSocket:
             port: 5432

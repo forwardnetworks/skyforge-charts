@@ -47,6 +47,15 @@ skyforge:
       idleMinutes: 30
     kibanaSubpath: /kibana
 
+  # Forward on-prem "app cluster" UI proxied under Skyforge SSO.
+  forwardApp:
+    enabled: true
+    pathPrefix: /fwd
+    upstreamNamespace: forward
+    upstreamService: fwd-appserver
+    upstreamPort: 8080
+    requireAuth: true
+
   # Swagger image pulls can be rate-limited on Docker Hub; keep this disabled
   # in production unless you pin a mirrored image.
   swaggerUI:
@@ -93,8 +102,8 @@ skyforge:
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
   # NOTE: Keep these tags in sync with images that actually exist in GHCR.
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:dev-iosfix-20260208-4"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:dev-iosfix-20260208-4-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:dev-e2e-20260210-1"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:dev-e2e-20260210-1-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

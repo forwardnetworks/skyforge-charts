@@ -1,0 +1,2198 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fwd-backend-master-user
+  namespace: forward
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fwd-appserver-user
+  namespace: forward
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fwd-autopilot-user
+  namespace: forward
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fwd-cbr-settings-user
+  namespace: forward
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fwd-log-aggregator-user
+  namespace: forward
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-backend-master-fluent-bit-config
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-backend-master
+data:
+  fluent-bit.conf: "\n[INPUT]\n    Name              tail\n    Tag               fwd.backend_master.${K8S_NODE_NAME}\n\
+    \    Path              /var/log/forward/backend_master\n    DB               \
+    \ /var/log/forward/flb_backend_master.db\n    DB.journal_mode   OFF\n    Mem_Buf_Limit\
+    \     5MB\n    Skip_Long_Lines   On\n\n[OUTPUT]\n    Name              forward\n\
+    \    Match             *\n    Host              fwd-log-aggregator-0\n    Port\
+    \              24224\n\n[OUTPUT]\n    Name              forward\n    Match   \
+    \          *\n    Host              fwd-log-aggregator-0\n    Port           \
+    \   24224\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-appserver-fluent-bit-config
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-appserver
+data:
+  fluent-bit.conf: "\n[INPUT]\n    Name              tail\n    Tag               fwd.appserver.${K8S_NODE_NAME}\n\
+    \    Path              /var/log/forward/appserver\n    DB                /var/log/forward/flb_appserver.db\n\
+    \    DB.journal_mode   OFF\n    Mem_Buf_Limit     5MB\n    Skip_Long_Lines   On\n\
+    \n[INPUT]\n    Name              tail\n    Tag               fwd.audit.${K8S_NODE_NAME}\n\
+    \    Path              /var/log/forward/audit\n    DB                /var/log/forward/flb_audit.db\n\
+    \    DB.journal_mode   OFF\n    Mem_Buf_Limit     5MB\n    Skip_Long_Lines   On\n\
+    \n[OUTPUT]\n    Name              forward\n    Match             *\n    Host \
+    \             fwd-log-aggregator-0\n    Port              24224\n\n[OUTPUT]\n\
+    \    Name              forward\n    Match             *\n    Host            \
+    \  fwd-log-aggregator-0\n    Port              24224\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-memory-profile-overrides
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: autopilot
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-cbr-agent-fluent-bit-config
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-cbr-agent
+data:
+  fluent-bit.conf: "\n[INPUT]\n    Name              tail\n    Tag               fwd.cbr_agent.${K8S_NODE_NAME}\n\
+    \    Path              /var/log/forward/cbr_agent\n    DB                /var/log/forward/flb_cbr_agent.db\n\
+    \    DB.journal_mode   OFF\n    Mem_Buf_Limit     5MB\n    Skip_Long_Lines   On\n\
+    \n[OUTPUT]\n    Name              forward\n    Match             *\n    Host \
+    \             fwd-log-aggregator-0\n    Port              24224\n\n[OUTPUT]\n\
+    \    Name              forward\n    Match             *\n    Host            \
+    \  fwd-log-aggregator-0\n    Port              24224\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-cbr-s3-agent-fluent-bit-config
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-cbr-s3-agent
+data:
+  fluent-bit.conf: "\n[INPUT]\n    Name              tail\n    Tag               fwd.cbr_s3_agent.${K8S_NODE_NAME}\n\
+    \    Path              /var/log/forward/cbr_s3_agent\n    DB                /var/log/forward/flb_cbr_s3_agent.db\n\
+    \    DB.journal_mode   OFF\n    Mem_Buf_Limit     5MB\n    Skip_Long_Lines   On\n\
+    \n[OUTPUT]\n    Name              forward\n    Match             *\n    Host \
+    \             fwd-log-aggregator-0\n    Port              24224\n\n[OUTPUT]\n\
+    \    Name              forward\n    Match             *\n    Host            \
+    \  fwd-log-aggregator-0\n    Port              24224\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-cbr-server-fluent-bit-config
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-cbr-server
+data:
+  fluent-bit.conf: "\n[INPUT]\n    Name              tail\n    Tag               fwd.cbr_server.${K8S_NODE_NAME}\n\
+    \    Path              /var/log/forward/cbr_server\n    DB                /var/log/forward/flb_cbr_server.db\n\
+    \    DB.journal_mode   OFF\n    Mem_Buf_Limit     5MB\n    Skip_Long_Lines   On\n\
+    \n[OUTPUT]\n    Name              forward\n    Match             *\n    Host \
+    \             fwd-log-aggregator-0\n    Port              24224\n\n[OUTPUT]\n\
+    \    Name              forward\n    Match             *\n    Host            \
+    \  fwd-log-aggregator-0\n    Port              24224\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-collector-fluent-bit-config
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-collector
+data:
+  fluent-bit.conf: "[INPUT]\n    Name              tail\n    Tag               fwd.collector.${K8S_NODE_NAME}\n\
+    \    Path              /var/log/forward/collector/clientd.log\n    DB        \
+    \        /var/log/forward/flb_collector.db\n    Mem_Buf_Limit     5MB\n    Skip_Long_Lines\
+    \   On\n\n[OUTPUT]\n    Name              forward\n    Match             *\n \
+    \   Host              fwd-log-aggregator-0\n    Port              24224\n\n[OUTPUT]\n\
+    \    Name              forward\n    Match             *\n    Host            \
+    \  fwd-log-aggregator-0\n    Port              24224\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-compute-worker-fluent-bit-config
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-compute-worker
+data:
+  fluent-bit.conf: "\n[INPUT]\n    Name              tail\n    Tag               fwd.compute_worker.${K8S_NODE_NAME}\n\
+    \    Path              /var/log/forward/compute_worker\n    DB               \
+    \ /var/log/forward/flb_compute_worker.db\n    DB.journal_mode   OFF\n    Mem_Buf_Limit\
+    \     5MB\n    Skip_Long_Lines   On\n\n[OUTPUT]\n    Name              forward\n\
+    \    Match             *\n    Host              fwd-log-aggregator-0\n    Port\
+    \              24224\n\n[OUTPUT]\n    Name              forward\n    Match   \
+    \          *\n    Host              fwd-log-aggregator-0\n    Port           \
+    \   24224\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-aggregator-config
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-log-aggregator
+data:
+  fluentd.conf: "<source>\n  @type forward\n  port 24224\n  bind 0.0.0.0\n</source>\n\
+    \n<match fwd.**>\n  @type file\n  path /mnt/aggregated-logs/fwd/${tag[1]}/${tag[1]}.${tag[2]}\n\
+    \  compress gzip\n  append true\n  <buffer tag,time>\n    timekey 1d\n    timekey_use_utc\
+    \ true\n    flush_mode interval\n    flush_interval 10s\n  </buffer>\n  <format>\n\
+    \    @type single_value\n    message_key log\n  </format>\n</match>\n<match system.**>\n\
+    \  @type file\n  path /mnt/aggregated-logs/system/${tag[1]}/${tag[1]}.${tag[2]}\n\
+    \  compress gzip\n  append true\n  <buffer tag,time>\n    timekey 1d\n    timekey_use_utc\
+    \ true\n    flush_mode interval\n    flush_interval 60s\n  </buffer>\n</match>\n\
+    \n<match **>\n  @type null\n</match>\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-search-worker-fluent-bit-config
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-search-worker
+data:
+  fluent-bit.conf: "\n[INPUT]\n    Name              tail\n    Tag               fwd.search_worker.${K8S_NODE_NAME}\n\
+    \    Path              /var/log/forward/search_worker\n    DB                /var/log/forward/flb_search_worker.db\n\
+    \    DB.journal_mode   OFF\n    Mem_Buf_Limit     5MB\n    Skip_Long_Lines   On\n\
+    \n[OUTPUT]\n    Name              forward\n    Match             *\n    Host \
+    \             fwd-log-aggregator-0\n    Port              24224\n\n[OUTPUT]\n\
+    \    Name              forward\n    Match             *\n    Host            \
+    \  fwd-log-aggregator-0\n    Port              24224\n"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fwd-backend-master-role
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - nodes
+  verbs:
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fwd-appserver-role
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - nodes
+  verbs:
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fwd-autopilot-role
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - nodes
+  verbs:
+  - patch
+  - list
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - list
+  - delete
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  verbs:
+  - list
+  - create
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - list
+  - delete
+- apiGroups:
+  - ''
+  resources:
+  - persistentvolumes
+  verbs:
+  - list
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+  - patch
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - get
+  - patch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - get
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  verbs:
+  - create
+  - get
+  - delete
+- apiGroups:
+  - acid.zalan.do
+  resources:
+  - postgresqls
+  verbs:
+  - list
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fwd-cbr-settings-role
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  verbs:
+  - list
+  - create
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  verbs:
+  - get
+  - create
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fwd-log-aggregator-role
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - endpoints
+  verbs:
+  - create
+  - get
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fwd-backend-master-role-binding
+subjects:
+- kind: ServiceAccount
+  name: fwd-backend-master-user
+  namespace: forward
+roleRef:
+  kind: ClusterRole
+  name: fwd-backend-master-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fwd-appserver-cluster-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: fwd-appserver-user
+  namespace: forward
+roleRef:
+  kind: ClusterRole
+  name: fwd-appserver-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fwd-autopilot-role-binding
+subjects:
+- kind: ServiceAccount
+  name: fwd-autopilot-user
+  namespace: forward
+roleRef:
+  kind: ClusterRole
+  name: fwd-autopilot-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fwd-cbr-settings-role-binding
+subjects:
+- kind: ServiceAccount
+  name: fwd-cbr-settings-user
+  namespace: forward
+roleRef:
+  kind: ClusterRole
+  name: fwd-cbr-settings-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fwd-log-aggregator-role-binding
+subjects:
+- kind: ServiceAccount
+  name: fwd-log-aggregator-user
+  namespace: forward
+roleRef:
+  kind: ClusterRole
+  name: fwd-log-aggregator-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: forward
+  name: fwd-appserver-role
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - list
+  - delete
+  - deletecollection
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - create
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  verbs:
+  - create
+  - get
+  - delete
+- apiGroups:
+  - ''
+  resources:
+  - endpoints
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fwd-appserver-rolebinding
+  namespace: forward
+subjects:
+- kind: ServiceAccount
+  name: fwd-appserver-user
+  apiGroup: ''
+roleRef:
+  kind: Role
+  name: fwd-appserver-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-backend-master
+  namespace: forward
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: fwd-backend-master
+  ports:
+  - name: grpc
+    port: 30040
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-appserver
+  namespace: forward
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-appserver
+  ports:
+  - protocol: TCP
+    name: http
+    port: 8080
+  - protocol: TCP
+    name: https
+    port: 8443
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-cbr-agent-headless
+  namespace: forward
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-cbr-agent
+  ports:
+  - protocol: TCP
+    name: grpc
+    port: 40101
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-cbr-s3-agent-headless
+  namespace: forward
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-cbr-s3-agent
+  ports:
+  - protocol: TCP
+    name: grpc
+    port: 40101
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-cbr-server
+  namespace: forward
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: fwd-cbr-server
+  ports:
+  - name: grpc
+    port: 40100
+    protocol: TCP
+  - name: http
+    port: 40099
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-compute-worker-headless
+  namespace: forward
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-compute-worker
+  ports:
+  - protocol: TCP
+    name: grpc
+    port: 30060
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-log-aggregator-0
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-log-aggregator-0
+spec:
+  type: ClusterIP
+  selector:
+    statefulset.kubernetes.io/pod-name: fwd-log-aggregator-0
+  ports:
+  - name: fluentd-input
+    port: 24224
+    targetPort: fwd-input
+    protocol: TCP
+  - name: fluentd-input-udp
+    port: 24224
+    targetPort: fwd-input-udp
+    protocol: UDP
+  - name: logserver-http
+    port: 80
+    targetPort: logserver-http
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-log-aggregator-0
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-log-aggregator-0
+spec:
+  type: ClusterIP
+  selector:
+    statefulset.kubernetes.io/pod-name: fwd-log-aggregator-0
+  ports:
+  - name: fluentd-input
+    port: 24224
+    targetPort: fwd-input
+    protocol: TCP
+  - name: fluentd-input-udp
+    port: 24224
+    targetPort: fwd-input-udp
+    protocol: UDP
+  - name: logserver-http
+    port: 80
+    targetPort: logserver-http
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-search-worker-headless
+  namespace: forward
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-search-worker
+  ports:
+  - protocol: TCP
+    name: grpc
+    port: 30050
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-pg-app-0
+  namespace: forward
+spec:
+  selector:
+    cluster-name: fwd-pg-app
+    statefulset.kubernetes.io/pod-name: fwd-pg-app-0
+  ports:
+  - protocol: TCP
+    name: patroni
+    port: 8008
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-pg-app-1
+  namespace: forward
+spec:
+  selector:
+    cluster-name: fwd-pg-app
+    statefulset.kubernetes.io/pod-name: fwd-pg-app-1
+  ports:
+  - protocol: TCP
+    name: patroni
+    port: 8008
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-pg-fdb-0-0
+  namespace: forward
+spec:
+  selector:
+    cluster-name: fwd-pg-fdb-0
+    statefulset.kubernetes.io/pod-name: fwd-pg-fdb-0-0
+  ports:
+  - protocol: TCP
+    name: patroni
+    port: 8008
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-pg-fdb-0-1
+  namespace: forward
+spec:
+  selector:
+    cluster-name: fwd-pg-fdb-0
+    statefulset.kubernetes.io/pod-name: fwd-pg-fdb-0-1
+  ports:
+  - protocol: TCP
+    name: patroni
+    port: 8008
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-pg-fdb-1-0
+  namespace: forward
+spec:
+  selector:
+    cluster-name: fwd-pg-fdb-1
+    statefulset.kubernetes.io/pod-name: fwd-pg-fdb-1-0
+  ports:
+  - protocol: TCP
+    name: patroni
+    port: 8008
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-pg-fdb-1-1
+  namespace: forward
+spec:
+  selector:
+    cluster-name: fwd-pg-fdb-1
+    statefulset.kubernetes.io/pod-name: fwd-pg-fdb-1-1
+  ports:
+  - protocol: TCP
+    name: patroni
+    port: 8008
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-backend-master
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-backend-master
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-backend-master
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-backend-master
+        build: cf0bf397106
+    spec:
+      serviceAccountName: fwd-backend-master-user
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: fix-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/
+          && chown 1000:1000 -R /mnt/scratch
+
+          '
+        volumeMounts:
+        - name: scratch
+          subPathExpr: fwd-backend-master
+          mountPath: /mnt/scratch
+      containers:
+      - name: backend-master
+        image: harbor.local.forwardnetworks.com/forward/fwd_backend_master:26.1.3-02
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+        resources:
+          requests:
+            cpu: 500m
+          limits:
+            cpu: 128
+        ports:
+        - containerPort: 30040
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-backend-master/logs
+        - mountPath: /scratch/data
+          name: scratch
+          subPathExpr: fwd-backend-master/scratch-data
+        - mountPath: /tmp
+          name: scratch
+          subPathExpr: fwd-backend-master/tmp
+        env:
+        - name: BACKEND_MASTER_PROFILES
+          value: K8S,BACKEND_MASTER,ON_PREM
+        - name: MEMORY_PROFILE
+          value: SINGLE_BOX
+        - name: BACKEND_MASTER_MISC_PARAMS
+          value: '-Ddb.primaryMigrator=true'
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: FWD_COMPUTE_WORKER_PORT
+          value: '30060'
+        - name: FWD_SEARCH_WORKER_PORT
+          value: '30050'
+        - name: POSTGRES_HOST
+          value: db.skyforge.svc.cluster.local
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: user
+        - name: POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: password
+        - name: FDB_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: user
+        - name: FDB_POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: password
+        - name: FDB_PARAMS
+          value: -Dfdb.jdbc.postgres_servers=db.skyforge.svc.cluster.local -Dfdb.jdbc.postgres_port=5432
+            -Dfdb.jdbc.db_prefix_name=fwd_fdb_ -Dfdb.jdbc.username=$(FDB_POSTGRES_USER)
+            -Dfdb.jdbc.passwords=$(FDB_POSTGRES_PASS)
+      - name: log-forwarder
+        image: quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3
+        command:
+        - /fluent-bit/bin/fluent-bit
+        - -c
+        - /fluent-bit/etc/fluent-bit.conf
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+        ports:
+        - name: http
+          containerPort: 2020
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 60Mi
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POSTGRES_HOST
+          value: db.skyforge.svc.cluster.local
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: user
+        - name: POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: password
+        - name: FDB_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: user
+        - name: FDB_POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: password
+        - name: FDB_PARAMS
+          value: -Dfdb.jdbc.postgres_servers=db.skyforge.svc.cluster.local -Dfdb.jdbc.postgres_port=5432
+            -Dfdb.jdbc.db_prefix_name=fwd_fdb_ -Dfdb.jdbc.username=$(FDB_POSTGRES_USER)
+            -Dfdb.jdbc.passwords=$(FDB_POSTGRES_PASS)
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-backend-master/logs
+        - mountPath: /fluent-bit/etc/
+          name: fluent-bit-config
+      volumes:
+      - name: scratch
+        persistentVolumeClaim:
+          claimName: forward-scratch
+      - name: fluent-bit-config
+        configMap:
+          name: fwd-backend-master-fluent-bit-config
+      nodeSelector:
+        forwardnetworks.com/role: forward
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-appserver
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-appserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-appserver
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-appserver
+        build: cf0bf397106
+    spec:
+      serviceAccountName: fwd-appserver-user
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: fix-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/
+          && chown 1000:1000 -R /mnt/scratch
+
+          '
+        volumeMounts:
+        - name: scratch
+          subPathExpr: fwd-appserver
+          mountPath: /mnt/scratch
+      containers:
+      - name: appserver
+        image: harbor.local.forwardnetworks.com/forward/fwd_appserver:26.1.3-02
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+        resources:
+          requests:
+            cpu: 500m
+          limits:
+            cpu: 128
+        ports:
+        - containerPort: 8080
+        - containerPort: 8443
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-appserver/logs
+        - mountPath: /scratch/data
+          name: scratch
+          subPathExpr: fwd-appserver/scratch-data
+        - mountPath: /tmp
+          name: scratch
+          subPathExpr: fwd-appserver/tmp
+        - mountPath: /cbr/restore
+          name: cbr-restore
+          readOnly: true
+        env:
+        - name: MEMORY_PROFILE
+          value: SINGLE_BOX
+        - name: APP_SERVER_PROFILES
+          value: K8S,ON_PREM
+        - name: COLLECTOR_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: collector.credentials
+              optional: true
+        - name: APPSERVER_SETTINGS
+          value: -Dcbr.server.uri=fwd-cbr-server:40100 -Drestore.dir=/cbr/restore
+        - name: DB_RESTORE_DIR
+          value: /scratch/data/db-restore/
+        - name: UPLOADS_TEMPDIR
+          value: /scratch/data/uploads/
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POSTGRES_HOST
+          value: db.skyforge.svc.cluster.local
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: user
+        - name: POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: password
+        - name: FDB_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: user
+        - name: FDB_POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: password
+        - name: FDB_PARAMS
+          value: -Dfdb.jdbc.postgres_servers=db.skyforge.svc.cluster.local -Dfdb.jdbc.postgres_port=5432
+            -Dfdb.jdbc.db_prefix_name=fwd_fdb_ -Dfdb.jdbc.username=$(FDB_POSTGRES_USER)
+            -Dfdb.jdbc.passwords=$(FDB_POSTGRES_PASS)
+      - name: log-forwarder
+        image: quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3
+        command:
+        - /fluent-bit/bin/fluent-bit
+        - -c
+        - /fluent-bit/etc/fluent-bit.conf
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+        ports:
+        - name: http
+          containerPort: 2020
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 60Mi
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POSTGRES_HOST
+          value: db.skyforge.svc.cluster.local
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: user
+        - name: POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: password
+        - name: FDB_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: user
+        - name: FDB_POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: password
+        - name: FDB_PARAMS
+          value: -Dfdb.jdbc.postgres_servers=db.skyforge.svc.cluster.local -Dfdb.jdbc.postgres_port=5432
+            -Dfdb.jdbc.db_prefix_name=fwd_fdb_ -Dfdb.jdbc.username=$(FDB_POSTGRES_USER)
+            -Dfdb.jdbc.passwords=$(FDB_POSTGRES_PASS)
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-appserver/logs
+        - mountPath: /fluent-bit/etc/
+          name: fluent-bit-config
+      volumes:
+      - name: scratch
+        persistentVolumeClaim:
+          claimName: forward-scratch
+      - name: cbr-restore
+        persistentVolumeClaim:
+          claimName: forward-cbr-restore
+      - name: fluent-bit-config
+        configMap:
+          name: fwd-appserver-fluent-bit-config
+      nodeSelector:
+        forwardnetworks.com/role: forward
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-autopilot
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-autopilot
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-autopilot
+  # Autopilot is not required for basic Forward demos and can be noisy on newer
+  # Kubernetes API versions; keep it off by default.
+  replicas: 0
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-autopilot
+        build: cf0bf397106
+    spec:
+      serviceAccountName: fwd-autopilot-user
+      containers:
+      - name: autopilot
+        image: harbor.local.forwardnetworks.com/forward/fwd_autopilot:26.1.3-02
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      terminationGracePeriodSeconds: 1
+      tolerations:
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 5
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 5
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoSchedule
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoSchedule
+      nodeSelector:
+        forwardnetworks.com/role: forward
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-cbr-agent
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-cbr-agent
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-cbr-agent
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-cbr-agent
+        build: cf0bf397106
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - fwd-cbr-agent
+            topologyKey: kubernetes.io/hostname
+      initContainers:
+      - name: fix-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/
+          && chown 1000:1000 -R /mnt/scratch
+
+          '
+        volumeMounts:
+        - name: scratch
+          subPathExpr: fwd-cbr-agent
+          mountPath: /mnt/scratch
+      - name: fix-backups-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'chown 1000:1000 -R /mnt/backups
+
+          '
+        volumeMounts:
+        - name: cbr-backups
+          mountPath: /mnt/backups
+      containers:
+      - name: cbr-agent
+        image: harbor.local.forwardnetworks.com/forward/fwd_cbr_agent:26.1.3-02
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+        resources:
+          requests:
+            cpu: 500m
+          limits:
+            cpu: 128
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-cbr-agent/logs
+        - mountPath: /scratch/data
+          name: scratch
+          subPathExpr: fwd-cbr-agent/scratch-data
+        - mountPath: /tmp
+          name: scratch
+          subPathExpr: fwd-cbr-agent/tmp
+        - mountPath: /cbr/backups
+          name: cbr-backups
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: CBR_AGENT_TYPE
+          value: INTERNAL
+        - name: CBR_AGENT_GRPC_PORT
+          value: '40101'
+        - name: CBR_BACKUPS_DIR
+          value: /cbr/backups
+        - name: CBR_AGENT_HEAP_SIZE
+          value: 48m
+        ports:
+        - containerPort: 40101
+      - name: log-forwarder
+        image: quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3
+        command:
+        - /fluent-bit/bin/fluent-bit
+        - -c
+        - /fluent-bit/etc/fluent-bit.conf
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+        ports:
+        - name: http
+          containerPort: 2020
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 60Mi
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-cbr-agent/logs
+        - mountPath: /fluent-bit/etc/
+          name: fluent-bit-config
+      terminationGracePeriodSeconds: 1
+      volumes:
+      - name: scratch
+        persistentVolumeClaim:
+          claimName: forward-scratch
+      - name: cbr-backups
+        persistentVolumeClaim:
+          claimName: forward-cbr-backups
+      - name: fluent-bit-config
+        configMap:
+          name: fwd-cbr-agent-fluent-bit-config
+      nodeSelector:
+        forwardnetworks.com/role: forward
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-cbr-s3-agent
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-cbr-s3-agent
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-cbr-s3-agent
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-cbr-s3-agent
+        build: cf0bf397106
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - fwd-cbr-s3-agent
+            topologyKey: kubernetes.io/hostname
+      serviceAccountName: fwd-cbr-settings-user
+      initContainers:
+      - name: fix-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/
+          && chown 1000:1000 -R /mnt/scratch
+
+          '
+        volumeMounts:
+        - name: scratch
+          subPathExpr: fwd-cbr-s3-agent
+          mountPath: /mnt/scratch
+      containers:
+      - name: cbr-agent
+        image: harbor.local.forwardnetworks.com/forward/fwd_cbr_agent:26.1.3-02
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+        resources:
+          requests:
+            cpu: 500m
+          limits:
+            cpu: 128
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-cbr-s3-agent/logs
+        - mountPath: /scratch/data
+          name: scratch
+          subPathExpr: fwd-cbr-s3-agent/scratch-data
+        - mountPath: /tmp
+          name: scratch
+          subPathExpr: fwd-cbr-s3-agent/tmp
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: CBR_AGENT_TYPE
+          value: S3
+        - name: CBR_AGENT_GRPC_PORT
+          value: '40101'
+        - name: CBR_S3_BUCKET_PREFIX
+          value: forward/backups
+        - name: CBR_AGENT_HEAP_SIZE
+          value: 128m
+        ports:
+        - containerPort: 40101
+      - name: log-forwarder
+        image: quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3
+        command:
+        - /fluent-bit/bin/fluent-bit
+        - -c
+        - /fluent-bit/etc/fluent-bit.conf
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+        ports:
+        - name: http
+          containerPort: 2020
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 60Mi
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-cbr-s3-agent/logs
+        - mountPath: /fluent-bit/etc/
+          name: fluent-bit-config
+      terminationGracePeriodSeconds: 1
+      volumes:
+      - name: scratch
+        persistentVolumeClaim:
+          claimName: forward-scratch
+      - name: fluent-bit-config
+        configMap:
+          name: fwd-cbr-s3-agent-fluent-bit-config
+      nodeSelector:
+        forwardnetworks.com/role: forward
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-cbr-server
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-cbr-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-cbr-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-cbr-server
+        build: cf0bf397106
+    spec:
+      serviceAccountName: fwd-cbr-settings-user
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: fix-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/
+          && chown 1000:1000 -R /mnt/scratch
+
+          '
+        volumeMounts:
+        - name: scratch
+          subPathExpr: fwd-cbr-server
+          mountPath: /mnt/scratch
+      - name: fix-restore-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'chown 1000:1000 -R /mnt/restore
+
+          '
+        volumeMounts:
+        - name: cbr-restore
+          mountPath: /mnt/restore
+      containers:
+      - name: cbr-server
+        image: harbor.local.forwardnetworks.com/forward/fwd_cbr_server:26.1.3-02
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+        resources:
+          requests:
+            cpu: 500m
+          limits:
+            cpu: 128
+        ports:
+        - containerPort: 40100
+        - containerPort: 40099
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-cbr-server/logs
+        - mountPath: /scratch/data
+          name: scratch
+          subPathExpr: fwd-cbr-server/scratch-data
+        - mountPath: /tmp
+          name: scratch
+          subPathExpr: fwd-cbr-server/tmp
+        - mountPath: /cbr/restore
+          name: cbr-restore
+        env:
+        - name: CBR_RESTORE_DIR
+          value: /cbr/restore
+        - name: CBR_SERVER_HTTP_PORT
+          value: '40099'
+        - name: CBR_SERVER_GRPC_PORT
+          value: '40100'
+        - name: CBR_AGENT_GRPC_PORT
+          value: '40101'
+        - name: CBR_CLUSTER_TYPE
+          value: STANDALONE
+        - name: CBR_SERVER_HEAP_SIZE
+          value: 128m
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      - name: log-forwarder
+        image: quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3
+        command:
+        - /fluent-bit/bin/fluent-bit
+        - -c
+        - /fluent-bit/etc/fluent-bit.conf
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+        ports:
+        - name: http
+          containerPort: 2020
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 60Mi
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-cbr-server/logs
+        - mountPath: /fluent-bit/etc/
+          name: fluent-bit-config
+      volumes:
+      - name: scratch
+        persistentVolumeClaim:
+          claimName: forward-scratch
+      - name: cbr-restore
+        persistentVolumeClaim:
+          claimName: forward-cbr-restore
+      - name: fluent-bit-config
+        configMap:
+          name: fwd-cbr-server-fluent-bit-config
+      nodeSelector:
+        forwardnetworks.com/role: forward
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-collector
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-collector
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-collector
+        build: cf0bf397106
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: fix-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/
+          && chown 1000:1000 -R /mnt/scratch
+
+          '
+        volumeMounts:
+        - name: scratch
+          subPathExpr: fwd-collector
+          mountPath: /mnt/scratch
+      containers:
+      - name: collector-container
+        image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.1.3-02
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 500m
+          limits:
+            cpu: 128
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-collector/logs
+        - mountPath: /scratch/data
+          name: scratch
+          subPathExpr: fwd-collector/scratch-data
+        - mountPath: /tmp
+          name: scratch
+          subPathExpr: fwd-collector/tmp
+        env:
+        - name: LOGS_DIR
+          value: /var/log/forward/collector
+        - name: COLLECTOR_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: collector.credentials
+              optional: true
+      - name: log-forwarder
+        image: quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3
+        command:
+        - /fluent-bit/bin/fluent-bit
+        - -c
+        - /fluent-bit/etc/fluent-bit.conf
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+        ports:
+        - name: http
+          containerPort: 2020
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 60Mi
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-collector/logs
+        - mountPath: /fluent-bit/etc/
+          name: fluent-bit-config
+      volumes:
+      - name: scratch
+        persistentVolumeClaim:
+          claimName: forward-scratch
+      - name: fluent-bit-config
+        configMap:
+          name: fwd-collector-fluent-bit-config
+      nodeSelector:
+        forwardnetworks.com/role: forward
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fwd-compute-worker
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-compute-worker
+spec:
+  serviceName: fwd-compute-worker
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-compute-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-compute-worker
+        build: cf0bf397106
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - fwd-compute-worker
+            topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: fix-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/
+          && chown 1000:1000 -R /mnt/scratch
+
+          '
+        volumeMounts:
+        - name: scratch
+          subPathExpr: fwd-compute-worker
+          mountPath: /mnt/scratch
+      containers:
+      - name: compute-container
+        image: harbor.local.forwardnetworks.com/forward/fwd_compute_worker:26.1.3-02
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+        resources:
+          requests:
+            cpu: 500m
+          limits:
+            cpu: 256
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-compute-worker/logs
+        - mountPath: /scratch/data
+          name: scratch
+          subPathExpr: fwd-compute-worker/scratch-data
+        - mountPath: /tmp
+          name: scratch
+          subPathExpr: fwd-compute-worker/tmp
+        ports:
+        - containerPort: 30060
+        readinessProbe:
+          tcpSocket:
+            port: 30060
+        livenessProbe:
+          tcpSocket:
+            port: 30060
+          initialDelaySeconds: 10
+          periodSeconds: 60
+          failureThreshold: 10
+        envFrom:
+        - configMapRef:
+            name: fwd-memory-profile-overrides
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: COMPUTE_WORKER_PROFILES
+          value: K8S,COMPUTE_WORKER,ON_PREM
+        - name: MEMORY_PROFILE
+          value: SINGLE_BOX
+        - name: WORKER_STORES_PATH
+          value: /should-not-be-used
+        - name: SHERLOCK_WORK_DIR
+          value: /scratch/data/sherlock
+        - name: POSTGRES_HOST
+          value: db.skyforge.svc.cluster.local
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: user
+        - name: POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: password
+        - name: FDB_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: user
+        - name: FDB_POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: password
+        - name: FDB_PARAMS
+          value: -Dfdb.jdbc.postgres_servers=db.skyforge.svc.cluster.local -Dfdb.jdbc.postgres_port=5432
+            -Dfdb.jdbc.db_prefix_name=fwd_fdb_ -Dfdb.jdbc.username=$(FDB_POSTGRES_USER)
+            -Dfdb.jdbc.passwords=$(FDB_POSTGRES_PASS)
+      - name: log-forwarder
+        image: quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3
+        command:
+        - /fluent-bit/bin/fluent-bit
+        - -c
+        - /fluent-bit/etc/fluent-bit.conf
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+        ports:
+        - name: http
+          containerPort: 2020
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 60Mi
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POSTGRES_HOST
+          value: db.skyforge.svc.cluster.local
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: user
+        - name: POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: password
+        - name: FDB_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: user
+        - name: FDB_POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: password
+        - name: FDB_PARAMS
+          value: -Dfdb.jdbc.postgres_servers=db.skyforge.svc.cluster.local -Dfdb.jdbc.postgres_port=5432
+            -Dfdb.jdbc.db_prefix_name=fwd_fdb_ -Dfdb.jdbc.username=$(FDB_POSTGRES_USER)
+            -Dfdb.jdbc.passwords=$(FDB_POSTGRES_PASS)
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-compute-worker/logs
+        - mountPath: /fluent-bit/etc/
+          name: fluent-bit-config
+      volumes:
+      - name: scratch
+        persistentVolumeClaim:
+          claimName: forward-scratch
+      - name: fluent-bit-config
+        configMap:
+          name: fwd-compute-worker-fluent-bit-config
+      nodeSelector:
+        forwardnetworks.com/role: forward
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fwd-log-aggregator
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-log-aggregator
+spec:
+  serviceName: fwd-log-aggregator
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-log-aggregator
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-log-aggregator
+        build: cf0bf397106
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: fwd-log-aggregator
+      serviceAccountName: fwd-log-aggregator-user
+      initContainers:
+      - name: fix-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        - -c
+        - chown -R 100 /mnt/aggregated-logs
+        volumeMounts:
+        - name: aggregated-logs
+          mountPath: /mnt/aggregated-logs
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - fwd-log-aggregator
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - name: log-aggregator
+        image: quay.io/forwardnetworks/docker:fluent_fluentd_v1.16
+        command:
+        - fluentd
+        - -c
+        - /fluentd/etc/fluentd.conf
+        - -p
+        - /fluentd/plugins
+        resources:
+          limits:
+            cpu: 100m
+            memory: 256Mi
+          requests:
+            cpu: 1m
+            memory: 64Mi
+        securityContext:
+          runAsUser: 100
+          runAsNonRoot: true
+        ports:
+        - name: fwd-input
+          containerPort: 24224
+          protocol: TCP
+        - name: fwd-input-udp
+          containerPort: 24224
+          protocol: UDP
+        livenessProbe:
+          tcpSocket:
+            port: 24224
+          initialDelaySeconds: 120
+          timeoutSeconds: 3
+          periodSeconds: 30
+        volumeMounts:
+        - name: fluentd-aggregator-config
+          mountPath: /fluentd/etc
+        - name: aggregated-logs
+          mountPath: /mnt/aggregated-logs
+      - name: logserver
+        image: harbor.local.forwardnetworks.com/forward/fwd_logserver:26.1.3-02
+        resources:
+          limits:
+            cpu: 100m
+            memory: 256Mi
+          requests:
+            cpu: 1m
+            memory: 64Mi
+        ports:
+        - name: logserver-http
+          containerPort: 80
+          protocol: TCP
+        volumeMounts:
+        - name: aggregated-logs
+          mountPath: /mnt/aggregated-logs
+        env:
+        - name: LOGS_DIR_ROOT
+          value: /mnt/aggregated-logs
+        - name: POD_NAMESPACE
+          value: forward
+      volumes:
+      - name: fluentd-aggregator-config
+        configMap:
+          name: fluentd-aggregator-config
+      terminationGracePeriodSeconds: 15
+      nodeSelector:
+        forwardnetworks.com/role: forward
+  volumeClaimTemplates:
+  - metadata:
+      name: aggregated-logs
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: longhorn
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fwd-search-worker
+  namespace: forward
+  labels:
+    app.kubernetes.io/name: fwd-search-worker
+spec:
+  serviceName: fwd-search-worker
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-search-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fwd-search-worker
+        build: cf0bf397106
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - fwd-search-worker
+            topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: fix-permissions
+        image: quay.io/forwardnetworks/docker:alpine_3.18.3
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - 'mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/
+          && chown 1000:1000 -R /mnt/scratch
+
+          '
+        volumeMounts:
+        - name: scratch
+          subPathExpr: fwd-search-worker
+          mountPath: /mnt/scratch
+      containers:
+      - name: search-container
+        image: harbor.local.forwardnetworks.com/forward/fwd_search_worker:26.1.3-02
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+        resources:
+          requests:
+            cpu: 500m
+          limits:
+            cpu: 256
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-search-worker/logs
+        - mountPath: /scratch/data
+          name: scratch
+          subPathExpr: fwd-search-worker/scratch-data
+        - mountPath: /tmp
+          name: scratch
+          subPathExpr: fwd-search-worker/tmp
+        ports:
+        - containerPort: 30050
+        readinessProbe:
+          tcpSocket:
+            port: 30050
+        livenessProbe:
+          tcpSocket:
+            port: 30050
+          initialDelaySeconds: 10
+          periodSeconds: 60
+          failureThreshold: 10
+        envFrom:
+        - configMapRef:
+            name: fwd-memory-profile-overrides
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: SEARCH_WORKER_PROFILES
+          value: K8S,SEARCH_WORKER,ON_PREM
+        - name: MEMORY_PROFILE
+          value: SINGLE_BOX
+        - name: WORKER_STORES_PATH
+          value: /scratch/data/sherlock/
+        - name: POSTGRES_HOST
+          value: db.skyforge.svc.cluster.local
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: user
+        - name: POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: password
+        - name: FDB_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: user
+        - name: FDB_POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: password
+        - name: FDB_PARAMS
+          value: -Dfdb.jdbc.postgres_servers=db.skyforge.svc.cluster.local -Dfdb.jdbc.postgres_port=5432
+            -Dfdb.jdbc.db_prefix_name=fwd_fdb_ -Dfdb.jdbc.username=$(FDB_POSTGRES_USER)
+            -Dfdb.jdbc.passwords=$(FDB_POSTGRES_PASS)
+      - name: log-forwarder
+        image: quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3
+        command:
+        - /fluent-bit/bin/fluent-bit
+        - -c
+        - /fluent-bit/etc/fluent-bit.conf
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+        ports:
+        - name: http
+          containerPort: 2020
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 5m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 60Mi
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POSTGRES_HOST
+          value: db.skyforge.svc.cluster.local
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: user
+        - name: POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-app.credentials
+              key: password
+        - name: FDB_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: user
+        - name: FDB_POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres.fwd-pg-fdb.credentials
+              key: password
+        - name: FDB_PARAMS
+          value: -Dfdb.jdbc.postgres_servers=db.skyforge.svc.cluster.local -Dfdb.jdbc.postgres_port=5432
+            -Dfdb.jdbc.db_prefix_name=fwd_fdb_ -Dfdb.jdbc.username=$(FDB_POSTGRES_USER)
+            -Dfdb.jdbc.passwords=$(FDB_POSTGRES_PASS)
+        volumeMounts:
+        - mountPath: /var/log/forward
+          name: scratch
+          subPathExpr: fwd-search-worker/logs
+        - mountPath: /fluent-bit/etc/
+          name: fluent-bit-config
+      volumes:
+      - name: scratch
+        persistentVolumeClaim:
+          claimName: forward-scratch
+      - name: fluent-bit-config
+        configMap:
+          name: fwd-search-worker-fluent-bit-config
+      nodeSelector:
+        forwardnetworks.com/role: forward
