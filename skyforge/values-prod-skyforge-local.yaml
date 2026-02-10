@@ -75,7 +75,7 @@ skyforge:
 
   # Pin netlab-c9s generator image so `netlab initial` has the artifacts it needs.
   netlabC9s:
-    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260206-5b326c1"
+    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260210-dellos10fix1"
     applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:20260206-b6a1937"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.

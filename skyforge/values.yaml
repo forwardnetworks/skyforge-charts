@@ -266,6 +266,22 @@ skyforge:
     # Skyforge falls back to the global Kubernetes imagePullSecret.
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
+  forwardApp:
+    # Optional: mount a Forward on-prem "app cluster" UI behind Skyforge, under `pathPrefix`.
+    # This assumes Forward is deployed separately in the same Kubernetes cluster (typically
+    # in namespace `forward`) and exposes a ClusterIP service for the UI/API.
+    #
+    # Note: Mounting a complex web app under a path prefix can be brittle if the upstream
+    # app hard-codes absolute URLs. We attempt to mitigate via proxy headers.
+    enabled: false
+    # External URL prefix on Skyforge.
+    pathPrefix: "/fwd"
+    # Upstream Forward appserver Service.
+    upstreamNamespace: "forward"
+    upstreamService: "fwd-appserver"
+    upstreamPort: 8080
+    # Protect the Forward UI behind Skyforge SSO (recommended).
+    requireAuth: true
   sessionTtl: "8h"
   pkiDefaultDays: 365
   sshDefaultDays: 30
