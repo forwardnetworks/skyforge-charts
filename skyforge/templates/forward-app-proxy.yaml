@@ -59,13 +59,6 @@ data:
                                 cluster: forward_upstream
                                 # Strip /fwd from incoming requests to the upstream.
                                 prefix_rewrite: /
-                                request_headers_to_add:
-                                  - header:
-                                      key: x-forwarded-prefix
-                                      value: {{ $pathPrefix | quote }}
-                                  - header:
-                                      key: x-skyforge-external-prefix
-                                      value: {{ $pathPrefix | quote }}
                     http_filters:
 {{- if $requireAuth }}
                       - name: envoy.filters.http.ext_authz
@@ -237,4 +230,3 @@ spec:
       port: 8080
       targetPort: 8080
 {{- end }}
-
