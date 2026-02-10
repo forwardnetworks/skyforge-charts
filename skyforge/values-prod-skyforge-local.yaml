@@ -91,7 +91,9 @@ skyforge:
   # This must be enabled for E2E deploy tests and user deployments to reconcile.
   clabernetes:
     enabled: true
-    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260204-ceos-fastcli-3113843"
+    # Includes Skyforge per-topology scheduling enforcement based on Topology label
+    # `skyforge.forwardnetworks.com/scheduling=spread-{required,preferred}`.
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260210-sched-65a7390"
     launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260205-native-vxlan-localip-txoff-readyonly"
 
   # Current LDAP endpoint in this environment requires skipping TLS verification
