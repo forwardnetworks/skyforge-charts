@@ -5,5 +5,5 @@ metadata:
 data:
   index.html: |
 {{ .Files.Get "files/redoc/index.html" | nindent 4 }}
-  redoc.standalone.js: |
-{{ .Files.Get "files/redoc/redoc.standalone.js" | nindent 4 }}
+binaryData:
+  redoc.standalone.js: {{ .Files.Get "files/redoc/redoc.standalone.js" | b64enc | quote }}
