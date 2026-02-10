@@ -3,8 +3,6 @@
 {{- $minioEnabled := .Values.skyforge.minio.enabled -}}
 {{- $yaadeEnabled := .Values.skyforge.yaade.enabled -}}
 {{- $swaggerEnabled := .Values.skyforge.swaggerUI.enabled -}}
-{{- $apiDocsCfg := (get .Values.skyforge "apiDocs" | default dict) -}}
-{{- $apiDocsEnabled := (get $apiDocsCfg "enabled" | default $swaggerEnabled) -}}
 {{- $dexEnabled := .Values.skyforge.dex.enabled -}}
 {{- $coderEnabled := .Values.skyforge.coder.enabled -}}
 {{- $forwardApp := (get .Values.skyforge "forwardApp" | default dict) -}}
@@ -275,21 +273,6 @@ spec:
           port: 8080
 {{- end }}
 
-{{- if $apiDocsEnabled }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /docs
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
-      backendRefs:
-        - name: api-docs
-          port: 8080
-{{- end }}
 
 {{- if $coderEnabled }}
     - matches:

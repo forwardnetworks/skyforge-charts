@@ -300,7 +300,7 @@ skyforge:
     user: "skyforge_server"
     sslmode: "disable"
   health:
-    httpChecks: "Edge|edge|http://skyforge-server Server|server|http://skyforge-server Testing|api|http://yaade/api-testing/|/api-testing/;API Docs|docs|http://api-docs:8080/|/docs/;Webhook Inbox|webhooks|http://skyforge-server"
+    httpChecks: "Edge|edge|http://skyforge-server Server|server|http://skyforge-server Testing|api|http://yaade/api-testing/|/api-testing/;API Docs|redoc|http://skyforge-server|/redoc/;Webhook Inbox|webhooks|http://skyforge-server"
     codeChecks: "Postgres|postgres|pg|db;Redis|redis|redis|redis;RADIUS|radius|radius|freeradius"
   admin:
     username: "skyforge"

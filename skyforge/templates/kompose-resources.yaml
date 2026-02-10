@@ -24,14 +24,12 @@ pulling images or waiting on hooks.
     "minio-init-pod.yaml"
     "minio-ldap-init-pod.yaml"
     "minio-skyforge-init-pod.yaml"
-    "minio-service.yaml"
-  ) -}}
+    "minio-service.yaml") -}}
 {{- end }}
 
 {{- if and .Values.skyforge.minio.enabled .Values.skyforge.gitea.enabled }}
   {{- $files = concat $files (list
-    "minio-gitea-init-pod.yaml"
-  ) -}}
+    "minio-gitea-init-pod.yaml") -}}
 {{- end }}
 
 {{- if .Values.skyforge.gitea.enabled }}
@@ -39,27 +37,13 @@ pulling images or waiting on hooks.
     "gitea-admin-bootstrap-job.yaml"
     "gitea-admin-sync-deployment.yaml"
     "gitea-deployment.yaml"
-    "gitea-service.yaml"
-  ) -}}
-{{- end }}
-
-{{- $swaggerEnabled := .Values.skyforge.swaggerUI.enabled -}}
-{{- $apiDocsCfg := (get .Values.skyforge "apiDocs" | default dict) -}}
-{{- $apiDocsEnabled := (get $apiDocsCfg "enabled" | default $swaggerEnabled) -}}
-
-{{- if $apiDocsEnabled }}
-  {{- $files = concat $files (list
-    "api-docs-configmap.yaml"
-    "api-docs-deployment.yaml"
-    "api-docs-service.yaml"
-  ) -}}
+    "gitea-service.yaml") -}}
 {{- end }}
 
 {{- if .Values.skyforge.yaade.enabled }}
   {{- $files = concat $files (list
     "yaade-deployment.yaml"
-    "yaade-service.yaml"
-  ) -}}
+    "yaade-service.yaml") -}}
 {{- end }}
 
 {{- if .Values.skyforge.netbox.enabled }}
@@ -67,29 +51,26 @@ pulling images or waiting on hooks.
     "netbox-admin-bootstrap-job.yaml"
     "netbox-admin-sync-deployment.yaml"
     "netbox-deployment.yaml"
-    "netbox-service.yaml"
-  ) -}}
+    "netbox-service.yaml") -}}
 {{- end }}
 
 {{- if .Values.skyforge.nautobot.enabled }}
   {{- if (default false .Values.skyforge.nautobot.bootstrap.enabled) }}
     {{- $files = concat $files (list
-      "nautobot-admin-bootstrap-job.yaml"
-    ) -}}
+      "nautobot-admin-bootstrap-job.yaml") -}}
   {{- end }}
 
   {{- $files = concat $files (list
     "nautobot-admin-sync-deployment.yaml"
     "nautobot-deployment.yaml"
-    "nautobot-service.yaml"
-  ) -}}
+    "nautobot-service.yaml") -}}
 {{- end }}
 
 {{- range $files }}
 {{- $path := printf "files/kompose/%s" . -}}
 {{- if $.Files.Get $path }}
 ---
-{{ if has . (list "netbox-deployment.yaml" "netbox-admin-bootstrap-job.yaml" "nautobot-deployment.yaml" "api-docs-configmap.yaml" "api-docs-deployment.yaml") -}}
+{{ if has . (list "netbox-deployment.yaml" "netbox-admin-bootstrap-job.yaml" "nautobot-deployment.yaml") -}}
 {{ printf "%s\n" (tpl ($.Files.Get $path) $) -}}
 {{ else -}}
 {{ printf "%s\n" ($.Files.Get $path) -}}
