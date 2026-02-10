@@ -400,6 +400,9 @@ skyforge:
       # OIDC issuer URL for your Okta auth server. Common defaults:
       # - "https://<your-domain>.okta.com" (Okta org authorization server; commonly available)
       # - "https://<your-domain>.okta.com/oauth2/<authServerId>" (custom auth server; requires API Access Management)
+      # Note: if you try to use "/oauth2/default" and see an Okta error like
+      # "E0000015 You do not have permission to access the feature you are requesting",
+      # you likely do not have API Access Management enabled; use the org issuer instead.
       issuer: ""
       clientID: ""
       # Where to read the Okta OIDC client secret from.
