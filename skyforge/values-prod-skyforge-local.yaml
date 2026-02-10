@@ -55,6 +55,10 @@ skyforge:
     upstreamService: fwd-appserver
     upstreamPort: 8080
     requireAuth: true
+    autosleep:
+      enabled: true
+      idleMinutes: 30
+      wakeTimeoutSeconds: 240
 
   # Swagger image pulls can be rate-limited on Docker Hub; keep this disabled
   # in production unless you pin a mirrored image.

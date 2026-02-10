@@ -1,3 +1,4 @@
+{{- $forwardAppAutosleep := (get .Values.skyforge.forwardApp "autosleep" | default dict) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -76,3 +77,6 @@ data:
   SKYFORGE_OIDC_DISCOVERY_URL: {{ .Values.skyforge.oidc.discoveryUrl | quote }}
   SKYFORGE_OIDC_ISSUER_URL: {{ default "" .Values.skyforge.oidc.issuerUrl | quote }}
   SKYFORGE_OIDC_REDIRECT_URL: {{ default "" .Values.skyforge.oidc.redirectUrl | quote }}
+  SKYFORGE_FORWARD_ONPREM_AUTOSLEEP_ENABLED: {{ (get $forwardAppAutosleep "enabled" | default false) | quote }}
+  SKYFORGE_FORWARD_ONPREM_AUTOSLEEP_IDLE_MINUTES: {{ (get $forwardAppAutosleep "idleMinutes" | default 30) | quote }}
+  SKYFORGE_FORWARD_ONPREM_WAKE_TIMEOUT_SECONDS: {{ (get $forwardAppAutosleep "wakeTimeoutSeconds" | default 180) | quote }}

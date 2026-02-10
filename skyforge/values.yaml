@@ -282,6 +282,12 @@ skyforge:
     upstreamPort: 8080
     # Protect the Forward UI behind Skyforge SSO (recommended).
     requireAuth: true
+    autosleep:
+      # Optional: auto-scale Forward on-prem workloads down to 0 after an idle window,
+      # and wake them on-demand on the next /fwd request.
+      enabled: false
+      idleMinutes: 30
+      wakeTimeoutSeconds: 180
   sessionTtl: "8h"
   pkiDefaultDays: 365
   sshDefaultDays: 30

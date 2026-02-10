@@ -7,6 +7,8 @@
 {{- $upSvc := (get $cfg "upstreamService" | default "fwd-appserver") -}}
 {{- $upPort := (get $cfg "upstreamPort" | default 8080) -}}
 {{- $requireAuth := (get $cfg "requireAuth" | default true) -}}
+{{- $autosleep := (get $cfg "autosleep" | default dict) -}}
+{{- $autosleepEnabled := (get $autosleep "enabled" | default false) -}}
 
 ---
 apiVersion: v1
@@ -56,9 +58,17 @@ data:
                             - match:
                                 prefix: {{ printf "%s/" $pathPrefix | quote }}
                               route:
+{{- if $autosleepEnabled }}
+                                # When autosleep is enabled, route to Skyforge server which
+                                # wakes Forward workloads and then reverse-proxies to the
+                                # in-cluster Forward appserver.
+                                cluster: skyforge_server
+                                prefix_rewrite: /api/forward/onprem/proxy/
+{{- else }}
                                 cluster: forward_upstream
                                 # Strip /fwd from incoming requests to the upstream.
                                 prefix_rewrite: /
+{{- end }}
                     http_filters:
 {{- if $requireAuth }}
                       - name: envoy.filters.http.ext_authz

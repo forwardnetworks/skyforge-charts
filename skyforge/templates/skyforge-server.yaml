@@ -383,6 +383,21 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_OIDC_REDIRECT_URL
+        - name: SKYFORGE_FORWARD_ONPREM_AUTOSLEEP_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_ONPREM_AUTOSLEEP_ENABLED
+        - name: SKYFORGE_FORWARD_ONPREM_AUTOSLEEP_IDLE_MINUTES
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_ONPREM_AUTOSLEEP_IDLE_MINUTES
+        - name: SKYFORGE_FORWARD_ONPREM_WAKE_TIMEOUT_SECONDS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_ONPREM_WAKE_TIMEOUT_SECONDS
         - name: SKYFORGE_OIDC_CLIENT_ID
           valueFrom:
             secretKeyRef:
