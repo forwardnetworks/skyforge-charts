@@ -60,6 +60,13 @@ skyforge:
       idleMinutes: 30
       wakeTimeoutSeconds: 240
 
+  # In-cluster Forward collector deployed per user by Skyforge. This must be set,
+  # otherwise collector configs can be created in Forward but no Pod will be deployed
+  # (Collector UI shows "not configured" and collectors never connect).
+  forwardCollector:
+    image: "ghcr.io/forwardnetworks/skyforge-forward-collector:26.1.0-11"
+    heapSizeGB: 16
+
   # Swagger image pulls can be rate-limited on Docker Hub; keep this disabled
   # in production unless you pin a mirrored image.
   swaggerUI:
