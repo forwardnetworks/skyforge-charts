@@ -14,6 +14,15 @@ skyforge:
     # Ensure the worker service gets the same Helm-driven typed config as the API.
     # Without this, the worker falls back to whatever was baked into its image.
     workerCreate: true
+    # Speed up queued-task pickup when Pub/Sub delivery is delayed.
+    # This tunes only worker-side fallback polling behavior.
+    workerJson: |
+      {
+        "TaskWorkerPollEnabled": true,
+        "TaskWorkerPollMinQueuedSeconds": 20,
+        "TaskWorkerPollMaxTasksPerTick": 20,
+        "TaskWorkerPollMaxConcurrency": 8
+      }
 
   # Provide ENCORE_RUNTIME_CONFIG from the chart's `files/infra.config.json`.
   # This keeps Skyforge server images portable (no baked-in infra config).
