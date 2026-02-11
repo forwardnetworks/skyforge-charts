@@ -112,6 +112,11 @@ skyforge:
   imagePrewarm:
     enabled: true
     intervalSeconds: 1800
+    registryAuth:
+      usernameSecretName: "skyforge-registry-username"
+      usernameSecretKey: "skyforge-registry-username"
+      passwordSecretName: "skyforge-registry-password"
+      passwordSecretKey: "skyforge-registry-password"
     images:
       - "ghcr.io/forwardnetworks/vrnetlab/vr-n9kv:9.3.8"
       - "ghcr.io/forwardnetworks/vrnetlab/vr-vmx:18.2R1.9"
