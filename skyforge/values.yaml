@@ -233,6 +233,39 @@ skyforge:
     generatorPullPolicy: "IfNotPresent"
     applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:latest"
     applierPullPolicy: "IfNotPresent"
+    # Optional environment defaults applied cluster-wide to netlab-c9s/clabernetes
+    # runs when a deployment does not set an explicit override.
+    # Example:
+    # defaultEnvironment:
+    #   SKYFORGE_CLABERNETES_SCHEDULING_MODE: "adaptive"
+    defaultEnvironment: {}
+  imagePrewarm:
+    # Optional: periodically pre-pull selected images on every node to reduce
+    # first-boot latency for heavy NOS deployments.
+    enabled: false
+    # Internal pull loop interval (seconds) per node.
+    intervalSeconds: 1800
+    # Prewarmer image must include `ctr` and a shell.
+    image: "rancher/k3s:v1.31.5-k3s1"
+    pullPolicy: "IfNotPresent"
+    # k3s containerd socket on the node.
+    containerdSocket: "/run/k3s/containerd/containerd.sock"
+    # Optional node placement controls.
+    nodeSelector: {}
+    tolerations: []
+    # Optional registry credentials for ctr pulls.
+    registryAuth:
+      usernameSecretName: ""
+      usernameSecretKey: ""
+      passwordSecretName: ""
+      passwordSecretKey: ""
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "128Mi"
+      limits: {}
+    # Images to pre-pull on each interval.
+    images: []
   dns:
     enabled: false
     adminUsername: "admin"

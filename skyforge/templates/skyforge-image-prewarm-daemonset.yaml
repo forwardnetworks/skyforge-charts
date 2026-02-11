@@ -1,0 +1,100 @@
+{{- $cfg := (.Values.skyforge.imagePrewarm | default (dict)) -}}
+{{- $enabled := (default false $cfg.enabled) -}}
+{{- $images := (default (list) $cfg.images) -}}
+{{- if and $enabled (gt (len $images) 0) }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: skyforge-image-prewarm
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: image-prewarm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge
+      app.kubernetes.io/component: image-prewarm
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/component: image-prewarm
+      annotations:
+        checksum/images: {{ sha256sum (join "\n" $images) | quote }}
+    spec:
+      serviceAccountName: skyforge-server
+      terminationGracePeriodSeconds: 10
+      {{- if .Values.kubernetes.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range $name := .Values.kubernetes.imagePullSecrets }}
+        - name: {{ $name | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if $cfg.nodeSelector }}
+      nodeSelector:
+        {{- toYaml $cfg.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if $cfg.tolerations }}
+      tolerations:
+        {{- toYaml $cfg.tolerations | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: prewarm
+          image: {{ (default "rancher/k3s:v1.31.5-k3s1" $cfg.image) | quote }}
+          imagePullPolicy: {{ (default "IfNotPresent" $cfg.pullPolicy) | quote }}
+          command: ["/bin/sh", "-ec"]
+          args:
+            - |
+              set -eu
+              while true; do
+                now="$(date -Iseconds 2>/dev/null || date)"
+                echo "[$now] image prewarm started"
+                for img in ${PREWARM_IMAGES}; do
+                  echo "prewarm: ${img}"
+                  if [ -n "${REGISTRY_USERNAME:-}" ] && [ -n "${REGISTRY_PASSWORD:-}" ]; then
+                    ctr --address "${PREWARM_CONTAINERD_SOCK}" --namespace k8s.io images pull --user "${REGISTRY_USERNAME}:${REGISTRY_PASSWORD}" "${img}" || echo "warn: pull failed for ${img}"
+                  else
+                    ctr --address "${PREWARM_CONTAINERD_SOCK}" --namespace k8s.io images pull "${img}" || echo "warn: pull failed for ${img}"
+                  fi
+                done
+                echo "sleeping ${PREWARM_INTERVAL_SECONDS}s"
+                sleep "${PREWARM_INTERVAL_SECONDS}"
+              done
+          env:
+            - name: PREWARM_INTERVAL_SECONDS
+              value: {{ printf "%v" (default 1800 $cfg.intervalSeconds) | quote }}
+            - name: PREWARM_CONTAINERD_SOCK
+              value: {{ (default "/run/k3s/containerd/containerd.sock" $cfg.containerdSocket) | quote }}
+            - name: PREWARM_IMAGES
+              value: {{ join " " $images | quote }}
+            {{- $auth := (default (dict) $cfg.registryAuth) }}
+            {{- if and (default "" $auth.usernameSecretName) (default "" $auth.usernameSecretKey) }}
+            - name: REGISTRY_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $auth.usernameSecretName | quote }}
+                  key: {{ $auth.usernameSecretKey | quote }}
+                  optional: true
+            {{- end }}
+            {{- if and (default "" $auth.passwordSecretName) (default "" $auth.passwordSecretKey) }}
+            - name: REGISTRY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $auth.passwordSecretName | quote }}
+                  key: {{ $auth.passwordSecretKey | quote }}
+                  optional: true
+            {{- end }}
+          resources:
+            {{- toYaml (default (dict) $cfg.resources) | nindent 12 }}
+          volumeMounts:
+            - name: containerd-sock
+              mountPath: {{ (default "/run/k3s/containerd/containerd.sock" $cfg.containerdSocket) | quote }}
+              readOnly: true
+      volumes:
+        - name: containerd-sock
+          hostPath:
+            path: {{ (default "/run/k3s/containerd/containerd.sock" $cfg.containerdSocket) | quote }}
+            type: Socket
+{{- end }}

@@ -22,3 +22,9 @@ early when required configuration is missing.
     {{- fail "skyforge.minio.enabled=false requires skyforge.objectStorage.endpoint to be set to a non-MinIO S3 endpoint (not minio:9000)" -}}
   {{- end -}}
 {{- end -}}
+
+{{- if .Values.skyforge.imagePrewarm.enabled -}}
+  {{- if eq (len (default (list) .Values.skyforge.imagePrewarm.images)) 0 -}}
+    {{- fail "skyforge.imagePrewarm.enabled=true requires at least one image in skyforge.imagePrewarm.images" -}}
+  {{- end -}}
+{{- end -}}

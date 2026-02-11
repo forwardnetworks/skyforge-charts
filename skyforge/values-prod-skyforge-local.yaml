@@ -27,7 +27,7 @@ skyforge:
   # Run a dedicated worker Deployment to process NSQ tasks and internal reconciles.
   # Keep this separate from the API Deployment to avoid "queued" runs caused by
   # non-worker pods grabbing subscriptions.
-  workerReplicaCount: 1
+  workerReplicaCount: 2
 
   netbox:
     enabled: true
@@ -97,6 +97,28 @@ skyforge:
   netlabC9s:
     generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260210-dellos10fix1"
     applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:20260206-b6a1937"
+    defaultEnvironment:
+      SKYFORGE_CLABERNETES_SCHEDULING_MODE: "adaptive"
+      SKYFORGE_CLABERNETES_ADAPTIVE_PACK_MAX_NODES: "3"
+      SKYFORGE_CLABERNETES_HEAVY_NOS_SPREAD_OVERRIDE: "true"
+      SKYFORGE_CLABERNETES_POD_ANTI_AFFINITY_REQUIRED: "true"
+      SKYFORGE_FORWARD_CONNECTIVITY_EARLY: "true"
+      SKYFORGE_FORWARD_CONNECTIVITY_EARLY_SECONDS: "300"
+      SKYFORGE_FORWARD_CONNECTIVITY_EARLY_CONCURRENCY: "16"
+      SKYFORGE_FORWARD_CONNECTIVITY_EARLY_BATCH: "12"
+      SKYFORGE_NETLAB_INITIAL_SSH_READY_SECONDS: "900"
+      SKYFORGE_FORWARD_SSH_READY_SECONDS: "900"
+
+  imagePrewarm:
+    enabled: true
+    intervalSeconds: 1800
+    images:
+      - "ghcr.io/forwardnetworks/vrnetlab/vr-n9kv:9.3.8"
+      - "ghcr.io/forwardnetworks/vrnetlab/vr-vmx:18.2R1.9"
+      - "ghcr.io/forwardnetworks/vrnetlab/juniper_vjunosevolved:25.2R1.8-EVO"
+      - "ghcr.io/forwardnetworks/vrnetlab/cisco_c8000v:17.16.01a"
+      - "ghcr.io/forwardnetworks/ceos:4.34.2F"
+      - "ghcr.io/forwardnetworks/skyforge-linux-host:20260127"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
   # This must be enabled for E2E deploy tests and user deployments to reconcile.

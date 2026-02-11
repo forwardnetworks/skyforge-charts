@@ -1,3 +1,4 @@
+{{- $netlabDefaultEnv := (default dict .Values.skyforge.netlabC9s.defaultEnvironment) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -56,6 +57,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+{{- range $k := (keys $netlabDefaultEnv | sortAlpha) }}
+        - name: {{ $k }}
+          value: {{ printf "%v" (index $netlabDefaultEnv $k) | quote }}
+{{- end }}
         - name: SKYFORGE_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
