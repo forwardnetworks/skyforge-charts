@@ -40,11 +40,22 @@ static_resources:
                     - name: forward_app
                       domains: ["*"]
                       routes:
-                        # Canonicalize /fwd -> /fwd/ (nice URLs and consistent relative paths).
+                        # Route exact /fwd directly. Avoid an extra redirect hop that can
+                        # lose scheme/context through intermediate proxies.
                         - match:
                             path: {{ $pathPrefix | quote }}
-                          redirect:
-                            path_redirect: {{ printf "%s/" $pathPrefix | quote }}
+                          route:
+{{- if $autosleepEnabled }}
+                            # When autosleep is enabled, route to Skyforge server which
+                            # wakes Forward workloads and then reverse-proxies to the
+                            # in-cluster Forward appserver.
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/
+{{- else }}
+                            cluster: forward_upstream
+                            # Strip /fwd from incoming requests to the upstream.
+                            prefix_rewrite: /
+{{- end }}
                         - match:
                             prefix: {{ printf "%s/" $pathPrefix | quote }}
                           route:
@@ -112,13 +123,43 @@ static_resources:
                         end
 
                         function envoy_on_response(handle)
-                          local loc = handle:headers():get("location")
+                          local orig_loc = handle:headers():get("location")
+                          local loc = orig_loc
                           if loc == nil then
                             return
                           end
+
+                          -- Rewrite absolute same-host redirects as well as relative
+                          -- redirects so browser navigation remains scoped under /fwd.
                           if string.sub(loc, 1, 1) ~= "/" then
-                            return
+                            local authority = handle:headers():get("x-forwarded-host")
+                            if authority == nil or authority == "" then
+                              authority = handle:headers():get(":authority")
+                            end
+                            if authority == nil or authority == "" then
+                              authority = handle:headers():get("host")
+                            end
+                            if authority == nil or authority == "" then
+                              return
+                            end
+
+                            local http_prefix = "http://" .. authority
+                            local https_prefix = "https://" .. authority
+                            if string.sub(loc, 1, string.len(http_prefix)) == http_prefix then
+                              loc = string.sub(loc, string.len(http_prefix) + 1)
+                            elseif string.sub(loc, 1, string.len(https_prefix)) == https_prefix then
+                              loc = string.sub(loc, string.len(https_prefix) + 1)
+                            else
+                              return
+                            end
+
+                            if loc == "" then
+                              loc = "/"
+                            elseif string.sub(loc, 1, 1) ~= "/" then
+                              loc = "/" .. loc
+                            end
                           end
+
                           local login_prefix = "/api/oidc/login"
                           if string.sub(loc, 1, string.len(login_prefix)) == login_prefix then
                             return
