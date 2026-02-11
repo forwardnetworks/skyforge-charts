@@ -25,13 +25,21 @@ spec:
             - -c
             # Coder's OIDC client uses system roots. Add Skyforge's extra CA(s) to a
             # synthetic bundle and point Go's x509 loader at it via SSL_CERT_FILE.
-            - set -euo pipefail; cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+            - >-
+              set -euo pipefail;
+              cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt;
+              if [ -s /etc/proxy-tls/tls.crt ]; then
+                cat /etc/proxy-tls/tls.crt >> /work/ca-certificates.crt;
+              fi
           volumeMounts:
             - name: ca-work
               mountPath: /work
             - name: skyforge-ca-cert
               mountPath: /etc/skyforge/skyforge-ca-cert
               subPath: skyforge-ca-cert
+              readOnly: true
+            - name: proxy-tls
+              mountPath: /etc/proxy-tls
               readOnly: true
       containers:
         - name: coder
@@ -98,6 +106,10 @@ spec:
         - name: skyforge-ca-cert
           secret:
             secretName: skyforge-ca-cert
+        - name: proxy-tls
+          secret:
+            secretName: proxy-tls
+            optional: true
 ---
 apiVersion: v1
 kind: Service
