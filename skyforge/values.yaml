@@ -280,6 +280,8 @@ skyforge:
     upstreamNamespace: "forward"
     upstreamService: "fwd-appserver"
     upstreamPort: 8080
+    upstreamTLS: false
+    upstreamSNI: ""
     # Protect the Forward UI behind Skyforge SSO (recommended).
     requireAuth: true
     autosleep:

@@ -53,7 +53,9 @@ skyforge:
     pathPrefix: /fwd
     upstreamNamespace: forward
     upstreamService: fwd-appserver
-    upstreamPort: 8080
+    upstreamPort: 8443
+    upstreamTLS: true
+    upstreamSNI: fwd-appserver.forward.svc.cluster.local
     requireAuth: true
     autosleep:
       enabled: true

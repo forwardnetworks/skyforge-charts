@@ -6,6 +6,8 @@
 {{- $upNs := (get $cfg "upstreamNamespace" | default "forward") -}}
 {{- $upSvc := (get $cfg "upstreamService" | default "fwd-appserver") -}}
 {{- $upPort := (get $cfg "upstreamPort" | default 8080) -}}
+{{- $upTLS := (get $cfg "upstreamTLS" | default false) -}}
+{{- $upSNI := (get $cfg "upstreamSNI" | default (printf "%s.%s.svc.cluster.local" $upSvc $upNs)) -}}
 {{- $requireAuth := (get $cfg "requireAuth" | default true) -}}
 {{- $autosleep := (get $cfg "autosleep" | default dict) -}}
 {{- $autosleepEnabled := (get $autosleep "enabled" | default false) -}}
@@ -90,11 +92,9 @@ data:
                                   - exact: x-forwarded-host
                                   - exact: x-forwarded-for
                                   - exact: x-forwarded-uri
-                                  - exact: x-forwarded-prefix
                                   - exact: user-agent
                                   - exact: accept
                                   - exact: accept-language
-                                  - exact: x-skyforge-external-prefix
                             authorization_response:
                               allowed_upstream_headers:
                                 patterns:
@@ -127,7 +127,7 @@ data:
                               if string.sub(loc, 1, 1) ~= "/" then
                                 return
                               end
-                              if string.sub(loc, 1, 14) == "/api/oidc/login" then
+                              if string.sub(loc, 1, 15) == "/api/oidc/login" then
                                 return
                               end
                               if string.sub(loc, 1, {{ add (len $pathPrefix) 1 }}) == "{{ $pathPrefix }}/" or loc == "{{ $pathPrefix }}" then
@@ -157,6 +157,13 @@ data:
         - name: forward_upstream
           type: STRICT_DNS
           connect_timeout: 5s
+{{- if $upTLS }}
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+              sni: {{ $upSNI | quote }}
+{{- end }}
           load_assignment:
             cluster_name: forward_upstream
             endpoints:

@@ -131,10 +131,6 @@ spec:
             set:
               - name: X-Forwarded-Proto
                 value: https
-              - name: X-Forwarded-Prefix
-                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
-              - name: X-Skyforge-External-Prefix
-                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
       backendRefs:
         - name: forward-app-proxy
           port: 8080
