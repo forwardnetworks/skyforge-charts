@@ -309,10 +309,23 @@ skyforge:
     enabled: false
     # External URL prefix on Skyforge.
     pathPrefix: "/fwd"
+    # Optional root aliases for Forward canonical paths (for example /login).
+    # This avoids redirect loops when Forward emits root-host redirects while
+    # Skyforge exposes the app under a path prefix.
+    rootAliases:
+      enabled: false
+      paths:
+        - "/login"
+        - "/logout"
+    # Cookie path mode for Forward on-prem proxy:
+    # - "prefix": rewrite Set-Cookie Path=/ -> Path=/fwd
+    # - "alias": keep upstream cookie path (Path=/) for root alias mode
+    cookiePathMode: "prefix"
     # Upstream Forward appserver Service.
     upstreamNamespace: "forward"
     upstreamService: "fwd-appserver"
     upstreamPort: 8080
+    upstreamTLS: false
     # Protect the Forward UI behind Skyforge SSO (recommended).
     requireAuth: true
     autosleep:
@@ -379,11 +392,13 @@ skyforge:
     # Keep this true for strict SSO-only deployments.
     disablePasswordAuth: true
     oidcAutoLogin: true
-    # Portal link (/coder) redirect target.
-    # Default goes to Coder's workspace UI under /workspaces.
-    # For demo "open VS Code", set this to something like:
-    #   /workspaces/@skyforge-demo/skyforge-demo/apps/code-server
-    portalRedirectPath: "/coder/launch"
+    # Skyforge launch endpoint (/api/coder/launch) redirect target.
+    # Must stay under /coder to hit the Coder route on the shared hostname.
+    portalRedirectPath: "/coder/"
+    persistentVolume:
+      enabled: true
+      size: 5Gi
+      storageClassName: ""
     # Optional bootstrap admin user (created once, idempotent).
     # If you leave these empty, you'll need to create the first user manually.
     bootstrap:
