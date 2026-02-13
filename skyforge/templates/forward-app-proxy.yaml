@@ -5,10 +5,14 @@
 {{- $upNs := (get $cfg "upstreamNamespace" | default "forward") -}}
 {{- $upSvc := (get $cfg "upstreamService" | default "fwd-appserver") -}}
 {{- $upPort := (get $cfg "upstreamPort" | default 8080) -}}
+{{- $publicHost := (.Values.skyforge.hostname | default "skyforge.local.forwardnetworks.com") -}}
 {{- $requireAuth := (get $cfg "requireAuth" | default true) -}}
 {{- $sessionCookie := (.Values.skyforge.sessionCookie | default "skyforge_session") -}}
 {{- $autosleep := (get $cfg "autosleep" | default dict) -}}
 {{- $autosleepEnabled := (get $autosleep "enabled" | default false) -}}
+{{- $rootAliases := (get $cfg "rootAliases" | default dict) -}}
+{{- $rootAliasesEnabled := (get $rootAliases "enabled" | default false) -}}
+{{- $rootAliasPaths := (get $rootAliases "paths" | default (list "/login" "/logout")) -}}
 admin:
   access_log_path: /tmp/admin_access.log
   address:
@@ -40,6 +44,44 @@ static_resources:
                     - name: forward_app
                       domains: ["*"]
                       routes:
+{{- if $rootAliasesEnabled }}
+{{- range $p := $rootAliasPaths }}
+                        - match:
+                            path: {{ $p | quote }}
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy{{ $p }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: {{ $p | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+                        - match:
+                            prefix: "/app/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/app/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /app/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/fonts/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/fonts/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /fonts/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
                         # Route exact /fwd directly. Avoid an extra redirect hop that can
                         # lose scheme/context through intermediate proxies.
                         - match:
@@ -51,24 +93,41 @@ static_resources:
                             # in-cluster Forward appserver.
                             cluster: skyforge_server
                             prefix_rewrite: /api/forward/onprem/proxy/
+                            host_rewrite_literal: {{ $publicHost | quote }}
 {{- else }}
                             cluster: forward_upstream
                             # Strip /fwd from incoming requests to the upstream.
                             prefix_rewrite: /
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: {{ printf "%s/" $pathPrefix | quote }}
+                          route:
+{{- if $autosleepEnabled }}
+                            # Treat /fwd/ the same as /fwd so browser/bookmark entries hit
+                            # the wake/proxy path instead of bypassing to upstream directly.
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /
+                            host_rewrite_header: x-forwarded-host
 {{- end }}
                         - match:
                             prefix: {{ printf "%s/" $pathPrefix | quote }}
                           route:
 {{- if $autosleepEnabled }}
-                            # When autosleep is enabled, route to Skyforge server which
-                            # wakes Forward workloads and then reverse-proxies to the
-                            # in-cluster Forward appserver.
+                            # Route all /fwd/* through Skyforge's on-prem proxy so
+                            # headers/cookies/redirect rewriting are consistent.
                             cluster: skyforge_server
                             prefix_rewrite: /api/forward/onprem/proxy/
+                            host_rewrite_literal: {{ $publicHost | quote }}
 {{- else }}
                             cluster: forward_upstream
                             # Strip /fwd from incoming requests to the upstream.
                             prefix_rewrite: /
+                            host_rewrite_header: x-forwarded-host
 {{- end }}
                 http_filters:
                   # If the browser isn't already logged into Skyforge, Envoy's ext_authz
@@ -139,18 +198,23 @@ static_resources:
                             if authority == nil or authority == "" then
                               authority = handle:headers():get("host")
                             end
-                            if authority == nil or authority == "" then
-                              return
-                            end
-
-                            local http_prefix = "http://" .. authority
-                            local https_prefix = "https://" .. authority
-                            if string.sub(loc, 1, string.len(http_prefix)) == http_prefix then
-                              loc = string.sub(loc, string.len(http_prefix) + 1)
-                            elseif string.sub(loc, 1, string.len(https_prefix)) == https_prefix then
-                              loc = string.sub(loc, string.len(https_prefix) + 1)
+                            if authority ~= nil and authority ~= "" then
+                              local http_prefix = "http://" .. authority
+                              local https_prefix = "https://" .. authority
+                              if string.sub(loc, 1, string.len(http_prefix)) == http_prefix then
+                                loc = string.sub(loc, string.len(http_prefix) + 1)
+                              elseif string.sub(loc, 1, string.len(https_prefix)) == https_prefix then
+                                loc = string.sub(loc, string.len(https_prefix) + 1)
+                              else
+                                return
+                              end
                             else
-                              return
+                              -- Fallback: normalize absolute URLs even without forwarded host hints.
+                              local stripped = string.match(loc, "^https?://[^/]+(.*)$")
+                              if stripped == nil then
+                                return
+                              end
+                              loc = stripped
                             end
 
                             if loc == "" then
@@ -167,6 +231,11 @@ static_resources:
                           if string.sub(loc, 1, {{ add (len $pathPrefix) 1 }}) == "{{ $pathPrefix }}/" or loc == "{{ $pathPrefix }}" then
                             return
                           end
+{{- if $rootAliasesEnabled }}
+                          if loc == "/" or loc == "/login" or loc == "/logout" then
+                            return
+                          end
+{{- end }}
                           handle:headers():replace("location", "{{ $pathPrefix }}" .. loc)
                         end
 {{- if $requireAuth }}
