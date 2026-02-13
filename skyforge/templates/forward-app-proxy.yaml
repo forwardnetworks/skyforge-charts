@@ -124,13 +124,49 @@ data:
                               if loc == nil then
                                 return
                               end
+
                               if string.sub(loc, 1, 1) ~= "/" then
-                                return
+                                local authority = handle:headers():get("x-forwarded-host")
+                                if authority == nil or authority == "" then
+                                  authority = handle:headers():get(":authority")
+                                end
+                                if authority == nil or authority == "" then
+                                  authority = handle:headers():get("host")
+                                end
+
+                                if authority ~= nil and authority ~= "" then
+                                  local http_prefix = "http://" .. authority
+                                  local https_prefix = "https://" .. authority
+                                  if string.sub(loc, 1, string.len(http_prefix)) == http_prefix then
+                                    loc = string.sub(loc, string.len(http_prefix) + 1)
+                                  elseif string.sub(loc, 1, string.len(https_prefix)) == https_prefix then
+                                    loc = string.sub(loc, string.len(https_prefix) + 1)
+                                  else
+                                    return
+                                  end
+                                else
+                                  local stripped = string.match(loc, "^https?://[^/]+(.*)$")
+                                  if stripped == nil then
+                                    return
+                                  end
+                                  loc = stripped
+                                end
+
+                                if loc == "" then
+                                  loc = "/"
+                                elseif string.sub(loc, 1, 1) ~= "/" then
+                                  loc = "/" .. loc
+                                end
                               end
+
                               if string.sub(loc, 1, 15) == "/api/oidc/login" then
                                 return
                               end
                               if string.sub(loc, 1, {{ add (len $pathPrefix) 1 }}) == "{{ $pathPrefix }}/" or loc == "{{ $pathPrefix }}" then
+                                return
+                              end
+                              if loc == "/" then
+                                handle:headers():replace("location", "{{ $pathPrefix }}/")
                                 return
                               end
                               handle:headers():replace("location", "{{ $pathPrefix }}" .. loc)
