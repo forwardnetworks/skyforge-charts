@@ -100,6 +100,8 @@ skyforge:
   oidc:
     discoveryUrl: "http://dex:5556/dex"
   listenAddr: ":8085"
+  # Enables test-only /api/admin/e2e/session and /api/admin/e2e/sshprobe endpoints.
+  e2eAdminEnabled: true
   maxGroups: 50
   ssoSkipTlsVerify: false
   netbox:

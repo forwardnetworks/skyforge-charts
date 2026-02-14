@@ -213,6 +213,12 @@ spec:
                   name: skyforge-internal-token
                   key: skyforge-internal-token
                   optional: true
+            - name: SKYFORGE_E2E_ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-e2e-admin-token
+                  key: skyforge-e2e-admin-token
+                  optional: true
             - name: SKYFORGE_CONTAINERLAB_JWT_SECRET
               valueFrom:
                 secretKeyRef:

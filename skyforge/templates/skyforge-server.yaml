@@ -404,6 +404,16 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_FORWARD_ONPREM_WAKE_TIMEOUT_SECONDS
+        - name: SKYFORGE_FORWARD_ONPREM_ROOT_ALIASES_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_ONPREM_ROOT_ALIASES_ENABLED
+        - name: SKYFORGE_FORWARD_ONPREM_COOKIE_PATH_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_ONPREM_COOKIE_PATH_MODE
         - name: SKYFORGE_OIDC_CLIENT_ID
           valueFrom:
             secretKeyRef:
@@ -425,6 +435,12 @@ spec:
             secretKeyRef:
               name: skyforge-internal-token
               key: skyforge-internal-token
+        - name: SKYFORGE_E2E_ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-e2e-admin-token
+              key: skyforge-e2e-admin-token
+              optional: true
         - name: SKYFORGE_CONTAINERLAB_JWT_SECRET
           valueFrom:
             secretKeyRef:
