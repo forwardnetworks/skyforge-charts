@@ -6,9 +6,6 @@
 {{- $dexEnabled := .Values.skyforge.dex.enabled -}}
 {{- $coderEnabled := .Values.skyforge.coder.enabled -}}
 {{- $forwardApp := (get .Values.skyforge "forwardApp" | default dict) -}}
-{{- $forwardRootAliases := (get $forwardApp "rootAliases" | default dict) -}}
-{{- $forwardRootAliasesEnabled := (get $forwardRootAliases "enabled" | default false) -}}
-{{- $forwardRootAliasPaths := (get $forwardRootAliases "paths" | default (list "/login" "/logout")) -}}
 
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -67,6 +64,77 @@ spec:
       backendRefs:
         - name: skyforge-server
           port: 8085
+{{- if (get $forwardApp "enabled" | default false) }}
+    # Route Forward paths in the primary route so they win over '/' catch-all.
+    # Include root /api/ here and let forward-app-proxy decide Forward-vs-Skyforge.
+    - matches:
+        - path:
+            type: Exact
+            value: /login
+        - path:
+            type: Exact
+            value: /logout
+        - path:
+            type: PathPrefix
+            value: /app/
+        - path:
+            type: PathPrefix
+            value: /fonts/
+        - path:
+            type: PathPrefix
+            value: /public/
+        - path:
+            type: PathPrefix
+            value: /api/
+        - path:
+            type: Exact
+            value: /api
+        - path:
+            type: PathPrefix
+            value: /html/
+        - path:
+            type: PathPrefix
+            value: /img/
+        - path:
+            type: PathPrefix
+            value: /release-notes/
+        - path:
+            type: PathPrefix
+            value: /saml2/
+        - path:
+            type: PathPrefix
+            value: /login/saml2/
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Forwarded-Prefix
+                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
+              - name: X-Skyforge-External-Prefix
+                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
+      backendRefs:
+        - name: forward-app-proxy
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Forwarded-Prefix
+                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
+              - name: X-Skyforge-External-Prefix
+                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
+      backendRefs:
+        - name: forward-app-proxy
+          port: 8080
+{{- end }}
 
 {{- if $dexEnabled }}
     - matches:
@@ -135,76 +203,6 @@ spec:
       backendRefs:
         - name: skyforge-server
           port: 8085
-{{- if (get $forwardApp "enabled" | default false) }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /fonts/
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Proto
-                value: https
-              - name: X-Forwarded-Prefix
-                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
-              - name: X-Skyforge-External-Prefix
-                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
-      backendRefs:
-        - name: forward-app-proxy
-          port: 8080
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /app/
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Proto
-                value: https
-              - name: X-Forwarded-Prefix
-                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
-              - name: X-Skyforge-External-Prefix
-                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
-      backendRefs:
-        - name: forward-app-proxy
-          port: 8080
-{{- if $forwardRootAliasesEnabled }}
-    - matches:
-{{- range $p := $forwardRootAliasPaths }}
-        - path:
-            type: Exact
-            value: {{ $p | quote }}
-{{- end }}
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Proto
-                value: https
-      backendRefs:
-        - name: forward-app-proxy
-          port: 8080
-{{- end }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Proto
-                value: https
-              - name: X-Forwarded-Prefix
-                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
-              - name: X-Skyforge-External-Prefix
-                value: {{ (get $forwardApp "pathPrefix" | default "/fwd") | quote }}
-      backendRefs:
-        - name: forward-app-proxy
-          port: 8080
-{{- end }}
 {{- if $minioEnabled }}
     # /files/* -> minio:9000 /skyforge-files/*
     - matches:

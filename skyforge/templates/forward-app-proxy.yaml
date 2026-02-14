@@ -5,8 +5,9 @@
 {{- $upNs := (get $cfg "upstreamNamespace" | default "forward") -}}
 {{- $upSvc := (get $cfg "upstreamService" | default "fwd-appserver") -}}
 {{- $upPort := (get $cfg "upstreamPort" | default 8080) -}}
+{{- $upstreamTLS := (get $cfg "upstreamTLS" | default false) -}}
 {{- $publicHost := (.Values.skyforge.hostname | default "skyforge.local.forwardnetworks.com") -}}
-{{- $requireAuth := (get $cfg "requireAuth" | default true) -}}
+{{- $requireAuth := (ternary (get $cfg "requireAuth") true (hasKey $cfg "requireAuth")) -}}
 {{- $sessionCookie := (.Values.skyforge.sessionCookie | default "skyforge_session") -}}
 {{- $autosleep := (get $cfg "autosleep" | default dict) -}}
 {{- $autosleepEnabled := (get $autosleep "enabled" | default false) -}}
@@ -57,6 +58,369 @@ static_resources:
                             prefix_rewrite: {{ $p | quote }}
 {{- end }}
 {{- end }}
+{{- end }}
+                        - match:
+                            path: "/login"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/login
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /login
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/logout"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/logout
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /logout
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/public/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/public/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /public/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/saml2/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/saml2/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /saml2/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/login/saml2/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/login/saml2/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /login/saml2/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/api/session"
+                          route:
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/session
+                        - match:
+                            path: "/api/ui/config"
+                          route:
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/ui/config
+                        - match:
+                            prefix: "/api/"
+                            headers:
+                              - name: referer
+                                string_match:
+                                  safe_regex:
+                                    google_re2: {}
+                                    regex: ".*/fwd.*"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api/"
+                            headers:
+                              - name: cookie
+                                string_match:
+                                  safe_regex:
+                                    google_re2: {}
+                                    regex: ".*(SESSION|JSESSIONID)=.*"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api/public/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/public/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/public/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api/users/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/users/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/users/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api/backups"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/backups
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/backups
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/api/critical-states"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/critical-states
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/critical-states
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/api/licenses"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/licenses
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/licenses
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api/collector-tasks"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/collector-tasks
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/collector-tasks
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api/notifications"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/notifications
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/notifications
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/api/networks"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/networks
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/networks
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/api/custom-banners"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/custom-banners
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/custom-banners
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/api/licensed-devices"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/licensed-devices
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/licensed-devices
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/api/backup-settings"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/backup-settings
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/backup-settings
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/api/webhooks"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/webhooks
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/webhooks
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api/system/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/system/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/system/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api/integrations/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api/integrations/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api/integrations/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api/"
+                          route:
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/
+                        - match:
+                            prefix: "/release-notes/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/release-notes/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /release-notes/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/docs"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/docs
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /docs
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/api-doc"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/api-doc
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /api-doc
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/swagger"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/swagger
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /swagger
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/v3/api-docs"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/v3/api-docs
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /v3/api-docs
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            prefix: "/img/"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/img/
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /img/
+                            host_rewrite_header: x-forwarded-host
+{{- end }}
+                        - match:
+                            path: "/favicon.ico"
+                          route:
+{{- if $autosleepEnabled }}
+                            cluster: skyforge_server
+                            prefix_rewrite: /api/forward/onprem/proxy/favicon.ico
+                            host_rewrite_literal: {{ $publicHost | quote }}
+{{- else }}
+                            cluster: forward_upstream
+                            prefix_rewrite: /favicon.ico
+                            host_rewrite_header: x-forwarded-host
 {{- end }}
                         - match:
                             prefix: "/app/"
@@ -158,8 +522,47 @@ static_resources:
                             return
                           end
 
+                          local path = handle:headers():get(":path")
+                          if path == nil or path == "" then
+                            path = "/"
+                          end
+
                           local cookie = handle:headers():get("cookie")
-                          if cookie ~= nil and string.find(cookie, "{{ $sessionCookie }}=") ~= nil then
+                          local has_skyforge_session = cookie ~= nil and string.find(cookie, "{{ $sessionCookie }}=", 1, true) ~= nil
+                          if has_skyforge_session then
+                            return
+                          end
+
+                          local referer = handle:headers():get("referer")
+                          local from_fwd_referer = referer ~= nil and string.find(referer, "{{ $pathPrefix }}", 1, true) ~= nil
+                          local has_forward_session = cookie ~= nil and (
+                            string.find(cookie, "SESSION=", 1, true) ~= nil or
+                            string.find(cookie, "JSESSIONID=", 1, true) ~= nil
+                          )
+
+                          local is_forward_path =
+                            path == "{{ $pathPrefix }}" or
+                            string.sub(path, 1, {{ add (len $pathPrefix) 1 }}) == "{{ $pathPrefix }}/" or
+                            path == "/login" or
+                            path == "/logout" or
+                            string.sub(path, 1, 5) == "/app/" or
+                            string.sub(path, 1, 7) == "/fonts/" or
+                            string.sub(path, 1, 8) == "/public/" or
+                            string.sub(path, 1, 7) == "/saml2/" or
+                            string.sub(path, 1, 13) == "/login/saml2/" or
+                            string.sub(path, 1, 5) == "/img/" or
+                            string.sub(path, 1, 15) == "/release-notes/" or
+                            string.sub(path, 1, 6) == "/docs/" or
+                            string.sub(path, 1, 9) == "/api-doc/" or
+                            string.sub(path, 1, 9) == "/swagger/" or
+                            string.sub(path, 1, 13) == "/v3/api-docs/" or
+                            path == "/favicon.ico"
+
+                          if string.sub(path, 1, 5) == "/api/" then
+                            is_forward_path = is_forward_path or from_fwd_referer or has_forward_session
+                          end
+
+                          if not is_forward_path then
                             return
                           end
 
@@ -182,6 +585,21 @@ static_resources:
                         end
 
                         function envoy_on_response(handle)
+                          local content_type = handle:headers():get("content-type")
+                          if content_type ~= nil and string.find(string.lower(content_type), "application/json", 1, true) ~= nil then
+                            local body = handle:body()
+                            if body ~= nil then
+                              local len = body:length()
+                              if len ~= nil and len > 0 then
+                                local raw = body:getBytes(0, len)
+                                local rewritten = string.gsub(raw, [["location"%s*:%s*"/"]], [["location":"{{ $pathPrefix }}/"]])
+                                if rewritten ~= raw then
+                                  body:setBytes(rewritten)
+                                end
+                              end
+                            end
+                          end
+
                           local orig_loc = handle:headers():get("location")
                           local loc = orig_loc
                           if loc == nil then
@@ -228,11 +646,33 @@ static_resources:
                           if string.sub(loc, 1, string.len(login_prefix)) == login_prefix then
                             return
                           end
+
+                          local is_forward_loc =
+                            loc == "/" or
+                            loc == "/login" or
+                            loc == "/logout" or
+                            string.sub(loc, 1, 5) == "/app/" or
+                            string.sub(loc, 1, 7) == "/fonts/" or
+                            string.sub(loc, 1, 8) == "/public/" or
+                            string.sub(loc, 1, 7) == "/saml2/" or
+                            string.sub(loc, 1, 13) == "/login/saml2/" or
+                            string.sub(loc, 1, 5) == "/img/" or
+                            string.sub(loc, 1, 15) == "/release-notes/" or
+                            string.sub(loc, 1, 6) == "/docs/" or
+                            string.sub(loc, 1, 9) == "/api-doc/" or
+                            string.sub(loc, 1, 9) == "/swagger/" or
+                            string.sub(loc, 1, 13) == "/v3/api-docs/" or
+                            string.sub(loc, 1, 5) == "/api/" or
+                            loc == "/favicon.ico"
+                          if not is_forward_loc then
+                            return
+                          end
                           if string.sub(loc, 1, {{ add (len $pathPrefix) 1 }}) == "{{ $pathPrefix }}/" or loc == "{{ $pathPrefix }}" then
                             return
                           end
 {{- if $rootAliasesEnabled }}
-                          if loc == "/" or loc == "/login" or loc == "/logout" then
+                          if loc == "/" then
+                            handle:headers():replace("location", "{{ $pathPrefix }}/")
                             return
                           end
 {{- end }}
@@ -300,6 +740,13 @@ static_resources:
     - name: forward_upstream
       type: STRICT_DNS
       connect_timeout: 5s
+{{- if $upstreamTLS }}
+      transport_socket:
+        name: envoy.transport_sockets.tls
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+          sni: {{ printf "%s.%s.svc.cluster.local" $upSvc $upNs | quote }}
+{{- end }}
       load_assignment:
         cluster_name: forward_upstream
         endpoints:

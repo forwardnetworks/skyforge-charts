@@ -1,4 +1,5 @@
 {{- $forwardAppAutosleep := (get .Values.skyforge.forwardApp "autosleep" | default dict) -}}
+{{- $forwardAppRootAliases := (get .Values.skyforge.forwardApp "rootAliases" | default dict) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -81,3 +82,5 @@ data:
   SKYFORGE_FORWARD_ONPREM_AUTOSLEEP_ENABLED: {{ (get $forwardAppAutosleep "enabled" | default false) | quote }}
   SKYFORGE_FORWARD_ONPREM_AUTOSLEEP_IDLE_MINUTES: {{ (get $forwardAppAutosleep "idleMinutes" | default 30) | quote }}
   SKYFORGE_FORWARD_ONPREM_WAKE_TIMEOUT_SECONDS: {{ (get $forwardAppAutosleep "wakeTimeoutSeconds" | default 180) | quote }}
+  SKYFORGE_FORWARD_ONPREM_ROOT_ALIASES_ENABLED: {{ (get $forwardAppRootAliases "enabled" | default false) | quote }}
+  SKYFORGE_FORWARD_ONPREM_COOKIE_PATH_MODE: {{ (get .Values.skyforge.forwardApp "cookiePathMode" | default "prefix") | quote }}

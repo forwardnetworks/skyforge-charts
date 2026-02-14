@@ -60,12 +60,19 @@ skyforge:
   forwardApp:
     enabled: true
     pathPrefix: /fwd
+    rootAliases:
+      enabled: true
+      paths:
+        - /login
+        - /logout
+    cookiePathMode: alias
     upstreamNamespace: forward
     upstreamService: fwd-appserver
-    upstreamPort: 8080
-    requireAuth: true
+    upstreamPort: 8443
+    upstreamTLS: true
+    requireAuth: false
     autosleep:
-      enabled: true
+      enabled: false
       idleMinutes: 30
       wakeTimeoutSeconds: 240
 
@@ -104,13 +111,13 @@ skyforge:
 
   # Pin netlab-c9s generator image so `netlab initial` has the artifacts it needs.
   netlabC9s:
-    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260211-n9kvadmin1"
+    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260214-native-docs1"
     applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:20260206-b6a1937"
     defaultEnvironment:
       SKYFORGE_CLABERNETES_SCHEDULING_MODE: "adaptive"
       SKYFORGE_CLABERNETES_ADAPTIVE_PACK_MAX_NODES: "3"
       SKYFORGE_CLABERNETES_HEAVY_NOS_SPREAD_OVERRIDE: "true"
-      SKYFORGE_CLABERNETES_POD_ANTI_AFFINITY_REQUIRED: "true"
+      SKYFORGE_CLABERNETES_POD_ANTI_AFFINITY_REQUIRED: "false"
       SKYFORGE_FORWARD_CONNECTIVITY_EARLY: "true"
       SKYFORGE_FORWARD_CONNECTIVITY_EARLY_SECONDS: "300"
       SKYFORGE_FORWARD_CONNECTIVITY_EARLY_CONCURRENCY: "16"
@@ -128,6 +135,7 @@ skyforge:
       passwordSecretKey: "skyforge-registry-password"
     images:
       - "ghcr.io/forwardnetworks/vrnetlab/vr-n9kv:9.3.8-skyforge1"
+      - "ghcr.io/forwardnetworks/vrnetlab/extreme_exos:33.1.1.31"
       - "ghcr.io/forwardnetworks/vrnetlab/vr-vmx:18.2R1.9"
       - "ghcr.io/forwardnetworks/vrnetlab/juniper_vjunosevolved:25.2R1.8-EVO"
       - "ghcr.io/forwardnetworks/vrnetlab/cisco_c8000v:17.16.01a"
@@ -140,8 +148,8 @@ skyforge:
     enabled: true
     # Includes Skyforge per-topology scheduling enforcement based on Topology label
     # `skyforge.forwardnetworks.com/scheduling=spread-{required,preferred}`.
-    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260210-sched-65a7390"
-    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260205-native-vxlan-localip-txoff-readyonly"
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260212-c9s-startup-partial"
+    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260212-c9s-startup-partial"
 
   # Current LDAP endpoint in this environment requires skipping TLS verification
   # for MinIO LDAP hook success. Set to false once LDAP cert trust is fixed.
@@ -151,8 +159,8 @@ skyforge:
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
   # NOTE: Keep these tags in sync with images that actually exist in GHCR.
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:dev-20260210-e96ea84"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:dev-20260210-e96ea84-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260214-native-docs1"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260214-native-docs1-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.
