@@ -1,0 +1,6 @@
+# Keep Helm release payload below the Kubernetes 1MiB object limit.
+# These static assets are not consumed by chart templates.
+files/redoc/redoc.standalone.js
+files/redoc/redoc.standalone.js.LICENSE.txt
+files/redoc/redoc.standalone.js.map
+files/swagger-openapi.json
