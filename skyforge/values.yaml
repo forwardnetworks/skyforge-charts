@@ -254,6 +254,7 @@ skyforge:
     # Example:
     # defaultEnvironment:
     #   SKYFORGE_CLABERNETES_SCHEDULING_MODE: "adaptive"
+    #   SKYFORGE_NETLAB_JOB_TTL_SECONDS: "1800"
     defaultEnvironment: {}
   imagePrewarm:
     # Optional: periodically pre-pull selected images on every node to reduce
