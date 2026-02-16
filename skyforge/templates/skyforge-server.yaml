@@ -299,16 +299,16 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_NETLAB_STATE_ROOT
-        - name: SKYFORGE_WORKSPACES_DATA_DIR
+        - name: SKYFORGE_SCOPES_DATA_DIR
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
-              key: SKYFORGE_WORKSPACES_DATA_DIR
-        - name: SKYFORGE_WORKSPACE_SYNC_SECONDS
+              key: SKYFORGE_SCOPES_DATA_DIR
+        - name: SKYFORGE_SCOPE_SYNC_SECONDS
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
-              key: SKYFORGE_WORKSPACE_SYNC_SECONDS
+              key: SKYFORGE_SCOPE_SYNC_SECONDS
         - name: SKYFORGE_UI_PRODUCT_NAME
           valueFrom:
             configMapKeyRef:
@@ -414,6 +414,31 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_FORWARD_ONPREM_COOKIE_PATH_MODE
+        - name: SKYFORGE_FORWARD_METRICS_POLL_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_METRICS_POLL_ENABLED
+        - name: SKYFORGE_FORWARD_METRICS_POLL_MINUTES
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_METRICS_POLL_MINUTES
+        - name: SKYFORGE_FORWARD_ONPREM_NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_ONPREM_NAMESPACE
+        - name: SKYFORGE_FORWARD_ONPREM_CBR_S3_DEPLOYMENT
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_ONPREM_CBR_S3_DEPLOYMENT
+        - name: SKYFORGE_FORWARD_ONPREM_CBR_S3_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_FORWARD_ONPREM_CBR_S3_SECRET
         - name: SKYFORGE_OIDC_CLIENT_ID
           valueFrom:
             secretKeyRef:

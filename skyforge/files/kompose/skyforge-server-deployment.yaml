@@ -256,16 +256,16 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_NETLAB_STATE_ROOT
-        - name: SKYFORGE_WORKSPACES_DATA_DIR
+        - name: SKYFORGE_SCOPES_DATA_DIR
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
-              key: SKYFORGE_WORKSPACES_DATA_DIR
-        - name: SKYFORGE_WORKSPACE_SYNC_SECONDS
+              key: SKYFORGE_SCOPES_DATA_DIR
+        - name: SKYFORGE_SCOPE_SYNC_SECONDS
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
-              key: SKYFORGE_WORKSPACE_SYNC_SECONDS
+              key: SKYFORGE_SCOPE_SYNC_SECONDS
         - name: SKYFORGE_UI_PRODUCT_NAME
           valueFrom:
             configMapKeyRef:
@@ -524,7 +524,7 @@ spec:
         - mountPath: /work
           name: skyforge-migrate-work
       - name: skyforge-ca-bundle
-        image: alpine:3.20
+        image: public.ecr.aws/docker/library/alpine:3.20
         command:
         - sh
         - -c

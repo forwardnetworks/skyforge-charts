@@ -1,0 +1,142 @@
+{{- $hk := (get .Values.skyforge "housekeeping" | default dict) -}}
+{{- if (get $hk "enabled" | default false) -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: skyforge-housekeeping-prune
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  schedule: {{ (get $hk "schedule" | default "*/30 * * * *") | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ (get $hk "successfulJobsHistoryLimit" | default 1) | int }}
+  failedJobsHistoryLimit: {{ (get $hk "failedJobsHistoryLimit" | default 1) | int }}
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          serviceAccountName: skyforge-server
+          restartPolicy: Never
+          containers:
+            - name: prune
+              image: {{ .Values.images.python | quote }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: SKYFORGE_HK_NAMESPACE
+                  value: {{ .Release.Namespace | quote }}
+                - name: SKYFORGE_HK_JOB_RETENTION_HOURS
+                  value: {{ (get $hk "jobRetentionHours" | default 2) | int | quote }}
+                - name: SKYFORGE_HK_E2E_PREFIX
+                  value: {{ (get $hk "e2eNamespacePrefix" | default "ws-e2e-") | quote }}
+                - name: SKYFORGE_HK_E2E_RETENTION_HOURS
+                  value: {{ (get $hk "e2eNamespaceRetentionHours" | default 24) | int | quote }}
+              command:
+                - python
+                - -c
+              args:
+                - |
+                  import json
+                  import os
+                  import ssl
+                  import urllib.error
+                  import urllib.request
+                  from datetime import datetime, timezone
+
+                  host = os.getenv("KUBERNETES_SERVICE_HOST", "")
+                  port = os.getenv("KUBERNETES_SERVICE_PORT", "443")
+                  token_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+                  ca_path = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+                  namespace = os.getenv("SKYFORGE_HK_NAMESPACE", "skyforge")
+                  job_retention_h = int(os.getenv("SKYFORGE_HK_JOB_RETENTION_HOURS", "2"))
+                  e2e_prefix = os.getenv("SKYFORGE_HK_E2E_PREFIX", "ws-e2e-")
+                  e2e_retention_h = int(os.getenv("SKYFORGE_HK_E2E_RETENTION_HOURS", "24"))
+
+                  if not host:
+                      raise SystemExit("missing KUBERNETES_SERVICE_HOST")
+
+                  with open(token_path, "r", encoding="utf-8") as f:
+                      token = f.read().strip()
+
+                  ctx = ssl.create_default_context(cafile=ca_path)
+                  base = f"https://{host}:{port}"
+
+                  def parse_ts(ts):
+                      if not ts:
+                          return None
+                      return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+                  def age_hours(ts):
+                      dt = parse_ts(ts)
+                      if not dt:
+                          return None
+                      return (datetime.now(timezone.utc) - dt).total_seconds() / 3600.0
+
+                  def k8s(method, path, payload=None):
+                      url = base + path
+                      body = None
+                      if payload is not None:
+                          body = json.dumps(payload).encode("utf-8")
+                      req = urllib.request.Request(
+                          url=url,
+                          data=body,
+                          method=method,
+                          headers={
+                              "Authorization": f"Bearer {token}",
+                              "Accept": "application/json",
+                              "Content-Type": "application/json",
+                          },
+                      )
+                      try:
+                          with urllib.request.urlopen(req, context=ctx, timeout=20) as resp:
+                              data = resp.read()
+                              if not data:
+                                  return {}
+                              return json.loads(data.decode("utf-8"))
+                      except urllib.error.HTTPError as e:
+                          if e.code == 404:
+                              return {"_not_found": True}
+                          raise
+
+                  deleted_jobs = 0
+                  deleted_ns = 0
+
+                  jobs = k8s("GET", f"/apis/batch/v1/namespaces/{namespace}/jobs").get("items", [])
+                  for job in jobs:
+                      name = job.get("metadata", {}).get("name", "")
+                      if not name:
+                          continue
+                      status = job.get("status", {}) or {}
+                      active = int(status.get("active", 0) or 0)
+                      succeeded = int(status.get("succeeded", 0) or 0)
+                      failed = int(status.get("failed", 0) or 0)
+                      terminal = (active == 0) and ((succeeded > 0) or (failed > 0))
+                      if not terminal:
+                          continue
+                      created = job.get("metadata", {}).get("creationTimestamp")
+                      h = age_hours(created)
+                      if h is None or h < job_retention_h:
+                          continue
+                      print(f"[housekeeping] deleting job {namespace}/{name} age_h={h:.1f}")
+                      k8s("DELETE", f"/apis/batch/v1/namespaces/{namespace}/jobs/{name}")
+                      deleted_jobs += 1
+
+                  namespaces = k8s("GET", "/api/v1/namespaces").get("items", [])
+                  for ns in namespaces:
+                      name = ns.get("metadata", {}).get("name", "")
+                      if not name.startswith(e2e_prefix):
+                          continue
+                      phase = (ns.get("status", {}) or {}).get("phase", "")
+                      if phase == "Terminating":
+                          continue
+                      created = ns.get("metadata", {}).get("creationTimestamp")
+                      h = age_hours(created)
+                      if h is None or h < e2e_retention_h:
+                          continue
+                      print(f"[housekeeping] deleting namespace {name} age_h={h:.1f}")
+                      k8s("DELETE", f"/api/v1/namespaces/{name}")
+                      deleted_ns += 1
+
+                  print(f"[housekeeping] complete deleted_jobs={deleted_jobs} deleted_namespaces={deleted_ns}")
+{{- end -}}

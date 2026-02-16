@@ -56,11 +56,49 @@ KUBECONFIG=... kubectl apply -f forward-skyforge.yaml
 Notes:
 
 - `fwd-autopilot` is scaled to `0` by default (it tends to re-scale StatefulSets and is noisy).
-- Pods are pinned via `nodeSelector: forwardnetworks.com/role=forward`. Label at least one node:
+- Pods are pinned via `nodeSelector: forwardnetworks.com/role=forward`. Use dedicated
+  Forward workers and keep the control-plane/UI node unlabeled:
 
 ```bash
-KUBECONFIG=... kubectl label node skyforge-2 forwardnetworks.com/role=forward --overwrite
+KUBECONFIG=... kubectl label node skyforge skyforge-role=control --overwrite
+KUBECONFIG=... kubectl label node skyforge-worker-1 forwardnetworks.com/role=forward --overwrite
+KUBECONFIG=... kubectl label node skyforge-worker-3 forwardnetworks.com/role=forward --overwrite
 ```
+
+- Storage model: this manifest mounts shared `RWO` PVCs (for example `forward-scratch`)
+  in multiple Forward Pods. Keep all Forward Pods on the same eligible worker set and
+  ensure Longhorn storage exists on those worker nodes.
+- Longhorn PV `nodeAffinity` is immutable after provisioning. If replacing workers,
+  keep stable `kubernetes.io/hostname` labels (or recreate the PVCs) so existing PVs
+  can still attach on failover.
+
+- Recommended after node replacements: reconcile Forward placement constraints and
+  remove legacy host pinning:
+
+```bash
+./scripts/ops/reconcile-forward-placement.sh forward
+```
+
+  This enforces `forwardnetworks.com/role=forward` and applies spread/anti-affinity
+  preferences. Because shared Forward PVCs are currently `RWO`, scheduler spread is
+  best-effort and some workloads may still co-locate on one worker.
+
+- This environment is package-file based (no live Harbor dependency). Forward app
+  images are set to `imagePullPolicy: Never`, so every Forward worker must have
+  the package images imported into containerd.
+- Use the sync helper to copy/import all images referenced by
+  `forward-skyforge.yaml`:
+
+```bash
+./scripts/ops/sync-forward-package-images.sh \
+  --source arch@skyforge-worker-1 \
+  --targets arch@skyforge-worker-2,arch@skyforge-worker-3
+```
+
+- `fwd-cbr-s3-agent` now consumes S3 config from Secret `fwd-cbr-s3-config`.
+  Skyforge admin APIs can reconcile this secret + deployment env wiring:
+  - `PUT /api/admin/forward/onprem/backup/s3`
+  - `POST /api/admin/forward/onprem/backup/s3/reconcile`
 
 ## 5) Expose Forward Under `/fwd` (Skyforge SSO)
 
@@ -76,4 +114,3 @@ helm -n skyforge upgrade skyforge ../../skyforge \
   --set skyforge.forwardApp.upstreamPort=8080 \
   --set skyforge.forwardApp.requireAuth=true
 ```
-

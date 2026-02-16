@@ -21,6 +21,10 @@ spec:
         io.kompose.service: coder
     spec:
       serviceAccountName: coder
+      {{- with .Values.skyforge.coder.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       initContainers:
         - name: ca-bundle
           image: {{ .Values.images.python | quote }}

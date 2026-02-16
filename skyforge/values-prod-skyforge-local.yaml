@@ -55,6 +55,16 @@ skyforge:
       enabled: true
       idleMinutes: 30
     kibanaSubpath: /kibana
+    elasticsearch:
+      storage:
+        enabled: true
+        storageClassName: longhorn
+
+  coder:
+    hostAliases:
+      - ip: "10.128.16.60"
+        hostnames:
+          - "skyforge.local.forwardnetworks.com"
 
   # Forward on-prem "app cluster" UI proxied under Skyforge SSO.
   forwardApp:
@@ -114,6 +124,7 @@ skyforge:
     generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260214-native-docs1"
     applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:20260206-b6a1937"
     defaultEnvironment:
+      SKYFORGE_CLABERNETES_TOLERATE_CONTROL_PLANE: "false"
       SKYFORGE_CLABERNETES_SCHEDULING_MODE: "adaptive"
       SKYFORGE_CLABERNETES_ADAPTIVE_PACK_MAX_NODES: "3"
       SKYFORGE_CLABERNETES_HEAVY_NOS_SPREAD_OVERRIDE: "true"
@@ -124,6 +135,16 @@ skyforge:
       SKYFORGE_FORWARD_CONNECTIVITY_EARLY_BATCH: "12"
       SKYFORGE_NETLAB_INITIAL_SSH_READY_SECONDS: "900"
       SKYFORGE_FORWARD_SSH_READY_SECONDS: "900"
+
+  housekeeping:
+    enabled: true
+    schedule: "*/15 * * * *"
+    jobRetentionHours: 1
+    e2eNamespacePrefix: "ws-e2e-"
+    e2eNamespaceRetentionHours: 12
+
+  admissionPolicies:
+    enabled: true
 
   imagePrewarm:
     enabled: true
@@ -159,8 +180,8 @@ skyforge:
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
   # NOTE: Keep these tags in sync with images that actually exist in GHCR.
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260214-native-docs1"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260214-native-docs1-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260215-cluster-hardening2"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260215-cluster-hardening2-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

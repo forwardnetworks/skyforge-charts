@@ -276,9 +276,29 @@ skyforge:
     nodePort: 30053
     # NodePort for the DNS web UI on the k3s host.
     webNodePort: 30380
-  workspacesDataDir: "/var/lib/skyforge"
-  workspaceDeleteMode: "live"
-  workspaceSyncSeconds: 300
+  # Per-user storage and routing controls.
+  userDataDir: "/var/lib/skyforge"
+  userDeleteMode: "live"
+  userSyncSeconds: 300
+  userRoutesStrict: true
+  # Deprecated compatibility keys (use the user* keys above).
+  scopesDataDir: ""
+  scopeDeleteMode: ""
+  scopeSyncSeconds: 0
+  scopeRoutesStrict: null
+  # Optional cluster hygiene cleanup for stale Jobs and stale ws-e2e namespaces.
+  # This is intended for aggressive test-environment cleanup to reduce clutter
+  # and control API/object bloat after repeated migration and E2E cycles.
+  housekeeping:
+    enabled: false
+    schedule: "*/30 * * * *"
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 1
+    # Retention for terminal Jobs in the release namespace.
+    jobRetentionHours: 2
+    # Retention for stale e2e namespaces (name prefix match only).
+    e2eNamespacePrefix: "ws-e2e-"
+    e2eNamespaceRetentionHours: 24
   uiThemeDefault: ""
   # Typed config equivalent of SKYFORGE_NOTIFICATIONS_ENABLED. Default true.
   notificationsEnabled: true
@@ -336,6 +356,15 @@ skyforge:
       enabled: false
       idleMinutes: 30
       wakeTimeoutSeconds: 180
+    metricsPoll:
+      # Forward network metrics polling cadence for historical snapshots.
+      enabled: true
+      intervalMinutes: 5
+    onPrem:
+      # Namespace and workload names used by admin backup reconcile endpoints.
+      namespace: "forward"
+      cbrS3Deployment: "fwd-cbr-s3-agent"
+      cbrS3Secret: "fwd-cbr-s3-config"
   sessionTtl: "8h"
   pkiDefaultDays: 365
   sshDefaultDays: 30
@@ -401,6 +430,10 @@ skyforge:
       enabled: true
       size: 5Gi
       storageClassName: ""
+    # Optional hostAliases injected into the Coder pod.
+    # Useful when in-cluster DNS for the public Skyforge hostname lags behind
+    # infra changes and Coder must still reach Dex discovery via that hostname.
+    hostAliases: []
     # Optional bootstrap admin user (created once, idempotent).
     # If you leave these empty, you'll need to create the first user manually.
     bootstrap:

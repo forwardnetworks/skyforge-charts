@@ -1,5 +1,11 @@
 {{- $forwardAppAutosleep := (get .Values.skyforge.forwardApp "autosleep" | default dict) -}}
 {{- $forwardAppRootAliases := (get .Values.skyforge.forwardApp "rootAliases" | default dict) -}}
+{{- $forwardAppMetricsPoll := (get .Values.skyforge.forwardApp "metricsPoll" | default dict) -}}
+{{- $forwardAppOnPrem := (get .Values.skyforge.forwardApp "onPrem" | default dict) -}}
+{{- $userDataDir := coalesce .Values.skyforge.userDataDir .Values.skyforge.scopesDataDir "/var/lib/skyforge" -}}
+{{- $userDeleteMode := coalesce .Values.skyforge.userDeleteMode .Values.skyforge.scopeDeleteMode "live" -}}
+{{- $userSyncSeconds := coalesce .Values.skyforge.userSyncSeconds .Values.skyforge.scopeSyncSeconds 300 -}}
+{{- $userRoutesStrict := coalesce .Values.skyforge.userRoutesStrict .Values.skyforge.scopeRoutesStrict true -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -36,8 +42,14 @@ data:
   SKYFORGE_OBJECT_STORAGE_USE_SSL: {{ .Values.skyforge.objectStorage.useSsl | quote }}
   SKYFORGE_NETLAB_SSH_USER: {{ .Values.skyforge.netlab.sshUser | quote }}
   SKYFORGE_NETLAB_STATE_ROOT: {{ .Values.skyforge.netlab.stateRoot | quote }}
-  SKYFORGE_WORKSPACES_DATA_DIR: {{ .Values.skyforge.workspacesDataDir | quote }}
-  SKYFORGE_WORKSPACE_SYNC_SECONDS: {{ .Values.skyforge.workspaceSyncSeconds | quote }}
+  SKYFORGE_USER_DATA_DIR: {{ $userDataDir | quote }}
+  SKYFORGE_USER_DELETE_MODE: {{ $userDeleteMode | quote }}
+  SKYFORGE_USER_SYNC_SECONDS: {{ $userSyncSeconds | quote }}
+  SKYFORGE_USER_ROUTES_STRICT: {{ $userRoutesStrict | quote }}
+  SKYFORGE_SCOPES_DATA_DIR: {{ $userDataDir | quote }}
+  SKYFORGE_SCOPE_DELETE_MODE: {{ $userDeleteMode | quote }}
+  SKYFORGE_SCOPE_SYNC_SECONDS: {{ $userSyncSeconds | quote }}
+  SKYFORGE_SCOPE_ROUTES_STRICT: {{ $userRoutesStrict | quote }}
   SKYFORGE_PKI_DEFAULT_DAYS: {{ .Values.skyforge.pkiDefaultDays | quote }}
   SKYFORGE_SSH_DEFAULT_DAYS: {{ .Values.skyforge.sshDefaultDays | quote }}
   SKYFORGE_UI_THEME_DEFAULT: {{ .Values.skyforge.ui.themeDefault | default "" | quote }}
@@ -84,3 +96,8 @@ data:
   SKYFORGE_FORWARD_ONPREM_WAKE_TIMEOUT_SECONDS: {{ (get $forwardAppAutosleep "wakeTimeoutSeconds" | default 180) | quote }}
   SKYFORGE_FORWARD_ONPREM_ROOT_ALIASES_ENABLED: {{ (get $forwardAppRootAliases "enabled" | default false) | quote }}
   SKYFORGE_FORWARD_ONPREM_COOKIE_PATH_MODE: {{ (get .Values.skyforge.forwardApp "cookiePathMode" | default "prefix") | quote }}
+  SKYFORGE_FORWARD_METRICS_POLL_ENABLED: {{ (get $forwardAppMetricsPoll "enabled" | default true) | quote }}
+  SKYFORGE_FORWARD_METRICS_POLL_MINUTES: {{ (get $forwardAppMetricsPoll "intervalMinutes" | default 5) | quote }}
+  SKYFORGE_FORWARD_ONPREM_NAMESPACE: {{ (get $forwardAppOnPrem "namespace" | default "forward") | quote }}
+  SKYFORGE_FORWARD_ONPREM_CBR_S3_DEPLOYMENT: {{ (get $forwardAppOnPrem "cbrS3Deployment" | default "fwd-cbr-s3-agent") | quote }}
+  SKYFORGE_FORWARD_ONPREM_CBR_S3_SECRET: {{ (get $forwardAppOnPrem "cbrS3Secret" | default "fwd-cbr-s3-config") | quote }}

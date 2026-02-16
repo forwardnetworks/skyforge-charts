@@ -751,7 +751,7 @@ spec:
       containers:
       - name: backend-master
         image: harbor.local.forwardnetworks.com/forward/fwd_backend_master:26.1.3-02
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         securityContext:
           runAsUser: 1000
           runAsNonRoot: true
@@ -934,7 +934,7 @@ spec:
       containers:
       - name: appserver
         image: harbor.local.forwardnetworks.com/forward/fwd_appserver:26.1.3-02
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         securityContext:
           runAsUser: 1000
           runAsNonRoot: true
@@ -1115,6 +1115,7 @@ spec:
       containers:
       - name: autopilot
         image: harbor.local.forwardnetworks.com/forward/fwd_autopilot:26.1.3-02
+        imagePullPolicy: Never
         env:
         - name: NAMESPACE
           valueFrom:
@@ -1199,7 +1200,7 @@ spec:
       containers:
       - name: cbr-agent
         image: harbor.local.forwardnetworks.com/forward/fwd_cbr_agent:26.1.3-02
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         securityContext:
           runAsUser: 1000
           runAsNonRoot: true
@@ -1334,7 +1335,7 @@ spec:
       containers:
       - name: cbr-agent
         image: harbor.local.forwardnetworks.com/forward/fwd_cbr_agent:26.1.3-02
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         securityContext:
           runAsUser: 1000
           runAsNonRoot: true
@@ -1363,8 +1364,54 @@ spec:
           value: S3
         - name: CBR_AGENT_GRPC_PORT
           value: '40101'
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: fwd-cbr-s3-config
+              key: AWS_ACCESS_KEY_ID
+              optional: true
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: fwd-cbr-s3-config
+              key: AWS_SECRET_ACCESS_KEY
+              optional: true
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: fwd-cbr-s3-config
+              key: AWS_REGION
+              optional: true
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            secretKeyRef:
+              name: fwd-cbr-s3-config
+              key: AWS_DEFAULT_REGION
+              optional: true
+        - name: AWS_ENDPOINT_URL
+          valueFrom:
+            secretKeyRef:
+              name: fwd-cbr-s3-config
+              key: AWS_ENDPOINT_URL
+              optional: true
+        - name: CBR_S3_BUCKET
+          valueFrom:
+            secretKeyRef:
+              name: fwd-cbr-s3-config
+              key: CBR_S3_BUCKET
+              optional: true
         - name: CBR_S3_BUCKET_PREFIX
-          value: forward/backups
+          valueFrom:
+            secretKeyRef:
+              name: fwd-cbr-s3-config
+              key: CBR_S3_BUCKET_PREFIX
+              optional: true
+        - name: CBR_RETENTION_DAYS
+          valueFrom:
+            secretKeyRef:
+              name: fwd-cbr-s3-config
+              key: CBR_RETENTION_DAYS
+              optional: true
         - name: CBR_AGENT_HEAP_SIZE
           value: 128m
         ports:
@@ -1468,7 +1515,7 @@ spec:
       containers:
       - name: cbr-server
         image: harbor.local.forwardnetworks.com/forward/fwd_cbr_server:26.1.3-02
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         securityContext:
           runAsUser: 1000
           runAsNonRoot: true
@@ -1600,7 +1647,7 @@ spec:
       containers:
       - name: collector-container
         image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.1.3-02
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         resources:
           requests:
             cpu: 500m
@@ -1723,7 +1770,7 @@ spec:
       containers:
       - name: compute-container
         image: harbor.local.forwardnetworks.com/forward/fwd_compute_worker:26.1.3-02
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         securityContext:
           runAsUser: 1000
           runAsNonRoot: true
@@ -1961,6 +2008,7 @@ spec:
           mountPath: /mnt/aggregated-logs
       - name: logserver
         image: harbor.local.forwardnetworks.com/forward/fwd_logserver:26.1.3-02
+        imagePullPolicy: Never
         resources:
           limits:
             cpu: 100m
@@ -2047,7 +2095,7 @@ spec:
       containers:
       - name: search-container
         image: harbor.local.forwardnetworks.com/forward/fwd_search_worker:26.1.3-02
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         securityContext:
           runAsUser: 1000
           runAsNonRoot: true

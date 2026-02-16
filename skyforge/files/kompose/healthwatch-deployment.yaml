@@ -132,7 +132,7 @@ spec:
               key: SKYFORGE_HEALTH_CODE_CHECKS
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
-        image: alpine:3.20
+        image: public.ecr.aws/docker/library/alpine:3.20
         name: healthwatch
         volumeMounts:
         - mountPath: /data
@@ -151,7 +151,7 @@ spec:
         emptyDir: {}
       initContainers:
       - name: skyforge-ca-bundle
-        image: alpine:3.20
+        image: public.ecr.aws/docker/library/alpine:3.20
         command:
         - sh
         - -c
