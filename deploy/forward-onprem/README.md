@@ -79,9 +79,18 @@ KUBECONFIG=... kubectl label node skyforge-worker-3 forwardnetworks.com/role=for
 ./scripts/ops/reconcile-forward-placement.sh forward
 ```
 
-  This enforces `forwardnetworks.com/role=forward` and applies spread/anti-affinity
-  preferences. Because shared Forward PVCs are currently `RWO`, scheduler spread is
-  best-effort and some workloads may still co-locate on one worker.
+  This enforces `forwardnetworks.com/role=forward` and applies scratch-aware
+  scheduling:
+  - workloads mounting shared `forward-scratch` are co-located via
+    `forwardnetworks.com/scratch-group=forward-scratch` + required pod affinity
+  - non-shared workloads keep spread/anti-affinity preferences
+
+- Validate co-location and PV hostname affinity before/after worker replacement:
+
+```bash
+./scripts/ops/audit-forward-scratch-colocation.sh forward
+./scripts/ops/audit-pv-hostname-affinity.sh
+```
 
 - This environment is package-file based (no live Harbor dependency). Forward app
   images are set to `imagePullPolicy: Never`, so every Forward worker must have

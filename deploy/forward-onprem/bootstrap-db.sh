@@ -75,7 +75,8 @@ APP_PW="$(ensure_secret "$FWD_NS" "$APP_SECRET" "$APP_USER")"
 FDB_PW="$(ensure_secret "$FWD_NS" "$FDB_SECRET" "$FDB_USER")"
 
 echo "Bootstrapping roles + DBs in Postgres (namespace=$DB_NS deploy=$DB_DEPLOY)..."
-kubectl --kubeconfig "$KUBECONFIG" -n "$DB_NS" exec "deploy/$DB_DEPLOY" -- psql -U skyforge -d postgres -v ON_ERROR_STOP=1 <<SQL
+# NOTE: kubectl exec must run with -i when feeding SQL on stdin.
+kubectl --kubeconfig "$KUBECONFIG" -n "$DB_NS" exec -i "deploy/$DB_DEPLOY" -- psql -U skyforge -d postgres -v ON_ERROR_STOP=1 <<SQL
 -- Roles (idempotent) + required privileges for Forward bootstrap.
 DO \$\$
 BEGIN
@@ -110,6 +111,16 @@ ALTER DATABASE ${FDB_DB} OWNER TO ${FDB_USER};
 GRANT ALL PRIVILEGES ON DATABASE ${FDB_DB} TO ${FDB_USER};
 GRANT CREATE ON DATABASE ${FDB_DB} TO ${FDB_USER};
 SQL
+
+echo "Verifying Forward DB roles + databases..."
+kubectl --kubeconfig "$KUBECONFIG" -n "$DB_NS" exec "deploy/$DB_DEPLOY" -- psql -U skyforge -d postgres -v ON_ERROR_STOP=1 -Atc \
+  "SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_roles WHERE rolname='${APP_USER}') THEN 'ok' ELSE 'missing' END;" | grep -qx ok
+kubectl --kubeconfig "$KUBECONFIG" -n "$DB_NS" exec "deploy/$DB_DEPLOY" -- psql -U skyforge -d postgres -v ON_ERROR_STOP=1 -Atc \
+  "SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_roles WHERE rolname='${FDB_USER}') THEN 'ok' ELSE 'missing' END;" | grep -qx ok
+kubectl --kubeconfig "$KUBECONFIG" -n "$DB_NS" exec "deploy/$DB_DEPLOY" -- psql -U skyforge -d postgres -v ON_ERROR_STOP=1 -Atc \
+  "SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_database WHERE datname='${APP_DB}') THEN 'ok' ELSE 'missing' END;" | grep -qx ok
+kubectl --kubeconfig "$KUBECONFIG" -n "$DB_NS" exec "deploy/$DB_DEPLOY" -- psql -U skyforge -d postgres -v ON_ERROR_STOP=1 -Atc \
+  "SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_database WHERE datname='${FDB_DB}') THEN 'ok' ELSE 'missing' END;" | grep -qx ok
 
 echo "Done."
 echo "Forward app creds secret:   $FWD_NS/$APP_SECRET (user=$APP_USER)"
