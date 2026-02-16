@@ -196,8 +196,8 @@ skyforge:
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
   # NOTE: Keep these tags in sync with images that actually exist in GHCR.
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260215-cluster-hardening2"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260215-cluster-hardening2-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260216-user-scope-0bf23f28"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260216-user-scope-0bf23f28-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.
