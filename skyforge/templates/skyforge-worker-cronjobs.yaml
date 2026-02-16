@@ -1,6 +1,9 @@
 {{- if gt (int .Values.skyforge.workerReplicaCount) 0 }}
 {{- $curlCmd := "curl --fail-with-body -sS --retry 3 --retry-delay 2 -X POST -H \"X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}\"" -}}
 {{- $wc := (get .Values.skyforge "workerCron" | default dict) -}}
+{{- $wcSuccessHistory := ((get $wc "successfulJobsHistoryLimit" | default 1) | int) -}}
+{{- $wcFailedHistory := ((get $wc "failedJobsHistoryLimit" | default 1) | int) -}}
+{{- $wcTTL := ((get $wc "ttlSecondsAfterFinished" | default 1800) | int) -}}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -10,10 +13,11 @@ metadata:
 spec:
   schedule: {{ (get $wc "heartbeatSchedule" | default "* * * * *") | quote }}
   concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: {{ $wcSuccessHistory }}
+  failedJobsHistoryLimit: {{ $wcFailedHistory }}
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: {{ $wcTTL }}
       backoffLimit: 0
       activeDeadlineSeconds: 55
       template:
@@ -42,10 +46,11 @@ metadata:
 spec:
   schedule: {{ (get $wc "reconcileQueuedSchedule" | default "* * * * *") | quote }}
   concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: {{ $wcSuccessHistory }}
+  failedJobsHistoryLimit: {{ $wcFailedHistory }}
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: {{ $wcTTL }}
       backoffLimit: 0
       activeDeadlineSeconds: 55
       template:
@@ -74,10 +79,11 @@ metadata:
 spec:
   schedule: {{ (get $wc "pollQueuedSchedule" | default "* * * * *") | quote }}
   concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: {{ $wcSuccessHistory }}
+  failedJobsHistoryLimit: {{ $wcFailedHistory }}
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: {{ $wcTTL }}
       backoffLimit: 0
       activeDeadlineSeconds: 55
       template:
@@ -106,10 +112,11 @@ metadata:
 spec:
   schedule: {{ (get $wc "reconcileRunningSchedule" | default "*/10 * * * *") | quote }}
   concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: {{ $wcSuccessHistory }}
+  failedJobsHistoryLimit: {{ $wcFailedHistory }}
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: {{ $wcTTL }}
       backoffLimit: 0
       activeDeadlineSeconds: 55
       template:
@@ -138,10 +145,11 @@ metadata:
 spec:
   schedule: {{ (get $wc "userContextSyncSchedule" | default "*/5 * * * *") | quote }}
   concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: {{ $wcSuccessHistory }}
+  failedJobsHistoryLimit: {{ $wcFailedHistory }}
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: {{ $wcTTL }}
       backoffLimit: 0
       activeDeadlineSeconds: 55
       template:
@@ -170,10 +178,11 @@ metadata:
 spec:
   schedule: {{ (get $wc "cloudCredentialChecksSchedule" | default "*/30 * * * *") | quote }}
   concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: {{ $wcSuccessHistory }}
+  failedJobsHistoryLimit: {{ $wcFailedHistory }}
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: {{ $wcTTL }}
       backoffLimit: 0
       activeDeadlineSeconds: 55
       template:

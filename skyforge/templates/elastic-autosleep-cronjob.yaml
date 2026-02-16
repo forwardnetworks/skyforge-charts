@@ -2,6 +2,9 @@
 {{- $autosleep := (get $elastic "autosleep" | default (dict)) -}}
 {{- if and (get $elastic "enabled" | default false) (get $autosleep "enabled" | default false) -}}
 {{- $curlCmd := "curl --fail-with-body -sS --retry 3 --retry-delay 2 -X POST -H \"X-Skyforge-Internal-Token: ${SKYFORGE_INTERNAL_TOKEN}\"" -}}
+{{- $successHistory := ((get $autosleep "successfulJobsHistoryLimit" | default 1) | int) -}}
+{{- $failedHistory := ((get $autosleep "failedJobsHistoryLimit" | default 1) | int) -}}
+{{- $ttlSeconds := ((get $autosleep "ttlSecondsAfterFinished" | default 1800) | int) -}}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -11,10 +14,11 @@ metadata:
 spec:
   schedule: {{ (get $autosleep "schedule" | default "*/5 * * * *") | quote }}
   concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: {{ $successHistory }}
+  failedJobsHistoryLimit: {{ $failedHistory }}
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: {{ $ttlSeconds }}
       backoffLimit: 0
       activeDeadlineSeconds: 55
       template:
@@ -34,4 +38,3 @@ spec:
               args:
                 - {{ printf "%s http://skyforge-server:8085/internal/elastic/tools/autosleep-tick" $curlCmd | quote }}
 {{- end -}}
-

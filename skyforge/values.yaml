@@ -15,6 +15,9 @@ skyforge:
     reconcileRunningSchedule: "*/10 * * * *"
     userContextSyncSchedule: "*/5 * * * *"
     cloudCredentialChecksSchedule: "*/30 * * * *"
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 1
+    ttlSecondsAfterFinished: 1800
 
   # Optional: run a standalone Atlas migration Job as a Helm hook.
   #
@@ -178,6 +181,9 @@ skyforge:
       idleMinutes: 30
       # Cron schedule for autosleep checks.
       schedule: "*/5 * * * *"
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 1
+      ttlSecondsAfterFinished: 1800
     kibanaSubpath: "/kibana"
     elasticsearch:
       # Single-node dev settings.
@@ -302,6 +308,7 @@ skyforge:
     schedule: "*/30 * * * *"
     successfulJobsHistoryLimit: 1
     failedJobsHistoryLimit: 1
+    ttlSecondsAfterFinished: 1800
     # Retention for terminal Jobs in the release namespace.
     # Successful and failed Jobs are handled independently.
     successfulJobRetentionMinutes: 30

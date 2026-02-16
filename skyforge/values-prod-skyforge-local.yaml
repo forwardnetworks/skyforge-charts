@@ -44,6 +44,9 @@ skyforge:
     reconcileRunningSchedule: "*/5 * * * *"
     userContextSyncSchedule: "*/5 * * * *"
     cloudCredentialChecksSchedule: "*/15 * * * *"
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 1
+    ttlSecondsAfterFinished: 1800
 
   netbox:
     enabled: true
@@ -61,6 +64,9 @@ skyforge:
     autosleep:
       enabled: true
       idleMinutes: 30
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 1
+      ttlSecondsAfterFinished: 1800
     kibanaSubpath: /kibana
     elasticsearch:
       storage:
@@ -149,6 +155,9 @@ skyforge:
     successfulJobRetentionMinutes: 30
     failedJobRetentionMinutes: 120
     jobRetentionHours: 1
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 1
+    ttlSecondsAfterFinished: 1800
     namespacePrefixes:
       - "ws-workspace-"
       - "ws-e2e-"

@@ -13,6 +13,7 @@ spec:
   failedJobsHistoryLimit: {{ (get $hk "failedJobsHistoryLimit" | default 1) | int }}
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: {{ (get $hk "ttlSecondsAfterFinished" | default 1800) | int }}
       backoffLimit: 0
       activeDeadlineSeconds: 300
       template:
