@@ -7,6 +7,14 @@ skyforge:
   # Optional dedicated worker deployment replica count. When > 0, the chart
   # creates a separate Deployment that runs the task worker.
   workerReplicaCount: 0
+  # Schedules for worker bridge CronJobs.
+  workerCron:
+    heartbeatSchedule: "* * * * *"
+    reconcileQueuedSchedule: "* * * * *"
+    pollQueuedSchedule: "* * * * *"
+    reconcileRunningSchedule: "*/10 * * * *"
+    userContextSyncSchedule: "*/5 * * * *"
+    cloudCredentialChecksSchedule: "*/30 * * * *"
 
   # Optional: run a standalone Atlas migration Job as a Helm hook.
   #
@@ -295,10 +303,25 @@ skyforge:
     successfulJobsHistoryLimit: 1
     failedJobsHistoryLimit: 1
     # Retention for terminal Jobs in the release namespace.
+    # Successful and failed Jobs are handled independently.
+    successfulJobRetentionMinutes: 30
+    failedJobRetentionMinutes: 120
+    # Backward-compatible key; used only when the minute-specific keys are not set.
     jobRetentionHours: 2
-    # Retention for stale e2e namespaces (name prefix match only).
+    # Namespace prefixes considered stale-lab candidates.
+    namespacePrefixes:
+      - "ws-e2e-"
+      - "ws-workspace-"
+    # Backward-compatible key; merged with namespacePrefixes when set.
     e2eNamespacePrefix: "ws-e2e-"
+    namespaceRetentionHours: 24
+    # Backward-compatible key for namespaceRetentionHours.
     e2eNamespaceRetentionHours: 24
+    # Skip deletion when this label key/value is present on the namespace.
+    protectedNamespaceLabelKey: "skyforge.cleanup/protected"
+    protectedNamespaceLabelValue: "true"
+    # When false, namespaces with any Running pods are skipped.
+    deleteRunningNamespaces: false
   uiThemeDefault: ""
   # Typed config equivalent of SKYFORGE_NOTIFICATIONS_ENABLED. Default true.
   notificationsEnabled: true

@@ -26,12 +26,26 @@ spec:
               env:
                 - name: SKYFORGE_HK_NAMESPACE
                   value: {{ .Release.Namespace | quote }}
+                - name: SKYFORGE_HK_SUCCESS_RETENTION_MINUTES
+                  value: {{ (get $hk "successfulJobRetentionMinutes" | default 30) | int | quote }}
+                - name: SKYFORGE_HK_FAILED_RETENTION_MINUTES
+                  value: {{ (get $hk "failedJobRetentionMinutes" | default 120) | int | quote }}
                 - name: SKYFORGE_HK_JOB_RETENTION_HOURS
                   value: {{ (get $hk "jobRetentionHours" | default 2) | int | quote }}
+                - name: SKYFORGE_HK_NS_PREFIXES
+                  value: {{ join "," ((get $hk "namespacePrefixes" | default (list "ws-e2e-" "ws-workspace-"))) | quote }}
                 - name: SKYFORGE_HK_E2E_PREFIX
                   value: {{ (get $hk "e2eNamespacePrefix" | default "ws-e2e-") | quote }}
+                - name: SKYFORGE_HK_NS_RETENTION_HOURS
+                  value: {{ (get $hk "namespaceRetentionHours" | default 24) | int | quote }}
                 - name: SKYFORGE_HK_E2E_RETENTION_HOURS
                   value: {{ (get $hk "e2eNamespaceRetentionHours" | default 24) | int | quote }}
+                - name: SKYFORGE_HK_NS_PROTECT_LABEL_KEY
+                  value: {{ (get $hk "protectedNamespaceLabelKey" | default "skyforge.cleanup/protected") | quote }}
+                - name: SKYFORGE_HK_NS_PROTECT_LABEL_VALUE
+                  value: {{ (get $hk "protectedNamespaceLabelValue" | default "true") | quote }}
+                - name: SKYFORGE_HK_DELETE_RUNNING_NAMESPACES
+                  value: {{ (get $hk "deleteRunningNamespaces" | default false) | quote }}
               command:
                 - python
                 - -c
@@ -49,9 +63,19 @@ spec:
                   token_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
                   ca_path = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
                   namespace = os.getenv("SKYFORGE_HK_NAMESPACE", "skyforge")
-                  job_retention_h = int(os.getenv("SKYFORGE_HK_JOB_RETENTION_HOURS", "2"))
+                  success_retention_min = int(os.getenv("SKYFORGE_HK_SUCCESS_RETENTION_MINUTES", "30"))
+                  failed_retention_min = int(os.getenv("SKYFORGE_HK_FAILED_RETENTION_MINUTES", "120"))
+                  fallback_job_retention_h = int(os.getenv("SKYFORGE_HK_JOB_RETENTION_HOURS", "2"))
                   e2e_prefix = os.getenv("SKYFORGE_HK_E2E_PREFIX", "ws-e2e-")
+                  ns_prefixes_raw = os.getenv("SKYFORGE_HK_NS_PREFIXES", "ws-e2e-,ws-workspace-")
+                  ns_retention_h = int(os.getenv("SKYFORGE_HK_NS_RETENTION_HOURS", "24"))
                   e2e_retention_h = int(os.getenv("SKYFORGE_HK_E2E_RETENTION_HOURS", "24"))
+                  protect_label_key = os.getenv("SKYFORGE_HK_NS_PROTECT_LABEL_KEY", "skyforge.cleanup/protected")
+                  protect_label_value = os.getenv("SKYFORGE_HK_NS_PROTECT_LABEL_VALUE", "true")
+                  delete_running_namespaces = os.getenv("SKYFORGE_HK_DELETE_RUNNING_NAMESPACES", "false").lower() in ("1", "true", "yes")
+                  ns_prefixes = [p.strip() for p in ns_prefixes_raw.split(",") if p.strip()]
+                  if e2e_prefix and e2e_prefix not in ns_prefixes:
+                      ns_prefixes.append(e2e_prefix)
 
                   if not host:
                       raise SystemExit("missing KUBERNETES_SERVICE_HOST")
@@ -72,6 +96,12 @@ spec:
                       if not dt:
                           return None
                       return (datetime.now(timezone.utc) - dt).total_seconds() / 3600.0
+
+                  def age_minutes(ts):
+                      dt = parse_ts(ts)
+                      if not dt:
+                          return None
+                      return (datetime.now(timezone.utc) - dt).total_seconds() / 60.0
 
                   def k8s(method, path, payload=None):
                       url = base + path
@@ -114,27 +144,49 @@ spec:
                       terminal = (active == 0) and ((succeeded > 0) or (failed > 0))
                       if not terminal:
                           continue
-                      created = job.get("metadata", {}).get("creationTimestamp")
-                      h = age_hours(created)
-                      if h is None or h < job_retention_h:
+                      created = (
+                          status.get("completionTime")
+                          or job.get("metadata", {}).get("creationTimestamp")
+                      )
+                      age_m = age_minutes(created)
+                      if age_m is None:
                           continue
-                      print(f"[housekeeping] deleting job {namespace}/{name} age_h={h:.1f}")
+                      if succeeded > 0:
+                          retain_m = success_retention_min
+                      elif failed > 0:
+                          retain_m = failed_retention_min
+                      else:
+                          retain_m = fallback_job_retention_h * 60
+                      if age_m < retain_m:
+                          continue
+                      print(f"[housekeeping] deleting job {namespace}/{name} age_min={age_m:.1f} retain_min={retain_m}")
                       k8s("DELETE", f"/apis/batch/v1/namespaces/{namespace}/jobs/{name}")
                       deleted_jobs += 1
 
                   namespaces = k8s("GET", "/api/v1/namespaces").get("items", [])
                   for ns in namespaces:
                       name = ns.get("metadata", {}).get("name", "")
-                      if not name.startswith(e2e_prefix):
+                      if not any(name.startswith(prefix) for prefix in ns_prefixes):
                           continue
                       phase = (ns.get("status", {}) or {}).get("phase", "")
                       if phase == "Terminating":
                           continue
+                      labels = ns.get("metadata", {}).get("labels", {}) or {}
+                      if protect_label_key and labels.get(protect_label_key) == protect_label_value:
+                          continue
                       created = ns.get("metadata", {}).get("creationTimestamp")
                       h = age_hours(created)
-                      if h is None or h < e2e_retention_h:
+                      retain_h = ns_retention_h
+                      if name.startswith(e2e_prefix):
+                          retain_h = min(retain_h, e2e_retention_h)
+                      if h is None or h < retain_h:
                           continue
-                      print(f"[housekeeping] deleting namespace {name} age_h={h:.1f}")
+                      pods = k8s("GET", f"/api/v1/namespaces/{name}/pods").get("items", [])
+                      has_running = any((p.get("status", {}) or {}).get("phase", "") == "Running" for p in pods)
+                      if has_running and not delete_running_namespaces:
+                          print(f"[housekeeping] skipping namespace {name} (running pods present)")
+                          continue
+                      print(f"[housekeeping] deleting namespace {name} age_h={h:.1f} retain_h={retain_h}")
                       k8s("DELETE", f"/api/v1/namespaces/{name}")
                       deleted_ns += 1
 

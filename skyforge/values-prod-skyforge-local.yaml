@@ -37,6 +37,13 @@ skyforge:
   # Keep this separate from the API Deployment to avoid "queued" runs caused by
   # non-worker pods grabbing subscriptions.
   workerReplicaCount: 2
+  workerCron:
+    heartbeatSchedule: "* * * * *"
+    reconcileQueuedSchedule: "* * * * *"
+    pollQueuedSchedule: "* * * * *"
+    reconcileRunningSchedule: "*/5 * * * *"
+    userContextSyncSchedule: "*/5 * * * *"
+    cloudCredentialChecksSchedule: "*/15 * * * *"
 
   netbox:
     enabled: true
@@ -138,10 +145,19 @@ skyforge:
 
   housekeeping:
     enabled: true
-    schedule: "*/15 * * * *"
+    schedule: "*/10 * * * *"
+    successfulJobRetentionMinutes: 30
+    failedJobRetentionMinutes: 120
     jobRetentionHours: 1
+    namespacePrefixes:
+      - "ws-workspace-"
+      - "ws-e2e-"
+    namespaceRetentionHours: 24
     e2eNamespacePrefix: "ws-e2e-"
     e2eNamespaceRetentionHours: 12
+    protectedNamespaceLabelKey: "skyforge.cleanup/protected"
+    protectedNamespaceLabelValue: "true"
+    deleteRunningNamespaces: true
 
   admissionPolicies:
     enabled: true
