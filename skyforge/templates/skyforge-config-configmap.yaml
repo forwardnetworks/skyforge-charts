@@ -2,10 +2,10 @@
 {{- $forwardAppRootAliases := (get .Values.skyforge.forwardApp "rootAliases" | default dict) -}}
 {{- $forwardAppMetricsPoll := (get .Values.skyforge.forwardApp "metricsPoll" | default dict) -}}
 {{- $forwardAppOnPrem := (get .Values.skyforge.forwardApp "onPrem" | default dict) -}}
-{{- $userDataDir := coalesce .Values.skyforge.userDataDir .Values.skyforge.scopesDataDir "/var/lib/skyforge" -}}
-{{- $userDeleteMode := coalesce .Values.skyforge.userDeleteMode .Values.skyforge.scopeDeleteMode "live" -}}
-{{- $userSyncSeconds := coalesce .Values.skyforge.userSyncSeconds .Values.skyforge.scopeSyncSeconds 300 -}}
-{{- $userRoutesStrict := coalesce .Values.skyforge.userRoutesStrict .Values.skyforge.scopeRoutesStrict true -}}
+{{- $userDataDir := default "/var/lib/skyforge" .Values.skyforge.userDataDir -}}
+{{- $userDeleteMode := default "live" .Values.skyforge.userDeleteMode -}}
+{{- $userSyncSeconds := default 300 .Values.skyforge.userSyncSeconds -}}
+{{- $userRoutesStrict := default true .Values.skyforge.userRoutesStrict -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -46,10 +46,6 @@ data:
   SKYFORGE_USER_DELETE_MODE: {{ $userDeleteMode | quote }}
   SKYFORGE_USER_SYNC_SECONDS: {{ $userSyncSeconds | quote }}
   SKYFORGE_USER_ROUTES_STRICT: {{ $userRoutesStrict | quote }}
-  SKYFORGE_SCOPES_DATA_DIR: {{ $userDataDir | quote }}
-  SKYFORGE_SCOPE_DELETE_MODE: {{ $userDeleteMode | quote }}
-  SKYFORGE_SCOPE_SYNC_SECONDS: {{ $userSyncSeconds | quote }}
-  SKYFORGE_SCOPE_ROUTES_STRICT: {{ $userRoutesStrict | quote }}
   SKYFORGE_PKI_DEFAULT_DAYS: {{ .Values.skyforge.pkiDefaultDays | quote }}
   SKYFORGE_SSH_DEFAULT_DAYS: {{ .Values.skyforge.sshDefaultDays | quote }}
   SKYFORGE_UI_THEME_DEFAULT: {{ .Values.skyforge.ui.themeDefault | default "" | quote }}

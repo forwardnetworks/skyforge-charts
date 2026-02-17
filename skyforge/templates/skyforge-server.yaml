@@ -299,16 +299,16 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_NETLAB_STATE_ROOT
-        - name: SKYFORGE_SCOPES_DATA_DIR
+        - name: SKYFORGE_USER_DATA_DIR
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
-              key: SKYFORGE_SCOPES_DATA_DIR
-        - name: SKYFORGE_SCOPE_SYNC_SECONDS
+              key: SKYFORGE_USER_DATA_DIR
+        - name: SKYFORGE_USER_SYNC_SECONDS
           valueFrom:
             configMapKeyRef:
               name: skyforge-config
-              key: SKYFORGE_SCOPE_SYNC_SECONDS
+              key: SKYFORGE_USER_SYNC_SECONDS
         - name: SKYFORGE_UI_PRODUCT_NAME
           valueFrom:
             configMapKeyRef:

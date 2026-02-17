@@ -229,7 +229,7 @@ skyforge:
     # Secrets (for example, dropping "-terraform") by overriding these values.
     #
     # Note: Gitea uses its own object storage credentials (object-storage-access-key /
-    # object-storage-secret-key) scoped to the "gitea" bucket.
+    # object-storage-secret-key) limited to the "gitea" bucket.
     accessKeySecretName: "object-storage-artifacts-access-key"
     accessKeySecretKey: "object-storage-artifacts-access-key"
     secretKeySecretName: "object-storage-artifacts-secret-key"
@@ -296,11 +296,6 @@ skyforge:
   userDeleteMode: "live"
   userSyncSeconds: 300
   userRoutesStrict: true
-  # Deprecated compatibility keys (use the user* keys above).
-  scopesDataDir: ""
-  scopeDeleteMode: ""
-  scopeSyncSeconds: 0
-  scopeRoutesStrict: null
   # Optional cluster hygiene cleanup for stale Jobs and stale ws-e2e namespaces.
   # This is intended for aggressive test-environment cleanup to reduce clutter
   # and control API/object bloat after repeated migration and E2E cycles.
@@ -319,7 +314,7 @@ skyforge:
     # Namespace prefixes considered stale-lab candidates.
     namespacePrefixes:
       - "ws-e2e-"
-      - "ws-workspace-"
+      - "ws-user-"
     # Backward-compatible key; merged with namespacePrefixes when set.
     e2eNamespacePrefix: "ws-e2e-"
     namespaceRetentionHours: 24
@@ -489,7 +484,7 @@ skyforge:
     webTheme: ""
     logoUrl: "/assets/skyforge/FN-logo.svg"
     # Auth mode for Skyforge (via Dex). Supported:
-    # - google: Google Workspace / Cloud Identity login (recommended for Forward)
+    # - google: Google Directory / Cloud Identity login (recommended for Forward)
     # - ldap: LDAP login (optional for OSS installs)
     # - okta: Okta login via Dex's generic OIDC connector
     authMode: "google"
@@ -498,7 +493,7 @@ skyforge:
       # Redirect URI to configure in Google Cloud:
       #   https://<skyforge.hostname>/dex/callback
       clientID: ""
-      # Optional restriction to specific Google Workspace domains.
+      # Optional restriction to specific Google Directory domains.
       hostedDomains:
         - "forwardnetworks.com"
       # Where to read the Google OAuth client secret from.

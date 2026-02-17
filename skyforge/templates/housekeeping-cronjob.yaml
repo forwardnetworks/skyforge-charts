@@ -34,7 +34,7 @@ spec:
                 - name: SKYFORGE_HK_JOB_RETENTION_HOURS
                   value: {{ (get $hk "jobRetentionHours" | default 2) | int | quote }}
                 - name: SKYFORGE_HK_NS_PREFIXES
-                  value: {{ join "," ((get $hk "namespacePrefixes" | default (list "ws-e2e-" "ws-workspace-"))) | quote }}
+                  value: {{ join "," ((get $hk "namespacePrefixes" | default (list "ws-e2e-" "ws-user-"))) | quote }}
                 - name: SKYFORGE_HK_E2E_PREFIX
                   value: {{ (get $hk "e2eNamespacePrefix" | default "ws-e2e-") | quote }}
                 - name: SKYFORGE_HK_NS_RETENTION_HOURS
@@ -68,7 +68,7 @@ spec:
                   failed_retention_min = int(os.getenv("SKYFORGE_HK_FAILED_RETENTION_MINUTES", "120"))
                   fallback_job_retention_h = int(os.getenv("SKYFORGE_HK_JOB_RETENTION_HOURS", "2"))
                   e2e_prefix = os.getenv("SKYFORGE_HK_E2E_PREFIX", "ws-e2e-")
-                  ns_prefixes_raw = os.getenv("SKYFORGE_HK_NS_PREFIXES", "ws-e2e-,ws-workspace-")
+                  ns_prefixes_raw = os.getenv("SKYFORGE_HK_NS_PREFIXES", "ws-e2e-,ws-user-")
                   ns_retention_h = int(os.getenv("SKYFORGE_HK_NS_RETENTION_HOURS", "24"))
                   e2e_retention_h = int(os.getenv("SKYFORGE_HK_E2E_RETENTION_HOURS", "24"))
                   protect_label_key = os.getenv("SKYFORGE_HK_NS_PROTECT_LABEL_KEY", "skyforge.cleanup/protected")

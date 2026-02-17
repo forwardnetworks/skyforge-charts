@@ -607,7 +607,7 @@ static_resources:
                           end
 
                           -- Rewrite absolute same-host redirects as well as relative
-                          -- redirects so browser navigation remains scoped under /fwd.
+                          -- redirects so browser navigation remains bound under /fwd.
                           if string.sub(loc, 1, 1) ~= "/" then
                             local authority = handle:headers():get("x-forwarded-host")
                             if authority == nil or authority == "" then

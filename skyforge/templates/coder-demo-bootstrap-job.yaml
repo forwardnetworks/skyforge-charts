@@ -6,7 +6,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: coder-demo-workspace-bootstrap
+  name: coder-demo-bootstrap
   annotations:
     "helm.sh/resource-policy": keep
   labels:
@@ -21,7 +21,7 @@ spec:
       restartPolicy: OnFailure
       serviceAccountName: coder
       containers:
-        - name: coder-demo-workspace-bootstrap
+        - name: coder-demo-bootstrap
           image: {{ .Values.images.coder | quote }}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-lc"]
@@ -65,18 +65,18 @@ spec:
               fi
 
               if /opt/coder list 2>/dev/null | awk '{print $1}' | grep -qx "skyforge-demo"; then
-                echo "[coder-demo] workspace skyforge-demo already exists"
+                echo "[coder-demo] demo environment skyforge-demo already exists"
               else
                 cat > /tmp/skyforge-demo-params.yaml <<'YAML'
                 cpu: "2"
                 memory: "2"
                 home_disk_size: "10"
                 YAML
-                echo "[coder-demo] creating workspace skyforge-demo"
+                echo "[coder-demo] creating demo environment skyforge-demo"
                 /opt/coder create skyforge-demo --template skyforge-demo --yes --rich-parameter-file /tmp/skyforge-demo-params.yaml
               fi
 
-              echo "[coder-demo] starting workspace skyforge-demo"
+              echo "[coder-demo] starting demo environment skyforge-demo"
               /opt/coder start skyforge-demo --yes || true
               echo "[coder-demo] done"
           env:

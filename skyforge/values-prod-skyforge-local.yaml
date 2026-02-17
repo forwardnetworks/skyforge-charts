@@ -160,7 +160,7 @@ skyforge:
     failedJobsHistoryLimit: 1
     ttlSecondsAfterFinished: 1800
     namespacePrefixes:
-      - "ws-workspace-"
+      - "ws-user-"
       - "ws-e2e-"
     namespaceRetentionHours: 24
     e2eNamespacePrefix: "ws-e2e-"
@@ -206,8 +206,8 @@ skyforge:
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
   # NOTE: Keep these tags in sync with images that actually exist in GHCR.
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260216-user-scope-0bf23f28"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260216-user-scope-0bf23f28-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260216-user-owner-0bf23f28"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260216-user-owner-0bf23f28-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.
