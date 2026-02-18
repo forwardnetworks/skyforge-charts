@@ -1,10 +1,11 @@
 {{- $host := .Values.skyforge.hostname -}}
 {{- $giteaEnabled := .Values.skyforge.gitea.enabled -}}
-{{- $minioEnabled := .Values.skyforge.minio.enabled -}}
 {{- $yaadeEnabled := .Values.skyforge.yaade.enabled -}}
 {{- $swaggerEnabled := .Values.skyforge.swaggerUI.enabled -}}
 {{- $dexEnabled := .Values.skyforge.dex.enabled -}}
 {{- $coderEnabled := .Values.skyforge.coder.enabled -}}
+{{- $filesBucket := .Values.skyforge.objectStorage.filesBucket | default "skyforge-files" -}}
+{{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
 
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -14,6 +15,10 @@ metadata:
     {{- include "skyforge.labels" . | nindent 4 }}
 spec:
   gatewayClassName: cilium
+  {{- if gt (len $gatewayAddresses) 0 }}
+  addresses:
+{{ toYaml $gatewayAddresses | nindent 4 }}
+  {{- end }}
   listeners:
     - name: http
       protocol: HTTP
@@ -73,16 +78,6 @@ spec:
         - name: dex
           port: 5556
 {{- end }}
-{{- if $coderEnabled }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /dex-coder
-      backendRefs:
-        - name: dex-coder
-          port: 5556
-{{- end }}
-
     # Root landing: / -> /index.html
     - matches:
         - path:
@@ -119,8 +114,8 @@ spec:
   hostnames:
     - {{ $host | quote }}
   rules:
-{{- if $minioEnabled }}
-    # /files/* -> minio:9000 /skyforge-files/*
+{{- if .Values.skyforge.s3gw.enabled }}
+    # /files/* -> s3gw /<files-bucket>/*
     - matches:
         - path:
             type: PathPrefix
@@ -130,25 +125,10 @@ spec:
           urlRewrite:
             path:
               type: ReplacePrefixMatch
-              replacePrefixMatch: /skyforge-files/
+              replacePrefixMatch: {{ printf "/%s/" $filesBucket }}
       backendRefs:
-        - name: minio
-          port: 9000
-
-    # /minio-console/* -> minio:9001 /*
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /minio-console
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
-      backendRefs:
-        - name: minio
-          port: 9001
+        - name: {{ .Values.skyforge.s3gw.serviceName }}
+          port: {{ .Values.skyforge.s3gw.service.port }}
 {{- end }}
 
 {{- if $yaadeEnabled }}
@@ -294,23 +274,4 @@ spec:
       backendRefs:
         - name: technitium-dns
           port: 5380
-{{- end }}
-
-{{- $elastic := (get .Values.skyforge "elastic" | default (dict)) -}}
-{{- if (get $elastic "enabled" | default false) }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: {{ default "/kibana" (get $elastic "kibanaSubpath") | quote }}
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Proto
-                value: https
-              - name: X-Skyforge-External-Prefix
-                value: {{ default "/kibana" (get $elastic "kibanaSubpath") | quote }}
-      backendRefs:
-        - name: kibana-sso-proxy
-          port: 8080
 {{- end }}
