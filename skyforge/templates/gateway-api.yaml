@@ -304,10 +304,19 @@ spec:
             value: /api/auth/tacacs-settings
         - path:
             type: Exact
+            value: /api/auth/tacacs-tests
+        - path:
+            type: Exact
             value: /api/auth/ldap-settings
         - path:
             type: Exact
+            value: /api/auth/ldap-tests
+        - path:
+            type: Exact
             value: /api/auth/saml-settings
+        - path:
+            type: Exact
+            value: /api/auth/saml-tests
         - path:
             type: PathPrefix
             value: /api/collector-tasks
