@@ -296,64 +296,11 @@ data:
                                 cluster: forward_upstream
                                 prefix_rewrite: {{ printf "%s/" $pathPrefix | quote }}
                     http_filters:
-                      - name: envoy.filters.http.ext_authz
-                        typed_config:
-                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
-                          transport_api_version: V3
-                          failure_mode_allow: false
-                          http_service:
-                            server_uri:
-                              uri: http://skyforge-server.{{ .Release.Namespace }}.svc.cluster.local:8085/api/session/forwardauth/envoy
-                              cluster: skyforge_server
-                              timeout: 2s
-                            authorization_request:
-                              headers_to_add:
-                                - key: ":path"
-                                  value: /api/session/forwardauth/envoy
-                              allowed_headers:
-                                patterns:
-                                  - exact: cookie
-                                  - exact: x-forwarded-proto
-                                  - exact: x-forwarded-host
-                                  - exact: x-forwarded-for
-                                  - exact: x-forwarded-uri
-                                  - exact: x-forwarded-prefix
-                                  - exact: x-skyforge-external-prefix
-                                  - exact: user-agent
-                                  - exact: accept
-                                  - exact: accept-language
-                            authorization_response:
-                              allowed_upstream_headers:
-                                patterns:
-                                  - exact: remote-user
-                                  - exact: remote-user-group
-                                  - exact: remote-user-email
-                                  - exact: remote-user-first-name
-                                  - exact: remote-user-last-name
-                                  - exact: x-forwarded-user
-                                  - exact: x-forwarded-email
-                                  - exact: x-forwarded-first-name
-                                  - exact: x-forwarded-last-name
-                              allowed_client_headers:
-                                patterns:
-                                  - exact: location
                       - name: envoy.filters.http.router
                         typed_config:
                           "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
       clusters:
-        - name: skyforge_server
-          type: STRICT_DNS
-          connect_timeout: 2s
-          load_assignment:
-            cluster_name: skyforge_server
-            endpoints:
-              - lb_endpoints:
-                  - endpoint:
-                      address:
-                        socket_address:
-                          address: skyforge-server.{{ .Release.Namespace }}.svc.cluster.local
-                          port_value: 8085
         - name: forward_upstream
           type: LOGICAL_DNS
           dns_lookup_family: V4_ONLY
