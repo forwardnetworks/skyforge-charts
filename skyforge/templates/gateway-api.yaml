@@ -110,6 +110,53 @@ spec:
       backendRefs:
         - name: forward-sso-proxy
           port: 8080
+    # Minimal root compatibility for Forward's own root-relative web paths.
+    # Keep root /api/* reserved for Skyforge by only routing non-API login/assets here.
+    - matches:
+        - path:
+            type: Exact
+            value: /login
+        - path:
+            type: PathPrefix
+            value: /login/
+        - path:
+            type: Exact
+            value: /logout
+        - path:
+            type: Exact
+            value: /public/csrf
+        - path:
+            type: Exact
+            value: /public/password-reset
+        - path:
+            type: Exact
+            value: /public/password-strength
+        - path:
+            type: PathPrefix
+            value: /app/
+        - path:
+            type: Exact
+            value: /favicon.ico
+        - path:
+            type: PathPrefix
+            value: /img/
+        - path:
+            type: PathPrefix
+            value: /fonts/
+        - path:
+            type: PathPrefix
+            value: /release-notes/
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
 {{- end }}
     # Root landing: / -> /index.html
     - matches:
