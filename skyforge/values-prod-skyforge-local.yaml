@@ -8,14 +8,14 @@ skyforge:
         value: "10.128.16.60"
   dex:
     manageConfig: true
-    authMode: google
-    google:
-      clientID: "56450133689-em1cubodj6mfltd3lg37id3kh4levart.apps.googleusercontent.com"
-      hostedDomains:
-        - "forwardnetworks.com"
+    authMode: oidc
+    oidc:
+      issuer: "https://fn-prod.okta.com"
+      clientID: "0oa108ytsjzRXoJw3698"
+      insecureSkipEmailVerified: true
       # Secret remains pre-created in-cluster.
-      clientSecretSecretName: "dex-google-client-secret"
-      clientSecretSecretKey: "dex-google-client-secret"
+      clientSecretSecretName: "dex-oidc-client-secret"
+      clientSecretSecretKey: "dex-oidc-client-secret"
 
   # Comma-separated usernames/emails that should see admin-only UI + APIs.
   # NOTE: Server-side admin checks are exact-match (no wildcards).
@@ -23,7 +23,7 @@ skyforge:
 
   encoreCfg:
     # Manage the API service typed config secret via Helm so feature flags and
-    # defaults (Gemini/etc.) reliably propagate into the running pods.
+    # defaults reliably propagate into the running pods.
     create: true
 
   # Provide ENCORE_RUNTIME_CONFIG from the chart's `files/infra.config.json`.
@@ -45,31 +45,27 @@ skyforge:
   nautobotUrl: https://skyforge.local.forwardnetworks.com/nautobot
   nautobotSsoUrl: https://skyforge.local.forwardnetworks.com/nautobot
 
-  # Swagger image pulls can be rate-limited on Docker Hub; keep this disabled
+  # ReDoc image pulls can be rate-limited; keep this disabled
   # in production unless you pin a mirrored image.
-  swaggerUI:
-    enabled: false
+  redoc:
+    enabled: true
 
   # Keep registry integration enabled for GHCR-backed workflows.
   registry:
     url: https://ghcr.io
 
+  # Forward in-cluster collector image + pull credentials.
+  # Pin to a concrete tag to avoid drifting when `latest` is retagged.
+  forwardCollector:
+    image: quay.io/forwardnetworks/cloud-collector:26.1.3-01
+    imagePullSecretName: quay-pull
+    imagePullSecretNamespace: skyforge
+
   # Enable Gitea provisioning for blueprint-backed workflows and E2E tests.
   # API URL is in-cluster; UI URL is the SSO-proxied external path.
   gitea:
     apiUrl: http://gitea:3000/api/v1
-    url: https://skyforge.local.forwardnetworks.com/gitea
-
-  # Enable the AI template generator UI + APIs.
-  ai:
-    enabled: true
-
-  # Enable per-user "Connect Gemini" and Gemini-backed template generation.
-  # NOTE: `clientID` and `projectId` (Google Cloud target) must be set for full functionality.
-  gemini:
-    enabled: true
-    clientID: ""
-    projectId: ""
+    url: https://skyforge.local.forwardnetworks.com/git
 
   # Pin netlab-c9s generator image so `netlab initial` has the artifacts it needs.
   netlabC9s:
@@ -90,9 +86,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260218-0150-rsync-fix"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260219-legacy-cleanup"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260218-0150-rsync-fix-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260219-legacy-cleanup-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.
