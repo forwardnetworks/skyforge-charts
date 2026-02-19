@@ -298,7 +298,22 @@ spec:
             value: /api/users/current/prefs
         - path:
             type: Exact
+            value: /api/users/current/tokens
+        - path:
+            type: Exact
+            value: /api/users/current/network-preferences
+        - path:
+            type: Exact
             value: /api/admin/impersonate
+        - path:
+            type: Exact
+            value: /api/users
+        - path:
+            type: Exact
+            value: /api/access-control-groups
+        - path:
+            type: Exact
+            value: /api/device-access-labels
         - path:
             type: Exact
             value: /api/auth/tacacs-settings
@@ -338,6 +353,12 @@ spec:
         - path:
             type: Exact
             value: /api/integrations/servicenow-cmdb/configuration
+        - path:
+            type: Exact
+            value: /api/notifications/subscriptions
+        - path:
+            type: PathPrefix
+            value: /api/config/alert_new_device_failure_percentage/overrides
         - path:
             type: PathPrefix
             value: /api/system/
