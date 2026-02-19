@@ -300,6 +300,15 @@ spec:
             type: Exact
             value: /api/admin/impersonate
         - path:
+            type: Exact
+            value: /api/auth/tacacs-settings
+        - path:
+            type: Exact
+            value: /api/auth/ldap-settings
+        - path:
+            type: Exact
+            value: /api/auth/saml-settings
+        - path:
             type: PathPrefix
             value: /api/collector-tasks
         - path:
