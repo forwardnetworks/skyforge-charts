@@ -85,21 +85,11 @@ spec:
             type: Exact
             value: /fwd
       filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Skyforge-External-Prefix
-                value: /fwd
-              - name: X-Forwarded-Prefix
-                value: /fwd
-        - type: URLRewrite
-          urlRewrite:
+        - type: RequestRedirect
+          requestRedirect:
             path:
               type: ReplaceFullPath
-              replaceFullPath: /
-      backendRefs:
-        - name: forward-sso-proxy
-          port: 8080
+              replaceFullPath: /fwd/
     - matches:
         - path:
             type: PathPrefix
@@ -311,6 +301,12 @@ spec:
         - path:
             type: Exact
             value: /api/admin/impersonate
+        - path:
+            type: Exact
+            value: /api/admin/networks
+        - path:
+            type: PathPrefix
+            value: /api/admin/networks/
         - path:
             type: Exact
             value: /api/users
