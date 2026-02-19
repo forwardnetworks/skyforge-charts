@@ -1,7 +1,7 @@
 {{- $host := .Values.skyforge.hostname -}}
 {{- $giteaEnabled := .Values.skyforge.gitea.enabled -}}
 {{- $yaadeEnabled := .Values.skyforge.yaade.enabled -}}
-{{- $swaggerEnabled := .Values.skyforge.swaggerUI.enabled -}}
+{{- $redocEnabled := .Values.skyforge.redoc.enabled -}}
 {{- $dexEnabled := .Values.skyforge.dex.enabled -}}
 {{- $coderEnabled := .Values.skyforge.coder.enabled -}}
 {{- $filesBucket := .Values.skyforge.objectStorage.filesBucket | default "skyforge-files" -}}
@@ -78,11 +78,306 @@ spec:
         - name: dex
           port: 5556
 {{- end }}
+
+{{- if .Values.skyforge.forwardCluster.enabled }}
+    - matches:
+        - path:
+            type: Exact
+            value: /fwd
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /fwd/
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+    # Forward upstream commonly redirects to /login. Route that back through
+    # the Forward SSO proxy instead of falling through to Skyforge app routes.
+    - matches:
+        - path:
+            type: Exact
+            value: /login
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /login/
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+    # Forward login UI serves frontend bundles under /app/assets/* and favicon at
+    # /favicon.ico. Route these to the Forward SSO proxy to avoid white screens.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /app
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+    - matches:
+        - path:
+            type: Exact
+            value: /favicon.ico
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /img
+        - path:
+            type: PathPrefix
+            value: /fonts
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+    # Forward login frontend calls these APIs as /api/public/* (no /fwd prefix).
+    # Route only the known Forward auth endpoints and keep Skyforge's own
+    # /api/public/config on the Skyforge backend.
+    - matches:
+        - path:
+            type: Exact
+            value: /api/public/csrf
+        - path:
+            type: Exact
+            value: /api/public/password-reset
+        - path:
+            type: Exact
+            value: /api/public/password-strength
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+    - matches:
+        - path:
+            type: Exact
+            value: /api/backups
+        - path:
+            type: Exact
+            value: /api/licenses
+        - path:
+            type: Exact
+            value: /api/notifications
+        - path:
+            type: Exact
+            value: /api/custom-banners
+        - path:
+            type: Exact
+            value: /api/webhooks
+        - path:
+            type: Exact
+            value: /api/licensed-devices
+        - path:
+            type: Exact
+            value: /api/approved-cli-commands
+        - path:
+            type: Exact
+            value: /api/global-config
+        - path:
+            type: Exact
+            value: /api/config
+        - path:
+            type: Exact
+            value: /api/timeZones
+        - path:
+            type: Exact
+            value: /api/trusted-certificates
+        - path:
+            type: Exact
+            value: /api/backup-settings
+        - path:
+            type: Exact
+            value: /api/vm/admin/appUrl
+        - path:
+            type: Exact
+            value: /api/critical-states
+        - path:
+            type: Exact
+            value: /api/cve-index
+        - path:
+            type: Exact
+            value: /api/feature-usage
+        - path:
+            type: Exact
+            value: /api/metrics/usage-report
+        - path:
+            type: Exact
+            value: /api/nqe
+        - path:
+            type: Exact
+            value: /api/requests
+        - path:
+            type: Exact
+            value: /api/stig-policy-template
+        - path:
+            type: Exact
+            value: /api/unimpersonate
+        - path:
+            type: Exact
+            value: /api/users/current/events
+        - path:
+            type: Exact
+            value: /api/users/current/prefs
+        - path:
+            type: Exact
+            value: /api/admin/impersonate
+        - path:
+            type: PathPrefix
+            value: /api/collector-tasks
+        - path:
+            type: Exact
+            value: /api/integrations/dns
+        - path:
+            type: Exact
+            value: /api/integrations/infoblox
+        - path:
+            type: PathPrefix
+            value: /api/integrations/infoblox/
+        - path:
+            type: Exact
+            value: /api/integrations/slack
+        - path:
+            type: Exact
+            value: /api/integrations/smtp
+        - path:
+            type: Exact
+            value: /api/integrations/servicenow-cmdb/configuration
+        - path:
+            type: PathPrefix
+            value: /api/system/
+        - path:
+            type: PathPrefix
+            value: /api/networks/
+        - path:
+            type: PathPrefix
+            value: /api/snapshots/
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /release-notes/
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /fwd
+              - name: X-Forwarded-Prefix
+                value: /fwd
+      backendRefs:
+        - name: forward-sso-proxy
+          port: 8080
+{{- end }}
     # Root landing: / -> /index.html
     - matches:
         - path:
             type: Exact
             value: /
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /index.html
+      backendRefs:
+        - name: skyforge-server
+          port: 8085
+    # SPA deep-link rewrite for settings routes.
+    - matches:
+        - path:
+            type: Exact
+            value: /settings
+        - path:
+            type: PathPrefix
+            value: /settings/
       filters:
         - type: URLRewrite
           urlRewrite:
@@ -221,19 +516,24 @@ spec:
           port: 8080
 {{- end }}
 
-{{- if $swaggerEnabled }}
+{{- if $redocEnabled }}
     - matches:
         - path:
             type: PathPrefix
-            value: /swagger
+            value: /redoc
       filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Skyforge-External-Prefix
+                value: /redoc
         - type: URLRewrite
           urlRewrite:
             path:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: swagger-ui
+        - name: redoc-sso-proxy
           port: 8080
 {{- end }}
 
