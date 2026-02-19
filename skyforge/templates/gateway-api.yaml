@@ -132,6 +132,15 @@ spec:
             type: Exact
             value: /public/password-strength
         - path:
+            type: Exact
+            value: /api/public/csrf
+        - path:
+            type: Exact
+            value: /api/public/password-reset
+        - path:
+            type: Exact
+            value: /api/public/password-strength
+        - path:
             type: PathPrefix
             value: /app/
         - path:
