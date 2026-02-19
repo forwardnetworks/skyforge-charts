@@ -60,6 +60,10 @@ skyforge:
     image: quay.io/forwardnetworks/cloud-collector:26.1.3-01
     imagePullSecretName: quay-pull
     imagePullSecretNamespace: skyforge
+  forwardCluster:
+    enabled: true
+    baseUrl: "https://fwd-appserver.forward.svc.cluster.local:8443"
+    skipTlsVerify: true
 
   # Enable Gitea provisioning for blueprint-backed workflows and E2E tests.
   # API URL is in-cluster; UI URL is the SSO-proxied external path.
@@ -86,9 +90,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260219-legacy-cleanup"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260219-forward-credset-5af2470b"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260219-legacy-cleanup-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260219-forward-credset-5af2470b-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.
