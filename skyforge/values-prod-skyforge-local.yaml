@@ -90,9 +90,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260219-forward-credset-5af2470b"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260219-forward-collector-unified-9fc10e9"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260219-forward-credset-5af2470b-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260219-forward-collector-unified-9fc10e9-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.
