@@ -1,5 +1,5 @@
 {{- if .Values.skyforge.migrateJob.enabled -}}
-{{- $content := .Files.Get "files/kompose/skyforge-migrate-pod.yaml" -}}
+{{- $content := .Files.Get "files/manifests/skyforge-migrate-pod.yaml" -}}
 {{- $content = replace "arigaio/atlas:latest-alpine" .Values.images.atlas $content -}}
 {{- $content | nindent 0 }}
 {{- end -}}

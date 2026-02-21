@@ -31,13 +31,13 @@
     {
       "type": "s3",
       "region": "us-east-1",
-      "endpoint": "http://minio:9000",
-      "access_key_id": "minioadmin",
-      "secret_access_key": "minioadmin",
+      "endpoint": "http://s3gw:7480",
+      "access_key_id": "skyforge",
+      "secret_access_key": "skyforge",
       "buckets": {
         "skyforge": {
           "name": "skyforge-files",
-          "public_base_url": "http://minio:9000/skyforge-files"
+          "public_base_url": "http://s3gw:7480/skyforge-files"
         }
       }
     }
@@ -103,66 +103,25 @@
     "handlers": 20
   },
   "secrets": {
-    "SKYFORGE_SESSION_SECRET": {
-      "$env": "SKYFORGE_SESSION_SECRET"
-    },
-    "SKYFORGE_ADMIN_PASSWORD": {
-      "$env": "SKYFORGE_ADMIN_PASSWORD"
-    },
-    "SKYFORGE_OIDC_CLIENT_ID": {
-      "$env": "SKYFORGE_OIDC_CLIENT_ID"
-    },
-    "SKYFORGE_OIDC_CLIENT_SECRET": {
-      "$env": "SKYFORGE_OIDC_CLIENT_SECRET"
-    },
-    "SKYFORGE_LDAP_URL": {
-      "$env": "SKYFORGE_LDAP_URL"
-    },
-    "SKYFORGE_LDAP_BIND_TEMPLATE": {
-      "$env": "SKYFORGE_LDAP_BIND_TEMPLATE"
-    },
-    "SKYFORGE_LDAP_LOOKUP_BINDDN": {
-      "$env": "SKYFORGE_LDAP_LOOKUP_BINDDN"
-    },
-    "SKYFORGE_LDAP_LOOKUP_BINDPASSWORD": {
-      "$env": "SKYFORGE_LDAP_LOOKUP_BINDPASSWORD"
-    },
-    "SKYFORGE_DB_PASSWORD": {
-      "$env": "SKYFORGE_DB_PASSWORD"
-    },
-    "SKYFORGE_GITEA_PASSWORD": {
-      "$env": "SKYFORGE_GITEA_PASSWORD"
-    },
-    "SKYFORGE_OBJECT_STORAGE_ROOT_USER": {
-      "$env": "SKYFORGE_OBJECT_STORAGE_ROOT_USER"
-    },
-    "SKYFORGE_OBJECT_STORAGE_ROOT_PASSWORD": {
-      "$env": "SKYFORGE_OBJECT_STORAGE_ROOT_PASSWORD"
-    },
-    "SKYFORGE_OBJECT_STORAGE_ACCESS_KEY": {
-      "$env": "SKYFORGE_OBJECT_STORAGE_ACCESS_KEY"
-    },
-    "SKYFORGE_OBJECT_STORAGE_SECRET_KEY": {
-      "$env": "SKYFORGE_OBJECT_STORAGE_SECRET_KEY"
-    },
-    "SKYFORGE_CONTAINERLAB_JWT_SECRET": {
-      "$env": "SKYFORGE_CONTAINERLAB_JWT_SECRET"
-    },
-    "SKYFORGE_PKI_CA_CERT": {
-      "$env": "SKYFORGE_PKI_CA_CERT"
-    },
-    "SKYFORGE_PKI_CA_KEY": {
-      "$env": "SKYFORGE_PKI_CA_KEY"
-    },
-    "SKYFORGE_SSH_CA_KEY": {
-      "$env": "SKYFORGE_SSH_CA_KEY"
-    },
-    "SKYFORGE_INTERNAL_TOKEN": {
-      "$env": "SKYFORGE_INTERNAL_TOKEN"
-    },
-    "YAADE_ADMIN_PASSWORD": {
-      "$env": "YAADE_ADMIN_PASSWORD"
-    }
+    "SKYFORGE_SESSION_SECRET": { "$env": "SKYFORGE_SESSION_SECRET" },
+    "SKYFORGE_ADMIN_PASSWORD": { "$env": "SKYFORGE_ADMIN_PASSWORD" },
+    "SKYFORGE_E2E_ADMIN_TOKEN": { "$env": "SKYFORGE_E2E_ADMIN_TOKEN" },
+    "SKYFORGE_OIDC_CLIENT_ID": { "$env": "SKYFORGE_OIDC_CLIENT_ID" },
+    "SKYFORGE_OIDC_CLIENT_SECRET": { "$env": "SKYFORGE_OIDC_CLIENT_SECRET" },
+    "SKYFORGE_LDAP_URL": { "$env": "SKYFORGE_LDAP_URL" },
+    "SKYFORGE_LDAP_BIND_TEMPLATE": { "$env": "SKYFORGE_LDAP_BIND_TEMPLATE" },
+    "SKYFORGE_LDAP_LOOKUP_BINDDN": { "$env": "SKYFORGE_LDAP_LOOKUP_BINDDN" },
+    "SKYFORGE_LDAP_LOOKUP_BINDPASSWORD": { "$env": "SKYFORGE_LDAP_LOOKUP_BINDPASSWORD" },
+    "SKYFORGE_DB_PASSWORD": { "$env": "SKYFORGE_DB_PASSWORD" },
+    "SKYFORGE_GITEA_PASSWORD": { "$env": "SKYFORGE_GITEA_PASSWORD" },
+    "SKYFORGE_OBJECT_STORAGE_ROOT_USER": { "$env": "SKYFORGE_OBJECT_STORAGE_ROOT_USER" },
+    "SKYFORGE_OBJECT_STORAGE_ROOT_PASSWORD": { "$env": "SKYFORGE_OBJECT_STORAGE_ROOT_PASSWORD" },
+    "SKYFORGE_OBJECT_STORAGE_ACCESS_KEY": { "$env": "SKYFORGE_OBJECT_STORAGE_ACCESS_KEY" },
+    "SKYFORGE_OBJECT_STORAGE_SECRET_KEY": { "$env": "SKYFORGE_OBJECT_STORAGE_SECRET_KEY" },
+    "SKYFORGE_CONTAINERLAB_JWT_SECRET": { "$env": "SKYFORGE_CONTAINERLAB_JWT_SECRET" },
+
+    "SKYFORGE_INTERNAL_TOKEN": { "$env": "SKYFORGE_INTERNAL_TOKEN" },
+    "YAADE_ADMIN_PASSWORD": { "$env": "YAADE_ADMIN_PASSWORD" }
   },
   "env": {
     "SKYFORGE_DB_HOST": "db",
@@ -170,7 +129,7 @@
     "SKYFORGE_DB_NAME": "skyforge_server",
     "SKYFORGE_DB_USER": "skyforge_server",
     "SKYFORGE_DB_SSLMODE": "disable",
-    "SKYFORGE_OBJECT_STORAGE_ENDPOINT": "minio:9000",
+    "SKYFORGE_OBJECT_STORAGE_ENDPOINT": "s3gw:7480",
     "SKYFORGE_OBJECT_STORAGE_USE_SSL": "false",
     "APP_VERSION": "${APP_VERSION}",
     "BUILD_TIME": "${BUILD_TIME}",

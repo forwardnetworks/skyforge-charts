@@ -100,7 +100,7 @@ metadata:
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.skyforge.clabernetes.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
       app: clabernetes-manager

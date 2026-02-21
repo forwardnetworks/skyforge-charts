@@ -7,24 +7,63 @@ data:
   patch.py: |
     import os
     from pathlib import Path
-
-    import yaml
+    import json
 
     src = Path("/etc/dex-src/config.yaml")
     dst = Path("/etc/dex/config.yaml")
-
-    cfg = yaml.safe_load(src.read_text(encoding="utf-8")) or {}
-    web = cfg.get("web") or {}
-    cfg["web"] = web
-
+    src_text = src.read_text(encoding="utf-8")
     theme = os.environ.get("DEX_WEB_THEME", "").strip()
     logo_url = os.environ.get("DEX_LOGO_URL", "").strip()
 
+    # If no UX overrides are requested, copy through verbatim.
+    if not theme and not logo_url:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_text(src_text, encoding="utf-8")
+        raise SystemExit(0)
+
+    lines = src_text.splitlines()
+
+    def indent_of(line: str) -> int:
+        return len(line) - len(line.lstrip(" "))
+
+    web_start = -1
+    web_indent = 0
+    for i, line in enumerate(lines):
+        if line.strip().startswith("web:"):
+            web_start = i
+            web_indent = indent_of(line)
+            break
+
+    # If the expected `web:` block is absent, keep config unchanged.
+    if web_start < 0:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_text(src_text, encoding="utf-8")
+        raise SystemExit(0)
+
+    web_end = len(lines)
+    for i in range(web_start + 1, len(lines)):
+        stripped = lines[i].strip()
+        if not stripped:
+            continue
+        if indent_of(lines[i]) <= web_indent:
+            web_end = i
+            break
+
+    web_body = []
+    for line in lines[web_start + 1 : web_end]:
+        s = line.strip()
+        if s.startswith("theme:") or s.startswith("logoURL:"):
+            continue
+        web_body.append(line)
+
+    child_indent = " " * (web_indent + 2)
     if theme:
-        web["theme"] = theme
+        web_body.append(f"{child_indent}theme: {json.dumps(theme)}")
     if logo_url:
-        web["logoURL"] = logo_url
+        web_body.append(f"{child_indent}logoURL: {json.dumps(logo_url)}")
+
+    patched = lines[: web_start + 1] + web_body + lines[web_end:]
 
     dst.parent.mkdir(parents=True, exist_ok=True)
-    dst.write_text(yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8")
+    dst.write_text("\n".join(patched) + "\n", encoding="utf-8")
 {{- end }}

@@ -76,7 +76,7 @@ data:
     # Serve static files directly from Nautobot without an nginx sidecar.
     #
     # Nautobot is hosted under a script prefix (/nautobot) and Skyforge proxies
-    # it behind Traefik. Django's development staticfiles handler can behave
+    # it through the Cilium Gateway API path. Django's development staticfiles handler can behave
     # badly with SCRIPT_NAME/FORCE_SCRIPT_NAME; WhiteNoise avoids that path.
     MIDDLEWARE = ["whitenoise.middleware.WhiteNoiseMiddleware", *MIDDLEWARE]
     STORAGES["staticfiles"]["BACKEND"] = "whitenoise.storage.CompressedStaticFilesStorage"

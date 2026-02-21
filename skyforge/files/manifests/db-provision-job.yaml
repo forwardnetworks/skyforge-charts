@@ -1,0 +1,205 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app.kubernetes.io/name: db-provision
+  name: db-provision
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: db-provision
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      containers:
+        - name: db-provision
+          # Avoid DockerHub unauthenticated rate limits (429 Too Many Requests) by
+          # using the public ECR mirror.
+          image: public.ecr.aws/docker/library/postgres:15-alpine
+          command:
+            - /bin/sh
+            - -lc
+          args:
+            - |
+              set -euo pipefail
+              export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password)"
+
+              echo "Waiting for Postgres..."
+              for i in $(seq 1 60); do
+                if pg_isready -h db -U skyforge >/dev/null 2>&1; then
+                  break
+                fi
+                sleep 1
+              done
+              pg_isready -h db -U skyforge >/dev/null
+
+              export POSTGRES_USER="skyforge"
+              export POSTGRES_DB="skyforge"
+              export PGHOST="db"
+              export PGPORT="5432"
+
+              read_secret() {
+                name="$1"
+                fallback="${2:-}"
+                path="/run/secrets/$name"
+                if [ -f "$path" ]; then
+                  cat "$path"
+                  return 0
+                fi
+                printf "%s" "$fallback"
+              }
+
+              NETBOX_DB_PASSWORD="$(read_secret db-netbox-password "${NETBOX_DB_PASSWORD:-netbox}")"
+              NAUTOBOT_DB_PASSWORD="$(read_secret db-nautobot-password "${NAUTOBOT_DB_PASSWORD:-nautobot}")"
+              GITEA_DB_PASSWORD="$(read_secret db-gitea-password "${GITEA_DB_PASSWORD:-gitea}")"
+              CODER_DB_PASSWORD="$(read_secret db-coder-password "${CODER_DB_PASSWORD:-coder}")"
+              DEX_DB_PASSWORD="$(read_secret db-dex-password "${DEX_DB_PASSWORD:-dex}")"
+              SKYFORGE_SERVER_DB_PASSWORD="$(read_secret db-skyforge-server-password "${SKYFORGE_SERVER_DB_PASSWORD:-skyforge_server}")"
+              FORWARD_APP_DB_PASSWORD="$(read_secret db-forward-app-password "${FORWARD_APP_DB_PASSWORD:-fwd_app}")"
+              FORWARD_FDB_DB_PASSWORD="$(read_secret db-forward-fdb-password "${FORWARD_FDB_DB_PASSWORD:-fwd_fdb}")"
+
+              psql_base="psql -v ON_ERROR_STOP=1 --username ${POSTGRES_USER} --dbname ${POSTGRES_DB}"
+
+              sql_escape() {
+                printf "%s" "$1" | sed "s/'/''/g"
+              }
+
+              create_role() {
+                role="$1"
+                pw="$2"
+                pw_sql="$(sql_escape "${pw}")"
+                ${psql_base} -c "CREATE ROLE ${role} WITH LOGIN PASSWORD '${pw_sql}';" || \
+                  ${psql_base} -c "ALTER ROLE ${role} WITH LOGIN PASSWORD '${pw_sql}';"
+              }
+
+              create_role_md5() {
+                role="$1"
+                pw="$2"
+                pw_sql="$(sql_escape "${pw}")"
+                ${psql_base} -c "SET password_encryption='md5'; CREATE ROLE ${role} WITH LOGIN PASSWORD '${pw_sql}';" || \
+                  ${psql_base} -c "SET password_encryption='md5'; ALTER ROLE ${role} WITH LOGIN PASSWORD '${pw_sql}';"
+              }
+
+              create_db() {
+                db="$1"
+                owner="$2"
+                ${psql_base} -c "CREATE DATABASE ${db} OWNER ${owner};" || \
+                  ${psql_base} -c "ALTER DATABASE ${db} OWNER TO ${owner};"
+              }
+
+              create_role netbox "${NETBOX_DB_PASSWORD}"
+              create_role nautobot "${NAUTOBOT_DB_PASSWORD}"
+              create_role gitea "${GITEA_DB_PASSWORD}"
+              create_role coder "${CODER_DB_PASSWORD}"
+              create_role dex "${DEX_DB_PASSWORD}"
+              create_role skyforge_server "${SKYFORGE_SERVER_DB_PASSWORD}"
+              create_role_md5 fwd_app "${FORWARD_APP_DB_PASSWORD}"
+              create_role_md5 fwd_app_non_admin "${FORWARD_APP_DB_PASSWORD}_pass"
+              create_role_md5 fwd_fdb "${FORWARD_FDB_DB_PASSWORD}"
+              create_role_md5 fwd_fdb_non_admin "${FORWARD_FDB_DB_PASSWORD}_pass"
+              ${psql_base} -c "ALTER ROLE fwd_app WITH CREATEROLE CREATEDB;"
+              ${psql_base} -c "ALTER ROLE fwd_app_non_admin WITH CREATEROLE CREATEDB;"
+              ${psql_base} -c "ALTER ROLE fwd_fdb WITH CREATEROLE CREATEDB;"
+              ${psql_base} -c "ALTER ROLE fwd_fdb_non_admin WITH CREATEROLE CREATEDB;"
+
+              create_db netbox netbox
+              create_db nautobot nautobot
+              create_db gitea gitea
+              create_db coder coder
+              create_db dex dex
+              create_db skyforge_server skyforge_server
+              create_db fwd_app fwd_app
+              create_db fwd_fdb_0 fwd_fdb
+              create_db fwd_fdb_1 fwd_fdb
+
+              grant_db_connect() {
+                db="$1"
+                role="$2"
+                ${psql_base} -c "GRANT CONNECT ON DATABASE ${db} TO ${role};"
+              }
+
+              grant_schema_rw() {
+                db="$1"
+                role="$2"
+                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT USAGE, CREATE ON SCHEMA public TO ${role};"
+                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON ALL TABLES IN SCHEMA public TO ${role};"
+                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${role};"
+                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ${role};"
+                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES TO ${role};"
+                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO ${role};"
+                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO ${role};"
+              }
+
+              grant_db_connect fwd_app fwd_app
+              grant_db_connect fwd_app fwd_app_non_admin
+              grant_schema_rw fwd_app fwd_app
+              grant_schema_rw fwd_app fwd_app_non_admin
+
+              grant_db_connect fwd_fdb_0 fwd_fdb
+              grant_db_connect fwd_fdb_1 fwd_fdb
+              grant_db_connect fwd_fdb_0 fwd_fdb_non_admin
+              grant_db_connect fwd_fdb_1 fwd_fdb_non_admin
+              grant_schema_rw fwd_fdb_0 fwd_fdb
+              grant_schema_rw fwd_fdb_1 fwd_fdb
+              grant_schema_rw fwd_fdb_0 fwd_fdb_non_admin
+              grant_schema_rw fwd_fdb_1 fwd_fdb_non_admin
+              echo "DB provisioning complete."
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: postgres-skyforge-password
+                      path: postgres-skyforge-password
+                  name: postgres-skyforge-password
+              - secret:
+                  items:
+                    - key: db-netbox-password
+                      path: db-netbox-password
+                  name: db-netbox-password
+              - secret:
+                  items:
+                    - key: db-nautobot-password
+                      path: db-nautobot-password
+                  name: db-nautobot-password
+              - secret:
+                  items:
+                    - key: db-gitea-password
+                      path: db-gitea-password
+                  name: db-gitea-password
+              - secret:
+                  optional: true
+                  items:
+                    - key: db-coder-password
+                      path: db-coder-password
+                  name: db-coder-password
+              - secret:
+                  items:
+                    - key: db-dex-password
+                      path: db-dex-password
+                  name: db-dex-password
+              - secret:
+                  items:
+                    - key: db-skyforge-server-password
+                      path: db-skyforge-server-password
+                  name: db-skyforge-server-password
+              - secret:
+                  optional: true
+                  items:
+                    - key: db-forward-app-password
+                      path: db-forward-app-password
+                  name: db-forward-app-password
+              - secret:
+                  optional: true
+                  items:
+                    - key: db-forward-fdb-password
+                      path: db-forward-fdb-password
+                  name: db-forward-fdb-password

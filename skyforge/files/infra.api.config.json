@@ -26,13 +26,13 @@
     {
       "type": "s3",
       "region": "us-east-1",
-      "endpoint": "http://minio:9000",
-      "access_key_id": "minioadmin",
-      "secret_access_key": "minioadmin",
+      "endpoint": "http://s3gw:7480",
+      "access_key_id": "skyforge",
+      "secret_access_key": "skyforge",
       "buckets": {
         "skyforge": {
           "name": "skyforge-files",
-          "public_base_url": "http://minio:9000/skyforge-files"
+          "public_base_url": "http://s3gw:7480/skyforge-files"
         }
       }
     }
@@ -93,9 +93,6 @@
     "SKYFORGE_OIDC_CLIENT_SECRET": {
       "$env": "SKYFORGE_OIDC_CLIENT_SECRET"
     },
-    "SKYFORGE_GEMINI_OAUTH_CLIENT_SECRET": {
-      "$env": "SKYFORGE_GEMINI_OAUTH_CLIENT_SECRET"
-    },
     "SKYFORGE_LDAP_URL": {
       "$env": "SKYFORGE_LDAP_URL"
     },
@@ -129,15 +126,7 @@
     "SKYFORGE_CONTAINERLAB_JWT_SECRET": {
       "$env": "SKYFORGE_CONTAINERLAB_JWT_SECRET"
     },
-    "SKYFORGE_PKI_CA_CERT": {
-      "$env": "SKYFORGE_PKI_CA_CERT"
-    },
-    "SKYFORGE_PKI_CA_KEY": {
-      "$env": "SKYFORGE_PKI_CA_KEY"
-    },
-    "SKYFORGE_SSH_CA_KEY": {
-      "$env": "SKYFORGE_SSH_CA_KEY"
-    },
+
     "SKYFORGE_INTERNAL_TOKEN": {
       "$env": "SKYFORGE_INTERNAL_TOKEN"
     },
@@ -151,7 +140,7 @@
     "SKYFORGE_DB_NAME": "skyforge_server",
     "SKYFORGE_DB_USER": "skyforge_server",
     "SKYFORGE_DB_SSLMODE": "disable",
-    "SKYFORGE_OBJECT_STORAGE_ENDPOINT": "minio:9000",
+    "SKYFORGE_OBJECT_STORAGE_ENDPOINT": "s3gw:7480",
     "SKYFORGE_OBJECT_STORAGE_USE_SSL": "false",
     "APP_VERSION": "${APP_VERSION}",
     "BUILD_TIME": "${BUILD_TIME}",

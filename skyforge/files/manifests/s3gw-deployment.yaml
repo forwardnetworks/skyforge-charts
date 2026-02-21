@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: s3gw
+  name: {{ .Values.skyforge.s3gw.serviceName }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: s3gw
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: s3gw
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: s3gw
+        image: {{ .Values.images.s3gw }}
+        env:
+        - name: RGW_DEFAULT_USER_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: object-storage-root-user
+              key: object-storage-root-user
+        - name: RGW_DEFAULT_USER_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: object-storage-root-password
+              key: object-storage-root-password
+        - name: RGW_DEFAULT_USER_DISPLAY_NAME
+          value: skyforge
+        ports:
+        - containerPort: {{ .Values.skyforge.s3gw.service.port }}
+          protocol: TCP
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.skyforge.s3gw.service.port }}
+          failureThreshold: 6
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 2
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.skyforge.s3gw.service.port }}
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        volumeMounts:
+        - mountPath: /var/lib/s3gw
+          name: s3gw-data
+      restartPolicy: Always
+      volumes:
+      - name: s3gw-data
+{{- if .Values.skyforge.s3gw.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: s3gw-data
+{{- else }}
+        emptyDir: {}
+{{- end }}

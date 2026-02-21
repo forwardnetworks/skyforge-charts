@@ -63,7 +63,7 @@ rules:
   - apiGroups: ["cilium.io"]
     resources: ["ciliumnodes"]
     verbs: ["get", "list", "watch"]
-  # Skyforge manages clabernetes Topology CRs in per-workspace namespaces.
+  # Skyforge manages clabernetes Topology CRs in per-user namespaces.
   # Grant these permissions even if the chart doesn't install the clabernetes
   # controller (it may be deployed separately).
   - apiGroups: ["clabernetes.containerlab.dev"]

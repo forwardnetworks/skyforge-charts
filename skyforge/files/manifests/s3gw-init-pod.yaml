@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app.kubernetes.io/name: s3gw-init
+  name: s3gw-init
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: s3gw-init
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: s3gw-init
+        image: public.ecr.aws/aws-cli/aws-cli:2.17.50
+        command:
+        - /bin/sh
+        - -lc
+        args:
+        - |
+          set -euo pipefail
+          endpoint="http://{{ .Values.skyforge.s3gw.serviceName }}:{{ .Values.skyforge.s3gw.service.port }}"
+          export AWS_ACCESS_KEY_ID="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+          export AWS_SECRET_ACCESS_KEY="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+          export AWS_DEFAULT_REGION="us-east-1"
+          for i in $(seq 1 120); do
+            if aws --endpoint-url "${endpoint}" s3api list-buckets >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          aws --endpoint-url "${endpoint}" s3api create-bucket --bucket {{ .Values.skyforge.objectStorage.filesBucket | quote }} >/dev/null 2>&1 || true
+          aws --endpoint-url "${endpoint}" s3api create-bucket --bucket gitea >/dev/null 2>&1 || true
+        volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+      restartPolicy: Never
+      volumes:
+      - name: run-secrets
+        projected:
+          sources:
+          - secret:
+              items:
+              - key: object-storage-root-user
+                path: object-storage-root-user
+              name: object-storage-root-user
+          - secret:
+              items:
+              - key: object-storage-root-password
+                path: object-storage-root-password
+              name: object-storage-root-password

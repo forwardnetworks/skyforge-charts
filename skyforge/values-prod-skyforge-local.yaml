@@ -5,7 +5,7 @@ skyforge:
   gateway:
     addresses:
       - type: IPAddress
-        value: "10.128.16.60"
+        value: "10.128.16.73"
   dex:
     manageConfig: true
     authMode: oidc
@@ -20,6 +20,10 @@ skyforge:
   # Comma-separated usernames/emails that should see admin-only UI + APIs.
   # NOTE: Server-side admin checks are exact-match (no wildcards).
   adminUsers: "skyforge,craigjohnson,craigjohnson@forwardnetworks.com"
+  e2eAdmin:
+    enabled: true
+    tokenSecretName: "skyforge-internal-token"
+    tokenSecretKey: "skyforge-internal-token"
 
   encoreCfg:
     # Manage the API service typed config secret via Helm so feature flags and
@@ -62,8 +66,10 @@ skyforge:
     imagePullSecretNamespace: skyforge
   forwardCluster:
     enabled: true
-    baseUrl: "https://fwd-appserver.forward.svc.cluster.local:8443"
-    skipTlsVerify: true
+    hostname: "skyforge-fwd.local.forwardnetworks.com"
+    serviceName: "fwd-appserver"
+    serviceNamespace: "forward"
+    servicePort: 8080
 
   # Enable Gitea provisioning for blueprint-backed workflows and E2E tests.
   # API URL is in-cluster; UI URL is the SSO-proxied external path.
@@ -90,9 +96,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260219-collector-label-fix-223f236"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260220-180042"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260219-collector-label-fix-223f236-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260220-180042-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

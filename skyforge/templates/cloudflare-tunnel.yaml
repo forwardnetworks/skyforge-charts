@@ -58,7 +58,7 @@ metadata:
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
 spec:
-  replicas: {{ default 2 $cf.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "skyforge.name" . }}

@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "-15"
+  labels:
+    app.kubernetes.io/name: skyforge-migrate
+  name: skyforge-migrate
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: skyforge-migrate
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      containers:
+        - name: skyforge-migrate
+          image: arigaio/atlas:latest-alpine
+          imagePullPolicy: Always
+          workingDir: /work
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - >-
+              set -e;
+              db_url="postgres://${SKYFORGE_DB_USER}:${SKYFORGE_DB_PASSWORD}@${SKYFORGE_DB_HOST}:${SKYFORGE_DB_PORT}/${SKYFORGE_DB_NAME}?sslmode=${SKYFORGE_DB_SSLMODE}";
+              echo "Preparing Skyforge migrations...";
+              rm -rf /work/migrations;
+              mkdir -p /work/migrations;
+              # Atlas golang-migrate format expects paired *.up.sql/*.down.sql files.
+              cp -L /migrations-src/*.sql /work/migrations/;
+              cp -L /migrations-src/atlas.hcl /work/atlas.hcl;
+              sed -i 's#file:///app/skyforge/migrations#file:///work/migrations#g' /work/atlas.hcl;
+              atlas migrate hash --dir file:///work/migrations --dir-format golang-migrate;
+              echo "Running Skyforge migrations...";
+              if [ ! -f /work/atlas.hcl ]; then echo "FATAL: /work/atlas.hcl missing" >&2; ls -la /work /migrations-src || true; exit 1; fi;
+              i=1;
+              while [ "${i}" -le 60 ]; do
+                if atlas migrate apply --config file:///work/atlas.hcl --env prod --var db_url="${db_url}"; then
+                  echo "Skyforge migrations complete.";
+                  exit 0;
+                fi;
+                echo "Migrations not ready yet; retrying (${i}/60)...";
+                i=$((i+1));
+                sleep 2;
+              done;
+              echo "Skyforge migrations failed after retries." >&2;
+              exit 1;
+          env:
+            - name: SKYFORGE_DB_HOST
+              value: db
+            - name: SKYFORGE_DB_PORT
+              value: "5432"
+            - name: SKYFORGE_DB_NAME
+              value: skyforge_server
+            - name: SKYFORGE_DB_USER
+              value: skyforge_server
+            - name: SKYFORGE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-skyforge-server-password
+                  key: db-skyforge-server-password
+            - name: SKYFORGE_DB_SSLMODE
+              value: disable
+          volumeMounts:
+            - mountPath: /migrations-src
+              name: skyforge-migrate-config
+              readOnly: true
+            - mountPath: /work
+              name: skyforge-migrate-work
+      volumes:
+        - name: skyforge-migrate-config
+          configMap:
+            name: skyforge-migrate-config
+        - name: skyforge-migrate-work
+          emptyDir: {}

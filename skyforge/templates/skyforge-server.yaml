@@ -2,22 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    io.kompose.service: skyforge-server
+    app.kubernetes.io/name: skyforge-server
   name: skyforge-server
 spec:
-  replicas: {{ .Values.skyforge.serverReplicaCount }}
+  replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: skyforge-server
+      app.kubernetes.io/name: skyforge-server
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        io.kompose.service: skyforge-server
+        app.kubernetes.io/name: skyforge-server
       annotations:
         checksum/skyforge-config: '{{ include (print $.Template.BasePath "/skyforge-config-configmap.yaml") . | sha256sum }}'
         checksum/infra-config: '{{ include (print $.Template.BasePath "/infra-config-configmap.yaml") . | sha256sum }}'
+        checksum/migrate-config: '{{ include (print $.Template.BasePath "/skyforge-migrate-configmap.yaml") . | sha256sum }}'
         checksum/encore-cfg: '{{ include (print $.Template.BasePath "/encore-cfg-secret.yaml") . | sha256sum }}'
         checksum/encore-runtime: '{{ include (print $.Template.BasePath "/encore-runtime-config-secret.yaml") . | sha256sum }}'
         checksum/extra-secrets: '{{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}'
@@ -30,7 +31,7 @@ spec:
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            io.kompose.service: skyforge-server
+            app.kubernetes.io/name: skyforge-server
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -39,7 +40,7 @@ spec:
               topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  io.kompose.service: skyforge-server
+                  app.kubernetes.io/name: skyforge-server
       automountServiceAccountToken: true
       serviceAccountName: skyforge-server
       containers:
@@ -90,14 +91,6 @@ spec:
         - name: ENCORE_INFRA_CONFIG_PATH
           value: /encore/infra.config.json
         - name: ENCORE_CFG_SKYFORGE
-          valueFrom:
-            secretKeyRef:
-              name: skyforge-encore-cfg
-              key: ENCORE_CFG_SKYFORGE
-              optional: true
-        # Back-compat: some Encore runtime builds expect a generic ENCORE_CFG env var.
-        # Keep it in sync with the service-specific config.
-        - name: ENCORE_CFG
           valueFrom:
             secretKeyRef:
               name: skyforge-encore-cfg
@@ -220,31 +213,6 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_CORP_EMAIL_DOMAIN
-        - name: SKYFORGE_PKI_CA_CERT
-          valueFrom:
-            secretKeyRef:
-              name: skyforge-pki-ca-cert
-              key: skyforge-pki-ca-cert
-        - name: SKYFORGE_PKI_CA_KEY
-          valueFrom:
-            secretKeyRef:
-              name: skyforge-pki-ca-key
-              key: skyforge-pki-ca-key
-        - name: SKYFORGE_SSH_CA_KEY
-          valueFrom:
-            secretKeyRef:
-              name: skyforge-ssh-ca-key
-              key: skyforge-ssh-ca-key
-        - name: SKYFORGE_PKI_DEFAULT_DAYS
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_PKI_DEFAULT_DAYS
-        - name: SKYFORGE_SSH_DEFAULT_DAYS
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_SSH_DEFAULT_DAYS
         - name: SKYFORGE_MAX_GROUPS
           valueFrom:
             configMapKeyRef:
@@ -293,16 +261,6 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_NETLAB_STATE_ROOT
-        - name: SKYFORGE_WORKSPACES_DATA_DIR
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_WORKSPACES_DATA_DIR
-        - name: SKYFORGE_WORKSPACE_SYNC_SECONDS
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_WORKSPACE_SYNC_SECONDS
         - name: SKYFORGE_UI_PRODUCT_NAME
           valueFrom:
             configMapKeyRef:
@@ -393,17 +351,17 @@ spec:
             secretKeyRef:
               name: skyforge-oidc-client-secret
               key: skyforge-oidc-client-secret
-        - name: SKYFORGE_GEMINI_OAUTH_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.skyforge.gemini.clientSecretSecretName | quote }}
-              key: {{ .Values.skyforge.gemini.clientSecretSecretKey | quote }}
-              optional: true
         - name: SKYFORGE_INTERNAL_TOKEN
           valueFrom:
             secretKeyRef:
               name: skyforge-internal-token
               key: skyforge-internal-token
+        - name: SKYFORGE_E2E_ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.skyforge.e2eAdmin.tokenSecretName }}
+              key: {{ .Values.skyforge.e2eAdmin.tokenSecretKey }}
+              optional: true
         - name: SKYFORGE_CONTAINERLAB_JWT_SECRET
           valueFrom:
             secretKeyRef:

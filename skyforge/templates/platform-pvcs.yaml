@@ -1,0 +1,43 @@
+{{- /*
+Render platform PVC manifests, gated by feature flags.
+
+This avoids creating unused PVCs in OSS/minimal installs (and avoids Longhorn
+provisioning churn for services that are disabled).
+*/ -}}
+
+{{- $pvcs := list
+  "db-data-persistentvolumeclaim.yaml"
+  "platform-data-persistentvolumeclaim.yaml"
+  "redis-data-persistentvolumeclaim.yaml"
+  "skyforge-server-data-persistentvolumeclaim.yaml"
+  -}}
+
+{{- if and .Values.skyforge.s3gw.enabled .Values.skyforge.s3gw.persistence.enabled }}
+  {{- $pvcs = concat $pvcs (list "s3gw-data-persistentvolumeclaim.yaml") -}}
+{{- end }}
+{{- if .Values.skyforge.gitea.enabled }}
+  {{- $pvcs = concat $pvcs (list "gitea-data-persistentvolumeclaim.yaml") -}}
+{{- end }}
+{{- if .Values.skyforge.yaade.enabled }}
+  {{- $pvcs = concat $pvcs (list "yaade-data-persistentvolumeclaim.yaml") -}}
+{{- end }}
+
+{{- if .Values.skyforge.netbox.enabled }}
+  {{- $pvcs = concat $pvcs (list
+    "netbox-media-persistentvolumeclaim.yaml"
+    "netbox-reports-persistentvolumeclaim.yaml"
+    "netbox-scripts-persistentvolumeclaim.yaml"
+  ) -}}
+{{- end }}
+
+{{- range $pvcs }}
+{{- $path := printf "files/manifests/%s" . -}}
+{{- if $.Files.Get $path }}
+{{- if eq . "s3gw-data-persistentvolumeclaim.yaml" }}
+{{ tpl ($.Files.Get $path) $ }}
+{{- else }}
+{{ $.Files.Get $path }}
+{{- end }}
+---
+{{- end }}
+{{- end }}

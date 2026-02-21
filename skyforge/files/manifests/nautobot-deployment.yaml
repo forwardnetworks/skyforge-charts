@@ -1,0 +1,235 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: nautobot
+  name: nautobot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nautobot
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nautobot
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - args:
+        - 'set -e
+
+          export NAUTOBOT_DB_PASSWORD="$(cat /run/secrets/db-nautobot-password)"
+
+          export NAUTOBOT_SECRET_KEY="$(cat /run/secrets/nautobot-secret-key)"
+
+          export NAUTOBOT_SUPERUSER_PASSWORD="$(cat /run/secrets/skyforge-admin-shared)"
+
+          export NAUTOBOT_SUPERUSER_API_TOKEN="$(cat /run/secrets/nautobot-superuser-api-token)"
+
+          export SKYFORGE_LDAP_URL="$(cat /run/secrets/skyforge-ldap-url)"
+
+          export SKYFORGE_LDAP_BIND_TEMPLATE="$(cat /run/secrets/skyforge-ldap-bind-template)"
+
+          /docker-entrypoint.sh nautobot-server collectstatic --noinput
+
+          exec /docker-entrypoint.sh nautobot-server runserver 0.0.0.0:8080
+
+          '
+        command:
+        - /bin/sh
+        - -lc
+        env:
+        - name: NAUTOBOT_CREATE_SUPERUSER
+          value: 'true'
+        - name: NAUTOBOT_DB_HOST
+          value: db
+        - name: NAUTOBOT_DB_NAME
+          value: nautobot
+        - name: NAUTOBOT_DB_PORT
+          value: '5432'
+        - name: NAUTOBOT_DB_USER
+          value: nautobot
+        - name: NAUTOBOT_REDIS_DATABASE
+          value: {{ .Values.skyforge.nautobot.redisDatabase | quote }}
+        - name: NAUTOBOT_REDIS_HOST
+          value: redis
+        - name: NAUTOBOT_REDIS_PORT
+          value: '6379'
+        - name: NAUTOBOT_SUPERUSER_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_ADMIN_EMAIL
+        - name: NAUTOBOT_SUPERUSER_USERNAME
+          value: skyforge
+        - name: NAUTOBOT_ALLOWED_HOSTS
+          value: '*'
+        - name: NAUTOBOT_USE_X_FORWARDED_HOST
+          value: 'True'
+        - name: NAUTOBOT_USE_X_FORWARDED_PORT
+          value: 'True'
+        - name: SKYFORGE_LDAP_BIND_TEMPLATE_FILE
+          value: /run/secrets/skyforge-ldap-bind-template
+        - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LDAP_SKIP_TLS_VERIFY
+        - name: SKYFORGE_LDAP_STARTTLS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_LDAP_STARTTLS
+        - name: SKYFORGE_LDAP_URL_FILE
+          value: /run/secrets/skyforge-ldap-url
+        - name: SKYFORGE_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              key: SKYFORGE_HOSTNAME
+              name: skyforge-config
+        - name: SKYFORGE_SSO_ENABLED
+          value: 'true'
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        - name: REQUESTS_CA_BUNDLE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        image: ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1114-whitenoise
+        imagePullPolicy: IfNotPresent
+        startupProbe:
+          httpGet:
+            path: /login/
+            port: 8080
+            scheme: HTTP
+            httpHeaders:
+            - name: X-Forwarded-Proto
+              value: https
+          failureThreshold: 60
+          periodSeconds: 5
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /login/
+            port: 8080
+            scheme: HTTP
+            httpHeaders:
+            - name: X-Forwarded-Proto
+              value: https
+          failureThreshold: 6
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /login/
+            port: 8080
+            scheme: HTTP
+            httpHeaders:
+            - name: X-Forwarded-Proto
+              value: https
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+        name: nautobot
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            memory: '3221225472'
+        securityContext:
+          runAsGroup: 0
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /run/secrets
+          name: run-secrets
+          readOnly: true
+        - mountPath: /opt/nautobot/media
+          name: nautobot-media
+        - mountPath: /opt/nautobot/reports
+          name: nautobot-reports
+        - mountPath: /opt/nautobot/jobs
+          name: nautobot-jobs
+        - mountPath: /opt/nautobot/nautobot_config.py
+          name: nautobot-config
+          subPath: nautobot_config.py
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
+      restartPolicy: Always
+      volumes:
+      - name: run-secrets
+        projected:
+          sources:
+          - secret:
+              items:
+              - key: db-nautobot-password
+                path: db-nautobot-password
+              name: db-nautobot-password
+          - secret:
+              items:
+              - key: nautobot-secret-key
+                path: nautobot-secret-key
+              name: nautobot-secret-key
+          - secret:
+              items:
+              - key: password
+                path: skyforge-admin-shared
+              name: skyforge-admin-shared
+          - secret:
+              items:
+              - key: nautobot-superuser-api-token
+                path: nautobot-superuser-api-token
+              name: nautobot-superuser-api-token
+          - secret:
+              items:
+              - key: skyforge-ldap-url
+                path: skyforge-ldap-url
+              name: skyforge-ldap-url
+          - secret:
+              items:
+              - key: skyforge-ldap-bind-template
+                path: skyforge-ldap-bind-template
+              name: skyforge-ldap-bind-template
+      - name: nautobot-media
+        emptyDir: {}
+      - name: nautobot-reports
+        emptyDir: {}
+      - name: nautobot-jobs
+        emptyDir: {}
+      - name: nautobot-config
+        configMap:
+          name: nautobot-config
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: nautobot-init-volumes
+        image: alpine:3.20
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - set -euo pipefail; for dir in /opt/nautobot/media /opt/nautobot/reports /opt/nautobot/jobs; do echo "Initializing $dir"; mkdir -p "$dir"; chown -R 999:999 "$dir"; done; echo 'Nautobot volumes ready'
+        volumeMounts:
+        - mountPath: /opt/nautobot/media
+          name: nautobot-media
+        - mountPath: /opt/nautobot/reports
+          name: nautobot-reports
+        - mountPath: /opt/nautobot/jobs
+          name: nautobot-jobs
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

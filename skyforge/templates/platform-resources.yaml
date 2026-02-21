@@ -1,0 +1,85 @@
+{{- /*
+platform-resources.yaml prints a set of pre-rendered manifests stored under
+components/charts/skyforge/files/manifests/*.yaml.
+
+Important: keep optional stacks (NetBox/Nautobot/etc) gated behind Helm values.
+Without gating, QA/OSS install drills cannot disable integrations and will hang
+pulling images or waiting on hooks.
+*/ -}}
+
+{{- $files := list
+  "db-deployment.yaml"
+  "db-provision-job.yaml"
+  "db-service.yaml"
+
+  "redis-deployment.yaml"
+  "redis-service.yaml"
+  -}}
+
+{{- if .Values.skyforge.s3gw.enabled }}
+  {{- $files = concat $files (list
+    "backup-postgres-s3-cronjob.yaml"
+
+    "s3gw-deployment.yaml"
+    "s3gw-init-pod.yaml"
+    "s3gw-service.yaml"
+  ) -}}
+{{- end }}
+
+{{- if .Values.skyforge.gitea.enabled }}
+  {{- $files = concat $files (list
+    "gitea-admin-bootstrap-job.yaml"
+    "gitea-admin-sync-deployment.yaml"
+    "gitea-deployment.yaml"
+    "gitea-service.yaml"
+  ) -}}
+{{- end }}
+
+{{- if .Values.skyforge.redoc.enabled }}
+  {{- $files = concat $files (list
+    "redoc-deployment.yaml"
+    "redoc-service.yaml"
+  ) -}}
+{{- end }}
+
+{{- if .Values.skyforge.yaade.enabled }}
+  {{- $files = concat $files (list
+    "yaade-deployment.yaml"
+    "yaade-service.yaml"
+  ) -}}
+{{- end }}
+
+{{- if .Values.skyforge.netbox.enabled }}
+  {{- $files = concat $files (list
+    "netbox-admin-bootstrap-job.yaml"
+    "netbox-admin-sync-deployment.yaml"
+    "netbox-deployment.yaml"
+    "netbox-service.yaml"
+  ) -}}
+{{- end }}
+
+{{- if .Values.skyforge.nautobot.enabled }}
+  {{- if (default false .Values.skyforge.nautobot.bootstrap.enabled) }}
+    {{- $files = concat $files (list
+      "nautobot-admin-bootstrap-job.yaml"
+    ) -}}
+  {{- end }}
+
+  {{- $files = concat $files (list
+    "nautobot-admin-sync-deployment.yaml"
+    "nautobot-deployment.yaml"
+    "nautobot-service.yaml"
+  ) -}}
+{{- end }}
+
+{{- range $files }}
+{{- $path := printf "files/manifests/%s" . -}}
+{{- if $.Files.Get $path }}
+---
+{{ if has . (list "db-deployment.yaml" "netbox-deployment.yaml" "netbox-admin-bootstrap-job.yaml" "nautobot-deployment.yaml" "s3gw-deployment.yaml" "s3gw-init-pod.yaml" "s3gw-service.yaml" "redoc-deployment.yaml") -}}
+{{ printf "%s\n" (tpl ($.Files.Get $path) $) -}}
+{{ else -}}
+{{ printf "%s\n" ($.Files.Get $path) -}}
+{{ end -}}
+{{ end }}
+{{- end }}

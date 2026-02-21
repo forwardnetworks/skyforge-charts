@@ -17,8 +17,64 @@ early when required configuration is missing.
   {{- end -}}
 {{- end -}}
 
-{{- if not .Values.skyforge.minio.enabled -}}
-  {{- if eq (trim (default "" .Values.skyforge.objectStorage.endpoint)) "minio:9000" -}}
-    {{- fail "skyforge.minio.enabled=false requires skyforge.objectStorage.endpoint to be set to a non-MinIO S3 endpoint (not minio:9000)" -}}
+{{- if .Values.skyforge.gitea.enabled -}}
+  {{- if not (trim (default "" .Values.skyforge.gitea.apiUrl)) -}}
+    {{- fail "skyforge.gitea.enabled=true requires skyforge.gitea.apiUrl to be set" -}}
+  {{- end -}}
+  {{- if not (trim (default "" .Values.skyforge.gitea.url)) -}}
+    {{- fail "skyforge.gitea.enabled=true requires skyforge.gitea.url to be set" -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if not .Values.skyforge.s3gw.enabled -}}
+  {{- if eq (trim (default "" .Values.skyforge.objectStorage.endpoint)) "s3gw:7480" -}}
+    {{- fail "skyforge.s3gw.enabled=false requires skyforge.objectStorage.endpoint to be set to an external S3 endpoint (not s3gw:7480)" -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if and (not .Values.secrets.create) .Values.secrets.validatePrecreated (not (.Capabilities.APIVersions.Has "helm.sh/lint")) -}}
+  {{- $requiredSecrets := list
+    "proxy-tls"
+    "skyforge-admin-shared"
+    "skyforge-session-secret"
+    "skyforge-internal-token"
+    "postgres-skyforge-password"
+    "db-skyforge-server-password"
+    "db-dex-password"
+    "db-coder-password"
+    "db-gitea-password"
+    "skyforge-ca-cert"
+    "skyforge-ldap-bind-template"
+    "skyforge-oidc-client-id"
+    "skyforge-oidc-client-secret"
+    "dex-client-coder-secret"
+    "yaade-admin-password"
+    "gitea-secret-key"
+    "skyforge-netlab-servers"
+    "netlab-runner-rsa"
+    "object-storage-root-user"
+    "object-storage-root-password"
+    "object-storage-access-key"
+    "object-storage-secret-key"
+    "object-storage-artifacts-access-key"
+    "object-storage-artifacts-secret-key"
+  -}}
+  {{- if not .Values.skyforge.dex.manageConfig -}}
+    {{- $requiredSecrets = append $requiredSecrets "dex-config" -}}
+  {{- end -}}
+  {{- if .Values.skyforge.netbox.enabled -}}
+    {{- $requiredSecrets = concat $requiredSecrets (list "db-netbox-password" "netbox-superuser-api-token" "netbox-api-token-peppers" "netbox-secret-key") -}}
+  {{- end -}}
+  {{- if .Values.skyforge.nautobot.enabled -}}
+    {{- $requiredSecrets = concat $requiredSecrets (list "db-nautobot-password" "nautobot-superuser-api-token" "nautobot-secret-key") -}}
+  {{- end -}}
+  {{- if .Values.skyforge.forwardCluster.enabled -}}
+    {{- $requiredSecrets = concat $requiredSecrets (list "db-forward-app-password" "db-forward-fdb-password") -}}
+  {{- end -}}
+  {{- range $name := $requiredSecrets -}}
+    {{- $existing := lookup "v1" "Secret" $.Release.Namespace $name -}}
+    {{- if not $existing -}}
+      {{- fail (printf "secrets.create=false requires precreated Secret %q in namespace %q" $name $.Release.Namespace) -}}
+    {{- end -}}
   {{- end -}}
 {{- end -}}

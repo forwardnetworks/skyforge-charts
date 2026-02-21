@@ -1,1 +1,1 @@
-{{- .Files.Get "files/kompose/skyforge-server-service.yaml" | nindent 0 }}
+{{- .Files.Get "files/manifests/skyforge-server-service.yaml" | nindent 0 }}

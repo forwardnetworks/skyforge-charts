@@ -6,6 +6,11 @@
 {{- $coderEnabled := .Values.skyforge.coder.enabled -}}
 {{- $filesBucket := .Values.skyforge.objectStorage.filesBucket | default "skyforge-files" -}}
 {{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
+{{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
+{{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}
+{{- $forwardSvcName := default "fwd-appserver" .Values.skyforge.forwardCluster.serviceName -}}
+{{- $forwardSvcNamespace := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
+{{- $forwardSvcPort := default 8080 .Values.skyforge.forwardCluster.servicePort -}}
 
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -79,94 +84,6 @@ spec:
           port: 5556
 {{- end }}
 
-{{- if .Values.skyforge.forwardCluster.enabled }}
-    - matches:
-        - path:
-            type: Exact
-            value: /fwd
-      filters:
-        - type: RequestRedirect
-          requestRedirect:
-            path:
-              type: ReplaceFullPath
-              replaceFullPath: /fwd/
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /fwd/
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Skyforge-External-Prefix
-                value: /fwd
-              - name: X-Forwarded-Prefix
-                value: /fwd
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
-      backendRefs:
-        - name: forward-sso-proxy
-          port: 8080
-    # Minimal root compatibility for Forward's own root-relative web paths.
-    # Keep root /api/* reserved for Skyforge by only routing non-API login/assets here.
-    - matches:
-        - path:
-            type: Exact
-            value: /login
-        - path:
-            type: PathPrefix
-            value: /login/
-        - path:
-            type: Exact
-            value: /logout
-        - path:
-            type: Exact
-            value: /public/csrf
-        - path:
-            type: Exact
-            value: /public/password-reset
-        - path:
-            type: Exact
-            value: /public/password-strength
-        - path:
-            type: Exact
-            value: /api/public/csrf
-        - path:
-            type: Exact
-            value: /api/public/password-reset
-        - path:
-            type: Exact
-            value: /api/public/password-strength
-        - path:
-            type: PathPrefix
-            value: /app/
-        - path:
-            type: Exact
-            value: /favicon.ico
-        - path:
-            type: PathPrefix
-            value: /img/
-        - path:
-            type: PathPrefix
-            value: /fonts/
-        - path:
-            type: PathPrefix
-            value: /release-notes/
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Skyforge-External-Prefix
-                value: /fwd
-              - name: X-Forwarded-Prefix
-                value: /fwd
-      backendRefs:
-        - name: forward-sso-proxy
-          port: 8080
-{{- end }}
     # Root landing: / -> /index.html
     - matches:
         - path:
@@ -207,6 +124,29 @@ spec:
       backendRefs:
         - name: skyforge-server
           port: 8085
+{{- if $forwardClusterEnabled }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: skyforge-forward
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: skyforge
+  hostnames:
+    - {{ $forwardHost | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ $forwardSvcName }}
+          namespace: {{ $forwardSvcNamespace }}
+          port: {{ int $forwardSvcPort }}
+{{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

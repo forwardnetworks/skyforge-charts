@@ -1,22 +1,38 @@
 {{- if .Values.skyforge.dex.enabled -}}
+{{- $dexConfigChecksum := "" -}}
+{{- if .Values.skyforge.dex.manageConfig -}}
+  {{- $dexConfigChecksum = (include (print $.Template.BasePath "/dex-config-secret.yaml") . | sha256sum) -}}
+{{- else -}}
+  {{- $dexConfigValue := "" -}}
+  {{- $dexConfigSecret := lookup "v1" "Secret" .Release.Namespace "dex-config" -}}
+  {{- if and $dexConfigSecret (index $dexConfigSecret.data "config.yaml") -}}
+    {{- $dexConfigValue = ((index $dexConfigSecret.data "config.yaml") | b64dec) -}}
+  {{- else if and .Values.secrets .Values.secrets.items -}}
+    {{- $dexConfig := (index .Values.secrets.items "dex-config") -}}
+    {{- if $dexConfig -}}
+      {{- $dexConfigValue = (index $dexConfig "config.yaml" | default "") -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $dexConfigChecksum = ($dexConfigValue | sha256sum) -}}
+{{- end -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    io.kompose.service: dex
+    app.kubernetes.io/name: dex
   name: dex
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: dex
+      app.kubernetes.io/name: dex
   template:
     metadata:
       annotations:
-        checksum/dex-config: {{ include (print $.Template.BasePath "/dex-config-secret.yaml") . | sha256sum }}
+        checksum/dex-config: {{ $dexConfigChecksum }}
         checksum/dex-config-patcher: {{ include (print $.Template.BasePath "/dex-config-patcher.yaml") . | sha256sum }}
       labels:
-        io.kompose.service: dex
+        app.kubernetes.io/name: dex
     spec:
       initContainers:
         - name: patch-config
@@ -29,7 +45,7 @@ spec:
           command:
             - sh
             - -c
-            - python -m pip install --no-cache-dir pyyaml >/dev/null && python /config/patch.py
+            - python /config/patch.py
           volumeMounts:
             - name: dex-config-template
               mountPath: /config
@@ -71,7 +87,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    io.kompose.service: dex
+    app.kubernetes.io/name: dex
   name: dex
 spec:
   ports:
@@ -79,5 +95,5 @@ spec:
       port: 5556
       targetPort: 5556
   selector:
-    io.kompose.service: dex
+    app.kubernetes.io/name: dex
 {{- end }}

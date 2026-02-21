@@ -32,12 +32,9 @@ data:
   SKYFORGE_YAADE_ADMIN_USERNAME: {{ .Values.skyforge.yaadeAdminUsername | quote }}
   SKYFORGE_OBJECT_STORAGE_ENDPOINT: {{ .Values.skyforge.objectStorage.endpoint | quote }}
   SKYFORGE_OBJECT_STORAGE_USE_SSL: {{ .Values.skyforge.objectStorage.useSsl | quote }}
+  SKYFORGE_OBJECT_STORAGE_FILES_BUCKET: {{ .Values.skyforge.objectStorage.filesBucket | quote }}
   SKYFORGE_NETLAB_SSH_USER: {{ .Values.skyforge.netlab.sshUser | quote }}
   SKYFORGE_NETLAB_STATE_ROOT: {{ .Values.skyforge.netlab.stateRoot | quote }}
-  SKYFORGE_WORKSPACES_DATA_DIR: {{ .Values.skyforge.workspacesDataDir | quote }}
-  SKYFORGE_WORKSPACE_SYNC_SECONDS: {{ .Values.skyforge.workspaceSyncSeconds | quote }}
-  SKYFORGE_PKI_DEFAULT_DAYS: {{ .Values.skyforge.pkiDefaultDays | quote }}
-  SKYFORGE_SSH_DEFAULT_DAYS: {{ .Values.skyforge.sshDefaultDays | quote }}
   SKYFORGE_UI_THEME_DEFAULT: {{ .Values.skyforge.ui.themeDefault | default "" | quote }}
   SKYFORGE_SESSION_TTL: {{ .Values.skyforge.sessionTtl | quote }}
   SKYFORGE_COOKIE_SECURE: {{ .Values.skyforge.cookieSecure | quote }}
@@ -68,10 +65,7 @@ data:
   SKYFORGE_UI_SUPPORT_URL: {{ .Values.skyforge.ui.supportUrl | quote }}
   YAADE_BASE_PATH: "/api-testing"
   YAADE_ADMIN_USERNAME: "admin"
-  MINIO_BROWSER_REDIRECT_URL: {{ printf "https://%s/minio-console/" .Values.skyforge.hostname | quote }}
-  MINIO_CONSOLE_SUBPATH: {{ .Values.skyforge.minio.consoleSubpath | quote }}
-  SKYFORGE_MINIO_LDAP_CONSOLE_GROUP: {{ .Values.skyforge.minio.ldapConsoleGroup | quote }}
-  SKYFORGE_SWAGGER_URL: {{ default (printf "https://%s/swagger/openapi.json" .Values.skyforge.hostname) .Values.skyforge.swaggerUrl | quote }}
+  SKYFORGE_OPENAPI_URL: {{ default (printf "https://%s/openapi.json" .Values.skyforge.hostname) .Values.skyforge.openApiUrl | quote }}
   SKYFORGE_SESSION_COOKIE: {{ .Values.skyforge.sessionCookie | quote }}
   SKYFORGE_OIDC_DISCOVERY_URL: {{ .Values.skyforge.oidc.discoveryUrl | quote }}
   SKYFORGE_OIDC_ISSUER_URL: {{ default "" .Values.skyforge.oidc.issuerUrl | quote }}

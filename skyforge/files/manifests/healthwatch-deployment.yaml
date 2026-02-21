@@ -1,0 +1,164 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: healthwatch
+  name: healthwatch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: healthwatch
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: healthwatch
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - args:
+        - "set -euo pipefail\napk add --no-cache curl postgresql-client redis jq netcat-openbsd\
+          \ >/dev/null\n\ninterval=\"${SKYFORGE_HEALTH_INTERVAL_SECONDS:-30}\"\nif\
+          \ ! echo \"${interval}\" | grep -Eq '^[0-9]+$' || [ \"${interval}\" -lt\
+          \ 5 ]; then\n  interval=\"30\"\nfi\n\nout_dir=\"/data\"\nout_file=\"${out_dir}/platform-health.json\"\
+          \ntmp_file=\"${out_dir}/platform-health.json.tmp\"\nmkdir -p \"${out_dir}\"\
+          \n\njson_escape() {\n  echo \"$1\" | sed 's/\\\\/\\\\\\\\/g; s/\\\"/\\\\\
+          \\\"/g'\n}\n\ncheck_url() { curl -fsS --max-time 5 -o /dev/null -w \"%{http_code}\"\
+          \ \"$1\" 2>/dev/null || echo \"000\"; }\ncheck_pg() { pg_isready -h db -U\
+          \ skyforge >/dev/null 2>&1 && echo \"200\" || echo \"000\"; }\ncheck_redis()\
+          \ { redis-cli -h redis ping 2>/dev/null | grep -q PONG && echo \"200\" ||\
+          \ echo \"000\"; }\ncheck_radius() { nc -z -u -w 2 freeradius 1812 >/dev/null\
+          \ 2>&1 && echo \"200\" || echo \"000\"; }\npost_alert() {\n  local name=\"\
+          $1\"\n  local status=\"$2\"\n  local detail=\"$3\"\n  local webhook=\"${SKYFORGE_ALERT_WEBHOOK_URL:-}\"\
+          \n  [ -n \"${webhook}\" ] || return 0\n  curl -fsS --max-time 5 -H 'Content-Type:\
+          \ application/json' \\\n    -d \"{\\\"service\\\":\\\"$(json_escape \"${name}\"\
+          )\\\",\\\"status\\\":\\\"$(json_escape \"${status}\")\\\",\\\"detail\\\"\
+          :\\\"$(json_escape \"${detail}\")\\\",\\\"timestamp\\\":\\\"${now}\\\"}\"\
+          \ \\\n    \"${webhook}\" >/dev/null 2>&1 || true\n}\n\nadd_http() {\n  local\
+          \ name=\"$1\"\n  local icon=\"$2\"\n  local url=\"$3\"\n  local hint=\"\
+          $4\"\n  local code status detail\n\n  code=\"$(check_url \"${url}\")\"\n\
+          \  status=\"down\"\n  if echo \"${code}\" | grep -Eq '^[0-9]{3}$' && [ \"\
+          ${code}\" != \"000\" ] && [ \"${code}\" -lt 500 ]; then\n    status=\"up\"\
+          \n  fi\n  detail=\"$(json_escape \"${name} (${hint:-${url}}) HTTP ${code}\
+          \ (checked ${now})\")\"\n  printf '%s{\"name\":\"%s\",\"icon\":\"%s\",\"\
+          status\":\"%s\",\"detail\":\"%s\"}' \"${sep}\" \"${name}\" \"${icon}\" \"\
+          ${status}\" \"${detail}\"\n  sep=\",\"\n}\n\nadd_code() {\n  local name=\"\
+          $1\"\n  local icon=\"$2\"\n  local code=\"$3\"\n  local detail=\"$4\"\n\
+          \  local status\n\n  status=\"down\"\n  if echo \"${code}\" | grep -Eq '^[0-9]{3}$'\
+          \ && [ \"${code}\" != \"000\" ] && [ \"${code}\" -lt 500 ]; then\n    status=\"\
+          up\"\n  fi\n  detail=\"$(json_escape \"${detail}\")\"\n  printf '%s{\"name\"\
+          :\"%s\",\"icon\":\"%s\",\"status\":\"%s\",\"detail\":\"%s\"}' \"${sep}\"\
+          \ \"${name}\" \"${icon}\" \"${status}\" \"${detail}\"\n  sep=\",\"\n}\n\n\
+          emit_http_checks() {\n  local mode=\"$1\"\n  local entries=\"${SKYFORGE_HEALTH_HTTP_CHECKS:-}\"\
+          \n  [ -n \"${entries}\" ] || return 0\n  local entry name icon url hint\n\
+          \  local old_ifs=\"$IFS\"\n  IFS=';'\n  for entry in ${entries}; do\n  \
+          \  entry=\"$(echo \"${entry}\" | xargs)\"\n    [ -n \"${entry}\" ] || continue\n\
+          \    IFS='|'\n    set -- ${entry}\n    name=\"$1\"\n    icon=\"$2\"\n  \
+          \  url=\"$3\"\n    hint=\"$4\"\n    IFS=';'\n    name=\"$(echo \"${name}\"\
+          \ | xargs)\"\n    url=\"$(echo \"${url}\" | xargs)\"\n    hint=\"$(echo\
+          \ \"${hint}\" | xargs)\"\n    icon=\"$(echo \"${icon}\" | xargs)\"\n   \
+          \ [ -n \"${name}\" ] || continue\n    [ -n \"${url}\" ] || continue\n  \
+          \  if [ \"${mode}\" = \"record\" ]; then\n      record_http \"${name}\"\
+          \ \"${url}\" \"${hint}\"\n    else\n      add_http \"${name}\" \"${icon:-\u2022\
+          }\" \"${url}\" \"${hint}\"\n    fi\n  done\n  IFS=\"${old_ifs}\"\n}\n\n\
+          emit_code_checks() {\n  local mode=\"$1\"\n  local entries=\"${SKYFORGE_HEALTH_CODE_CHECKS:-}\"\
+          \n  [ -n \"${entries}\" ] || return 0\n  local entry name icon token hint\
+          \ code proto detail\n  local old_ifs=\"$IFS\"\n  IFS=';'\n  for entry in\
+          \ ${entries}; do\n    entry=\"$(echo \"${entry}\" | xargs)\"\n    [ -n \"\
+          ${entry}\" ] || continue\n    IFS='|'\n    set -- ${entry}\n    name=\"\
+          $1\"\n    icon=\"$2\"\n    token=\"$3\"\n    hint=\"$4\"\n    IFS=';'\n\
+          \    name=\"$(echo \"${name}\" | xargs)\"\n    token=\"$(echo \"${token}\"\
+          \ | xargs)\"\n    hint=\"$(echo \"${hint}\" | xargs)\"\n    icon=\"$(echo\
+          \ \"${icon}\" | xargs)\"\n    [ -n \"${name}\" ] || continue\n    case \"\
+          ${token}\" in\n      pg) code=\"${pg_code}\" ;;\n      redis) code=\"${redis_code}\"\
+          \ ;;\n      radius) code=\"${radius_code}\" ;;\n      *) continue ;;\n \
+          \   esac\n    proto=\"HTTP\"\n    if [ \"${token}\" = \"radius\" ]; then\n\
+          \      proto=\"UDP\"\n    fi\n    if [ -n \"${hint}\" ]; then\n      detail=\"\
+          ${name} (${hint}) ${proto} ${code} (checked ${now})\"\n    else\n      detail=\"\
+          ${name} ${proto} ${code} (checked ${now})\"\n    fi\n    if [ \"${mode}\"\
+          \ = \"record\" ]; then\n      record_state \"${name}\" \"$(echo \"${code}\"\
+          \ | grep -Eq '^[0-9]{3}$' && [ \"${code}\" != \"000\" ] && [ \"${code}\"\
+          \ -lt 500 ] && echo up || echo down)\" \"${detail}\"\n    else\n      add_code\
+          \ \"${name}\" \"${icon:-\u2022}\" \"${code}\" \"${detail}\"\n    fi\n  done\n\
+          \  IFS=\"${old_ifs}\"\n}\n\nstate_file=\"${out_dir}/platform-health.state\"\
+          \ntmp_state=\"${out_dir}/platform-health.state.tmp\"\n\nwhile true; do\n\
+          \  now=\"$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")\"\n  sep=\"\"\n\n  pg_code=\"\
+          $(check_pg)\"\n  redis_code=\"$(check_redis)\"\n  radius_code=\"$(check_radius)\"\
+          \n\n  # Emit a simple state file for change detection.\n  # Format: <name>\\\
+          t<status>\\t<detail>\n  : >\"${tmp_state}\"\n  record_state() {\n    local\
+          \ name=\"$1\"\n    local status=\"$2\"\n    local detail=\"$3\"\n    printf\
+          \ '%s\\t%s\\t%s\\n' \"${name}\" \"${status}\" \"${detail}\" >>\"${tmp_state}\"\
+          \n  }\n\n  # Precompute and record the same checks as the JSON list.\n \
+          \ record_http() {\n    local name=\"$1\"\n    local url=\"$2\"\n    local\
+          \ hint=\"$3\"\n    local code status detail\n    code=\"$(check_url \"${url}\"\
+          )\"\n    status=\"down\"\n    if echo \"${code}\" | grep -Eq '^[0-9]{3}$'\
+          \ && [ \"${code}\" != \"000\" ] && [ \"${code}\" -lt 500 ]; then\n     \
+          \ status=\"up\"\n    fi\n    detail=\"${name} (${hint:-${url}}) HTTP ${code}\
+          \ (checked ${now})\"\n    record_state \"${name}\" \"${status}\" \"${detail}\"\
+          \n  }\n  record_code() {\n    local name=\"$1\"\n    local code=\"$2\"\n\
+          \    local detail=\"$3\"\n    local status\n    status=\"down\"\n    if\
+          \ echo \"${code}\" | grep -Eq '^[0-9]{3}$' && [ \"${code}\" != \"000\" ]\
+          \ && [ \"${code}\" -lt 500 ]; then\n      status=\"up\"\n    fi\n    record_state\
+          \ \"${name}\" \"${status}\" \"${detail}\"\n  }\n\n  emit_http_checks \"\
+          record\"\n  emit_code_checks \"record\"\n\n  if [ -f \"${state_file}\" ]\
+          \ && [ -n \"${SKYFORGE_ALERT_WEBHOOK_URL:-}\" ]; then\n    # Alert on any\
+          \ status change compared to the previous iteration.\n    while IFS=$'\\\
+          t' read -r name status detail; do\n      prev_status=\"$(awk -F '\\t' -v\
+          \ n=\"${name}\" '$1==n{print $2}' \"${state_file}\" 2>/dev/null | head -n\
+          \ 1)\"\n      if [ -n \"${prev_status}\" ] && [ \"${prev_status}\" != \"\
+          ${status}\" ]; then\n        post_alert \"${name}\" \"${status}\" \"${detail}\"\
+          \n      fi\n    done <\"${tmp_state}\"\n  fi\n\n  mv \"${tmp_state}\" \"\
+          ${state_file}\"\n\n  {\n    printf '['\n    emit_http_checks \"add\"\n \
+          \   emit_code_checks \"add\"\n    printf ']\\n'\n  } > \"${tmp_file}\"\n\
+          \n  mv \"${tmp_file}\" \"${out_file}\"\n  sleep \"${interval}\"\ndone\n"
+        command:
+        - /bin/sh
+        - -lc
+        env:
+        - name: SKYFORGE_ALERT_WEBHOOK_URL
+        - name: SKYFORGE_HEALTH_INTERVAL_SECONDS
+          value: '30'
+        - name: SKYFORGE_HEALTH_HTTP_CHECKS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_HEALTH_HTTP_CHECKS
+        - name: SKYFORGE_HEALTH_CODE_CHECKS
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_HEALTH_CODE_CHECKS
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
+        image: alpine:3.20
+        name: healthwatch
+        volumeMounts:
+        - mountPath: /data
+          name: platform-data
+        - name: skyforge-ca-bundle
+          mountPath: /etc/skyforge/ca
+      restartPolicy: Always
+      volumes:
+      - name: platform-data
+        persistentVolumeClaim:
+          claimName: platform-data
+      - name: skyforge-ca-cert
+        secret:
+          secretName: skyforge-ca-cert
+      - name: skyforge-ca-bundle
+        emptyDir: {}
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: alpine:3.20
+        command:
+        - sh
+        - -c
+        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work

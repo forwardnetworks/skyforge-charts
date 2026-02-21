@@ -1,0 +1,22 @@
+{{- if .Values.skyforge.forwardCluster.enabled }}
+{{- $forwardSvcName := default "fwd-appserver" .Values.skyforge.forwardCluster.serviceName -}}
+{{- $forwardSvcNamespace := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
+{{- if ne $forwardSvcNamespace .Release.Namespace }}
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: skyforge-forward-httproute
+  namespace: {{ $forwardSvcNamespace }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: {{ .Release.Namespace }}
+  to:
+    - group: ""
+      kind: Service
+      name: {{ $forwardSvcName }}
+{{- end }}
+{{- end }}

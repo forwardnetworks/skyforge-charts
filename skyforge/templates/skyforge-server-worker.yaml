@@ -1,4 +1,3 @@
-{{- if gt (int .Values.skyforge.workerReplicaCount) 0 }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,7 +6,7 @@ metadata:
     {{- include "skyforge.labels" . | nindent 4 }}
     app.kubernetes.io/component: worker
 spec:
-  replicas: {{ .Values.skyforge.workerReplicaCount }}
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: skyforge
@@ -70,14 +69,6 @@ spec:
                   name: skyforge-encore-cfg-worker
                   key: ENCORE_CFG_WORKER
                   optional: true
-            # Back-compat: some Encore runtime builds expect a generic ENCORE_CFG env var.
-            # Keep it in sync with the service-specific config.
-            - name: ENCORE_CFG
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-encore-cfg-worker
-                  key: ENCORE_CFG_WORKER
-                  optional: true
             - name: SKYFORGE_SESSION_SECRET
               valueFrom:
                 secretKeyRef:
@@ -99,12 +90,6 @@ spec:
                 secretKeyRef:
                   name: skyforge-oidc-client-secret
                   key: skyforge-oidc-client-secret
-                  optional: true
-            - name: SKYFORGE_GEMINI_OAUTH_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.skyforge.gemini.clientSecretSecretName | quote }}
-                  key: {{ .Values.skyforge.gemini.clientSecretSecretKey | quote }}
                   optional: true
             - name: SKYFORGE_LDAP_URL
               valueFrom:
@@ -208,29 +193,17 @@ spec:
                   name: skyforge-internal-token
                   key: skyforge-internal-token
                   optional: true
+            - name: SKYFORGE_E2E_ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.e2eAdmin.tokenSecretName }}
+                  key: {{ .Values.skyforge.e2eAdmin.tokenSecretKey }}
+                  optional: true
             - name: SKYFORGE_CONTAINERLAB_JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: skyforge-containerlab-jwt-secret
                   key: skyforge-containerlab-jwt-secret
-                  optional: true
-            - name: SKYFORGE_PKI_CA_CERT
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-pki-ca-cert
-                  key: skyforge-pki-ca-cert
-                  optional: true
-            - name: SKYFORGE_PKI_CA_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-pki-ca-key
-                  key: skyforge-pki-ca-key
-                  optional: true
-            - name: SKYFORGE_SSH_CA_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-ssh-ca-key
-                  key: skyforge-ssh-ca-key
                   optional: true
             - name: SKYFORGE_NETLAB_SERVERS_FILE
               value: /run/secrets/skyforge-netlab-servers
@@ -296,4 +269,3 @@ spec:
               readOnly: true
             - name: skyforge-ca-bundle
               mountPath: /work
-{{- end }}

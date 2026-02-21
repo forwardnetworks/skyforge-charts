@@ -3,20 +3,35 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    io.kompose.service: coder
+    app.kubernetes.io/name: coder
   name: coder
 spec:
-  # Helm's `default` treats 0 as "empty", so allow explicit 0 to disable Coder (e.g. QA).
-  replicas: {{ if hasKey .Values.skyforge.coder "replicaCount" }}{{ .Values.skyforge.coder.replicaCount }}{{ else }}1{{ end }}
+  replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: coder
+      app.kubernetes.io/name: coder
   template:
     metadata:
       labels:
-        io.kompose.service: coder
+        app.kubernetes.io/name: coder
     spec:
       serviceAccountName: coder
+      initContainers:
+        - name: skyforge-ca-bundle
+          image: alpine:3.20
+          command:
+            - sh
+            - -c
+            - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert /etc/proxy/tls.crt > /work/ca-certificates.crt
+          volumeMounts:
+            - name: skyforge-ca-cert
+              mountPath: /etc/skyforge
+              readOnly: true
+            - name: proxy-tls
+              mountPath: /etc/proxy
+              readOnly: true
+            - name: skyforge-ca-bundle
+              mountPath: /work
       containers:
         - name: coder
           image: {{ .Values.images.coder | quote }}
@@ -33,7 +48,7 @@ spec:
                   name: coder-pg-connection-url
                   key: coder-pg-connection-url
             - name: CODER_OIDC_ISSUER_URL
-              value: "https://{{ .Values.skyforge.hostname }}/dex-coder"
+              value: "http://dex:5556/dex"
             - name: CODER_OIDC_CLIENT_ID
               value: "coder"
             - name: CODER_OIDC_CLIENT_SECRET
@@ -41,38 +56,39 @@ spec:
                 secretKeyRef:
                   name: dex-client-coder-secret
                   key: dex-client-coder-secret
-            - name: CODER_OIDC_CA_CERT
-              value: "/etc/ssl/certs/skyforge-ca.crt"
+            - name: CODER_DANGEROUS_OIDC_SKIP_ISSUER_CHECKS
+              value: "true"
             - name: CODER_OIDC_AUTO_LOGIN
               value: {{ .Values.skyforge.coder.oidcAutoLogin | quote }}
             - name: CODER_DISABLE_PASSWORD_AUTH
               value: {{ .Values.skyforge.coder.disablePasswordAuth | quote }}
             - name: CODER_OAUTH2_GITHUB_DEFAULT_PROVIDER_ENABLE
               value: "false"
+            - name: SSL_CERT_FILE
+              value: "/etc/skyforge/ca/ca-certificates.crt"
           ports:
             - containerPort: 7080
           livenessProbe:
             httpGet:
               path: /healthz
               port: 7080
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 10
-            timeoutSeconds: 3
+            timeoutSeconds: 5
             failureThreshold: 6
           readinessProbe:
             httpGet:
               path: /healthz
               port: 7080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 15
             periodSeconds: 10
-            timeoutSeconds: 3
+            timeoutSeconds: 5
             failureThreshold: 3
           volumeMounts:
             - mountPath: /var/lib/coder
               name: coder-data
-            - mountPath: /etc/ssl/certs/skyforge-ca.crt
-              name: skyforge-ca-cert
-              subPath: skyforge-ca-cert
+            - mountPath: /etc/skyforge/ca
+              name: skyforge-ca-bundle
               readOnly: true
       volumes:
         - name: coder-data
@@ -81,12 +97,17 @@ spec:
         - name: skyforge-ca-cert
           secret:
             secretName: skyforge-ca-cert
+        - name: proxy-tls
+          secret:
+            secretName: proxy-tls
+        - name: skyforge-ca-bundle
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    io.kompose.service: coder
+    app.kubernetes.io/name: coder
   name: coder
 spec:
   ports:
@@ -94,13 +115,13 @@ spec:
       port: 7080
       targetPort: 7080
   selector:
-    io.kompose.service: coder
+    app.kubernetes.io/name: coder
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   labels:
-    io.kompose.service: coder-data
+    app.kubernetes.io/name: coder-data
   name: coder-data
 spec:
   accessModes:

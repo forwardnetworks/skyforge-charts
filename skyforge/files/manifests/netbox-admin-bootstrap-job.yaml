@@ -1,0 +1,125 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "12"
+  labels:
+    app.kubernetes.io/name: netbox-admin-bootstrap
+  name: netbox-admin-bootstrap
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netbox-admin-bootstrap
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      containers:
+        - args:
+            - |
+              set -eu
+              export DB_PASSWORD="$(cat /run/secrets/db-netbox-password)"
+              export SECRET_KEY="$(cat /run/secrets/netbox-secret-key)"
+              export SKYFORGE_ADMIN_PASSWORD_FILE="/run/secrets/skyforge-admin-shared"
+
+              for i in $(seq 1 60); do
+                if python /opt/netbox/netbox/manage.py shell -c "from django.contrib.auth import get_user_model; get_user_model().objects.exists(); print('ready')"; then
+                  break
+                fi
+                sleep 2
+              done
+
+              python /opt/netbox/netbox/manage.py shell -c "import os; from django.contrib.auth import get_user_model; password=open(os.environ['SKYFORGE_ADMIN_PASSWORD_FILE'], encoding='utf-8').read().strip(); username=os.environ.get('SKYFORGE_ADMIN_USERNAME','skyforge'); email=os.environ.get('SKYFORGE_ADMIN_EMAIL',''); User=get_user_model(); user,_=User.objects.get_or_create(username=username); user.email=email; user.is_active=True; user.is_staff=True; user.is_superuser=True; user.set_password(password); user.save(); print('netbox admin synced:', user.username)"
+
+              python /opt/netbox/netbox/manage.py shell -c "$(printf '%s\n' \
+                'import os' \
+                'from django.contrib.auth import get_user_model' \
+                'from users.models import Token' \
+                'token = os.environ.get("SKYFORGE_NETBOX_SUPERUSER_TOKEN", "").strip()' \
+                'username = os.environ.get("SKYFORGE_ADMIN_USERNAME", "skyforge")' \
+                'if token:' \
+                '    user = get_user_model().objects.get(username=username)' \
+                '    Token.objects.filter(user=user).exclude(plaintext=token).delete()' \
+                '    Token.objects.get_or_create(' \
+                '        user=user,' \
+                '        plaintext=token,' \
+                '        defaults={' \
+                '            "version": 1,' \
+                '            "write_enabled": True,' \
+                '            "enabled": True,' \
+                '            "description": "Skyforge API token",' \
+                '        },' \
+                '    )' \
+                '    print("netbox api token synced")' \
+                'else:' \
+                '    print("SKYFORGE_NETBOX_SUPERUSER_TOKEN not set; skipping token sync")' \
+              )"
+
+          command:
+            - /bin/sh
+            - -c
+          env:
+            - name: DB_HOST
+              value: db
+            - name: DB_NAME
+              value: netbox
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: netbox
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_DATABASE
+              value: {{ .Values.skyforge.netbox.redisDatabase | quote }}
+            - name: SKYFORGE_ADMIN_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_ADMIN_USERNAME
+            - name: SKYFORGE_ADMIN_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_ADMIN_EMAIL
+            - name: SKYFORGE_NETBOX_MGMT_SUBNET
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_NETBOX_MGMT_SUBNET
+            - name: SKYFORGE_NETBOX_SUPERUSER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: netbox-superuser-api-token
+                  key: netbox-superuser-api-token
+          image: ghcr.io/forwardnetworks/skyforge-netbox:20260109-1220
+          imagePullPolicy: IfNotPresent
+          name: netbox-admin-bootstrap
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+      restartPolicy: OnFailure
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: db-netbox-password
+                      path: db-netbox-password
+                  name: db-netbox-password
+              - secret:
+                  items:
+                    - key: netbox-secret-key
+                      path: netbox-secret-key
+                  name: netbox-secret-key
+              - secret:
+                  items:
+                    - key: password
+                      path: skyforge-admin-shared
+                  name: skyforge-admin-shared
