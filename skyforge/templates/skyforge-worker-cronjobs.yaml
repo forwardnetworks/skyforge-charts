@@ -158,3 +158,37 @@ spec:
               command: ["sh", "-c"]
               args:
                 - {{ printf "%s http://skyforge-server-worker:8085/internal/bridge/cloud/checks" $curlCmd | quote }}
+{{- if .Values.skyforge.forwardAnalyticsAutoRefresh.enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: skyforge-forward-analytics-refresh
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  schedule: {{ default "*/30 * * * *" .Values.skyforge.forwardAnalyticsAutoRefresh.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: curl
+              image: {{ .Values.images.curl | quote }}
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: SKYFORGE_INTERNAL_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-internal-token
+                      key: skyforge-internal-token
+              command: ["sh", "-c"]
+              args:
+                - {{ printf "%s http://skyforge-server:8085/internal/bridge/forward/analytics/refresh" $curlCmd | quote }}
+{{- end }}

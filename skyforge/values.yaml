@@ -177,6 +177,10 @@ skyforge:
     enabled: true
     snmpPlaceholderEnabled: true
     snmpCommunity: "public"
+  forwardAnalyticsAutoRefresh:
+    enabled: true
+    schedule: "*/30 * * * *"
+    freshnessSlaHours: 24
   forwardCluster:
     # Global Forward Cluster UI endpoint.
     enabled: false

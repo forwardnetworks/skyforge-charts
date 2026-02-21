@@ -65,8 +65,13 @@ Note: the chart always forces `"TaskWorkerEnabled": true` in the worker’s `ENC
 
 ## Cron
 
-Skyforge uses Encore cron jobs for periodic maintenance (queued-task reconcile, etc), so the Helm
-chart does not install Kubernetes CronJobs for these tasks.
+Skyforge installs Kubernetes CronJobs that call token-guarded internal bridge endpoints for:
+
+- worker heartbeat
+- queued/running task reconciliation
+- user sync
+- cloud credential checks
+- Forward analytics auto-refresh (`skyforge.forwardAnalyticsAutoRefresh.*`)
 
 ## Admin bootstrap and password sync
 
