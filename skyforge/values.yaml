@@ -151,13 +151,10 @@ skyforge:
     sshUser: "ubuntu"
     stateRoot: "/var/lib/skyforge/netlab"
   netlabC9s:
-    # Netlab (cluster-native) uses an in-cluster generator Job to run `netlab create`
-    # and emit clabernetes-ready artifacts (ConfigMaps + manifest).
-    # NOTE: Override this with a pinned tag in your deploy values for reproducibility.
-    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:latest"
-    generatorPullPolicy: "IfNotPresent"
-    applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:latest"
-    applierPullPolicy: "IfNotPresent"
+    # Single netlab runtime image used for both create (generator) and apply phases.
+    # NOTE: Override with a pinned tag in deploy values for reproducibility.
+    image: "ghcr.io/forwardnetworks/skyforge-netlab-generator:latest"
+    pullPolicy: "IfNotPresent"
   dns:
     enabled: false
     adminUsername: "admin"
@@ -360,6 +357,19 @@ skyforge:
     # Skyforge uses clabernetes' built-in VXLAN connectivity manager for cross-node L2
     # adjacency (LLDP, CDP, etc) without requiring additional CNIs.
     connectivity: "vxlan"
+    # Optional node-level sysctl tuning for NOS images that require higher host defaults.
+    # This is managed by a privileged DaemonSet.
+    nodeSysctl:
+      enabled: false
+      fsInotifyMaxUserInstances: 64000
+      fsInotifyMaxUserWatches: 64000
+      netCoreNetdevMaxBacklog: 300000
+      netCoreOptmemMax: 67108864
+      netCoreRmemDefault: 67108864
+      netCoreRmemMax: 67108864
+      netCoreWmemDefault: 67108864
+      netCoreWmemMax: 67108864
+      reconcileIntervalSeconds: 300
 
   # Optional: Cloudflare Tunnel (cloudflared) to expose Skyforge externally without opening inbound ports.
   # Requires you to create the tunnel in Cloudflare and store either a tunnel token or credentials.json in a Secret.

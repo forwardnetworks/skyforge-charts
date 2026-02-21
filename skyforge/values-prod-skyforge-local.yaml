@@ -77,17 +77,28 @@ skyforge:
     apiUrl: http://gitea:3000/api/v1
     url: https://skyforge.local.forwardnetworks.com/git
 
-  # Pin netlab-c9s generator image so `netlab initial` has the artifacts it needs.
+  # Pin the single netlab runtime image used by both create/apply phases.
   netlabC9s:
-    generatorImage: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260206-5b326c1"
-    applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:20260206-b6a1937"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260221-netlab-unified-iol-hardcut"
+    pullPolicy: "IfNotPresent"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
   # This must be enabled for E2E deploy tests and user deployments to reconcile.
   clabernetes:
     enabled: true
-    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260204-ceos-fastcli-3113843"
-    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260205-native-vxlan-localip-txoff-readyonly"
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260221-iosxr-kindfix"
+    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260221-iosxr-kindfix"
+    nodeSysctl:
+      enabled: true
+      fsInotifyMaxUserInstances: 64000
+      fsInotifyMaxUserWatches: 64000
+      netCoreNetdevMaxBacklog: 300000
+      netCoreOptmemMax: 67108864
+      netCoreRmemDefault: 67108864
+      netCoreRmemMax: 67108864
+      netCoreWmemDefault: 67108864
+      netCoreWmemMax: 67108864
+      reconcileIntervalSeconds: 300
 
   # Current LDAP endpoint in this environment requires skipping TLS verification.
   # Set to false once LDAP cert trust is fixed.
@@ -96,9 +107,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260220-180042"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260221-e2e-iosxr-cumulus"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260220-180042-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260221-e2e-iosxr-cumulus-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

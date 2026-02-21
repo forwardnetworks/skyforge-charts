@@ -6,8 +6,8 @@ early when required configuration is missing.
 */ -}}
 
 {{- if .Values.skyforge.encoreCfg.create -}}
-  {{- if not (trim (default "" .Values.skyforge.netlabC9s.generatorImage)) -}}
-    {{- fail "skyforge.netlabC9s.generatorImage must be set (required for netlab-c9s generator mode)" -}}
+  {{- if not (trim (default "" .Values.skyforge.netlabC9s.image)) -}}
+    {{- fail "skyforge.netlabC9s.image must be set (required for netlab-c9s mode)" -}}
   {{- end -}}
 {{- end -}}
 
