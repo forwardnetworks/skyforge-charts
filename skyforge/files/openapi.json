@@ -1013,14 +1013,14 @@
           "userId": {
             "type": "string"
           },
-          "workspaceName": {
+          "userScopeName": {
             "type": "string"
           }
         },
         "required": [
           "id",
           "userId",
-          "workspaceName",
+          "userScopeName",
           "resourceId",
           "provider",
           "periodStart",
@@ -1125,14 +1125,14 @@
           "userId": {
             "type": "string"
           },
-          "workspaceName": {
+          "userScopeName": {
             "type": "string"
           }
         },
         "required": [
           "id",
           "userId",
-          "workspaceName",
+          "userScopeName",
           "provider",
           "resourceId",
           "resourceType",
@@ -1285,14 +1285,14 @@
           "value": {
             "type": "number"
           },
-          "workspaceName": {
+          "userScopeName": {
             "type": "string"
           }
         },
         "required": [
           "id",
           "userId",
-          "workspaceName",
+          "userScopeName",
           "provider",
           "scopeType",
           "scopeId",
@@ -1797,7 +1797,7 @@
         ],
         "type": "object"
       },
-      "skyforge.SkyforgeWorkspace": {
+      "skyforge.SkyforgeUserScope": {
         "description": "NOTE: This type must live in the service package (not a type alias to an internal package) to satisfy Encore's API schema rules.\n",
         "properties": {
           "allowCustomContainerlabServers": {
@@ -1981,7 +1981,7 @@
           "giteaOwner",
           "giteaRepo"
         ],
-        "title": "SkyforgeWorkspace is the user-facing user-scope object stored in Postgres and\nreturned by the API.\n",
+        "title": "SkyforgeUserScope is the user-facing user-scope object stored in Postgres and\nreturned by the API.\n",
         "type": "object"
       },
       "skyforge.SnmpTrapEvent": {
@@ -2560,7 +2560,7 @@
         ],
         "type": "object"
       },
-      "skyforge.WorkspaceDeployment": {
+      "skyforge.UserScopeDeployment": {
         "properties": {
           "activeTaskId": {
             "format": "int64",
@@ -2594,7 +2594,7 @@
             "format": "int64",
             "type": "integer"
           },
-          "lastTaskWorkspaceId": {
+          "lastTaskUserScopeId": {
             "format": "int64",
             "type": "integer"
           },
@@ -2624,7 +2624,7 @@
           "createdBy",
           "createdAt",
           "updatedAt",
-          "lastTaskWorkspaceId",
+          "lastTaskUserScopeId",
           "lastTaskId",
           "lastStatus",
           "lastStartedAt",
@@ -2635,7 +2635,7 @@
         ],
         "type": "object"
       },
-      "skyforge.WorkspaceForwardCollector": {
+      "skyforge.UserScopeForwardCollector": {
         "properties": {
           "id": {
             "type": "string"
@@ -2654,7 +2654,7 @@
         ],
         "type": "object"
       },
-      "skyforge.WorkspacePodContainer": {
+      "skyforge.UserScopePodContainer": {
         "properties": {
           "image": {
             "type": "string"
@@ -2692,7 +2692,7 @@
         ],
         "type": "object"
       },
-      "skyforge.WorkspaceVariableGroup": {
+      "skyforge.UserScopeVariableGroup": {
         "properties": {
           "id": {
             "format": "int64",
@@ -2859,7 +2859,7 @@
         ],
         "type": "object"
       },
-      "skyforge.workspaceSyncReport": {
+      "skyforge.userScopeSyncReport": {
         "properties": {
           "errors": {
             "items": {
@@ -3714,7 +3714,7 @@
                       "format": "int64",
                       "type": "integer"
                     },
-                    "workspacesTracked": {
+                    "userScopesTracked": {
                       "format": "int64",
                       "type": "integer"
                     }
@@ -3722,7 +3722,7 @@
                   "required": [
                     "resourceCount",
                     "activeResources",
-                    "workspacesTracked",
+                    "userScopesTracked",
                     "costLast30Days",
                     "costCurrency",
                     "lastCostPeriodEnd",
@@ -4311,7 +4311,7 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "deletedWorkspaces": {
+                    "deletedUserScopes": {
                       "format": "int64",
                       "type": "integer"
                     },
@@ -4327,7 +4327,7 @@
                   },
                   "required": [
                     "status",
-                    "deletedWorkspaces",
+                    "deletedUserScopes",
                     "warnings"
                   ],
                   "type": "object"
@@ -4358,7 +4358,7 @@
                     },
                     "reports": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.workspaceSyncReport"
+                        "$ref": "#/components/schemas/skyforge.userScopeSyncReport"
                       },
                       "type": "array"
                     },
@@ -5014,7 +5014,7 @@
                     },
                     "deployments": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                        "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                       },
                       "type": "array"
                     },
@@ -5032,7 +5032,7 @@
                     },
                     "userScopes": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.SkyforgeWorkspace"
+                        "$ref": "#/components/schemas/skyforge.SkyforgeUserScope"
                       },
                       "type": "array"
                     }
@@ -9168,7 +9168,7 @@
                     },
                     "userScopes": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.SkyforgeWorkspace"
+                        "$ref": "#/components/schemas/skyforge.SkyforgeUserScope"
                       },
                       "type": "array"
                     }
@@ -10007,7 +10007,7 @@
                     "userId": {
                       "type": "string"
                     },
-                    "workspaceSlug": {
+                    "userScopeSlug": {
                       "type": "string"
                     }
                   },
@@ -10016,7 +10016,7 @@
                     "bucket",
                     "key",
                     "userId",
-                    "workspaceSlug",
+                    "userScopeSlug",
                     "uploadedBy",
                     "uploadedAtUtc"
                   ],
@@ -10114,7 +10114,7 @@
     },
     "/api/users/{id}/cloud/aws-static": {
       "delete": {
-        "operationId": "DELETE:skyforge.DeleteWorkspaceAWSStatic",
+        "operationId": "DELETE:skyforge.DeleteUserScopeAWSStatic",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -10151,10 +10151,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "DeleteWorkspaceAWSStatic clears AWS static credentials.\n"
+        "summary": "DeleteUserScopeAWSStatic clears AWS static credentials.\n"
       },
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceAWSStatic",
+        "operationId": "GET:skyforge.GetUserScopeAWSStatic",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -10199,10 +10199,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceAWSStatic returns AWS static credential status.\n"
+        "summary": "GetUserScopeAWSStatic returns AWS static credential status.\n"
       },
       "put": {
-        "operationId": "PUT:skyforge.PutWorkspaceAWSStatic",
+        "operationId": "PUT:skyforge.PutUserScopeAWSStatic",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -10264,12 +10264,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PutWorkspaceAWSStatic stores AWS static credentials.\n"
+        "summary": "PutUserScopeAWSStatic stores AWS static credentials.\n"
       }
     },
     "/api/users/{id}/cloud/azure": {
       "delete": {
-        "operationId": "DELETE:skyforge.DeleteWorkspaceAzureCredentials",
+        "operationId": "DELETE:skyforge.DeleteUserScopeAzureCredentials",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -10306,10 +10306,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "DeleteWorkspaceAzureCredentials clears Azure credentials.\n"
+        "summary": "DeleteUserScopeAzureCredentials clears Azure credentials.\n"
       },
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceAzureCredentials",
+        "operationId": "GET:skyforge.GetUserScopeAzureCredentials",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -10362,10 +10362,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceAzureCredentials returns Azure service principal status.\n"
+        "summary": "GetUserScopeAzureCredentials returns Azure service principal status.\n"
       },
       "put": {
-        "operationId": "PUT:skyforge.PutWorkspaceAzureCredentials",
+        "operationId": "PUT:skyforge.PutUserScopeAzureCredentials",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -10431,12 +10431,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PutWorkspaceAzureCredentials stores Azure service principal credentials.\n"
+        "summary": "PutUserScopeAzureCredentials stores Azure service principal credentials.\n"
       }
     },
     "/api/users/{id}/cloud/gcp": {
       "delete": {
-        "operationId": "DELETE:skyforge.DeleteWorkspaceGCPCredentials",
+        "operationId": "DELETE:skyforge.DeleteUserScopeGCPCredentials",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -10473,10 +10473,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "DeleteWorkspaceGCPCredentials clears GCP credentials.\n"
+        "summary": "DeleteUserScopeGCPCredentials clears GCP credentials.\n"
       },
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceGCPCredentials",
+        "operationId": "GET:skyforge.GetUserScopeGCPCredentials",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -10502,7 +10502,7 @@
                     "configured": {
                       "type": "boolean"
                     },
-                    "selectedWorkspaceId": {
+                    "selectedUserScopeId": {
                       "type": "string"
                     },
                     "updatedAt": {
@@ -10516,7 +10516,7 @@
                     "configured",
                     "clientEmail",
                     "userId",
-                    "selectedWorkspaceId",
+                    "selectedUserScopeId",
                     "updatedAt"
                   ],
                   "type": "object"
@@ -10529,10 +10529,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceGCPCredentials returns GCP service identity status.\n"
+        "summary": "GetUserScopeGCPCredentials returns GCP service identity status.\n"
       },
       "put": {
-        "operationId": "PUT:skyforge.PutWorkspaceGCPCredentials",
+        "operationId": "PUT:skyforge.PutUserScopeGCPCredentials",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -10590,7 +10590,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PutWorkspaceGCPCredentials stores GCP service identity JSON.\n"
+        "summary": "PutUserScopeGCPCredentials stores GCP service identity JSON.\n"
       }
     },
     "/api/users/{id}/containerlab/template": {
@@ -10918,7 +10918,7 @@
                   "properties": {
                     "deployments": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                        "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                       },
                       "type": "array"
                     },
@@ -11020,7 +11020,7 @@
                       "format": "int64",
                       "type": "integer"
                     },
-                    "lastTaskWorkspaceId": {
+                    "lastTaskUserScopeId": {
                       "format": "int64",
                       "type": "integer"
                     },
@@ -11050,7 +11050,7 @@
                     "createdBy",
                     "createdAt",
                     "updatedAt",
-                    "lastTaskWorkspaceId",
+                    "lastTaskUserScopeId",
                     "lastTaskId",
                     "lastStatus",
                     "lastStartedAt",
@@ -11137,7 +11137,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "note": {
                       "type": "string"
@@ -11233,7 +11233,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "note": {
                       "type": "string"
@@ -11307,7 +11307,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "note": {
                       "type": "string"
@@ -11409,7 +11409,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "note": {
                       "type": "string"
@@ -11495,7 +11495,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "run": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -11606,7 +11606,7 @@
                       "format": "int64",
                       "type": "integer"
                     },
-                    "lastTaskWorkspaceId": {
+                    "lastTaskUserScopeId": {
                       "format": "int64",
                       "type": "integer"
                     },
@@ -11636,7 +11636,7 @@
                     "createdBy",
                     "createdAt",
                     "updatedAt",
-                    "lastTaskWorkspaceId",
+                    "lastTaskUserScopeId",
                     "lastTaskId",
                     "lastStatus",
                     "lastStartedAt",
@@ -11710,7 +11710,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "run": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -11740,7 +11740,7 @@
     "/api/users/{id}/deployments/{deploymentID}/capacity/growth": {
       "get": {
         "description": "Intended for “top growers” views (week-over-week, day-over-day) without pulling Forward time series.\n",
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentCapacityGrowth",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentCapacityGrowth",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -11878,12 +11878,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentCapacityGrowth compares the latest rollup bucket to an\nearlier one and returns deltas.\n"
+        "summary": "GetUserScopeDeploymentCapacityGrowth compares the latest rollup bucket to an\nearlier one and returns deltas.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/inventory": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentCapacityInventory",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentCapacityInventory",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -11989,12 +11989,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentCapacityInventory returns the latest cached NQE results\nfor inventory/routing scale.\n"
+        "summary": "GetUserScopeDeploymentCapacityInventory returns the latest cached NQE results\nfor inventory/routing scale.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/perf/device-metrics": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentCapacityDeviceMetrics",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentCapacityDeviceMetrics",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12095,12 +12095,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentCapacityDeviceMetrics proxies Forward's device-metrics\nendpoint.\n"
+        "summary": "GetUserScopeDeploymentCapacityDeviceMetrics proxies Forward's device-metrics\nendpoint.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/perf/device-metrics-history": {
       "post": {
-        "operationId": "POST:skyforge.PostWorkspaceDeploymentCapacityDeviceMetricsHistory",
+        "operationId": "POST:skyforge.PostUserScopeDeploymentCapacityDeviceMetricsHistory",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12190,12 +12190,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PostWorkspaceDeploymentCapacityDeviceMetricsHistory proxies Forward's\ndevice-metrics-history endpoint.\n"
+        "summary": "PostUserScopeDeploymentCapacityDeviceMetricsHistory proxies Forward's\ndevice-metrics-history endpoint.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/perf/interface-metrics": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentCapacityInterfaceMetrics",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentCapacityInterfaceMetrics",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12316,12 +12316,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentCapacityInterfaceMetrics proxies Forward's\ninterface-metrics endpoint.\n"
+        "summary": "GetUserScopeDeploymentCapacityInterfaceMetrics proxies Forward's\ninterface-metrics endpoint.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/perf/interface-metrics-history": {
       "post": {
-        "operationId": "POST:skyforge.PostWorkspaceDeploymentCapacityInterfaceMetricsHistory",
+        "operationId": "POST:skyforge.PostUserScopeDeploymentCapacityInterfaceMetricsHistory",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12411,12 +12411,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PostWorkspaceDeploymentCapacityInterfaceMetricsHistory proxies Forward's\ninterface-metrics-history endpoint.\n"
+        "summary": "PostUserScopeDeploymentCapacityInterfaceMetricsHistory proxies Forward's\ninterface-metrics-history endpoint.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/perf/unhealthy-devices": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentCapacityUnhealthyDevices",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentCapacityUnhealthyDevices",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12484,12 +12484,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentCapacityUnhealthyDevices proxies Forward's\nunhealthy-devices endpoint.\n"
+        "summary": "GetUserScopeDeploymentCapacityUnhealthyDevices proxies Forward's\nunhealthy-devices endpoint.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/perf/unhealthy-interfaces": {
       "post": {
-        "operationId": "POST:skyforge.GetWorkspaceDeploymentCapacityUnhealthyInterfaces",
+        "operationId": "POST:skyforge.GetUserScopeDeploymentCapacityUnhealthyInterfaces",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12577,12 +12577,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentCapacityUnhealthyInterfaces proxies Forward's\nunhealthy-interfaces endpoint.\n"
+        "summary": "GetUserScopeDeploymentCapacityUnhealthyInterfaces proxies Forward's\nunhealthy-interfaces endpoint.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/rollups/refresh": {
       "post": {
-        "operationId": "POST:skyforge.RefreshWorkspaceDeploymentCapacityRollups",
+        "operationId": "POST:skyforge.RefreshUserScopeDeploymentCapacityRollups",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12657,12 +12657,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RefreshWorkspaceDeploymentCapacityRollups enqueues a background rollup task for\nthe deployment.\n"
+        "summary": "RefreshUserScopeDeploymentCapacityRollups enqueues a background rollup task for\nthe deployment.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/summary": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentCapacitySummary",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentCapacitySummary",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12733,7 +12733,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentCapacitySummary returns the latest stored capacity rollups\nfor a deployment.\n"
+        "summary": "GetUserScopeDeploymentCapacitySummary returns the latest stored capacity rollups\nfor a deployment.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/destroy": {
@@ -12770,7 +12770,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "run": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -12799,7 +12799,7 @@
     },
     "/api/users/{id}/deployments/{deploymentID}/forward": {
       "put": {
-        "operationId": "PUT:skyforge.UpdateWorkspaceDeploymentForwardConfig",
+        "operationId": "PUT:skyforge.UpdateUserScopeDeploymentForwardConfig",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12896,12 +12896,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "UpdateWorkspaceDeploymentForwardConfig updates the per-deployment Forward toggle\nand collector selection.\n"
+        "summary": "UpdateUserScopeDeploymentForwardConfig updates the per-deployment Forward toggle\nand collector selection.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/forward/sync": {
       "post": {
-        "operationId": "POST:skyforge.SyncWorkspaceDeploymentForward",
+        "operationId": "POST:skyforge.SyncUserScopeDeploymentForward",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -12957,7 +12957,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SyncWorkspaceDeploymentForward enqueues a Forward sync task for the deployment's\nlatest topology.\n"
+        "summary": "SyncUserScopeDeploymentForward enqueues a Forward sync task for the deployment's\nlatest topology.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/info": {
@@ -13001,7 +13001,7 @@
                       "$ref": "#/components/schemas/skyforge.ContainerlabInfo"
                     },
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "forwardNetworkId": {
                       "type": "string"
@@ -13060,7 +13060,7 @@
     },
     "/api/users/{id}/deployments/{deploymentID}/inventory": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentInventory",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentInventory",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -13143,12 +13143,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentInventory returns a simple inventory of nodes and\nmanagement IPs.\n"
+        "summary": "GetUserScopeDeploymentInventory returns a simple inventory of nodes and\nmanagement IPs.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/links/admin": {
       "post": {
-        "operationId": "POST:skyforge.UpdateWorkspaceDeploymentLinkAdmin",
+        "operationId": "POST:skyforge.UpdateUserScopeDeploymentLinkAdmin",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -13233,12 +13233,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "UpdateWorkspaceDeploymentLinkAdmin performs administrative link operations\n(up/down) on a topology edge.\n"
+        "summary": "UpdateUserScopeDeploymentLinkAdmin performs administrative link operations\n(up/down) on a topology edge.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/links/capture": {
       "post": {
-        "operationId": "POST:skyforge.CaptureWorkspaceDeploymentLinkPcap",
+        "operationId": "POST:skyforge.CaptureUserScopeDeploymentLinkPcap",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -13361,13 +13361,13 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "CaptureWorkspaceDeploymentLinkPcap captures a short pcap on a topology link and\nuploads it as a user-scope artifact.\n"
+        "summary": "CaptureUserScopeDeploymentLinkPcap captures a short pcap on a topology link and\nuploads it as a user-scope artifact.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/links/impair": {
       "post": {
         "description": "The impairment is applied \"outside\" of the network OS by executing \\`tc\\` in the clabernetes launcher container (or another non-NOS container in the same pod netns).\n",
-        "operationId": "POST:skyforge.SetWorkspaceDeploymentLinkImpairment",
+        "operationId": "POST:skyforge.SetUserScopeDeploymentLinkImpairment",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -13479,13 +13479,13 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SetWorkspaceDeploymentLinkImpairment applies or clears traffic impairment\nsettings for a single link.\n"
+        "summary": "SetUserScopeDeploymentLinkImpairment applies or clears traffic impairment\nsettings for a single link.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/links/stats": {
       "get": {
         "description": "This is used to render live link utilization on the topology graph (similar to c9s VSCode extension).\n",
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentLinkStats",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentLinkStats",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -13544,12 +13544,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentLinkStats returns a snapshot of interface counters for\neach topology edge.\n"
+        "summary": "GetUserScopeDeploymentLinkStats returns a snapshot of interface counters for\neach topology edge.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/links/stats/events": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentLinkStatsEvents",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentLinkStatsEvents",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -13582,7 +13582,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentLinkStatsEvents streams link stats snapshots as SSE.\n"
+        "summary": "GetUserScopeDeploymentLinkStatsEvents streams link stats snapshots as SSE.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/netlab-graph": {
@@ -13726,7 +13726,7 @@
     },
     "/api/users/{id}/deployments/{deploymentID}/nodes/{node}/describe": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentNodeDescribe",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentNodeDescribe",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -13770,7 +13770,7 @@
                   "properties": {
                     "containers": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.WorkspacePodContainer"
+                        "$ref": "#/components/schemas/skyforge.UserScopePodContainer"
                       },
                       "type": "array"
                     },
@@ -13820,12 +13820,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentNodeDescribe returns a lightweight summary of the\nclabernetes node pod.\n"
+        "summary": "GetUserScopeDeploymentNodeDescribe returns a lightweight summary of the\nclabernetes node pod.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/nodes/{node}/interfaces": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentNodeInterfaces",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentNodeInterfaces",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -13903,13 +13903,13 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentNodeInterfaces returns interface stats (launcher\ncontainer) for a clabernetes node.\n"
+        "summary": "GetUserScopeDeploymentNodeInterfaces returns interface stats (launcher\ncontainer) for a clabernetes node.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/nodes/{node}/logs": {
       "get": {
         "description": "This powers the \"View logs\" action in the topology UI (similar to the c9s VSCode extension).\n",
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentNodeLogs",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentNodeLogs",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -14006,13 +14006,13 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentNodeLogs returns recent log lines for a clabernetes node\npod.\n"
+        "summary": "GetUserScopeDeploymentNodeLogs returns recent log lines for a clabernetes node\npod.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/nodes/{node}/running-config": {
       "get": {
         "description": "Currently supports EOS/cEOS via \\`Cli -c \"show running-config\"\\`.\n",
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentNodeRunningConfig",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentNodeRunningConfig",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -14099,13 +14099,13 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentNodeRunningConfig fetches the running config from a NOS\nnode (best-effort).\n"
+        "summary": "GetUserScopeDeploymentNodeRunningConfig fetches the running config from a NOS\nnode (best-effort).\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/nodes/{node}/save-config": {
       "post": {
         "description": "For EOS/cEOS, this runs \\`write memory\\`.\n",
-        "operationId": "POST:skyforge.SaveWorkspaceDeploymentNodeConfig",
+        "operationId": "POST:skyforge.SaveUserScopeDeploymentNodeConfig",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -14192,7 +14192,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SaveWorkspaceDeploymentNodeConfig triggers a best-effort \"save config\" operation\non a node.\n"
+        "summary": "SaveUserScopeDeploymentNodeConfig triggers a best-effort \"save config\" operation\non a node.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/start": {
@@ -14247,7 +14247,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "run": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -14308,7 +14308,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "run": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -14377,7 +14377,7 @@
     "/api/users/{id}/deployments/{deploymentID}/topology": {
       "get": {
         "description": "For containerlab, the topology is sourced from the containerlab API after deploy so we can reflect the resolved management IPs.\n",
-        "operationId": "GET:skyforge.GetWorkspaceDeploymentTopology",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentTopology",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -14447,12 +14447,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceDeploymentTopology returns a lightweight, provider-derived topology\nview.\n"
+        "summary": "GetUserScopeDeploymentTopology returns a lightweight, provider-derived topology\nview.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/ui-events": {
       "get": {
-        "operationId": "GET:skyforge.ListWorkspaceDeploymentUIEvents",
+        "operationId": "GET:skyforge.ListUserScopeDeploymentUIEvents",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -14535,7 +14535,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "ListWorkspaceDeploymentUIEvents returns recent UI/graph events for a deployment.\n"
+        "summary": "ListUserScopeDeploymentUIEvents returns recent UI/graph events for a deployment.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/ui-events/events": {
@@ -14636,7 +14636,7 @@
                 "schema": {
                   "properties": {
                     "deployment": {
-                      "$ref": "#/components/schemas/skyforge.WorkspaceDeployment"
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
                     },
                     "path": {
                       "type": "string"
@@ -14749,7 +14749,7 @@
                       "format": "int64",
                       "type": "integer"
                     },
-                    "lastTaskWorkspaceId": {
+                    "lastTaskUserScopeId": {
                       "format": "int64",
                       "type": "integer"
                     },
@@ -14779,7 +14779,7 @@
                     "createdBy",
                     "createdAt",
                     "updatedAt",
-                    "lastTaskWorkspaceId",
+                    "lastTaskUserScopeId",
                     "lastTaskId",
                     "lastStatus",
                     "lastStartedAt",
@@ -15094,7 +15094,7 @@
     },
     "/api/users/{id}/forward-networks/{networkRef}/capacity/growth": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacityGrowth",
+        "operationId": "GET:skyforge.GetUserScopeForwardNetworkCapacityGrowth",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -15236,12 +15236,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceForwardNetworkCapacityGrowth compares the latest rollup bucket to an\nearlier one and returns deltas.\n"
+        "summary": "GetUserScopeForwardNetworkCapacityGrowth compares the latest rollup bucket to an\nearlier one and returns deltas.\n"
       }
     },
     "/api/users/{id}/forward-networks/{networkRef}/capacity/inventory": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacityInventory",
+        "operationId": "GET:skyforge.GetUserScopeForwardNetworkCapacityInventory",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -15347,12 +15347,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceForwardNetworkCapacityInventory returns the latest cached NQE\nresults for inventory/routing scale.\n"
+        "summary": "GetUserScopeForwardNetworkCapacityInventory returns the latest cached NQE\nresults for inventory/routing scale.\n"
       }
     },
     "/api/users/{id}/forward-networks/{networkRef}/capacity/perf/device-metrics-history": {
       "post": {
-        "operationId": "POST:skyforge.PostWorkspaceForwardNetworkCapacityDeviceMetricsHistory",
+        "operationId": "POST:skyforge.PostUserScopeForwardNetworkCapacityDeviceMetricsHistory",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -15442,12 +15442,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PostWorkspaceForwardNetworkCapacityDeviceMetricsHistory proxies Forward's\ndevice-metrics-history endpoint.\n"
+        "summary": "PostUserScopeForwardNetworkCapacityDeviceMetricsHistory proxies Forward's\ndevice-metrics-history endpoint.\n"
       }
     },
     "/api/users/{id}/forward-networks/{networkRef}/capacity/perf/interface-metrics": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacityInterfaceMetrics",
+        "operationId": "GET:skyforge.GetUserScopeForwardNetworkCapacityInterfaceMetrics",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -15568,12 +15568,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceForwardNetworkCapacityInterfaceMetrics proxies Forward's\ninterface-metrics endpoint.\n"
+        "summary": "GetUserScopeForwardNetworkCapacityInterfaceMetrics proxies Forward's\ninterface-metrics endpoint.\n"
       }
     },
     "/api/users/{id}/forward-networks/{networkRef}/capacity/perf/interface-metrics-history": {
       "post": {
-        "operationId": "POST:skyforge.PostWorkspaceForwardNetworkCapacityInterfaceMetricsHistory",
+        "operationId": "POST:skyforge.PostUserScopeForwardNetworkCapacityInterfaceMetricsHistory",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -15663,12 +15663,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PostWorkspaceForwardNetworkCapacityInterfaceMetricsHistory proxies Forward's\ninterface-metrics-history endpoint.\n"
+        "summary": "PostUserScopeForwardNetworkCapacityInterfaceMetricsHistory proxies Forward's\ninterface-metrics-history endpoint.\n"
       }
     },
     "/api/users/{id}/forward-networks/{networkRef}/capacity/perf/unhealthy-devices": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacityUnhealthyDevices",
+        "operationId": "GET:skyforge.GetUserScopeForwardNetworkCapacityUnhealthyDevices",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -15736,12 +15736,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceForwardNetworkCapacityUnhealthyDevices proxies Forward's\nunhealthy-devices endpoint.\n"
+        "summary": "GetUserScopeForwardNetworkCapacityUnhealthyDevices proxies Forward's\nunhealthy-devices endpoint.\n"
       }
     },
     "/api/users/{id}/forward-networks/{networkRef}/capacity/perf/unhealthy-interfaces": {
       "post": {
-        "operationId": "POST:skyforge.PostWorkspaceForwardNetworkCapacityUnhealthyInterfaces",
+        "operationId": "POST:skyforge.PostUserScopeForwardNetworkCapacityUnhealthyInterfaces",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -15829,12 +15829,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PostWorkspaceForwardNetworkCapacityUnhealthyInterfaces proxies Forward's\nunhealthy-interfaces endpoint.\n"
+        "summary": "PostUserScopeForwardNetworkCapacityUnhealthyInterfaces proxies Forward's\nunhealthy-interfaces endpoint.\n"
       }
     },
     "/api/users/{id}/forward-networks/{networkRef}/capacity/rollups/refresh": {
       "post": {
-        "operationId": "POST:skyforge.RefreshWorkspaceForwardNetworkCapacityRollups",
+        "operationId": "POST:skyforge.RefreshUserScopeForwardNetworkCapacityRollups",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -15890,12 +15890,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RefreshWorkspaceForwardNetworkCapacityRollups enqueues a background rollup task\nfor the saved Forward network.\n"
+        "summary": "RefreshUserScopeForwardNetworkCapacityRollups enqueues a background rollup task\nfor the saved Forward network.\n"
       }
     },
     "/api/users/{id}/forward-networks/{networkRef}/capacity/summary": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceForwardNetworkCapacitySummary",
+        "operationId": "GET:skyforge.GetUserScopeForwardNetworkCapacitySummary",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -15966,7 +15966,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceForwardNetworkCapacitySummary returns the latest stored capacity\nrollups for a saved Forward network.\n"
+        "summary": "GetUserScopeForwardNetworkCapacitySummary returns the latest stored capacity\nrollups for a saved Forward network.\n"
       }
     },
     "/api/users/{id}/integrations/forward": {
@@ -16240,7 +16240,7 @@
                   "properties": {
                     "collectors": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.WorkspaceForwardCollector"
+                        "$ref": "#/components/schemas/skyforge.UserScopeForwardCollector"
                       },
                       "type": "array"
                     }
@@ -17519,7 +17519,7 @@
                   "netlabServer": {
                     "type": "string"
                   },
-                  "netlabWorkspaceDir": {
+                  "netlabUserScopeDir": {
                     "type": "string"
                   },
                   "template": {
@@ -17555,7 +17555,7 @@
                   "cleanup",
                   "netlabServer",
                   "netlabPassword",
-                  "netlabWorkspaceDir",
+                  "netlabUserScopeDir",
                   "netlabMultilabId",
                   "netlabDeployment",
                   "topologyPath",
@@ -17789,7 +17789,7 @@
     },
     "/api/users/{id}/securetrack/catalog": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceSecureTrackCatalog",
+        "operationId": "GET:skyforge.GetUserScopeSecureTrackCatalog",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -17833,12 +17833,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceSecureTrackCatalog returns the embedded SecureTrack check catalog.\n"
+        "summary": "GetUserScopeSecureTrackCatalog returns the embedded SecureTrack check catalog.\n"
       }
     },
     "/api/users/{id}/securetrack/checks": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceSecureTrackChecks",
+        "operationId": "GET:skyforge.GetUserScopeSecureTrackChecks",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -17889,12 +17889,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceSecureTrackChecks lists known checks (catalog + embedded .nqe\nfiles).\n"
+        "summary": "GetUserScopeSecureTrackChecks lists known checks (catalog + embedded .nqe\nfiles).\n"
       }
     },
     "/api/users/{id}/securetrack/checks/run": {
       "post": {
-        "operationId": "POST:skyforge.RunWorkspaceSecureTrackCheck",
+        "operationId": "POST:skyforge.RunUserScopeSecureTrackCheck",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -17973,12 +17973,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RunWorkspaceSecureTrackCheck executes an embedded check (.nqe) and returns a\nnormalized response.\n"
+        "summary": "RunUserScopeSecureTrackCheck executes an embedded check (.nqe) and returns a\nnormalized response.\n"
       }
     },
     "/api/users/{id}/securetrack/checks/{checkId}": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceSecureTrackCheck",
+        "operationId": "GET:skyforge.GetUserScopeSecureTrackCheck",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -18030,12 +18030,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceSecureTrackCheck returns the .nqe file content for a given check.\n"
+        "summary": "GetUserScopeSecureTrackCheck returns the .nqe file content for a given check.\n"
       }
     },
     "/api/users/{id}/securetrack/nqe": {
       "post": {
-        "operationId": "POST:skyforge.RunWorkspaceSecureTrackNQE",
+        "operationId": "POST:skyforge.RunUserScopeSecureTrackNQE",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -18114,12 +18114,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RunWorkspaceSecureTrackNQE executes an NQE query and returns a normalized\nresponse.\n"
+        "summary": "RunUserScopeSecureTrackNQE executes an NQE query and returns a normalized\nresponse.\n"
       }
     },
     "/api/users/{id}/securetrack/packs": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceSecureTrackPacks",
+        "operationId": "GET:skyforge.GetUserScopeSecureTrackPacks",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -18163,12 +18163,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceSecureTrackPacks returns the embedded SecureTrack packs definition.\n"
+        "summary": "GetUserScopeSecureTrackPacks returns the embedded SecureTrack packs definition.\n"
       }
     },
     "/api/users/{id}/securetrack/packs/run": {
       "post": {
-        "operationId": "POST:skyforge.RunWorkspaceSecureTrackPack",
+        "operationId": "POST:skyforge.RunUserScopeSecureTrackPack",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -18245,12 +18245,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RunWorkspaceSecureTrackPack executes all checks in a pack (serially) and returns\nper-check results.\n"
+        "summary": "RunUserScopeSecureTrackPack executes all checks in a pack (serially) and returns\nper-check results.\n"
       }
     },
     "/api/users/{id}/securetrack/snapshots": {
       "get": {
-        "operationId": "GET:skyforge.GetWorkspaceSecureTrackSnapshots",
+        "operationId": "GET:skyforge.GetUserScopeSecureTrackSnapshots",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -18319,12 +18319,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetWorkspaceSecureTrackSnapshots lists snapshots for a Forward network.\n"
+        "summary": "GetUserScopeSecureTrackSnapshots lists snapshots for a Forward network.\n"
       }
     },
     "/api/users/{id}/settings": {
       "put": {
-        "operationId": "PUT:skyforge.UpdateWorkspaceSettings",
+        "operationId": "PUT:skyforge.UpdateUserScopeSettings",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -18381,7 +18381,7 @@
                 "schema": {
                   "properties": {
                     "userScope": {
-                      "$ref": "#/components/schemas/skyforge.SkyforgeWorkspace"
+                      "$ref": "#/components/schemas/skyforge.SkyforgeUserScope"
                     }
                   },
                   "required": [
@@ -18581,7 +18581,7 @@
                   "properties": {
                     "groups": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.WorkspaceVariableGroup"
+                        "$ref": "#/components/schemas/skyforge.UserScopeVariableGroup"
                       },
                       "type": "array"
                     },
@@ -18718,7 +18718,7 @@
                   "properties": {
                     "groups": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.WorkspaceVariableGroup"
+                        "$ref": "#/components/schemas/skyforge.UserScopeVariableGroup"
                       },
                       "type": "array"
                     },
