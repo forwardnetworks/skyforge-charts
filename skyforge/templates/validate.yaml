@@ -54,10 +54,6 @@ early when required configuration is missing.
     "netlab-runner-rsa"
     "object-storage-root-user"
     "object-storage-root-password"
-    "object-storage-access-key"
-    "object-storage-secret-key"
-    "object-storage-artifacts-access-key"
-    "object-storage-artifacts-secret-key"
   -}}
   {{- if not .Values.skyforge.dex.manageConfig -}}
     {{- $requiredSecrets = append $requiredSecrets "dex-config" -}}

@@ -35,7 +35,7 @@ data:
   SKYFORGE_OBJECT_STORAGE_FILES_BUCKET: {{ .Values.skyforge.objectStorage.filesBucket | quote }}
   SKYFORGE_NETLAB_SSH_USER: {{ .Values.skyforge.netlab.sshUser | quote }}
   SKYFORGE_NETLAB_STATE_ROOT: {{ .Values.skyforge.netlab.stateRoot | quote }}
-  SKYFORGE_UI_THEME_DEFAULT: {{ .Values.skyforge.ui.themeDefault | default "" | quote }}
+  SKYFORGE_UI_THEME_DEFAULT: {{ .Values.skyforge.uiThemeDefault | default "" | quote }}
   SKYFORGE_SESSION_TTL: {{ .Values.skyforge.sessionTtl | quote }}
   SKYFORGE_COOKIE_SECURE: {{ .Values.skyforge.cookieSecure | quote }}
   SKYFORGE_COOKIE_DOMAIN: {{ .Values.skyforge.cookieDomain | quote }}
