@@ -87,7 +87,7 @@ skyforge:
   clabernetes:
     enabled: true
     managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260221-iosxr-kindfix"
-    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260221-iosxr-kindfix"
+    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260222-podnet-ipv6skip-v1"
     nodeSysctl:
       enabled: true
       fsInotifyMaxUserInstances: 64000

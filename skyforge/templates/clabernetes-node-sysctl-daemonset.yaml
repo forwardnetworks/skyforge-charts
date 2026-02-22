@@ -1,0 +1,56 @@
+{{- if and .Values.skyforge.clabernetes.enabled .Values.skyforge.clabernetes.nodeSysctl.enabled -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: clabernetes-node-sysctl
+  labels:
+    app.kubernetes.io/name: clabernetes-node-sysctl
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: clabernetes-node-sysctl
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: clabernetes-node-sysctl
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    spec:
+      hostPID: true
+      containers:
+        - name: sysctl
+          image: {{ .Values.images.alpine | quote }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              while true; do
+                sysctl -w fs.inotify.max_user_instances={{ .Values.skyforge.clabernetes.nodeSysctl.fsInotifyMaxUserInstances | int }}
+                sysctl -w fs.inotify.max_user_watches={{ .Values.skyforge.clabernetes.nodeSysctl.fsInotifyMaxUserWatches | int }}
+                sysctl -w net.core.netdev_max_backlog={{ .Values.skyforge.clabernetes.nodeSysctl.netCoreNetdevMaxBacklog | int }} || true
+                sysctl -w net.core.optmem_max={{ .Values.skyforge.clabernetes.nodeSysctl.netCoreOptmemMax | int }} || true
+                sysctl -w net.core.rmem_default={{ .Values.skyforge.clabernetes.nodeSysctl.netCoreRmemDefault | int }} || true
+                sysctl -w net.core.rmem_max={{ .Values.skyforge.clabernetes.nodeSysctl.netCoreRmemMax | int }} || true
+                sysctl -w net.core.wmem_default={{ .Values.skyforge.clabernetes.nodeSysctl.netCoreWmemDefault | int }} || true
+                sysctl -w net.core.wmem_max={{ .Values.skyforge.clabernetes.nodeSysctl.netCoreWmemMax | int }} || true
+                sleep {{ .Values.skyforge.clabernetes.nodeSysctl.reconcileIntervalSeconds | int }}
+              done
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      tolerations:
+        - operator: Exists
+{{- end -}}

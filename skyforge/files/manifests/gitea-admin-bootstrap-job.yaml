@@ -24,6 +24,8 @@ spec:
                 matchLabels:
                   app.kubernetes.io/name: gitea
               topologyKey: kubernetes.io/hostname
+      tolerations:
+        - operator: Exists
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
