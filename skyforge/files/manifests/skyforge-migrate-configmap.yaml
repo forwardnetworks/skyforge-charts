@@ -24,1817 +24,2861 @@ data:
     
 
   atlas.sum: |
-    h1:F+axEtcu2ks7cG2cuqjVaDpPaoNQpye1/IeEq3wZKsE=
-    20251220000100_init.up.sql h1:ZR4Y0ICXFcjlVW2XKzVYoSNksZP2tQ0ajHHNnh/1IoM=
-    20251221000100_cloud_credentials.up.sql h1:Xb5agfyv110UYW/49J7WKrDhUCDZeS7EiMKgQUf+Tvs=
-    20251222000100_project_visibility.up.sql h1:PDVyAxeOyGa1iSj+KXN2dlV1G2jxBK9A49c/1gXv4PQ=
-    20251223000100_governance_tables.up.sql h1:I/yixR+WfszaYbqb/MmWNmv88qAbdG22eUQ747NHX7M=
-    20251223000200_deployments.up.sql h1:AatWT1CH2r72NBhtjBLtwZh9dwFSmFdhT5W0sLjv5LI=
-    20251224000100_eve_ng_templates.up.sql h1:dQ5ZmWbYqZV/hbAiPfZ6vIqAhwrw557tvzk5ZWYYBKw=
-    20251227000100_deployments_eve_ng.up.sql h1:8VLKLc9011qA9OCOmd4Tc0kq7losGFoNmxCciAOL2f4=
-    20251229000100_dns_tokens.up.sql h1:8NQsZE6h4RXnl+glUUHUfAQKeiW67cN4iy949HxKTXU=
-    20251230000100_syslog_events.up.sql h1:r5Mq2PmK/fTCFSI98WUNIZpbnfD96Z6iQQAZfZkFh8s=
-    20251230000200_webhooks_snmp.up.sql h1:uoZpXBSeQmoZhOGbSx1COarID7bofc+5DkAAMKtihM0=
-    20251231000100_containerlab_templates.up.sql h1:FfdkRqqmoRRVryk3nLDUaI2ebSYqG1Q55aO42s8EpBQ=
-    20260101000100_pki_certs.up.sql h1:7hLPQo9/9tmEUgp0Hl03qKYiJtlZBQMFsrJ7vrLqVf0=
-    20260102000100_tasks.up.sql h1:IFUyEh/mfLlqGAypf8BQCCTqSQ1lhhGn7guKMnCvAlw=
-    20260102000200_variable_groups.up.sql h1:uJXilzXB54fAxyJ/OVxxMj9SRL8vHSc5eE9OxJ1C698=
-    20260102000400_forward_credentials.up.sql h1:3EyAwxBfAqi5U3sfMJf7woesxCBBYLRa/1eYSy8p/HY=
-    20260102000500_forward_collectors.up.sql h1:J06j5EcTFZyvEfSN0w+CV0niqoaETm4zHN/HsD6L4PE=
-    20260102000600_pki_ssh_certs.up.sql h1:saMUFljAgfxpJ9rMDuLMy9pVd27e22DS3+GmORUwqLA=
-    20260103000100_workspace_rename.up.sql h1:I4HxcwEbe1w2ZUVNp83WHOd83DTSPq6DRihi1MUdFt0=
-    20260110120000_rename_tofu_to_terraform.up.sql h1:3EybQEC9trkBQFd6eoXeE2FWet20ymlxAefDzOFPRYA=
-    20260112000100_task_events.up.sql h1:kOwkr8mZCkzcKrEC72+P7uJa67XAfMGyO1wdt1kP6HE=
-    20260113000300_forward_device_types.up.sql h1:CltNeKXB8YADNuxP8YGjng6SzNERj48RoRVRSVUvmLM=
-    20260114000100_node_metrics_and_heartbeats.up.sql h1:pAqO21DKlIAiofSvv1Jk/xaQIC6JcSLscIGMvUlBMyk=
-    20260114000200_ldap_password_cache.up.sql h1:rrf0txo5TIJzqIvZmHU+6DbE198P3RfBg5eK/4a/cwg=
-    20260114000300_workspace_servers.down.sql h1:s0p2jRu6ynOclv1F5GPGfG+f7qiL9+HVSrRlgNuuPBs=
-    20260114000300_workspace_servers.up.sql h1:TT5vqliURgYMhbAb2+F7cX18sjD38QOPxSF3b91X9U0=
-    20260115000100_drop_legacy_workspace_id.up.sql h1:kPPfUDNxg7420BE2boqBFHPebhzJQzQdxf8gndgP5vM=
-    20260115000200_workspace_template_sources.up.sql h1:CKwFFJmVn2zPw6VPPQrBggtpDAfUWzB9nvBYAzSRiQc=
-    20260116000100_task_priority.up.sql h1:jS+g6Dxs1QCuRpr9+M43R2iiTQMB1RYI0Tc3EzIuXbE=
-    20260116000200_deployment_types.up.sql h1:NkZeWjvbWohj6r6iRbOD3BXlQg9O/wKEv3jCEsg35bM=
-    20260116000300_ensure_legacy_workspace_id.up.sql h1:Vh755LM4L7XF8b6WNrX8HtxTFy8xK8JXTQj+uKRZhyA=
-    20260117000200_template_indexes.up.sql h1:XNLG+YGaxrqi7aULBGwCCEiPF33cazrnhUxjvffgzlY=
-    20260117000300_fix_deployment_type_check.up.sql h1:syI2lY7uCx2aMyPeCKwhLpDlhRU+vri8yq9R/DIBag8=
-    20260118000100_user_forward_credentials.up.sql h1:bZ1M4TvzRO6/aaiBogIe+vpfvqJ5rO2H/vCVFIYsHAM=
-    20260118000200_user_forward_skip_tls_verify.up.sql h1:sujqUG9LJU/xrHm5Avub+7F7jYMiUjxVgSq065SBVbw=
-    20260119000100_deployment_ui_events.up.sql h1:0MSZiRcxxYZymK7b71Xy9eNVjUNt8bHkKYvzDa6mXgk=
-    20260119000200_workspace_server_api_credentials.down.sql h1:dSZArYptNl+xtclbq4pmwqehaO33ZfQdoDxvfI8GTGQ=
-    20260119000200_workspace_server_api_credentials.up.sql h1:yYfvM1v4jHJHXBrL9wE/EvIIFlS5ba1PBTEjRtsVFQ4=
-    20260119000300_user_git_credentials.down.sql h1:J0t93l33mV3ie+1orzQjVLV/ZNgBpWKyAe/wiuU6GdM=
-    20260119000300_user_git_credentials.up.sql h1:VwGXDR7F7a2wQFaNmXk2mWYsftqXBtcMjR7Xv0q5tpM=
-    20260128000100_user_forward_collectors.down.sql h1:bOOEPKgWi2GCODTLmwCViykBAlJr2eVKSWnMDfylfMg=
-    20260128000100_user_forward_collectors.up.sql h1:qodvO1J5AQ/Z6z/lJUYXhHrvrSvDNSD14/ZyNvIm6gs=
-    20260128000200_drop_legacy_workspace_id_final.up.sql h1:xobwG/A5+T7hprlpGNc9bRM7Jphxk+zOLzwF5HL2ivE=
-    20260129000100_auth_flow_state.up.sql h1:wBLQdBGCKOaKCkY5zEIA21WIb3LXr6e3OA8kgwHC1Vs=
-    20260129000200_forward_device_types_firewalls.up.sql h1:fD1uDDCygPxXSjVDeB3xk07yCOoOBu/h4Qm/gDM/Kkc=
-    20260130000100_forward_device_types_juniper_junos.up.sql h1:7noEXgTIvoMjQVHw0loQCn+Khzlu6NqbPpZ1aX6ginQ=
-    20260130000200_user_servicenow_configs.down.sql h1:VSA9VrZBACtf0vIAvEgofyMHgrPwEwrfVmiksoN88T8=
-    20260130000200_user_servicenow_configs.up.sql h1:OaDh1VucXSyRt2mWygnT0ZnJrwAIw/xTMpg1Sc5iLP0=
-    20260130000300_servicenow_forward_collector_id.down.sql h1:tcXFBrkOB7D46AL+wlPzDYAHJkS3QFHfXgauKN1HT6c=
-    20260130000300_servicenow_forward_collector_id.up.sql h1:N0BXysUCevjbRP6Rbd2PPStV0WXEAlFFOTAwVgC7XfY=
-    20260130000400_forward_device_types_remove_srx.down.sql h1:Bpuyc0YJEcKVNehaNkmeQvERFzipsrTgAQ1EjQoZWVo=
-    20260130000400_forward_device_types_remove_srx.up.sql h1:Gj77qVapvyXa7p8l4JecBYf/jI30OAk+0LqpYmMzBTM=
-    20260130001000_user_gemini_oauth.down.sql h1:DMedJhJ3LAYTo0hdUKnyVu5qNurGgwJwm2nL0r/WryM=
-    20260130001000_user_gemini_oauth.up.sql h1:Fxn6FDzJ6fpgLkY4x8AYCdhuFfj4zxqO3qIOFnwKDVw=
-    20260201000100_user_settings.down.sql h1:UGADCTueavQIZkKngLNqiJQVofepbmB34A9HhFPFs9E=
-    20260201000100_user_settings.up.sql h1:6wrCPaxH/WSP1gV9qUBzxexpWt9jz4qcgsy/VDMnKtU=
-    20260201000200_user_cloud_credentials.down.sql h1:FbDc9h5e8uxKk/ZzoEJ14xw93oGbnYQkE9Az+2+/XJI=
-    20260201000200_user_cloud_credentials.up.sql h1:bpE2G7xSMsvU6Yo/2M4fy+8mWdcswv1RPoU5Eu1VgRo=
-    20260201000300_user_servers.down.sql h1:YVnOqHP1pONNNApVQBQQ06A943VmO0ARezS3iVh9M6Q=
-    20260201000300_user_servers.up.sql h1:8OzqZqMadSRoBk69FYg1VVnsZBqoiHXQtQQRMLMhzbI=
-    20260201000400_user_external_template_repos.down.sql h1:AbR8mAZF+qn8Z+IICTZ3XmPqLi7LrdkvyIuNH2FptPs=
-    20260201000400_user_external_template_repos.up.sql h1:/rvAiM/mBtVN2g1Igf6VOjPjfB4KITboTBTburxUHs4=
-    20260201000500_user_aws_sso_credentials.down.sql h1:2ylRJCah5+j/3vTgmhX53OBwkOiS4VvbPU+Cir7OVog=
-    20260201000500_user_aws_sso_credentials.up.sql h1:vbfOHQKlOcgtc/3fNum/bzAJd77hi+mFGjkdJPYQfMg=
-    20260201000600_user_containerlab_servers.down.sql h1:VTkPd5hvlcPSOZcATj6wCJ4ZPeBbLQwfOkaWn8iBwcU=
-    20260201000600_user_containerlab_servers.up.sql h1:/N8podQEw+6QS8fvnkNxzAmHcLiC05Pk3IStw8DqmU4=
-    20260201000700_workspace_allow_custom_containerlab_servers.down.sql h1:Hjw56lfDuptkkpEz575cL26IZF4bSjpZuQXmoYeheoE=
-    20260201000700_workspace_allow_custom_containerlab_servers.up.sql h1:Cxs7dyEw/nALoAWDX4KjXx/oupwFVsMlALbEipw+660=
-    20260201000800_user_ibm_cloud_credentials.down.sql h1:2hCAkfuP4MTVkoCbUT554U2pgLn/rRpVb5qji/cKkrg=
-    20260201000800_user_ibm_cloud_credentials.up.sql h1:PoDBMq5LSpr9ANnTDZkSVGCrcRwS+Jc18bs2MbdoQNM=
-    20260201000900_user_ai_generations.down.sql h1:AMm7ENqC9lCokuvju7d9ZjxItNCuJMUFLTnWnYdXVxI=
-    20260201000900_user_ai_generations.up.sql h1:N3unesk+p7FPdbGdm9vZamxR6DSsFOBmb77Q8U37RXA=
-    20260201001000_user_variable_groups.down.sql h1:9CsnygMlUgmqyKlLauYxzUfLa1+q77EJaPLvgATKJBU=
-    20260201001000_user_variable_groups.up.sql h1:DkbNiAOi0slCoAVYeeWzn3aSFyR1cDwktZmLrEHpuvA=
-    20260201001200_normalize_eve_ng_type.up.sql h1:ZFc/PMOOS/aW6jLsqc3IiMaBADe81ZcH4m4Q+5gfxns=
-    20260201001300_workspaces_eve_ng_run_template_id.down.sql h1:fVvPKFxDhB0IZeons6SmVTC/TO1Gcvp/BxR4PzuIVW4=
-    20260201001300_workspaces_eve_ng_run_template_id.up.sql h1:2Hd16GkAMheMo+l1Br3Gus32WUe9SKjhaCOixwj1YOY=
-    20260207000100_user_elastic_config.down.sql h1:ueawXPyl7KviHqZ1qc2oSqV1ogdgsMkTNIvpvdE6Bpw=
-    20260207000100_user_elastic_config.up.sql h1:vZOBMWnySSeR1dj/0LTV6amkZyBg5ySfEsk+r7Y2+qw=
-    20260207000200_capacity_tables.down.sql h1:Uu07p2pNmrINAxsYFsjkMTIIC9AXqcWezqLDyn6LVMQ=
-    20260207000200_capacity_tables.up.sql h1:iy3oQ1bNeMG69BdLRpihH5WZZNpaEOa7H4aZFtGwY0U=
-    20260207000300_policy_reports_governance.down.sql h1:JPu6G1/eLgesQMIkpVdf7YWhUR3niY3HOPX0YwxmiX8=
-    20260207000300_policy_reports_governance.up.sql h1:81DLg0Z1Zp29sSUzCktlET38ScWBHWIM8jX7uvdf6Yw=
-    20260207000400_policy_reports_governance_finding_json.down.sql h1:eZAwryy53iLS2LWQTZliAnZpVhpyI09W/BAxmet7Jck=
-    20260207000400_policy_reports_governance_finding_json.up.sql h1:JWuRF3S3mUjgVSpONlyZ16Iov/l8PF0GqOANNBvRhXA=
-    20260207000500_policy_reports_exceptions_forward_network.down.sql h1:JSRFRZj6Og1Vuh2OFYVCpoZqPfvdJokjwwaQ/rg7tSk=
-    20260207000500_policy_reports_exceptions_forward_network.up.sql h1:FK+yXE8wyEXWpfBNWTO/K3QVzlwfMtvc0T3ch4hBzcs=
-    20260207000600_policy_reports_forward_networks.down.sql h1:YcIwXXFY0+lywfIzBGYjP40tdQDJCNLkdec7T0M2iP8=
-    20260207000600_policy_reports_forward_networks.up.sql h1:dz2Woy4ecrDqM9Sw2EsffE2EyhBCYoa+betZs/88kXU=
-    20260207000700_policy_reports_forward_network_credentials.down.sql h1:ux6smc+pW3C5pN8yfR4pYwiBYTf4ULU9p3rOAYhXhm0=
-    20260207000700_policy_reports_forward_network_credentials.up.sql h1:vtfyoBaeF2FxSDdsj2hm+g+MVRLnrWDEC6ABmFC1ac0=
-    20260207000800_policy_reports_forward_networks_collector_config.down.sql h1:BsOqXVKuiEMd25bd+znpA1nTqCHq9z8Bk5mykioShuQ=
-    20260207000800_policy_reports_forward_networks_collector_config.up.sql h1:cLFQFg2L4+0JgW0dOuw6PYfHmNcFPgRoZtnKr9Cx2Xg=
-    20260207000900_capacity_tables_forward_network_scope.down.sql h1:fq6wemthX/coOHlSUYBxK6LcQMfPuXRn0a5vJ/oLJ7Y=
-    20260207000900_capacity_tables_forward_network_scope.up.sql h1:g5eNnlJa2AwXPLwmj31WxkSXVnAYn1CALJUJ8UGjkL4=
-    20260222090000_drop_legacy_pki_gemini_ai.down.sql h1:KJ6/vdHcHODfl/KCkL81UC4kRC8CVMIzqjQgQx1O5eI=
-    20260222090000_drop_legacy_pki_gemini_ai.up.sql h1:8XS0yzTZMuCNJoC/FAv9q+VERO1JTs3+90HIND+fv+g=
-    20260222113000_drop_legacy_elastic_config.down.sql h1:MM59Tzpi+fRQrDjR3RONitX6qBsEX3rJ2VQ4aj7OSbk=
-    20260222113000_drop_legacy_elastic_config.up.sql h1:2Tl/08gD1WMCQaqZc4G4TGOkW3xsYyHJKa+Eq5YxDFo=
-    20260222140000_drop_legacy_user_forward_credentials.down.sql h1:J46bdoFccPTJaJGnAK5sO1RGSfuES/yUY52aDhAFLRY=
-    20260222140000_drop_legacy_user_forward_credentials.up.sql h1:PHZXpyJtuMThtGSgEdMvq780MYmz2YjPWT/s4yUwNZs=
+    h1:ctlW1kum14N1whFZhG1VJtkVYMnL/S/zhNjwRCmKMso=
+    20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
 
-  20251220000100_init.up.sql: |
-    CREATE TABLE sf_users (
-      username text PRIMARY KEY,
-      display_name text,
-      email text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      last_seen_at timestamptz
-    );
-    
-    CREATE TABLE sf_projects (
-      id text PRIMARY KEY,
-      slug text NOT NULL UNIQUE,
-      name text NOT NULL,
-      description text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      blueprint text,
-      default_branch text,
-      terraform_state_key text,
-      terraform_init_template_id integer,
-      terraform_plan_template_id integer,
-      terraform_apply_template_id integer,
-      ansible_run_template_id integer,
-      netlab_run_template_id integer,
-      aws_account_id text,
-      aws_role_name text,
-      aws_region text,
-      aws_auth_method text,
-      artifacts_bucket text,
-      eve_server text,
-      netlab_server text,
-      legacy_project_id integer NOT NULL,
-      gitea_owner text NOT NULL,
-      gitea_repo text NOT NULL,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE INDEX sf_projects_created_by_idx ON sf_projects(created_by);
-    
-    CREATE TABLE sf_project_members (
-      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
-      username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      role text NOT NULL CHECK (role IN ('owner','editor','viewer')),
-      granted_at timestamptz NOT NULL DEFAULT now(),
-      PRIMARY KEY (project_id, username)
-    );
-    
-    CREATE INDEX sf_project_members_user_idx ON sf_project_members(username);
-    
-    CREATE TABLE sf_project_groups (
-      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
-      group_name text NOT NULL,
-      role text NOT NULL CHECK (role IN ('owner','editor','viewer')),
-      granted_at timestamptz NOT NULL DEFAULT now(),
-      PRIMARY KEY (project_id, group_name)
-    );
-    
-    CREATE INDEX sf_project_groups_project_idx ON sf_project_groups(project_id);
-    
-    CREATE TABLE sf_aws_sso_tokens (
-      username text PRIMARY KEY,
-      start_url text NOT NULL,
-      region text NOT NULL,
-      client_id text,
-      client_secret text,
-      client_secret_expires_at timestamptz,
-      access_token text,
-      access_token_expires_at timestamptz,
-      refresh_token text,
-      refresh_token_expires_at timestamptz,
-      last_authenticated_at_utc timestamptz,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE TABLE sf_project_aws_static_credentials (
-      project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
-      access_key_id text NOT NULL,
-      secret_access_key text NOT NULL,
-      session_token text,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE TABLE sf_audit_log (
-      id bigserial PRIMARY KEY,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      actor_username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      actor_is_admin boolean NOT NULL DEFAULT false,
-      impersonated_username text,
-      action text NOT NULL,
-      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
-      details text
-    );
-    
-    CREATE INDEX sf_audit_log_created_at_idx ON sf_audit_log(created_at DESC);
-    CREATE INDEX sf_audit_log_actor_idx ON sf_audit_log(actor_username);
-    
-    CREATE TABLE sf_notifications (
-      id uuid PRIMARY KEY,
-      username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      title text NOT NULL,
-      message text,
-      type text NOT NULL,
-      category text,
-      reference_id text,
-      priority text,
-      is_read boolean NOT NULL DEFAULT false,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE INDEX sf_notifications_user_idx ON sf_notifications(username, created_at DESC);
-    
-    CREATE TABLE sf_settings (
-      key text PRIMARY KEY,
-      value text NOT NULL,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-
-  20251221000100_cloud_credentials.up.sql: |
-    CREATE TABLE sf_project_azure_credentials (
-      project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
-      tenant_id text NOT NULL,
-      client_id text NOT NULL,
-      client_secret text NOT NULL,
-      subscription_id text,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE TABLE sf_project_gcp_credentials (
-      project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
-      service_account_json text NOT NULL,
-      project_id_override text,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-
-  20251222000100_project_visibility.up.sql: |
-    ALTER TABLE sf_projects
-      ADD COLUMN IF NOT EXISTS is_public boolean NOT NULL DEFAULT false;
-
-  20251223000100_governance_tables.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_resources (
-      id uuid PRIMARY KEY,
-      provider text NOT NULL,
-      resource_id text NOT NULL,
-      resource_type text NOT NULL,
-      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
-      name text,
-      region text,
-      account_id text,
-      owner_username text REFERENCES sf_users(username) ON UPDATE CASCADE,
-      status text,
-      tags jsonb NOT NULL DEFAULT '{}'::jsonb,
-      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-      first_seen timestamptz NOT NULL DEFAULT now(),
-      last_seen timestamptz NOT NULL DEFAULT now(),
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_resources_provider_uq ON sf_resources(provider, resource_id);
-    CREATE INDEX IF NOT EXISTS sf_resources_project_idx ON sf_resources(project_id);
-    CREATE INDEX IF NOT EXISTS sf_resources_owner_idx ON sf_resources(owner_username);
-    
-    CREATE TABLE IF NOT EXISTS sf_resource_events (
-      id uuid PRIMARY KEY,
-      resource_id uuid REFERENCES sf_resources(id) ON DELETE CASCADE,
-      event_type text NOT NULL,
-      actor_username text REFERENCES sf_users(username) ON UPDATE CASCADE,
-      actor_is_admin boolean NOT NULL DEFAULT false,
-      impersonated_username text,
-      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
-      details jsonb NOT NULL DEFAULT '{}'::jsonb,
-      created_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_resource_events_resource_idx ON sf_resource_events(resource_id, created_at DESC);
-    CREATE INDEX IF NOT EXISTS sf_resource_events_project_idx ON sf_resource_events(project_id, created_at DESC);
-    
-    CREATE TABLE IF NOT EXISTS sf_cost_snapshots (
-      id uuid PRIMARY KEY,
-      resource_id uuid REFERENCES sf_resources(id) ON DELETE SET NULL,
-      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
-      provider text NOT NULL,
-      period_start date NOT NULL,
-      period_end date NOT NULL,
-      cost_amount numeric NOT NULL,
-      cost_currency text NOT NULL DEFAULT 'USD',
-      source text,
-      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-      created_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_cost_snapshots_project_idx ON sf_cost_snapshots(project_id, period_end DESC);
-    CREATE INDEX IF NOT EXISTS sf_cost_snapshots_provider_idx ON sf_cost_snapshots(provider, period_end DESC);
-    
-    CREATE TABLE IF NOT EXISTS sf_usage_snapshots (
-      id uuid PRIMARY KEY,
-      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
-      provider text NOT NULL,
-      scope_type text NOT NULL,
-      scope_id text,
-      metric text NOT NULL,
-      value numeric NOT NULL,
-      unit text,
-      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-      collected_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_usage_snapshots_project_idx ON sf_usage_snapshots(project_id, collected_at DESC);
-    CREATE INDEX IF NOT EXISTS sf_usage_snapshots_provider_idx ON sf_usage_snapshots(provider, collected_at DESC);
-
-  20251223000200_deployments.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_deployments (
-      id uuid PRIMARY KEY,
-      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
-      name text NOT NULL,
-      type text NOT NULL CHECK (type IN ('terraform','netlab')),
-      config jsonb NOT NULL DEFAULT '{}'::jsonb,
-      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now(),
-      last_task_project_id integer,
-      last_task_id integer,
-      last_status text,
-      last_started_at timestamptz,
-      last_finished_at timestamptz
-    );
-    
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_deployments_project_name_uq ON sf_deployments(project_id, name);
-    CREATE INDEX IF NOT EXISTS sf_deployments_project_idx ON sf_deployments(project_id, updated_at DESC);
-
-  20251224000100_eve_ng_templates.up.sql: |
-    ALTER TABLE sf_projects ADD COLUMN eve_ng_run_template_id integer;
-
-  20251227000100_deployments_eve_ng.up.sql: |
-    ALTER TABLE sf_deployments
-      DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
-    
-    ALTER TABLE sf_deployments
-      ADD CONSTRAINT sf_deployments_type_check CHECK (type IN ('terraform','netlab','eve_ng'));
-
-  20251229000100_dns_tokens.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_dns_tokens (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON UPDATE CASCADE,
-      token text NOT NULL,
-      zone text NOT NULL,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-
-  20251230000100_syslog_events.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_syslog_events (
-      id bigserial PRIMARY KEY,
-      received_at timestamptz NOT NULL DEFAULT now(),
-      source_ip inet NOT NULL,
-      hostname text,
-      app_name text,
-      proc_id text,
-      msg_id text,
-      facility integer,
-      severity integer,
-      message text,
-      raw text NOT NULL
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_syslog_events_received_at_idx ON sf_syslog_events(received_at DESC);
-    CREATE INDEX IF NOT EXISTS sf_syslog_events_source_ip_idx ON sf_syslog_events(source_ip);
-    
-    CREATE TABLE IF NOT EXISTS sf_syslog_routes (
-      source_cidr cidr PRIMARY KEY,
-      owner_username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      label text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_syslog_routes_owner_idx ON sf_syslog_routes(owner_username);
-
-  20251230000200_webhooks_snmp.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_webhook_tokens (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON UPDATE CASCADE,
-      token text NOT NULL,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE TABLE IF NOT EXISTS sf_webhook_events (
-      id bigserial PRIMARY KEY,
-      received_at timestamptz NOT NULL DEFAULT now(),
-      username text REFERENCES sf_users(username) ON UPDATE CASCADE,
-      token text NOT NULL,
-      method text NOT NULL,
-      path text NOT NULL,
-      source_ip inet,
-      headers_json text,
-      body text
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_webhook_events_received_at_idx ON sf_webhook_events(received_at DESC);
-    CREATE INDEX IF NOT EXISTS sf_webhook_events_username_idx ON sf_webhook_events(username, received_at DESC);
-    
-    CREATE TABLE IF NOT EXISTS sf_snmp_trap_tokens (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON UPDATE CASCADE,
-      community text NOT NULL,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE TABLE IF NOT EXISTS sf_snmp_trap_events (
-      id bigserial PRIMARY KEY,
-      received_at timestamptz NOT NULL DEFAULT now(),
-      username text REFERENCES sf_users(username) ON UPDATE CASCADE,
-      source_ip inet,
-      community text,
-      oid text,
-      vars_json text,
-      raw_hex text
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_snmp_trap_events_received_at_idx ON sf_snmp_trap_events(received_at DESC);
-    CREATE INDEX IF NOT EXISTS sf_snmp_trap_events_username_idx ON sf_snmp_trap_events(username, received_at DESC);
-
-  20251231000100_containerlab_templates.up.sql: |
-    ALTER TABLE sf_projects ADD COLUMN containerlab_run_template_id integer;
-
-  20260101000100_pki_certs.up.sql: |
-    CREATE TABLE sf_pki_certs (
-      id text PRIMARY KEY,
-      username text NOT NULL,
-      project_id text REFERENCES sf_projects(id) ON DELETE SET NULL,
-      common_name text NOT NULL,
-      sans jsonb,
-      cert_pem text NOT NULL,
-      key_pem text NOT NULL,
-      issued_at timestamptz NOT NULL DEFAULT now(),
-      expires_at timestamptz NOT NULL,
-      revoked_at timestamptz
-    );
-    
-    CREATE INDEX sf_pki_certs_user_idx ON sf_pki_certs(username, issued_at DESC);
-    CREATE INDEX sf_pki_certs_project_idx ON sf_pki_certs(project_id);
-
-  20260102000100_tasks.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_tasks (
-      id bigserial PRIMARY KEY,
-      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
-      deployment_id uuid,
-      task_type text NOT NULL,
-      status text NOT NULL,
-      message text,
-      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      started_at timestamptz,
-      finished_at timestamptz,
-      error text
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_tasks_project_idx ON sf_tasks(project_id, created_at DESC);
-    CREATE INDEX IF NOT EXISTS sf_tasks_deployment_idx ON sf_tasks(deployment_id, created_at DESC);
-    
-    CREATE TABLE IF NOT EXISTS sf_task_logs (
-      id bigserial PRIMARY KEY,
-      task_id bigint NOT NULL REFERENCES sf_tasks(id) ON DELETE CASCADE,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      stream text NOT NULL DEFAULT 'stdout',
-      output text NOT NULL
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_task_logs_task_idx ON sf_task_logs(task_id, created_at);
-
-  20260102000200_variable_groups.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_project_variable_groups (
-      id bigserial PRIMARY KEY,
-      project_id text NOT NULL REFERENCES sf_projects(id) ON DELETE CASCADE,
-      name text NOT NULL,
-      variables jsonb NOT NULL DEFAULT '{}'::jsonb,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_project_variable_groups_name_uq ON sf_project_variable_groups(project_id, name);
-    CREATE INDEX IF NOT EXISTS sf_project_variable_groups_project_idx ON sf_project_variable_groups(project_id, updated_at DESC);
-
-  20260102000400_forward_credentials.up.sql: |
-    CREATE TABLE sf_project_forward_credentials (
-      project_id text PRIMARY KEY REFERENCES sf_projects(id) ON DELETE CASCADE,
-      base_url text NOT NULL,
-      username text NOT NULL,
-      password text NOT NULL,
-      device_username text,
-      device_password text,
-      jump_host text,
-      jump_username text,
-      jump_private_key text,
-      jump_cert text,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-
-  20260102000500_forward_collectors.up.sql: |
-    ALTER TABLE sf_project_forward_credentials
-      ADD COLUMN collector_id text,
-      ADD COLUMN collector_username text;
-
-  20260102000600_pki_ssh_certs.up.sql: |
-    CREATE TABLE sf_pki_ssh_certs (
-      id TEXT PRIMARY KEY,
-      username TEXT NOT NULL,
-      project_id TEXT NULL,
-      principals JSONB NOT NULL,
-      public_key TEXT NOT NULL,
-      cert TEXT NOT NULL,
-      key_pem TEXT NOT NULL,
-      issued_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-      expires_at TIMESTAMPTZ NOT NULL,
-      revoked_at TIMESTAMPTZ NULL
-    );
-    
-    CREATE INDEX sf_pki_ssh_certs_user_idx ON sf_pki_ssh_certs(username, issued_at DESC);
-    CREATE INDEX sf_pki_ssh_certs_project_idx ON sf_pki_ssh_certs(project_id);
-
-  20260103000100_workspace_rename.up.sql: |
-    ALTER TABLE sf_projects RENAME TO sf_workspaces;
-    ALTER TABLE sf_workspaces RENAME COLUMN legacy_project_id TO legacy_workspace_id;
-    
-    ALTER TABLE sf_project_members RENAME TO sf_workspace_members;
-    ALTER TABLE sf_workspace_members RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_project_groups RENAME TO sf_workspace_groups;
-    ALTER TABLE sf_workspace_groups RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_project_aws_static_credentials RENAME TO sf_workspace_aws_static_credentials;
-    ALTER TABLE sf_workspace_aws_static_credentials RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_project_azure_credentials RENAME TO sf_workspace_azure_credentials;
-    ALTER TABLE sf_workspace_azure_credentials RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_project_gcp_credentials RENAME TO sf_workspace_gcp_credentials;
-    ALTER TABLE sf_workspace_gcp_credentials RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_project_forward_credentials RENAME TO sf_workspace_forward_credentials;
-    ALTER TABLE sf_workspace_forward_credentials RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_project_variable_groups RENAME TO sf_workspace_variable_groups;
-    ALTER TABLE sf_workspace_variable_groups RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_deployments RENAME COLUMN project_id TO workspace_id;
-    ALTER TABLE sf_deployments RENAME COLUMN last_task_project_id TO last_task_workspace_id;
-    
-    ALTER TABLE sf_tasks RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_resources RENAME COLUMN project_id TO workspace_id;
-    ALTER TABLE sf_resource_events RENAME COLUMN project_id TO workspace_id;
-    ALTER TABLE sf_cost_snapshots RENAME COLUMN project_id TO workspace_id;
-    ALTER TABLE sf_usage_snapshots RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_pki_certs RENAME COLUMN project_id TO workspace_id;
-    ALTER TABLE sf_pki_ssh_certs RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER TABLE sf_audit_log RENAME COLUMN project_id TO workspace_id;
-    
-    ALTER INDEX IF EXISTS sf_projects_created_by_idx RENAME TO sf_workspaces_created_by_idx;
-    ALTER INDEX IF EXISTS sf_project_members_user_idx RENAME TO sf_workspace_members_user_idx;
-    ALTER INDEX IF EXISTS sf_project_groups_project_idx RENAME TO sf_workspace_groups_workspace_idx;
-    ALTER INDEX IF EXISTS sf_resources_project_idx RENAME TO sf_resources_workspace_idx;
-    ALTER INDEX IF EXISTS sf_resource_events_project_idx RENAME TO sf_resource_events_workspace_idx;
-    ALTER INDEX IF EXISTS sf_cost_snapshots_project_idx RENAME TO sf_cost_snapshots_workspace_idx;
-    ALTER INDEX IF EXISTS sf_usage_snapshots_project_idx RENAME TO sf_usage_snapshots_workspace_idx;
-    ALTER INDEX IF EXISTS sf_deployments_project_name_uq RENAME TO sf_deployments_workspace_name_uq;
-    ALTER INDEX IF EXISTS sf_deployments_project_idx RENAME TO sf_deployments_workspace_idx;
-    ALTER INDEX IF EXISTS sf_pki_certs_project_idx RENAME TO sf_pki_certs_workspace_idx;
-    ALTER INDEX IF EXISTS sf_pki_ssh_certs_project_idx RENAME TO sf_pki_ssh_certs_workspace_idx;
-    ALTER INDEX IF EXISTS sf_tasks_project_idx RENAME TO sf_tasks_workspace_idx;
-    ALTER INDEX IF EXISTS sf_project_variable_groups_project_idx RENAME TO sf_workspace_variable_groups_workspace_idx;
-    ALTER INDEX IF EXISTS sf_project_variable_groups_name_uq RENAME TO sf_workspace_variable_groups_name_uq;
-
-  20260110120000_rename_tofu_to_terraform.up.sql: |
-    DO $$
-    BEGIN
-      IF to_regclass('sf_projects') IS NOT NULL THEN
-        BEGIN
-          ALTER TABLE sf_projects RENAME COLUMN tofu_init_template_id TO terraform_init_template_id;
-        EXCEPTION WHEN undefined_column THEN
-          NULL;
-        END;
-    
-        BEGIN
-          ALTER TABLE sf_projects RENAME COLUMN tofu_plan_template_id TO terraform_plan_template_id;
-        EXCEPTION WHEN undefined_column THEN
-          NULL;
-        END;
-    
-        BEGIN
-          ALTER TABLE sf_projects RENAME COLUMN tofu_apply_template_id TO terraform_apply_template_id;
-        EXCEPTION WHEN undefined_column THEN
-          NULL;
-        END;
-      END IF;
-    
-      IF to_regclass('sf_workspaces') IS NOT NULL THEN
-        BEGIN
-          ALTER TABLE sf_workspaces RENAME COLUMN tofu_init_template_id TO terraform_init_template_id;
-        EXCEPTION WHEN undefined_column THEN
-          NULL;
-        END;
-    
-        BEGIN
-          ALTER TABLE sf_workspaces RENAME COLUMN tofu_plan_template_id TO terraform_plan_template_id;
-        EXCEPTION WHEN undefined_column THEN
-          NULL;
-        END;
-    
-        BEGIN
-          ALTER TABLE sf_workspaces RENAME COLUMN tofu_apply_template_id TO terraform_apply_template_id;
-        EXCEPTION WHEN undefined_column THEN
-          NULL;
-        END;
-      END IF;
-    END $$;
-    
-    UPDATE sf_deployments SET type='terraform' WHERE type='tofu';
-    
-    ALTER TABLE sf_deployments DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
-    ALTER TABLE sf_deployments ADD CONSTRAINT sf_deployments_type_check CHECK (type IN ('terraform','netlab','eve_ng','containerlab'));
-
-  20260112000100_task_events.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_task_events (
-      id bigserial PRIMARY KEY,
-      task_id bigint NOT NULL REFERENCES sf_tasks(id) ON DELETE CASCADE,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      event_type text NOT NULL,
-      payload jsonb NOT NULL DEFAULT '{}'::jsonb
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_task_events_task_idx ON sf_task_events(task_id, id);
-
-  20260113000300_forward_device_types.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_forward_device_types (
-      device_key text PRIMARY KEY,
-      forward_type text NOT NULL,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-    -- Seed a few high-value defaults. Users/admin tooling can add/update mappings later.
-    INSERT INTO sf_forward_device_types (device_key, forward_type)
-    VALUES
-      ('linux', 'linux_os_ssh'),
-      ('eos', 'arista_eos_ssh'),
-      ('ios', 'cisco_ios_ssh'),
-      ('iosv', 'cisco_ios_ssh'),
-      ('iol', 'cisco_ios_ssh'),
-      ('ioll2', 'cisco_ios_ssh'),
-      ('nxos', 'cisco_nxos_ssh'),
-      ('asa', 'cisco_asa_ssh'),
-      ('asav', 'cisco_asa_ssh'),
-      ('iosxe', 'cisco_ios_xe_ssh'),
-      ('csr', 'cisco_ios_xe_ssh'),
-      ('cat8000v', 'cisco_ios_xe_ssh'),
-      ('cisco8000v', 'cisco_ios_xe_ssh'),
-      ('iosxr', 'cisco_ios_xr_ssh'),
-      ('xr', 'cisco_ios_xr_ssh')
-    ON CONFLICT (device_key) DO NOTHING;
-
-  20260114000100_node_metrics_and_heartbeats.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_node_metric_snapshots (
-      node TEXT NOT NULL,
-      metric_name TEXT NOT NULL,
-      updated_at TIMESTAMPTZ NOT NULL,
-      metric_json JSONB NOT NULL,
-      PRIMARY KEY (node, metric_name)
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_sf_node_metric_snapshots_updated_at
-      ON sf_node_metric_snapshots (updated_at DESC);
-    
-    CREATE TABLE IF NOT EXISTS sf_taskworker_heartbeats (
-      instance TEXT PRIMARY KEY,
-      last_seen TIMESTAMPTZ NOT NULL
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_sf_taskworker_heartbeats_last_seen
-      ON sf_taskworker_heartbeats (last_seen DESC);
-    
-
-  20260114000200_ldap_password_cache.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_ldap_password_cache (
-      username TEXT PRIMARY KEY,
-      encrypted_password TEXT NOT NULL,
-      expires_at TIMESTAMPTZ NOT NULL,
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_sf_ldap_password_cache_expires_at
-      ON sf_ldap_password_cache (expires_at DESC);
-    
-
-  20260114000300_workspace_servers.down.sql: |
-    DROP TABLE IF EXISTS sf_project_netlab_servers;
-    DROP TABLE IF EXISTS sf_project_eve_servers;
-    
-
-  20260114000300_workspace_servers.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_project_eve_servers (
-      id uuid PRIMARY KEY,
-      project_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      name text NOT NULL,
-      api_url text NOT NULL,
-      web_url text,
-      skip_tls_verify boolean NOT NULL DEFAULT false,
-      ssh_host text,
-      ssh_user text,
-      ssh_key text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now(),
-      UNIQUE (project_id, name)
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_project_eve_servers_project_idx ON sf_project_eve_servers(project_id);
-    
-    CREATE TABLE IF NOT EXISTS sf_project_netlab_servers (
-      id uuid PRIMARY KEY,
-      project_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      name text NOT NULL,
-      api_url text NOT NULL,
-      api_insecure boolean NOT NULL DEFAULT true,
-      api_token text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now(),
-      UNIQUE (project_id, name)
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_project_netlab_servers_project_idx ON sf_project_netlab_servers(project_id);
-
-  20260115000100_drop_legacy_workspace_id.up.sql: |
-    ALTER TABLE sf_workspaces DROP COLUMN IF EXISTS legacy_workspace_id;
-
-  20260115000200_workspace_template_sources.up.sql: |
-    ALTER TABLE sf_workspaces
-      ADD COLUMN IF NOT EXISTS allow_external_template_repos boolean NOT NULL DEFAULT false;
-    
-    ALTER TABLE sf_workspaces
-      ADD COLUMN IF NOT EXISTS allow_custom_eve_servers boolean NOT NULL DEFAULT false;
-    
-    ALTER TABLE sf_workspaces
-      ADD COLUMN IF NOT EXISTS allow_custom_netlab_servers boolean NOT NULL DEFAULT false;
-    
-    ALTER TABLE sf_workspaces
-      ADD COLUMN IF NOT EXISTS external_template_repos jsonb NOT NULL DEFAULT '[]'::jsonb;
-
-  20260116000100_task_priority.up.sql: |
-    ALTER TABLE sf_tasks
-      ADD COLUMN IF NOT EXISTS priority integer NOT NULL DEFAULT 0;
-    
-    -- Optimized queue scans for oldest/highest-priority tasks.
-    CREATE INDEX IF NOT EXISTS sf_tasks_queue_idx
-      ON sf_tasks (workspace_id, status, priority DESC, id);
-    
-    CREATE INDEX IF NOT EXISTS sf_tasks_queue_deployment_idx
-      ON sf_tasks (workspace_id, deployment_id, status, priority DESC, id);
-
-  20260116000200_deployment_types.up.sql: |
-    ALTER TABLE sf_deployments
-      DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
-    
-    ALTER TABLE sf_deployments
-      ADD CONSTRAINT sf_deployments_type_check
-      CHECK ((type = ANY (ARRAY[
-        'terraform'::text,
-        'netlab'::text,
-        'netlab-c9s'::text,
-        'eve_ng'::text,
-        'containerlab'::text,
-        'clabernetes'::text
-      ])));
-
-  20260116000300_ensure_legacy_workspace_id.up.sql: |
-    -- Ensure a legacy workspace ID column exists for backward compatibility.
+  20260222170000_user_scope_baseline.up.sql: |
     --
-    -- Some code paths (or older deployments) may still reference legacy_workspace_id
-    -- during startup/bootstrap (e.g. dashboard snapshot generation). Keeping this
-    -- nullable column avoids hard failures while the rest of the legacy plumbing is
-    -- removed.
-    DO $$
-    BEGIN
-      IF to_regclass('sf_workspaces') IS NULL THEN
-        RETURN;
-      END IF;
-    
-      -- Older databases might still have legacy_project_id (pre-rename); preserve
-      -- values by renaming it rather than creating a new empty column.
-      IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = 'sf_workspaces'
-          AND column_name = 'legacy_project_id'
-      ) AND NOT EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = 'sf_workspaces'
-          AND column_name = 'legacy_workspace_id'
-      ) THEN
-        ALTER TABLE sf_workspaces RENAME COLUMN legacy_project_id TO legacy_workspace_id;
-      END IF;
-    
-      IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = 'sf_workspaces'
-          AND column_name = 'legacy_workspace_id'
-      ) THEN
-        ALTER TABLE sf_workspaces ADD COLUMN legacy_workspace_id integer;
-      END IF;
-    END $$;
-
-  20260117000200_template_indexes.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_template_indexes (
-      kind TEXT NOT NULL,
-      owner TEXT NOT NULL,
-      repo TEXT NOT NULL,
-      branch TEXT NOT NULL,
-      dir TEXT NOT NULL,
-      head_sha TEXT NOT NULL,
-      templates JSONB NOT NULL DEFAULT '[]'::jsonb,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-      PRIMARY KEY (kind, owner, repo, branch, dir)
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_sf_template_indexes_updated_at
-      ON sf_template_indexes (updated_at DESC);
-    
-
-  20260117000300_fix_deployment_type_check.up.sql: |
-    UPDATE sf_deployments
-    SET type='terraform'
-    WHERE type='tofu';
-    
-    ALTER TABLE sf_deployments
-      DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
-    
-    ALTER TABLE sf_deployments
-      ADD CONSTRAINT sf_deployments_type_check
-      CHECK ((type = ANY (ARRAY[
-        'terraform'::text,
-        'netlab'::text,
-        'netlab-c9s'::text,
-        'eve_ng'::text,
-        'containerlab'::text,
-        'clabernetes'::text
-      ])));
-
-  20260118000100_user_forward_credentials.up.sql: |
-    CREATE TABLE sf_user_forward_credentials (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      base_url text NOT NULL,
-      forward_username text NOT NULL,
-      forward_password text NOT NULL,
-      collector_id text,
-      collector_username text,
-      authorization_key text,
-      device_username text,
-      device_password text,
-      jump_host text,
-      jump_username text,
-      jump_private_key text,
-      jump_cert text,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-
-  20260118000200_user_forward_skip_tls_verify.up.sql: |
-    ALTER TABLE sf_user_forward_credentials
-      ADD COLUMN IF NOT EXISTS skip_tls_verify boolean NOT NULL DEFAULT false;
-
-  20260119000100_deployment_ui_events.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_deployment_ui_events (
-      id BIGSERIAL PRIMARY KEY,
-      workspace_id TEXT NOT NULL,
-      deployment_id TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-      created_by TEXT NOT NULL DEFAULT '',
-      event_type TEXT NOT NULL DEFAULT '',
-      payload JSONB NOT NULL DEFAULT '{}'::jsonb
-    );
-    
-    CREATE INDEX IF NOT EXISTS sf_deployment_ui_events_lookup
-      ON sf_deployment_ui_events (workspace_id, deployment_id, id DESC);
-    
-
-  20260119000200_workspace_server_api_credentials.down.sql: |
-    ALTER TABLE sf_project_netlab_servers
-      DROP COLUMN IF EXISTS api_user,
-      DROP COLUMN IF EXISTS api_password;
-    
-    ALTER TABLE sf_project_eve_servers
-      DROP COLUMN IF EXISTS api_user,
-      DROP COLUMN IF EXISTS api_password;
-    
-
-  20260119000200_workspace_server_api_credentials.up.sql: |
-    ALTER TABLE sf_project_netlab_servers
-      ADD COLUMN IF NOT EXISTS api_user text,
-      ADD COLUMN IF NOT EXISTS api_password text;
-    
-    ALTER TABLE sf_project_eve_servers
-      ADD COLUMN IF NOT EXISTS api_user text,
-      ADD COLUMN IF NOT EXISTS api_password text;
-    
-
-  20260119000300_user_git_credentials.down.sql: |
-    DROP TABLE IF EXISTS sf_user_git_credentials;
-    
-
-  20260119000300_user_git_credentials.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_git_credentials (
-      username text PRIMARY KEY,
-      ssh_public_key text,
-      ssh_private_key text,
-      https_username text,
-      https_token text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-    
-
-  20260128000100_user_forward_collectors.down.sql: |
-    DROP TABLE IF EXISTS sf_user_forward_collectors;
-    
-
-  20260128000100_user_forward_collectors.up.sql: |
-    CREATE TABLE sf_user_forward_collectors (
-      id text PRIMARY KEY,
-      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
-      name text NOT NULL,
-      base_url text NOT NULL,
-      skip_tls_verify boolean NOT NULL DEFAULT false,
-      forward_username text NOT NULL,
-      forward_password text NOT NULL,
-      collector_id text,
-      collector_username text,
-      authorization_key text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now(),
-      last_used_at timestamptz,
-      is_default boolean NOT NULL DEFAULT false
-    );
-    
-    CREATE UNIQUE INDEX sf_user_forward_collectors_username_name
-      ON sf_user_forward_collectors (username, name);
-    
-    CREATE UNIQUE INDEX sf_user_forward_collectors_username_default
-      ON sf_user_forward_collectors (username)
-      WHERE is_default;
-    
-
-  20260128000200_drop_legacy_workspace_id_final.up.sql: |
-    -- Drop legacy workspace ID columns.
+    -- PostgreSQL database dump
     --
-    -- We historically carried legacy_project_id / legacy_workspace_id for backward
-    -- compatibility during the project→workspace rename. Those columns are no
-    -- longer used by Skyforge; keep them out of the final schema state.
-    DO $$
-    BEGIN
-      IF to_regclass('sf_workspaces') IS NULL THEN
-        RETURN;
-      END IF;
     
-      -- Extremely old DBs could still have legacy_project_id.
-      IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = 'sf_workspaces'
-          AND column_name = 'legacy_project_id'
-      ) THEN
-        ALTER TABLE sf_workspaces DROP COLUMN legacy_project_id;
-      END IF;
     
-      IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = 'sf_workspaces'
-          AND column_name = 'legacy_workspace_id'
-      ) THEN
-        ALTER TABLE sf_workspaces DROP COLUMN legacy_workspace_id;
-      END IF;
-    END $$;
+    -- Dumped from database version 16.12
+    -- Dumped by pg_dump version 18.2
     
-
-  20260129000100_auth_flow_state.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_aws_device_auth_requests (
-      request_id text PRIMARY KEY,
-      username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      region text NOT NULL,
-      start_url text NOT NULL,
-      device_code text NOT NULL,
-      user_code text NOT NULL,
-      verification_uri_complete text NOT NULL,
-      interval_seconds integer NOT NULL,
-      expires_at timestamptz NOT NULL,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
+    SET statement_timeout = 0;
+    SET lock_timeout = 0;
+    SET idle_in_transaction_session_timeout = 0;
+    SET client_encoding = 'UTF8';
+    SET standard_conforming_strings = on;
+    SET check_function_bodies = false;
+    SET xmloption = content;
+    SET client_min_messages = warning;
+    SET row_security = off;
+    
+    SET default_tablespace = '';
+    
+    SET default_table_access_method = heap;
+    
+    --
+    -- Name: sf_audit_log; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_audit_log (
+        id bigint NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        actor_username text NOT NULL,
+        actor_is_admin boolean DEFAULT false NOT NULL,
+        impersonated_username text,
+        action text NOT NULL,
+        user_id text,
+        details text
     );
     
-    CREATE INDEX IF NOT EXISTS sf_aws_device_auth_requests_user_idx ON sf_aws_device_auth_requests(username, expires_at DESC);
     
-    CREATE TABLE IF NOT EXISTS sf_cloud_credential_status (
-      key text PRIMARY KEY,
-      ok boolean NOT NULL,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-
-  20260129000200_forward_device_types_firewalls.up.sql: |
-    -- Seed Forward device types for firewall platforms used by Skyforge.
-    -- Keep this additive (do not edit earlier migrations).
+    --
+    -- Name: sf_audit_log_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
     
-    INSERT INTO sf_forward_device_types (device_key, forward_type)
-    VALUES
-      ('fortios', 'fortinet_ssh'),
-      ('fortinet', 'fortinet_ssh'),
-      ('vsrx', 'juniper_srx_ssh'),
-      ('srx', 'juniper_srx_ssh')
-    ON CONFLICT (device_key) DO NOTHING;
+    CREATE SEQUENCE public.sf_audit_log_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
     
-
-  20260130000100_forward_device_types_juniper_junos.up.sql: |
-    -- Seed Forward device types for Juniper routers/switches.
-    -- Netlab uses vjunos-* and vmx device keys; Forward expects explicit classic types.
     
-    INSERT INTO sf_forward_device_types (device_key, forward_type)
-    VALUES
-      ('vjunos-switch', 'juniper_junos_ssh'),
-      ('vjunos-router', 'juniper_junos_ssh'),
-      ('vmx',           'juniper_junos_ssh'),
-      ('junos',         'juniper_junos_ssh')
-    ON CONFLICT (device_key) DO UPDATE SET forward_type = EXCLUDED.forward_type;
+    --
+    -- Name: sf_audit_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
     
-
-  20260130000200_user_servicenow_configs.down.sql: |
-    DROP TABLE IF EXISTS sf_user_servicenow_configs;
+    ALTER SEQUENCE public.sf_audit_log_id_seq OWNED BY public.sf_audit_log.id;
     
-
-  20260130000200_user_servicenow_configs.up.sql: |
-    CREATE TABLE sf_user_servicenow_configs (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      instance_url text NOT NULL,
-      admin_username text NOT NULL,
-      admin_password text NOT NULL,
-      forward_base_url text NOT NULL,
-      forward_username text NOT NULL,
-      forward_password text NOT NULL,
-      last_install_status text NOT NULL DEFAULT '',
-      last_install_error text NOT NULL DEFAULT '',
-      last_install_started_at timestamptz,
-      last_install_finished_at timestamptz,
-      updated_at timestamptz NOT NULL DEFAULT now()
+    
+    --
+    -- Name: sf_aws_device_auth_requests; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_aws_device_auth_requests (
+        request_id text NOT NULL,
+        username text NOT NULL,
+        region text NOT NULL,
+        start_url text NOT NULL,
+        device_code text NOT NULL,
+        user_code text NOT NULL,
+        verification_uri_complete text NOT NULL,
+        interval_seconds integer NOT NULL,
+        expires_at timestamp with time zone NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-
-  20260130000300_servicenow_forward_collector_id.down.sql: |
-    ALTER TABLE sf_user_servicenow_configs
-      DROP COLUMN IF EXISTS forward_collector_config_id;
     
-
-  20260130000300_servicenow_forward_collector_id.up.sql: |
-    ALTER TABLE sf_user_servicenow_configs
-      ADD COLUMN forward_collector_config_id text NOT NULL DEFAULT '';
+    --
+    -- Name: sf_aws_sso_tokens; Type: TABLE; Schema: public; Owner: -
+    --
     
-
-  20260130000400_forward_device_types_remove_srx.down.sql: |
-    -- Restore legacy alias key for Juniper SRX if needed.
-    
-    INSERT INTO sf_forward_device_types (device_key, forward_type)
-    VALUES ('srx', 'juniper_srx_ssh')
-    ON CONFLICT (device_key) DO NOTHING;
-
-  20260130000400_forward_device_types_remove_srx.up.sql: |
-    -- Collapse Juniper SRX keys to a single canonical device_key (vsrx).
-    
-    DELETE FROM sf_forward_device_types WHERE device_key = 'srx';
-
-  20260130001000_user_gemini_oauth.down.sql: |
-    DROP TABLE IF EXISTS sf_user_gemini_oauth;
-    
-
-  20260130001000_user_gemini_oauth.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_gemini_oauth (
-      username TEXT PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      email TEXT NOT NULL,
-      scopes TEXT NOT NULL,
-      refresh_token_enc TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    CREATE TABLE public.sf_aws_sso_tokens (
+        username text NOT NULL,
+        start_url text NOT NULL,
+        region text NOT NULL,
+        client_id text,
+        client_secret text,
+        client_secret_expires_at timestamp with time zone,
+        access_token text,
+        access_token_expires_at timestamp with time zone,
+        refresh_token text,
+        refresh_token_expires_at timestamp with time zone,
+        last_authenticated_at_utc timestamp with time zone,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS idx_sf_user_gemini_oauth_updated_at ON sf_user_gemini_oauth(updated_at);
     
-
-  20260201000100_user_settings.down.sql: |
-    DROP TABLE IF EXISTS sf_user_settings;
-
-  20260201000100_user_settings.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_settings (
-      user_id TEXT PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      default_forward_collector_config_id TEXT NOT NULL DEFAULT '',
-      default_env_json TEXT NOT NULL DEFAULT '[]',
-      updated_at timestamptz NOT NULL DEFAULT now()
-    );
-
-  20260201000200_user_cloud_credentials.down.sql: |
-    DROP TABLE IF EXISTS sf_user_gcp_credentials;
-    DROP TABLE IF EXISTS sf_user_azure_credentials;
-    DROP TABLE IF EXISTS sf_user_aws_static_credentials;
+    --
+    -- Name: sf_capacity_nqe_cache; Type: TABLE; Schema: public; Owner: -
+    --
     
-
-  20260201000200_user_cloud_credentials.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_aws_static_credentials (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      access_key_id text NOT NULL,
-      secret_access_key text NOT NULL,
-      updated_at timestamptz NOT NULL DEFAULT now()
+    CREATE TABLE public.sf_capacity_nqe_cache (
+        id bigint NOT NULL,
+        user_id text NOT NULL,
+        deployment_id uuid,
+        forward_network_id text NOT NULL,
+        query_id text NOT NULL,
+        snapshot_id text DEFAULT ''::text NOT NULL,
+        payload jsonb NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE TABLE IF NOT EXISTS sf_user_azure_credentials (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      tenant_id text NOT NULL,
-      client_id text NOT NULL,
-      client_secret text NOT NULL,
-      subscription_id text,
-      updated_at timestamptz NOT NULL DEFAULT now()
+    
+    --
+    -- Name: sf_capacity_nqe_cache_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_capacity_nqe_cache_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_capacity_nqe_cache_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_capacity_nqe_cache_id_seq OWNED BY public.sf_capacity_nqe_cache.id;
+    
+    
+    --
+    -- Name: sf_capacity_rollups; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_capacity_rollups (
+        id bigint NOT NULL,
+        user_id text NOT NULL,
+        deployment_id uuid,
+        forward_network_id text NOT NULL,
+        object_type text NOT NULL,
+        object_id text NOT NULL,
+        metric text NOT NULL,
+        window_label text NOT NULL,
+        period_end timestamp with time zone NOT NULL,
+        samples integer DEFAULT 0 NOT NULL,
+        avg double precision,
+        p95 double precision,
+        p99 double precision,
+        max double precision,
+        slope_per_day double precision,
+        forecast_crossing_ts timestamp with time zone,
+        threshold double precision,
+        details jsonb DEFAULT '{}'::jsonb NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE TABLE IF NOT EXISTS sf_user_gcp_credentials (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      service_account_json text NOT NULL,
-      project_id_override text,
-      updated_at timestamptz NOT NULL DEFAULT now()
+    
+    --
+    -- Name: sf_capacity_rollups_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_capacity_rollups_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_capacity_rollups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_capacity_rollups_id_seq OWNED BY public.sf_capacity_rollups.id;
+    
+    
+    --
+    -- Name: sf_cloud_credential_status; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_cloud_credential_status (
+        key text NOT NULL,
+        ok boolean NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-
-  20260201000300_user_servers.down.sql: |
-    DROP TABLE IF EXISTS sf_user_eve_servers;
-    DROP TABLE IF EXISTS sf_user_netlab_servers;
     
-
-  20260201000300_user_servers.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_netlab_servers (
-      id uuid PRIMARY KEY,
-      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
-      name text NOT NULL,
-      api_url text NOT NULL,
-      api_insecure boolean NOT NULL DEFAULT true,
-      api_user text,
-      api_password text,
-      api_token text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now(),
-      UNIQUE (username, name)
+    --
+    -- Name: sf_cost_snapshots; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_cost_snapshots (
+        id uuid NOT NULL,
+        resource_id uuid,
+        user_id text,
+        provider text NOT NULL,
+        period_start date NOT NULL,
+        period_end date NOT NULL,
+        cost_amount numeric NOT NULL,
+        cost_currency text DEFAULT 'USD'::text NOT NULL,
+        source text,
+        metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS sf_user_netlab_servers_username_idx ON sf_user_netlab_servers(username);
     
-    CREATE TABLE IF NOT EXISTS sf_user_eve_servers (
-      id uuid PRIMARY KEY,
-      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
-      name text NOT NULL,
-      api_url text NOT NULL,
-      web_url text,
-      skip_tls_verify boolean NOT NULL DEFAULT false,
-      api_user text,
-      api_password text,
-      ssh_host text,
-      ssh_user text,
-      ssh_key text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now(),
-      UNIQUE (username, name)
+    --
+    -- Name: sf_deployment_ui_events; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_deployment_ui_events (
+        id bigint NOT NULL,
+        user_id text NOT NULL,
+        deployment_id text NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        created_by text DEFAULT ''::text NOT NULL,
+        event_type text DEFAULT ''::text NOT NULL,
+        payload jsonb DEFAULT '{}'::jsonb NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS sf_user_eve_servers_username_idx ON sf_user_eve_servers(username);
     
-
-  20260201000400_user_external_template_repos.down.sql: |
-    -- SQLite doesn't support DROP COLUMN easily; leave column in place.
+    --
+    -- Name: sf_deployment_ui_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
     
-
-  20260201000400_user_external_template_repos.up.sql: |
-    ALTER TABLE sf_user_settings
-      ADD COLUMN IF NOT EXISTS external_template_repos_json text NOT NULL DEFAULT '[]';
+    CREATE SEQUENCE public.sf_deployment_ui_events_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
     
-
-  20260201000500_user_aws_sso_credentials.down.sql: |
-    DROP TABLE IF EXISTS sf_user_aws_sso_credentials;
     
-
-  20260201000500_user_aws_sso_credentials.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_aws_sso_credentials (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      start_url text NOT NULL,
-      region text NOT NULL,
-      account_id text NOT NULL,
-      role_name text NOT NULL,
-      updated_at timestamptz NOT NULL DEFAULT now()
+    --
+    -- Name: sf_deployment_ui_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_deployment_ui_events_id_seq OWNED BY public.sf_deployment_ui_events.id;
+    
+    
+    --
+    -- Name: sf_deployments; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_deployments (
+        id uuid NOT NULL,
+        user_id text NOT NULL,
+        name text NOT NULL,
+        type text NOT NULL,
+        config jsonb DEFAULT '{}'::jsonb NOT NULL,
+        created_by text NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        last_task_user_id integer,
+        last_task_id integer,
+        last_status text,
+        last_started_at timestamp with time zone,
+        last_finished_at timestamp with time zone,
+        CONSTRAINT sf_deployments_type_check CHECK ((type = ANY (ARRAY['terraform'::text, 'netlab'::text, 'netlab-c9s'::text, 'eve_ng'::text, 'containerlab'::text, 'clabernetes'::text])))
     );
     
-
-  20260201000600_user_containerlab_servers.down.sql: |
-    DROP TABLE IF EXISTS sf_user_containerlab_servers;
     
-
-  20260201000600_user_containerlab_servers.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_containerlab_servers (
-      id uuid PRIMARY KEY,
-      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
-      name text NOT NULL,
-      api_url text NOT NULL,
-      api_insecure boolean NOT NULL DEFAULT true,
-      api_user text,
-      api_password text,
-      api_token text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now(),
-      UNIQUE (username, name)
+    --
+    -- Name: sf_dns_tokens; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_dns_tokens (
+        username text NOT NULL,
+        token text NOT NULL,
+        zone text NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS sf_user_containerlab_servers_username_idx ON sf_user_containerlab_servers(username);
     
-
-  20260201000700_workspace_allow_custom_containerlab_servers.down.sql: |
-    ALTER TABLE sf_workspaces
-      DROP COLUMN IF EXISTS allow_custom_containerlab_servers;
+    --
+    -- Name: sf_forward_device_types; Type: TABLE; Schema: public; Owner: -
+    --
     
-
-  20260201000700_workspace_allow_custom_containerlab_servers.up.sql: |
-    ALTER TABLE sf_workspaces
-      ADD COLUMN IF NOT EXISTS allow_custom_containerlab_servers boolean NOT NULL DEFAULT false;
-    
-
-  20260201000800_user_ibm_cloud_credentials.down.sql: |
-    DROP TABLE IF EXISTS sf_user_ibm_cloud_credentials;
-    
-
-  20260201000800_user_ibm_cloud_credentials.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_ibm_cloud_credentials (
-      username TEXT PRIMARY KEY,
-      api_key TEXT NOT NULL,
-      region TEXT NOT NULL,
-      resource_group_id TEXT NOT NULL DEFAULT '',
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    CREATE TABLE public.sf_forward_device_types (
+        device_key text NOT NULL,
+        forward_type text NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-
-  20260201000900_user_ai_generations.down.sql: |
-    DROP TABLE IF EXISTS sf_user_ai_generations;
     
-
-  20260201000900_user_ai_generations.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_ai_generations (
-      id uuid PRIMARY KEY,
-      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
-      provider text NOT NULL,
-      kind text NOT NULL,
-      prompt text NOT NULL,
-      content text NOT NULL,
-      warnings jsonb NOT NULL DEFAULT '[]'::jsonb,
-      created_at timestamptz NOT NULL DEFAULT now()
+    --
+    -- Name: sf_ldap_password_cache; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_ldap_password_cache (
+        username text NOT NULL,
+        encrypted_password text NOT NULL,
+        expires_at timestamp with time zone NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS idx_sf_user_ai_generations_user_created ON sf_user_ai_generations(username, created_at DESC);
     
-
-  20260201001000_user_variable_groups.down.sql: |
-    DROP TABLE IF EXISTS sf_user_variable_groups;
-
-  20260201001000_user_variable_groups.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_variable_groups (
-      id serial PRIMARY KEY,
-      username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      name text NOT NULL,
-      variables jsonb NOT NULL DEFAULT '{}'::jsonb,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
+    --
+    -- Name: sf_node_metric_snapshots; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_node_metric_snapshots (
+        node text NOT NULL,
+        metric_name text NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        metric_json jsonb NOT NULL
     );
     
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_user_variable_groups_name_uq
-      ON sf_user_variable_groups(username, name);
     
-    CREATE INDEX IF NOT EXISTS sf_user_variable_groups_username_idx
-      ON sf_user_variable_groups(username, updated_at DESC);
-
-  20260201001200_normalize_eve_ng_type.up.sql: |
-    UPDATE sf_deployments
-      SET type = 'eve_ng'
-      WHERE type = 'eve-ng';
-
-  20260201001300_workspaces_eve_ng_run_template_id.down.sql: |
-    -- NOTE: This is a best-effort rollback and may drop data if the column is in use.
-    ALTER TABLE IF EXISTS sf_workspaces
-      DROP COLUMN IF EXISTS eve_ng_run_template_id;
+    --
+    -- Name: sf_notifications; Type: TABLE; Schema: public; Owner: -
+    --
     
-
-  20260201001300_workspaces_eve_ng_run_template_id.up.sql: |
-    -- Ensure sf_workspaces has eve_ng_run_template_id (Skyforge uses this for the EVE-NG template pointer).
-    -- Older DBs may still only have labpp_run_template_id, so backfill from that when present.
-    ALTER TABLE IF EXISTS sf_workspaces
-      ADD COLUMN IF NOT EXISTS eve_ng_run_template_id integer;
-    
-    DO $$
-    BEGIN
-      IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = current_schema()
-          AND table_name = 'sf_workspaces'
-          AND column_name = 'labpp_run_template_id'
-      ) THEN
-        EXECUTE $q$
-          UPDATE sf_workspaces
-            SET eve_ng_run_template_id = labpp_run_template_id
-            WHERE eve_ng_run_template_id IS NULL
-              AND labpp_run_template_id IS NOT NULL
-        $q$;
-      END IF;
-    END $$;
-
-  20260207000100_user_elastic_config.down.sql: |
-    DROP TABLE IF EXISTS sf_user_elastic_config;
-    
-
-  20260207000100_user_elastic_config.up.sql: |
-    CREATE TABLE IF NOT EXISTS sf_user_elastic_config (
-      username TEXT PRIMARY KEY,
-      url TEXT NOT NULL,
-      auth_type TEXT NOT NULL DEFAULT 'none', -- none | api_key | basic
-      api_key_enc TEXT NOT NULL DEFAULT '',
-      basic_username TEXT NOT NULL DEFAULT '',
-      basic_password_enc TEXT NOT NULL DEFAULT '',
-      index_prefix TEXT NOT NULL DEFAULT 'skyforge',
-      verify_tls BOOLEAN NOT NULL DEFAULT true,
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    CREATE TABLE public.sf_notifications (
+        id uuid NOT NULL,
+        username text NOT NULL,
+        title text NOT NULL,
+        message text,
+        type text NOT NULL,
+        category text,
+        reference_id text,
+        priority text,
+        is_read boolean DEFAULT false NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS idx_sf_user_elastic_config_updated_at ON sf_user_elastic_config(updated_at);
     
-
-  20260207000200_capacity_tables.down.sql: |
-    DROP TABLE IF EXISTS sf_capacity_nqe_cache;
-    DROP TABLE IF EXISTS sf_capacity_rollups;
+    --
+    -- Name: sf_policy_report_audit_log; Type: TABLE; Schema: public; Owner: -
+    --
     
-
-  20260207000200_capacity_tables.up.sql: |
-    -- Keep this additive (do not edit earlier migrations).
-    
-    -- Capacity rollups store computed time-window summaries derived from Forward perf history.
-    -- period_end is the "as-of" timestamp for a rollup run (bucketed to the hour).
-    CREATE TABLE IF NOT EXISTS sf_capacity_rollups (
-      id bigserial PRIMARY KEY,
-      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      deployment_id uuid NOT NULL REFERENCES sf_deployments(id) ON DELETE CASCADE,
-      forward_network_id text NOT NULL,
-      object_type text NOT NULL,
-      object_id text NOT NULL,
-      metric text NOT NULL,
-      window_label text NOT NULL,
-      period_end timestamptz NOT NULL,
-      samples integer NOT NULL DEFAULT 0,
-      avg double precision,
-      p95 double precision,
-      p99 double precision,
-      max double precision,
-      slope_per_day double precision,
-      forecast_crossing_ts timestamptz,
-      threshold double precision,
-      details jsonb NOT NULL DEFAULT '{}'::jsonb,
-      created_at timestamptz NOT NULL DEFAULT now()
+    CREATE TABLE public.sf_policy_report_audit_log (
+        id bigint NOT NULL,
+        user_id text NOT NULL,
+        actor_username text NOT NULL,
+        action text NOT NULL,
+        details jsonb DEFAULT '{}'::jsonb NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    -- One row per (object, metric, window) per rollup run.
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_capacity_rollups_uq
-      ON sf_capacity_rollups(workspace_id, deployment_id, object_type, object_id, metric, window_label, period_end);
     
-    CREATE INDEX IF NOT EXISTS sf_capacity_rollups_lookup_idx
-      ON sf_capacity_rollups(workspace_id, deployment_id, metric, window_label, period_end DESC);
+    --
+    -- Name: sf_policy_report_audit_log_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
     
-    CREATE INDEX IF NOT EXISTS sf_capacity_rollups_object_idx
-      ON sf_capacity_rollups(workspace_id, deployment_id, object_type, object_id);
+    CREATE SEQUENCE public.sf_policy_report_audit_log_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
     
-    -- Cache for capacity-related NQE query outputs (inventory, route scale, BGP scale).
-    -- snapshot_id is intentionally defaulted to '' to allow a stable "latest" cache entry.
-    CREATE TABLE IF NOT EXISTS sf_capacity_nqe_cache (
-      id bigserial PRIMARY KEY,
-      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      deployment_id uuid NOT NULL REFERENCES sf_deployments(id) ON DELETE CASCADE,
-      forward_network_id text NOT NULL,
-      query_id text NOT NULL,
-      snapshot_id text NOT NULL DEFAULT '',
-      payload jsonb NOT NULL,
-      created_at timestamptz NOT NULL DEFAULT now()
+    
+    --
+    -- Name: sf_policy_report_audit_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_policy_report_audit_log_id_seq OWNED BY public.sf_policy_report_audit_log.id;
+    
+    
+    --
+    -- Name: sf_policy_report_exceptions; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_policy_report_exceptions (
+        id uuid NOT NULL,
+        user_id text NOT NULL,
+        finding_id text NOT NULL,
+        check_id text NOT NULL,
+        status text DEFAULT 'PROPOSED'::text NOT NULL,
+        justification text NOT NULL,
+        ticket_url text,
+        expires_at timestamp with time zone,
+        created_by text NOT NULL,
+        approved_by text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        forward_network_id text DEFAULT ''::text NOT NULL,
+        CONSTRAINT sf_policy_report_exceptions_status_check CHECK ((status = ANY (ARRAY['PROPOSED'::text, 'APPROVED'::text, 'REJECTED'::text, 'EXPIRED'::text])))
     );
     
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_capacity_nqe_cache_uq
-      ON sf_capacity_nqe_cache(workspace_id, deployment_id, query_id, snapshot_id);
     
-    CREATE INDEX IF NOT EXISTS sf_capacity_nqe_cache_lookup_idx
-      ON sf_capacity_nqe_cache(workspace_id, deployment_id, query_id, created_at DESC);
-
-  20260207000300_policy_reports_governance.down.sql: |
-    DROP TABLE IF EXISTS sf_policy_report_audit_log;
-    DROP TABLE IF EXISTS sf_policy_report_exceptions;
-    DROP TABLE IF EXISTS sf_policy_report_recert_assignments;
-    DROP TABLE IF EXISTS sf_policy_report_recert_campaigns;
+    --
+    -- Name: sf_policy_report_forward_network_credentials; Type: TABLE; Schema: public; Owner: -
+    --
     
-
-  20260207000300_policy_reports_governance.up.sql: |
-    -- Policy Reports governance primitives (recert + exceptions).
-    -- Read-only by design: these tables track review/attestation state, not config changes.
-    
-    CREATE TABLE IF NOT EXISTS sf_policy_report_recert_campaigns (
-      id uuid PRIMARY KEY,
-      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      name text NOT NULL,
-      description text,
-      forward_network_id text NOT NULL,
-      snapshot_id text NOT NULL DEFAULT '',
-      pack_id text NOT NULL,
-      status text NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN','CLOSED')),
-      due_at timestamptz,
-      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
+    CREATE TABLE public.sf_policy_report_forward_network_credentials (
+        user_id text NOT NULL,
+        username text NOT NULL,
+        forward_network_id text NOT NULL,
+        base_url_enc text NOT NULL,
+        forward_username_enc text NOT NULL,
+        forward_password_enc text NOT NULL,
+        skip_tls_verify boolean DEFAULT false NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS sf_pr_rc_campaigns_ws_idx
-      ON sf_policy_report_recert_campaigns(workspace_id, created_at DESC);
     
-    CREATE TABLE IF NOT EXISTS sf_policy_report_recert_assignments (
-      id uuid PRIMARY KEY,
-      campaign_id uuid NOT NULL REFERENCES sf_policy_report_recert_campaigns(id) ON DELETE CASCADE,
-      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      finding_id text NOT NULL,
-      check_id text NOT NULL,
-      assignee_username text REFERENCES sf_users(username) ON UPDATE CASCADE,
-      status text NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','ATTESTED','WAIVED')),
-      justification text,
-      attested_at timestamptz,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
+    --
+    -- Name: sf_policy_report_forward_networks; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_policy_report_forward_networks (
+        id uuid NOT NULL,
+        user_id text NOT NULL,
+        forward_network_id text NOT NULL,
+        name text NOT NULL,
+        description text,
+        created_by text NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        collector_config_id text
     );
     
-    CREATE INDEX IF NOT EXISTS sf_pr_rc_assignments_campaign_idx
-      ON sf_policy_report_recert_assignments(campaign_id, status, created_at DESC);
     
-    CREATE INDEX IF NOT EXISTS sf_pr_rc_assignments_ws_finding_idx
-      ON sf_policy_report_recert_assignments(workspace_id, finding_id);
+    --
+    -- Name: sf_policy_report_recert_assignments; Type: TABLE; Schema: public; Owner: -
+    --
     
-    CREATE TABLE IF NOT EXISTS sf_policy_report_exceptions (
-      id uuid PRIMARY KEY,
-      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      finding_id text NOT NULL,
-      check_id text NOT NULL,
-      status text NOT NULL DEFAULT 'PROPOSED' CHECK (status IN ('PROPOSED','APPROVED','REJECTED','EXPIRED')),
-      justification text NOT NULL,
-      ticket_url text,
-      expires_at timestamptz,
-      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      approved_by text REFERENCES sf_users(username) ON UPDATE CASCADE,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
+    CREATE TABLE public.sf_policy_report_recert_assignments (
+        id uuid NOT NULL,
+        campaign_id uuid NOT NULL,
+        user_id text NOT NULL,
+        finding_id text NOT NULL,
+        check_id text NOT NULL,
+        assignee_username text,
+        status text DEFAULT 'PENDING'::text NOT NULL,
+        justification text,
+        attested_at timestamp with time zone,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        finding jsonb DEFAULT '{}'::jsonb NOT NULL,
+        CONSTRAINT sf_policy_report_recert_assignments_status_check CHECK ((status = ANY (ARRAY['PENDING'::text, 'ATTESTED'::text, 'WAIVED'::text])))
     );
     
-    CREATE INDEX IF NOT EXISTS sf_pr_exceptions_ws_idx
-      ON sf_policy_report_exceptions(workspace_id, status, created_at DESC);
     
-    CREATE INDEX IF NOT EXISTS sf_pr_exceptions_ws_finding_idx
-      ON sf_policy_report_exceptions(workspace_id, finding_id);
+    --
+    -- Name: sf_policy_report_recert_campaigns; Type: TABLE; Schema: public; Owner: -
+    --
     
-    CREATE TABLE IF NOT EXISTS sf_policy_report_audit_log (
-      id bigserial PRIMARY KEY,
-      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      actor_username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      action text NOT NULL,
-      details jsonb NOT NULL DEFAULT '{}'::jsonb,
-      created_at timestamptz NOT NULL DEFAULT now()
+    CREATE TABLE public.sf_policy_report_recert_campaigns (
+        id uuid NOT NULL,
+        user_id text NOT NULL,
+        name text NOT NULL,
+        description text,
+        forward_network_id text NOT NULL,
+        snapshot_id text DEFAULT ''::text NOT NULL,
+        pack_id text NOT NULL,
+        status text DEFAULT 'OPEN'::text NOT NULL,
+        due_at timestamp with time zone,
+        created_by text NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_policy_report_recert_campaigns_status_check CHECK ((status = ANY (ARRAY['OPEN'::text, 'CLOSED'::text])))
     );
     
-    CREATE INDEX IF NOT EXISTS sf_pr_audit_ws_created_idx
-      ON sf_policy_report_audit_log(workspace_id, created_at DESC);
     
-
-  20260207000400_policy_reports_governance_finding_json.down.sql: |
-    DROP INDEX IF EXISTS sf_pr_exceptions_ws_finding_check_uniq;
-    DROP INDEX IF EXISTS sf_pr_rc_assignments_campaign_finding_check_uniq;
+    --
+    -- Name: sf_user_scope_eve_servers; Type: TABLE; Schema: public; Owner: -
+    --
     
-    ALTER TABLE sf_policy_report_recert_assignments
-      DROP COLUMN IF EXISTS finding;
-    
-
-  20260207000400_policy_reports_governance_finding_json.up.sql: |
-    -- Add finding JSON blobs and uniqueness constraints for Policy Reports governance.
-    
-    ALTER TABLE sf_policy_report_recert_assignments
-      ADD COLUMN IF NOT EXISTS finding jsonb NOT NULL DEFAULT '{}'::jsonb;
-    
-    -- Prevent duplicate assignments for the same finding within a campaign.
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_rc_assignments_campaign_finding_check_uniq
-      ON sf_policy_report_recert_assignments(campaign_id, finding_id, check_id);
-    
-    -- Avoid a pile-up of identical exceptions per finding.
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_exceptions_ws_finding_check_uniq
-      ON sf_policy_report_exceptions(workspace_id, finding_id, check_id);
-    
-
-  20260207000500_policy_reports_exceptions_forward_network.down.sql: |
-    -- Undo Forward network scoping for Policy Reports exceptions.
-    
-    DROP INDEX IF EXISTS sf_pr_exceptions_ws_network_status_updated_idx;
-    DROP INDEX IF EXISTS sf_pr_exceptions_ws_network_finding_check_uniq;
-    
-    ALTER TABLE sf_policy_report_exceptions
-      DROP COLUMN IF EXISTS forward_network_id;
-    
-    -- Restore pre-existing uniqueness constraint.
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_exceptions_ws_finding_check_uniq
-      ON sf_policy_report_exceptions(workspace_id, finding_id, check_id);
-    
-
-  20260207000500_policy_reports_exceptions_forward_network.up.sql: |
-    -- Scope Policy Reports exceptions to a Forward network id.
-    
-    ALTER TABLE sf_policy_report_exceptions
-      ADD COLUMN IF NOT EXISTS forward_network_id text NOT NULL DEFAULT '';
-    
-    -- Allow identical findingId/checkId exceptions across different Forward networks.
-    DROP INDEX IF EXISTS sf_pr_exceptions_ws_finding_check_uniq;
-    
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_pr_exceptions_ws_network_finding_check_uniq
-      ON sf_policy_report_exceptions(workspace_id, forward_network_id, finding_id, check_id);
-    
-    CREATE INDEX IF NOT EXISTS sf_pr_exceptions_ws_network_status_updated_idx
-      ON sf_policy_report_exceptions(workspace_id, forward_network_id, status, updated_at DESC);
-    
-
-  20260207000600_policy_reports_forward_networks.down.sql: |
-    DROP INDEX IF EXISTS sf_pr_forward_networks_ws_created_idx;
-    DROP TABLE IF EXISTS sf_policy_report_forward_networks;
-    
-
-  20260207000600_policy_reports_forward_networks.up.sql: |
-    -- Persist Forward networks (by id) for Policy Reports so users can manage multiple networks per workspace.
-    
-    CREATE TABLE IF NOT EXISTS sf_policy_report_forward_networks (
-      id uuid PRIMARY KEY,
-      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      forward_network_id text NOT NULL,
-      name text NOT NULL,
-      description text,
-      created_by text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now(),
-      UNIQUE (workspace_id, forward_network_id)
+    CREATE TABLE public.sf_user_scope_eve_servers (
+        id uuid NOT NULL,
+        user_scope_id text NOT NULL,
+        name text NOT NULL,
+        api_url text NOT NULL,
+        web_url text,
+        skip_tls_verify boolean DEFAULT false NOT NULL,
+        ssh_host text,
+        ssh_user text,
+        ssh_key text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        api_user text,
+        api_password text
     );
     
-    CREATE INDEX IF NOT EXISTS sf_pr_forward_networks_ws_created_idx
-      ON sf_policy_report_forward_networks(workspace_id, created_at DESC);
     
-
-  20260207000700_policy_reports_forward_network_credentials.down.sql: |
-    DROP INDEX IF EXISTS sf_pr_fwd_net_creds_ws_user_updated_idx;
-    DROP TABLE IF EXISTS sf_policy_report_forward_network_credentials;
+    --
+    -- Name: sf_user_scope_netlab_servers; Type: TABLE; Schema: public; Owner: -
+    --
     
-
-  20260207000700_policy_reports_forward_network_credentials.up.sql: |
-    -- Store per-user Forward credentials scoped to a Forward network id for Policy Reports.
-    -- Secrets are encrypted at rest by the application using the session secret key.
-    
-    CREATE TABLE IF NOT EXISTS sf_policy_report_forward_network_credentials (
-      workspace_id text NOT NULL REFERENCES sf_workspaces(id) ON DELETE CASCADE,
-      username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE,
-      forward_network_id text NOT NULL,
-      base_url_enc text NOT NULL,
-      forward_username_enc text NOT NULL,
-      forward_password_enc text NOT NULL,
-      skip_tls_verify boolean NOT NULL DEFAULT false,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now(),
-      PRIMARY KEY (workspace_id, username, forward_network_id)
+    CREATE TABLE public.sf_user_scope_netlab_servers (
+        id uuid NOT NULL,
+        user_scope_id text NOT NULL,
+        name text NOT NULL,
+        api_url text NOT NULL,
+        api_insecure boolean DEFAULT true NOT NULL,
+        api_token text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        api_user text,
+        api_password text
     );
     
-    CREATE INDEX IF NOT EXISTS sf_pr_fwd_net_creds_ws_user_updated_idx
-      ON sf_policy_report_forward_network_credentials(workspace_id, username, updated_at DESC);
     
-
-  20260207000800_policy_reports_forward_networks_collector_config.down.sql: |
-    ALTER TABLE sf_policy_report_forward_networks
-      DROP COLUMN IF EXISTS collector_config_id;
+    --
+    -- Name: sf_user_scope_variable_groups; Type: TABLE; Schema: public; Owner: -
+    --
     
-
-  20260207000800_policy_reports_forward_networks_collector_config.up.sql: |
-    ALTER TABLE sf_policy_report_forward_networks
-      ADD COLUMN IF NOT EXISTS collector_config_id text;
-    
-
-  20260207000900_capacity_tables_forward_network_scope.down.sql: |
-    DROP INDEX IF EXISTS sf_capacity_rollups_fwd_uq;
-    DROP INDEX IF EXISTS sf_capacity_rollups_fwd_lookup_idx;
-    DROP INDEX IF EXISTS sf_capacity_rollups_fwd_object_idx;
-    DROP INDEX IF EXISTS sf_capacity_nqe_cache_fwd_uq;
-    DROP INDEX IF EXISTS sf_capacity_nqe_cache_fwd_lookup_idx;
-    
-    -- Best-effort. This will fail if NULL rows exist.
-    ALTER TABLE sf_capacity_rollups ALTER COLUMN deployment_id SET NOT NULL;
-    ALTER TABLE sf_capacity_nqe_cache ALTER COLUMN deployment_id SET NOT NULL;
-    
-
-  20260207000900_capacity_tables_forward_network_scope.up.sql: |
-    -- Allow capacity rollups and NQE cache rows to be keyed by Forward Network ID alone
-    -- (deployment_id is NULL) to support user-managed Forward networks.
-    
-    ALTER TABLE sf_capacity_rollups ALTER COLUMN deployment_id DROP NOT NULL;
-    ALTER TABLE sf_capacity_nqe_cache ALTER COLUMN deployment_id DROP NOT NULL;
-    
-    -- Enforce uniqueness for network-scoped rows (deployment_id IS NULL).
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_capacity_rollups_fwd_uq
-      ON sf_capacity_rollups(workspace_id, forward_network_id, object_type, object_id, metric, window_label, period_end)
-      WHERE deployment_id IS NULL;
-    
-    CREATE INDEX IF NOT EXISTS sf_capacity_rollups_fwd_lookup_idx
-      ON sf_capacity_rollups(workspace_id, forward_network_id, metric, window_label, period_end DESC)
-      WHERE deployment_id IS NULL;
-    
-    CREATE INDEX IF NOT EXISTS sf_capacity_rollups_fwd_object_idx
-      ON sf_capacity_rollups(workspace_id, forward_network_id, object_type, object_id)
-      WHERE deployment_id IS NULL;
-    
-    CREATE UNIQUE INDEX IF NOT EXISTS sf_capacity_nqe_cache_fwd_uq
-      ON sf_capacity_nqe_cache(workspace_id, forward_network_id, query_id, snapshot_id)
-      WHERE deployment_id IS NULL;
-    
-    CREATE INDEX IF NOT EXISTS sf_capacity_nqe_cache_fwd_lookup_idx
-      ON sf_capacity_nqe_cache(workspace_id, forward_network_id, query_id, created_at DESC)
-      WHERE deployment_id IS NULL;
-    
-
-  20260222090000_drop_legacy_pki_gemini_ai.down.sql: |
-    -- Recreate legacy PKI/Gemini/AI tables as empty schema only.
-    
-    CREATE TABLE IF NOT EXISTS sf_pki_certs (
-      id text PRIMARY KEY,
-      username text NOT NULL,
-      workspace_id text REFERENCES sf_workspaces(id) ON DELETE SET NULL,
-      common_name text NOT NULL,
-      sans jsonb,
-      cert_pem text NOT NULL,
-      key_pem text NOT NULL,
-      issued_at timestamptz NOT NULL DEFAULT now(),
-      expires_at timestamptz NOT NULL,
-      revoked_at timestamptz
+    CREATE TABLE public.sf_user_scope_variable_groups (
+        id bigint NOT NULL,
+        user_id text NOT NULL,
+        name text NOT NULL,
+        variables jsonb DEFAULT '{}'::jsonb NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS sf_pki_certs_user_idx ON sf_pki_certs(username, issued_at DESC);
-    CREATE INDEX IF NOT EXISTS sf_pki_certs_workspace_idx ON sf_pki_certs(workspace_id);
     
-    CREATE TABLE IF NOT EXISTS sf_pki_ssh_certs (
-      id TEXT PRIMARY KEY,
-      username TEXT NOT NULL,
-      workspace_id TEXT NULL,
-      principals JSONB NOT NULL,
-      public_key TEXT NOT NULL,
-      cert TEXT NOT NULL,
-      key_pem TEXT NOT NULL,
-      issued_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-      expires_at TIMESTAMPTZ NOT NULL,
-      revoked_at TIMESTAMPTZ NULL
+    --
+    -- Name: sf_user_scope_variable_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_user_scope_variable_groups_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_user_scope_variable_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_user_scope_variable_groups_id_seq OWNED BY public.sf_user_scope_variable_groups.id;
+    
+    
+    --
+    -- Name: sf_resource_events; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_resource_events (
+        id uuid NOT NULL,
+        resource_id uuid,
+        event_type text NOT NULL,
+        actor_username text,
+        actor_is_admin boolean DEFAULT false NOT NULL,
+        impersonated_username text,
+        user_id text,
+        details jsonb DEFAULT '{}'::jsonb NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS sf_pki_ssh_certs_user_idx ON sf_pki_ssh_certs(username, issued_at DESC);
-    CREATE INDEX IF NOT EXISTS sf_pki_ssh_certs_workspace_idx ON sf_pki_ssh_certs(workspace_id);
     
-    CREATE TABLE IF NOT EXISTS sf_user_gemini_oauth (
-      username TEXT PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      email TEXT NOT NULL,
-      scopes TEXT NOT NULL,
-      refresh_token_enc TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    --
+    -- Name: sf_resources; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_resources (
+        id uuid NOT NULL,
+        provider text NOT NULL,
+        resource_id text NOT NULL,
+        resource_type text NOT NULL,
+        user_id text,
+        name text,
+        region text,
+        account_id text,
+        owner_username text,
+        status text,
+        tags jsonb DEFAULT '{}'::jsonb NOT NULL,
+        metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
+        first_seen timestamp with time zone DEFAULT now() NOT NULL,
+        last_seen timestamp with time zone DEFAULT now() NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS idx_sf_user_gemini_oauth_updated_at ON sf_user_gemini_oauth(updated_at);
     
-    CREATE TABLE IF NOT EXISTS sf_user_ai_generations (
-      id uuid PRIMARY KEY,
-      username text NOT NULL REFERENCES sf_users(username) ON DELETE CASCADE,
-      provider text NOT NULL,
-      kind text NOT NULL,
-      prompt text NOT NULL,
-      content text NOT NULL,
-      warnings jsonb NOT NULL DEFAULT '[]'::jsonb,
-      created_at timestamptz NOT NULL DEFAULT now()
+    --
+    -- Name: sf_settings; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_settings (
+        key text NOT NULL,
+        value text NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
     
-    CREATE INDEX IF NOT EXISTS idx_sf_user_ai_generations_user_created ON sf_user_ai_generations(username, created_at DESC);
-
-  20260222090000_drop_legacy_pki_gemini_ai.up.sql: |
-    -- Hard cut legacy PKI/Gemini/AI tables.
     
-    DROP INDEX IF EXISTS idx_sf_user_gemini_oauth_updated_at;
-    DROP INDEX IF EXISTS idx_sf_user_ai_generations_user_created;
+    --
+    -- Name: sf_snmp_trap_events; Type: TABLE; Schema: public; Owner: -
+    --
     
-    DROP TABLE IF EXISTS sf_pki_ssh_certs;
-    DROP TABLE IF EXISTS sf_pki_certs;
-    DROP TABLE IF EXISTS sf_user_gemini_oauth;
-    DROP TABLE IF EXISTS sf_user_ai_generations;
-
-  20260222113000_drop_legacy_elastic_config.down.sql: |
-    -- Recreate legacy Elastic integration storage schema.
-    CREATE TABLE IF NOT EXISTS sf_user_elastic_config (
-      username TEXT PRIMARY KEY,
-      url TEXT NOT NULL DEFAULT '',
-      auth_type TEXT NOT NULL DEFAULT 'none',
-      api_key_enc BYTEA,
-      basic_user TEXT NOT NULL DEFAULT '',
-      basic_pass_enc BYTEA,
-      index_prefix TEXT NOT NULL DEFAULT '',
-      verify_tls BOOLEAN NOT NULL DEFAULT true,
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    CREATE TABLE public.sf_snmp_trap_events (
+        id bigint NOT NULL,
+        received_at timestamp with time zone DEFAULT now() NOT NULL,
+        username text,
+        source_ip inet,
+        community text,
+        oid text,
+        vars_json text,
+        raw_hex text
     );
     
-    CREATE INDEX IF NOT EXISTS idx_sf_user_elastic_config_updated_at
-      ON sf_user_elastic_config(updated_at);
-
-  20260222113000_drop_legacy_elastic_config.up.sql: |
-    -- Hard cut legacy Elastic integration storage.
-    DROP INDEX IF EXISTS idx_sf_user_elastic_config_updated_at;
-    DROP TABLE IF EXISTS sf_user_elastic_config;
-
-  20260222140000_drop_legacy_user_forward_credentials.down.sql: |
-    -- Recreate legacy single-collector credentials schema (empty) for rollback.
-    CREATE TABLE IF NOT EXISTS sf_user_forward_credentials (
-      username text PRIMARY KEY REFERENCES sf_users(username) ON DELETE CASCADE,
-      base_url text NOT NULL,
-      skip_tls_verify boolean NOT NULL DEFAULT false,
-      forward_username text NOT NULL,
-      forward_password text NOT NULL,
-      collector_id text,
-      collector_username text,
-      authorization_key text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
+    
+    --
+    -- Name: sf_snmp_trap_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_snmp_trap_events_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_snmp_trap_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_snmp_trap_events_id_seq OWNED BY public.sf_snmp_trap_events.id;
+    
+    
+    --
+    -- Name: sf_snmp_trap_tokens; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_snmp_trap_tokens (
+        username text NOT NULL,
+        community text NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
     );
-
-  20260222140000_drop_legacy_user_forward_credentials.up.sql: |
-    -- Hard cut legacy single-collector credentials table.
-    DROP TABLE IF EXISTS sf_user_forward_credentials;
-
-  20260222150000_user_scope_columns.down.sql: |
-    DO $$
-    DECLARE
-      rec RECORD;
-    BEGIN
-      FOR rec IN
-        SELECT table_schema, table_name
-        FROM information_schema.columns
-        WHERE table_schema = 'public' AND column_name = 'user_id'
-      LOOP
-        EXECUTE format(
-          'ALTER TABLE %I.%I RENAME COLUMN user_id TO workspace_id',
-          rec.table_schema, rec.table_name
-        );
-      END LOOP;
     
-      FOR rec IN
-        SELECT table_schema, table_name
-        FROM information_schema.columns
-        WHERE table_schema = 'public' AND column_name = 'last_task_user_id'
-      LOOP
-        EXECUTE format(
-          'ALTER TABLE %I.%I RENAME COLUMN last_task_user_id TO last_task_workspace_id',
-          rec.table_schema, rec.table_name
-        );
-      END LOOP;
-    END
-    $$;
-
-  20260222150000_user_scope_columns.up.sql: |
-    DO $$
-    DECLARE
-      rec RECORD;
-    BEGIN
-      FOR rec IN
-        SELECT table_schema, table_name
-        FROM information_schema.columns
-        WHERE table_schema = 'public' AND column_name = 'workspace_id'
-      LOOP
-        EXECUTE format(
-          'ALTER TABLE %I.%I RENAME COLUMN workspace_id TO user_id',
-          rec.table_schema, rec.table_name
-        );
-      END LOOP;
     
-      FOR rec IN
-        SELECT table_schema, table_name
-        FROM information_schema.columns
-        WHERE table_schema = 'public' AND column_name = 'last_task_workspace_id'
-      LOOP
-        EXECUTE format(
-          'ALTER TABLE %I.%I RENAME COLUMN last_task_workspace_id TO last_task_user_id',
-          rec.table_schema, rec.table_name
-        );
-      END LOOP;
-    END
-    $$;
+    --
+    -- Name: sf_syslog_events; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_syslog_events (
+        id bigint NOT NULL,
+        received_at timestamp with time zone DEFAULT now() NOT NULL,
+        source_ip inet NOT NULL,
+        hostname text,
+        app_name text,
+        proc_id text,
+        msg_id text,
+        facility integer,
+        severity integer,
+        message text,
+        raw text NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_syslog_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_syslog_events_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_syslog_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_syslog_events_id_seq OWNED BY public.sf_syslog_events.id;
+    
+    
+    --
+    -- Name: sf_syslog_routes; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_syslog_routes (
+        source_cidr cidr NOT NULL,
+        owner_username text NOT NULL,
+        label text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_task_events; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_task_events (
+        id bigint NOT NULL,
+        task_id bigint NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        event_type text NOT NULL,
+        payload jsonb DEFAULT '{}'::jsonb NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_task_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_task_events_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_task_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_task_events_id_seq OWNED BY public.sf_task_events.id;
+    
+    
+    --
+    -- Name: sf_task_logs; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_task_logs (
+        id bigint NOT NULL,
+        task_id bigint NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        stream text DEFAULT 'stdout'::text NOT NULL,
+        output text NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_task_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_task_logs_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_task_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_task_logs_id_seq OWNED BY public.sf_task_logs.id;
+    
+    
+    --
+    -- Name: sf_tasks; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_tasks (
+        id bigint NOT NULL,
+        user_id text NOT NULL,
+        deployment_id uuid,
+        task_type text NOT NULL,
+        status text NOT NULL,
+        message text,
+        metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
+        created_by text NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        started_at timestamp with time zone,
+        finished_at timestamp with time zone,
+        error text,
+        priority integer DEFAULT 0 NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_tasks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_tasks_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_tasks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_tasks_id_seq OWNED BY public.sf_tasks.id;
+    
+    
+    --
+    -- Name: sf_taskworker_heartbeats; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_taskworker_heartbeats (
+        instance text NOT NULL,
+        last_seen timestamp with time zone NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_template_indexes; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_template_indexes (
+        kind text NOT NULL,
+        owner text NOT NULL,
+        repo text NOT NULL,
+        branch text NOT NULL,
+        dir text NOT NULL,
+        head_sha text NOT NULL,
+        templates jsonb DEFAULT '[]'::jsonb NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_usage_snapshots; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_usage_snapshots (
+        id uuid NOT NULL,
+        user_id text,
+        provider text NOT NULL,
+        scope_type text NOT NULL,
+        scope_id text,
+        metric text NOT NULL,
+        value numeric NOT NULL,
+        unit text,
+        metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
+        collected_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_aws_sso_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_aws_sso_credentials (
+        username text NOT NULL,
+        start_url text NOT NULL,
+        region text NOT NULL,
+        account_id text NOT NULL,
+        role_name text NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_aws_static_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_aws_static_credentials (
+        username text NOT NULL,
+        access_key_id text NOT NULL,
+        secret_access_key text NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_azure_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_azure_credentials (
+        username text NOT NULL,
+        tenant_id text NOT NULL,
+        client_id text NOT NULL,
+        client_secret text NOT NULL,
+        subscription_id text,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_containerlab_servers; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_containerlab_servers (
+        id uuid NOT NULL,
+        username text NOT NULL,
+        name text NOT NULL,
+        api_url text NOT NULL,
+        api_insecure boolean DEFAULT true NOT NULL,
+        api_user text,
+        api_password text,
+        api_token text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_eve_servers; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_eve_servers (
+        id uuid NOT NULL,
+        username text NOT NULL,
+        name text NOT NULL,
+        api_url text NOT NULL,
+        web_url text,
+        skip_tls_verify boolean DEFAULT false NOT NULL,
+        api_user text,
+        api_password text,
+        ssh_host text,
+        ssh_user text,
+        ssh_key text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_forward_collectors; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_forward_collectors (
+        id text NOT NULL,
+        username text NOT NULL,
+        name text NOT NULL,
+        base_url text NOT NULL,
+        skip_tls_verify boolean DEFAULT false NOT NULL,
+        forward_username text NOT NULL,
+        forward_password text NOT NULL,
+        collector_id text,
+        collector_username text,
+        authorization_key text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        last_used_at timestamp with time zone,
+        is_default boolean DEFAULT false NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_gcp_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_gcp_credentials (
+        username text NOT NULL,
+        service_account_json text NOT NULL,
+        project_id_override text,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_git_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_git_credentials (
+        username text NOT NULL,
+        ssh_public_key text,
+        ssh_private_key text,
+        https_username text,
+        https_token text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_ibm_cloud_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_ibm_cloud_credentials (
+        username text NOT NULL,
+        api_key text NOT NULL,
+        region text NOT NULL,
+        resource_group_id text DEFAULT ''::text NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_netlab_servers; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_netlab_servers (
+        id uuid NOT NULL,
+        username text NOT NULL,
+        name text NOT NULL,
+        api_url text NOT NULL,
+        api_insecure boolean DEFAULT true NOT NULL,
+        api_user text,
+        api_password text,
+        api_token text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_servicenow_configs; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_servicenow_configs (
+        username text NOT NULL,
+        instance_url text NOT NULL,
+        admin_username text NOT NULL,
+        admin_password text NOT NULL,
+        forward_base_url text NOT NULL,
+        forward_username text NOT NULL,
+        forward_password text NOT NULL,
+        last_install_status text DEFAULT ''::text NOT NULL,
+        last_install_error text DEFAULT ''::text NOT NULL,
+        last_install_started_at timestamp with time zone,
+        last_install_finished_at timestamp with time zone,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        forward_collector_config_id text DEFAULT ''::text NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_settings; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_settings (
+        user_id text NOT NULL,
+        default_forward_collector_config_id text DEFAULT ''::text NOT NULL,
+        default_env_json text DEFAULT '[]'::text NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        external_template_repos_json text DEFAULT '[]'::text NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_variable_groups; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_variable_groups (
+        id integer NOT NULL,
+        username text NOT NULL,
+        name text NOT NULL,
+        variables jsonb DEFAULT '{}'::jsonb NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_variable_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_user_variable_groups_id_seq
+        AS integer
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_user_variable_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_user_variable_groups_id_seq OWNED BY public.sf_user_variable_groups.id;
+    
+    
+    --
+    -- Name: sf_users; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_users (
+        username text NOT NULL,
+        display_name text,
+        email text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        last_seen_at timestamp with time zone
+    );
+    
+    
+    --
+    -- Name: sf_webhook_events; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_webhook_events (
+        id bigint NOT NULL,
+        received_at timestamp with time zone DEFAULT now() NOT NULL,
+        username text,
+        token text NOT NULL,
+        method text NOT NULL,
+        path text NOT NULL,
+        source_ip inet,
+        headers_json text,
+        body text
+    );
+    
+    
+    --
+    -- Name: sf_webhook_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+    --
+    
+    CREATE SEQUENCE public.sf_webhook_events_id_seq
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    
+    
+    --
+    -- Name: sf_webhook_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+    --
+    
+    ALTER SEQUENCE public.sf_webhook_events_id_seq OWNED BY public.sf_webhook_events.id;
+    
+    
+    --
+    -- Name: sf_webhook_tokens; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_webhook_tokens (
+        username text NOT NULL,
+        token text NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_scope_aws_static_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_scope_aws_static_credentials (
+        user_id text NOT NULL,
+        access_key_id text NOT NULL,
+        secret_access_key text NOT NULL,
+        session_token text,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_scope_azure_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_scope_azure_credentials (
+        user_id text NOT NULL,
+        tenant_id text NOT NULL,
+        client_id text NOT NULL,
+        client_secret text NOT NULL,
+        subscription_id text,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_scope_forward_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_scope_forward_credentials (
+        user_id text NOT NULL,
+        base_url text NOT NULL,
+        username text NOT NULL,
+        password text NOT NULL,
+        device_username text,
+        device_password text,
+        jump_host text,
+        jump_username text,
+        jump_private_key text,
+        jump_cert text,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        collector_id text,
+        collector_username text
+    );
+    
+    
+    --
+    -- Name: sf_user_scope_gcp_credentials; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_scope_gcp_credentials (
+        user_id text NOT NULL,
+        service_account_json text NOT NULL,
+        project_id_override text,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_user_scope_groups; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_scope_groups (
+        user_id text NOT NULL,
+        group_name text NOT NULL,
+        role text NOT NULL,
+        granted_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_project_groups_role_check CHECK ((role = ANY (ARRAY['owner'::text, 'editor'::text, 'viewer'::text])))
+    );
+    
+    
+    --
+    -- Name: sf_user_scope_members; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_scope_members (
+        user_id text NOT NULL,
+        username text NOT NULL,
+        role text NOT NULL,
+        granted_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_project_members_role_check CHECK ((role = ANY (ARRAY['owner'::text, 'editor'::text, 'viewer'::text])))
+    );
+    
+    
+    --
+    -- Name: sf_user_scopes; Type: TABLE; Schema: public; Owner: -
+    --
+    
+    CREATE TABLE public.sf_user_scopes (
+        id text NOT NULL,
+        slug text NOT NULL,
+        name text NOT NULL,
+        description text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        created_by text NOT NULL,
+        blueprint text,
+        default_branch text,
+        terraform_state_key text,
+        terraform_init_template_id integer,
+        terraform_plan_template_id integer,
+        terraform_apply_template_id integer,
+        ansible_run_template_id integer,
+        netlab_run_template_id integer,
+        aws_account_id text,
+        aws_role_name text,
+        aws_region text,
+        aws_auth_method text,
+        artifacts_bucket text,
+        eve_server text,
+        netlab_server text,
+        gitea_owner text NOT NULL,
+        gitea_repo text NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        is_public boolean DEFAULT false NOT NULL,
+        eve_ng_run_template_id integer,
+        containerlab_run_template_id integer,
+        allow_external_template_repos boolean DEFAULT false NOT NULL,
+        allow_custom_eve_servers boolean DEFAULT false NOT NULL,
+        allow_custom_netlab_servers boolean DEFAULT false NOT NULL,
+        external_template_repos jsonb DEFAULT '[]'::jsonb NOT NULL,
+        allow_custom_containerlab_servers boolean DEFAULT false NOT NULL
+    );
+    
+    
+    --
+    -- Name: sf_audit_log id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_audit_log ALTER COLUMN id SET DEFAULT nextval('public.sf_audit_log_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_capacity_nqe_cache id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_capacity_nqe_cache ALTER COLUMN id SET DEFAULT nextval('public.sf_capacity_nqe_cache_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_capacity_rollups id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_capacity_rollups ALTER COLUMN id SET DEFAULT nextval('public.sf_capacity_rollups_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_deployment_ui_events id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_deployment_ui_events ALTER COLUMN id SET DEFAULT nextval('public.sf_deployment_ui_events_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_policy_report_audit_log id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_audit_log ALTER COLUMN id SET DEFAULT nextval('public.sf_policy_report_audit_log_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_snmp_trap_events id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_snmp_trap_events ALTER COLUMN id SET DEFAULT nextval('public.sf_snmp_trap_events_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_syslog_events id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_syslog_events ALTER COLUMN id SET DEFAULT nextval('public.sf_syslog_events_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_task_events id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_task_events ALTER COLUMN id SET DEFAULT nextval('public.sf_task_events_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_task_logs id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_task_logs ALTER COLUMN id SET DEFAULT nextval('public.sf_task_logs_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_tasks id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_tasks ALTER COLUMN id SET DEFAULT nextval('public.sf_tasks_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_user_variable_groups id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_variable_groups ALTER COLUMN id SET DEFAULT nextval('public.sf_user_variable_groups_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_webhook_events id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_webhook_events ALTER COLUMN id SET DEFAULT nextval('public.sf_webhook_events_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_user_scope_variable_groups id; Type: DEFAULT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_variable_groups ALTER COLUMN id SET DEFAULT nextval('public.sf_user_scope_variable_groups_id_seq'::regclass);
+    
+    
+    --
+    -- Name: sf_audit_log sf_audit_log_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_audit_log
+        ADD CONSTRAINT sf_audit_log_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_aws_device_auth_requests sf_aws_device_auth_requests_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_aws_device_auth_requests
+        ADD CONSTRAINT sf_aws_device_auth_requests_pkey PRIMARY KEY (request_id);
+    
+    
+    --
+    -- Name: sf_aws_sso_tokens sf_aws_sso_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_aws_sso_tokens
+        ADD CONSTRAINT sf_aws_sso_tokens_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_capacity_nqe_cache sf_capacity_nqe_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_capacity_nqe_cache
+        ADD CONSTRAINT sf_capacity_nqe_cache_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_capacity_rollups sf_capacity_rollups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_capacity_rollups
+        ADD CONSTRAINT sf_capacity_rollups_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_cloud_credential_status sf_cloud_credential_status_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_cloud_credential_status
+        ADD CONSTRAINT sf_cloud_credential_status_pkey PRIMARY KEY (key);
+    
+    
+    --
+    -- Name: sf_cost_snapshots sf_cost_snapshots_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_cost_snapshots
+        ADD CONSTRAINT sf_cost_snapshots_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_deployment_ui_events sf_deployment_ui_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_deployment_ui_events
+        ADD CONSTRAINT sf_deployment_ui_events_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_deployments sf_deployments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_deployments
+        ADD CONSTRAINT sf_deployments_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_dns_tokens sf_dns_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_dns_tokens
+        ADD CONSTRAINT sf_dns_tokens_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_forward_device_types sf_forward_device_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_forward_device_types
+        ADD CONSTRAINT sf_forward_device_types_pkey PRIMARY KEY (device_key);
+    
+    
+    --
+    -- Name: sf_ldap_password_cache sf_ldap_password_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_ldap_password_cache
+        ADD CONSTRAINT sf_ldap_password_cache_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_node_metric_snapshots sf_node_metric_snapshots_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_node_metric_snapshots
+        ADD CONSTRAINT sf_node_metric_snapshots_pkey PRIMARY KEY (node, metric_name);
+    
+    
+    --
+    -- Name: sf_notifications sf_notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_notifications
+        ADD CONSTRAINT sf_notifications_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_policy_report_audit_log sf_policy_report_audit_log_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_audit_log
+        ADD CONSTRAINT sf_policy_report_audit_log_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_policy_report_exceptions sf_policy_report_exceptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_exceptions
+        ADD CONSTRAINT sf_policy_report_exceptions_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_policy_report_forward_networks sf_policy_report_forward_netw_user_scope_id_forward_network__key; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_forward_networks
+        ADD CONSTRAINT sf_policy_report_forward_netw_user_scope_id_forward_network__key UNIQUE (user_id, forward_network_id);
+    
+    
+    --
+    -- Name: sf_policy_report_forward_network_credentials sf_policy_report_forward_network_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_forward_network_credentials
+        ADD CONSTRAINT sf_policy_report_forward_network_credentials_pkey PRIMARY KEY (user_id, username, forward_network_id);
+    
+    
+    --
+    -- Name: sf_policy_report_forward_networks sf_policy_report_forward_networks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_forward_networks
+        ADD CONSTRAINT sf_policy_report_forward_networks_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_policy_report_recert_assignments sf_policy_report_recert_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_recert_assignments
+        ADD CONSTRAINT sf_policy_report_recert_assignments_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_policy_report_recert_campaigns sf_policy_report_recert_campaigns_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_recert_campaigns
+        ADD CONSTRAINT sf_policy_report_recert_campaigns_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_scope_aws_static_credentials sf_project_aws_static_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_aws_static_credentials
+        ADD CONSTRAINT sf_project_aws_static_credentials_pkey PRIMARY KEY (user_id);
+    
+    
+    --
+    -- Name: sf_user_scope_azure_credentials sf_project_azure_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_azure_credentials
+        ADD CONSTRAINT sf_project_azure_credentials_pkey PRIMARY KEY (user_id);
+    
+    
+    --
+    -- Name: sf_user_scope_eve_servers sf_user_scope_eve_servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_eve_servers
+        ADD CONSTRAINT sf_user_scope_eve_servers_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_scope_eve_servers sf_user_scope_eve_servers_project_id_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_eve_servers
+        ADD CONSTRAINT sf_user_scope_eve_servers_project_id_name_key UNIQUE (user_scope_id, name);
+    
+    
+    --
+    -- Name: sf_user_scope_forward_credentials sf_project_forward_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_forward_credentials
+        ADD CONSTRAINT sf_project_forward_credentials_pkey PRIMARY KEY (user_id);
+    
+    
+    --
+    -- Name: sf_user_scope_gcp_credentials sf_project_gcp_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_gcp_credentials
+        ADD CONSTRAINT sf_project_gcp_credentials_pkey PRIMARY KEY (user_id);
+    
+    
+    --
+    -- Name: sf_user_scope_groups sf_project_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_groups
+        ADD CONSTRAINT sf_project_groups_pkey PRIMARY KEY (user_id, group_name);
+    
+    
+    --
+    -- Name: sf_user_scope_members sf_project_members_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_members
+        ADD CONSTRAINT sf_project_members_pkey PRIMARY KEY (user_id, username);
+    
+    
+    --
+    -- Name: sf_user_scope_netlab_servers sf_user_scope_netlab_servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_netlab_servers
+        ADD CONSTRAINT sf_user_scope_netlab_servers_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_scope_netlab_servers sf_user_scope_netlab_servers_project_id_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_netlab_servers
+        ADD CONSTRAINT sf_user_scope_netlab_servers_project_id_name_key UNIQUE (user_scope_id, name);
+    
+    
+    --
+    -- Name: sf_user_scope_variable_groups sf_project_variable_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_variable_groups
+        ADD CONSTRAINT sf_project_variable_groups_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_scopes sf_projects_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scopes
+        ADD CONSTRAINT sf_projects_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_scopes sf_projects_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scopes
+        ADD CONSTRAINT sf_projects_slug_key UNIQUE (slug);
+    
+    
+    --
+    -- Name: sf_resource_events sf_resource_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_resource_events
+        ADD CONSTRAINT sf_resource_events_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_resources sf_resources_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_resources
+        ADD CONSTRAINT sf_resources_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_settings sf_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_settings
+        ADD CONSTRAINT sf_settings_pkey PRIMARY KEY (key);
+    
+    
+    --
+    -- Name: sf_snmp_trap_events sf_snmp_trap_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_snmp_trap_events
+        ADD CONSTRAINT sf_snmp_trap_events_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_snmp_trap_tokens sf_snmp_trap_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_snmp_trap_tokens
+        ADD CONSTRAINT sf_snmp_trap_tokens_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_syslog_events sf_syslog_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_syslog_events
+        ADD CONSTRAINT sf_syslog_events_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_syslog_routes sf_syslog_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_syslog_routes
+        ADD CONSTRAINT sf_syslog_routes_pkey PRIMARY KEY (source_cidr);
+    
+    
+    --
+    -- Name: sf_task_events sf_task_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_task_events
+        ADD CONSTRAINT sf_task_events_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_task_logs sf_task_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_task_logs
+        ADD CONSTRAINT sf_task_logs_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_tasks sf_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_tasks
+        ADD CONSTRAINT sf_tasks_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_taskworker_heartbeats sf_taskworker_heartbeats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_taskworker_heartbeats
+        ADD CONSTRAINT sf_taskworker_heartbeats_pkey PRIMARY KEY (instance);
+    
+    
+    --
+    -- Name: sf_template_indexes sf_template_indexes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_template_indexes
+        ADD CONSTRAINT sf_template_indexes_pkey PRIMARY KEY (kind, owner, repo, branch, dir);
+    
+    
+    --
+    -- Name: sf_usage_snapshots sf_usage_snapshots_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_usage_snapshots
+        ADD CONSTRAINT sf_usage_snapshots_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_aws_sso_credentials sf_user_aws_sso_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_aws_sso_credentials
+        ADD CONSTRAINT sf_user_aws_sso_credentials_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_user_aws_static_credentials sf_user_aws_static_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_aws_static_credentials
+        ADD CONSTRAINT sf_user_aws_static_credentials_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_user_azure_credentials sf_user_azure_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_azure_credentials
+        ADD CONSTRAINT sf_user_azure_credentials_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_user_containerlab_servers sf_user_containerlab_servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_containerlab_servers
+        ADD CONSTRAINT sf_user_containerlab_servers_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_containerlab_servers sf_user_containerlab_servers_username_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_containerlab_servers
+        ADD CONSTRAINT sf_user_containerlab_servers_username_name_key UNIQUE (username, name);
+    
+    
+    --
+    -- Name: sf_user_eve_servers sf_user_eve_servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_eve_servers
+        ADD CONSTRAINT sf_user_eve_servers_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_eve_servers sf_user_eve_servers_username_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_eve_servers
+        ADD CONSTRAINT sf_user_eve_servers_username_name_key UNIQUE (username, name);
+    
+    
+    --
+    -- Name: sf_user_forward_collectors sf_user_forward_collectors_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_forward_collectors
+        ADD CONSTRAINT sf_user_forward_collectors_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_gcp_credentials sf_user_gcp_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_gcp_credentials
+        ADD CONSTRAINT sf_user_gcp_credentials_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_user_git_credentials sf_user_git_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_git_credentials
+        ADD CONSTRAINT sf_user_git_credentials_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_user_ibm_cloud_credentials sf_user_ibm_cloud_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_ibm_cloud_credentials
+        ADD CONSTRAINT sf_user_ibm_cloud_credentials_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_user_netlab_servers sf_user_netlab_servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_netlab_servers
+        ADD CONSTRAINT sf_user_netlab_servers_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_user_netlab_servers sf_user_netlab_servers_username_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_netlab_servers
+        ADD CONSTRAINT sf_user_netlab_servers_username_name_key UNIQUE (username, name);
+    
+    
+    --
+    -- Name: sf_user_servicenow_configs sf_user_servicenow_configs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_servicenow_configs
+        ADD CONSTRAINT sf_user_servicenow_configs_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_user_settings sf_user_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_settings
+        ADD CONSTRAINT sf_user_settings_pkey PRIMARY KEY (user_id);
+    
+    
+    --
+    -- Name: sf_user_variable_groups sf_user_variable_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_variable_groups
+        ADD CONSTRAINT sf_user_variable_groups_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_users sf_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_users
+        ADD CONSTRAINT sf_users_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: sf_webhook_events sf_webhook_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_webhook_events
+        ADD CONSTRAINT sf_webhook_events_pkey PRIMARY KEY (id);
+    
+    
+    --
+    -- Name: sf_webhook_tokens sf_webhook_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_webhook_tokens
+        ADD CONSTRAINT sf_webhook_tokens_pkey PRIMARY KEY (username);
+    
+    
+    --
+    -- Name: idx_sf_ldap_password_cache_expires_at; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX idx_sf_ldap_password_cache_expires_at ON public.sf_ldap_password_cache USING btree (expires_at DESC);
+    
+    
+    --
+    -- Name: idx_sf_node_metric_snapshots_updated_at; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX idx_sf_node_metric_snapshots_updated_at ON public.sf_node_metric_snapshots USING btree (updated_at DESC);
+    
+    
+    --
+    -- Name: idx_sf_taskworker_heartbeats_last_seen; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX idx_sf_taskworker_heartbeats_last_seen ON public.sf_taskworker_heartbeats USING btree (last_seen DESC);
+    
+    
+    --
+    -- Name: idx_sf_template_indexes_updated_at; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX idx_sf_template_indexes_updated_at ON public.sf_template_indexes USING btree (updated_at DESC);
+    
+    
+    --
+    -- Name: sf_audit_log_actor_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_audit_log_actor_idx ON public.sf_audit_log USING btree (actor_username);
+    
+    
+    --
+    -- Name: sf_audit_log_created_at_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_audit_log_created_at_idx ON public.sf_audit_log USING btree (created_at DESC);
+    
+    
+    --
+    -- Name: sf_aws_device_auth_requests_user_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_aws_device_auth_requests_user_idx ON public.sf_aws_device_auth_requests USING btree (username, expires_at DESC);
+    
+    
+    --
+    -- Name: sf_capacity_nqe_cache_fwd_lookup_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_capacity_nqe_cache_fwd_lookup_idx ON public.sf_capacity_nqe_cache USING btree (user_id, forward_network_id, query_id, created_at DESC) WHERE (deployment_id IS NULL);
+    
+    
+    --
+    -- Name: sf_capacity_nqe_cache_fwd_uq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_capacity_nqe_cache_fwd_uq ON public.sf_capacity_nqe_cache USING btree (user_id, forward_network_id, query_id, snapshot_id) WHERE (deployment_id IS NULL);
+    
+    
+    --
+    -- Name: sf_capacity_nqe_cache_lookup_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_capacity_nqe_cache_lookup_idx ON public.sf_capacity_nqe_cache USING btree (user_id, deployment_id, query_id, created_at DESC);
+    
+    
+    --
+    -- Name: sf_capacity_nqe_cache_uq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_capacity_nqe_cache_uq ON public.sf_capacity_nqe_cache USING btree (user_id, deployment_id, query_id, snapshot_id);
+    
+    
+    --
+    -- Name: sf_capacity_rollups_fwd_lookup_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_capacity_rollups_fwd_lookup_idx ON public.sf_capacity_rollups USING btree (user_id, forward_network_id, metric, window_label, period_end DESC) WHERE (deployment_id IS NULL);
+    
+    
+    --
+    -- Name: sf_capacity_rollups_fwd_object_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_capacity_rollups_fwd_object_idx ON public.sf_capacity_rollups USING btree (user_id, forward_network_id, object_type, object_id) WHERE (deployment_id IS NULL);
+    
+    
+    --
+    -- Name: sf_capacity_rollups_fwd_uq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_capacity_rollups_fwd_uq ON public.sf_capacity_rollups USING btree (user_id, forward_network_id, object_type, object_id, metric, window_label, period_end) WHERE (deployment_id IS NULL);
+    
+    
+    --
+    -- Name: sf_capacity_rollups_lookup_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_capacity_rollups_lookup_idx ON public.sf_capacity_rollups USING btree (user_id, deployment_id, metric, window_label, period_end DESC);
+    
+    
+    --
+    -- Name: sf_capacity_rollups_object_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_capacity_rollups_object_idx ON public.sf_capacity_rollups USING btree (user_id, deployment_id, object_type, object_id);
+    
+    
+    --
+    -- Name: sf_capacity_rollups_uq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_capacity_rollups_uq ON public.sf_capacity_rollups USING btree (user_id, deployment_id, object_type, object_id, metric, window_label, period_end);
+    
+    
+    --
+    -- Name: sf_cost_snapshots_provider_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_cost_snapshots_provider_idx ON public.sf_cost_snapshots USING btree (provider, period_end DESC);
+    
+    
+    --
+    -- Name: sf_cost_snapshots_user_scope_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_cost_snapshots_user_scope_idx ON public.sf_cost_snapshots USING btree (user_id, period_end DESC);
+    
+    
+    --
+    -- Name: sf_deployment_ui_events_lookup; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_deployment_ui_events_lookup ON public.sf_deployment_ui_events USING btree (user_id, deployment_id, id DESC);
+    
+    
+    --
+    -- Name: sf_deployments_user_scope_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_deployments_user_scope_idx ON public.sf_deployments USING btree (user_id, updated_at DESC);
+    
+    
+    --
+    -- Name: sf_deployments_user_scope_name_uq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_deployments_user_scope_name_uq ON public.sf_deployments USING btree (user_id, name);
+    
+    
+    --
+    -- Name: sf_notifications_user_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_notifications_user_idx ON public.sf_notifications USING btree (username, created_at DESC);
+    
+    
+    --
+    -- Name: sf_pr_audit_ws_created_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_pr_audit_ws_created_idx ON public.sf_policy_report_audit_log USING btree (user_id, created_at DESC);
+    
+    
+    --
+    -- Name: sf_pr_exceptions_ws_finding_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_pr_exceptions_ws_finding_idx ON public.sf_policy_report_exceptions USING btree (user_id, finding_id);
+    
+    
+    --
+    -- Name: sf_pr_exceptions_ws_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_pr_exceptions_ws_idx ON public.sf_policy_report_exceptions USING btree (user_id, status, created_at DESC);
+    
+    
+    --
+    -- Name: sf_pr_exceptions_ws_network_finding_check_uniq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_pr_exceptions_ws_network_finding_check_uniq ON public.sf_policy_report_exceptions USING btree (user_id, forward_network_id, finding_id, check_id);
+    
+    
+    --
+    -- Name: sf_pr_exceptions_ws_network_status_updated_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_pr_exceptions_ws_network_status_updated_idx ON public.sf_policy_report_exceptions USING btree (user_id, forward_network_id, status, updated_at DESC);
+    
+    
+    --
+    -- Name: sf_pr_forward_networks_ws_created_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_pr_forward_networks_ws_created_idx ON public.sf_policy_report_forward_networks USING btree (user_id, created_at DESC);
+    
+    
+    --
+    -- Name: sf_pr_fwd_net_creds_ws_user_updated_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_pr_fwd_net_creds_ws_user_updated_idx ON public.sf_policy_report_forward_network_credentials USING btree (user_id, username, updated_at DESC);
+    
+    
+    --
+    -- Name: sf_pr_rc_assignments_campaign_finding_check_uniq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_pr_rc_assignments_campaign_finding_check_uniq ON public.sf_policy_report_recert_assignments USING btree (campaign_id, finding_id, check_id);
+    
+    
+    --
+    -- Name: sf_pr_rc_assignments_campaign_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_pr_rc_assignments_campaign_idx ON public.sf_policy_report_recert_assignments USING btree (campaign_id, status, created_at DESC);
+    
+    
+    --
+    -- Name: sf_pr_rc_assignments_ws_finding_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_pr_rc_assignments_ws_finding_idx ON public.sf_policy_report_recert_assignments USING btree (user_id, finding_id);
+    
+    
+    --
+    -- Name: sf_pr_rc_campaigns_ws_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_pr_rc_campaigns_ws_idx ON public.sf_policy_report_recert_campaigns USING btree (user_id, created_at DESC);
+    
+    
+    --
+    -- Name: sf_user_scope_eve_servers_project_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_scope_eve_servers_project_idx ON public.sf_user_scope_eve_servers USING btree (user_scope_id);
+    
+    
+    --
+    -- Name: sf_user_scope_netlab_servers_project_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_scope_netlab_servers_project_idx ON public.sf_user_scope_netlab_servers USING btree (user_scope_id);
+    
+    
+    --
+    -- Name: sf_resource_events_resource_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_resource_events_resource_idx ON public.sf_resource_events USING btree (resource_id, created_at DESC);
+    
+    
+    --
+    -- Name: sf_resource_events_user_scope_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_resource_events_user_scope_idx ON public.sf_resource_events USING btree (user_id, created_at DESC);
+    
+    
+    --
+    -- Name: sf_resources_owner_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_resources_owner_idx ON public.sf_resources USING btree (owner_username);
+    
+    
+    --
+    -- Name: sf_resources_provider_uq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_resources_provider_uq ON public.sf_resources USING btree (provider, resource_id);
+    
+    
+    --
+    -- Name: sf_resources_user_scope_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_resources_user_scope_idx ON public.sf_resources USING btree (user_id);
+    
+    
+    --
+    -- Name: sf_snmp_trap_events_received_at_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_snmp_trap_events_received_at_idx ON public.sf_snmp_trap_events USING btree (received_at DESC);
+    
+    
+    --
+    -- Name: sf_snmp_trap_events_username_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_snmp_trap_events_username_idx ON public.sf_snmp_trap_events USING btree (username, received_at DESC);
+    
+    
+    --
+    -- Name: sf_syslog_events_received_at_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_syslog_events_received_at_idx ON public.sf_syslog_events USING btree (received_at DESC);
+    
+    
+    --
+    -- Name: sf_syslog_events_source_ip_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_syslog_events_source_ip_idx ON public.sf_syslog_events USING btree (source_ip);
+    
+    
+    --
+    -- Name: sf_syslog_routes_owner_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_syslog_routes_owner_idx ON public.sf_syslog_routes USING btree (owner_username);
+    
+    
+    --
+    -- Name: sf_task_events_task_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_task_events_task_idx ON public.sf_task_events USING btree (task_id, id);
+    
+    
+    --
+    -- Name: sf_task_logs_task_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_task_logs_task_idx ON public.sf_task_logs USING btree (task_id, created_at);
+    
+    
+    --
+    -- Name: sf_tasks_deployment_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_tasks_deployment_idx ON public.sf_tasks USING btree (deployment_id, created_at DESC);
+    
+    
+    --
+    -- Name: sf_tasks_queue_deployment_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_tasks_queue_deployment_idx ON public.sf_tasks USING btree (user_id, deployment_id, status, priority DESC, id);
+    
+    
+    --
+    -- Name: sf_tasks_queue_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_tasks_queue_idx ON public.sf_tasks USING btree (user_id, status, priority DESC, id);
+    
+    
+    --
+    -- Name: sf_tasks_user_scope_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_tasks_user_scope_idx ON public.sf_tasks USING btree (user_id, created_at DESC);
+    
+    
+    --
+    -- Name: sf_usage_snapshots_provider_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_usage_snapshots_provider_idx ON public.sf_usage_snapshots USING btree (provider, collected_at DESC);
+    
+    
+    --
+    -- Name: sf_usage_snapshots_user_scope_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_usage_snapshots_user_scope_idx ON public.sf_usage_snapshots USING btree (user_id, collected_at DESC);
+    
+    
+    --
+    -- Name: sf_user_containerlab_servers_username_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_containerlab_servers_username_idx ON public.sf_user_containerlab_servers USING btree (username);
+    
+    
+    --
+    -- Name: sf_user_eve_servers_username_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_eve_servers_username_idx ON public.sf_user_eve_servers USING btree (username);
+    
+    
+    --
+    -- Name: sf_user_forward_collectors_username_default; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_user_forward_collectors_username_default ON public.sf_user_forward_collectors USING btree (username) WHERE is_default;
+    
+    
+    --
+    -- Name: sf_user_forward_collectors_username_name; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_user_forward_collectors_username_name ON public.sf_user_forward_collectors USING btree (username, name);
+    
+    
+    --
+    -- Name: sf_user_netlab_servers_username_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_netlab_servers_username_idx ON public.sf_user_netlab_servers USING btree (username);
+    
+    
+    --
+    -- Name: sf_user_variable_groups_name_uq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_user_variable_groups_name_uq ON public.sf_user_variable_groups USING btree (username, name);
+    
+    
+    --
+    -- Name: sf_user_variable_groups_username_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_variable_groups_username_idx ON public.sf_user_variable_groups USING btree (username, updated_at DESC);
+    
+    
+    --
+    -- Name: sf_webhook_events_received_at_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_webhook_events_received_at_idx ON public.sf_webhook_events USING btree (received_at DESC);
+    
+    
+    --
+    -- Name: sf_webhook_events_username_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_webhook_events_username_idx ON public.sf_webhook_events USING btree (username, received_at DESC);
+    
+    
+    --
+    -- Name: sf_user_scope_groups_user_scope_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_scope_groups_user_scope_idx ON public.sf_user_scope_groups USING btree (user_id);
+    
+    
+    --
+    -- Name: sf_user_scope_members_user_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_scope_members_user_idx ON public.sf_user_scope_members USING btree (username);
+    
+    
+    --
+    -- Name: sf_user_scope_variable_groups_name_uq; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE UNIQUE INDEX sf_user_scope_variable_groups_name_uq ON public.sf_user_scope_variable_groups USING btree (user_id, name);
+    
+    
+    --
+    -- Name: sf_user_scope_variable_groups_user_scope_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_scope_variable_groups_user_scope_idx ON public.sf_user_scope_variable_groups USING btree (user_id, updated_at DESC);
+    
+    
+    --
+    -- Name: sf_user_scopes_created_by_idx; Type: INDEX; Schema: public; Owner: -
+    --
+    
+    CREATE INDEX sf_user_scopes_created_by_idx ON public.sf_user_scopes USING btree (created_by);
+    
+    
+    --
+    -- Name: sf_audit_log sf_audit_log_actor_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_audit_log
+        ADD CONSTRAINT sf_audit_log_actor_username_fkey FOREIGN KEY (actor_username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_audit_log sf_audit_log_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_audit_log
+        ADD CONSTRAINT sf_audit_log_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE SET NULL;
+    
+    
+    --
+    -- Name: sf_aws_device_auth_requests sf_aws_device_auth_requests_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_aws_device_auth_requests
+        ADD CONSTRAINT sf_aws_device_auth_requests_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_capacity_nqe_cache sf_capacity_nqe_cache_deployment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_capacity_nqe_cache
+        ADD CONSTRAINT sf_capacity_nqe_cache_deployment_id_fkey FOREIGN KEY (deployment_id) REFERENCES public.sf_deployments(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_capacity_nqe_cache sf_capacity_nqe_cache_user_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_capacity_nqe_cache
+        ADD CONSTRAINT sf_capacity_nqe_cache_user_scope_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_capacity_rollups sf_capacity_rollups_deployment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_capacity_rollups
+        ADD CONSTRAINT sf_capacity_rollups_deployment_id_fkey FOREIGN KEY (deployment_id) REFERENCES public.sf_deployments(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_capacity_rollups sf_capacity_rollups_user_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_capacity_rollups
+        ADD CONSTRAINT sf_capacity_rollups_user_scope_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_cost_snapshots sf_cost_snapshots_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_cost_snapshots
+        ADD CONSTRAINT sf_cost_snapshots_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE SET NULL;
+    
+    
+    --
+    -- Name: sf_cost_snapshots sf_cost_snapshots_resource_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_cost_snapshots
+        ADD CONSTRAINT sf_cost_snapshots_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.sf_resources(id) ON DELETE SET NULL;
+    
+    
+    --
+    -- Name: sf_deployments sf_deployments_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_deployments
+        ADD CONSTRAINT sf_deployments_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_deployments sf_deployments_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_deployments
+        ADD CONSTRAINT sf_deployments_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_dns_tokens sf_dns_tokens_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_dns_tokens
+        ADD CONSTRAINT sf_dns_tokens_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_notifications sf_notifications_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_notifications
+        ADD CONSTRAINT sf_notifications_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_audit_log sf_policy_report_audit_log_actor_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_audit_log
+        ADD CONSTRAINT sf_policy_report_audit_log_actor_username_fkey FOREIGN KEY (actor_username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_audit_log sf_policy_report_audit_log_user_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_audit_log
+        ADD CONSTRAINT sf_policy_report_audit_log_user_scope_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_exceptions sf_policy_report_exceptions_approved_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_exceptions
+        ADD CONSTRAINT sf_policy_report_exceptions_approved_by_fkey FOREIGN KEY (approved_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_exceptions sf_policy_report_exceptions_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_exceptions
+        ADD CONSTRAINT sf_policy_report_exceptions_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_exceptions sf_policy_report_exceptions_user_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_exceptions
+        ADD CONSTRAINT sf_policy_report_exceptions_user_scope_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_forward_network_credentials sf_policy_report_forward_network_credentials_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_forward_network_credentials
+        ADD CONSTRAINT sf_policy_report_forward_network_credentials_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_forward_network_credentials sf_policy_report_forward_network_credentials_user_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_forward_network_credentials
+        ADD CONSTRAINT sf_policy_report_forward_network_credentials_user_scope_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_forward_networks sf_policy_report_forward_networks_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_forward_networks
+        ADD CONSTRAINT sf_policy_report_forward_networks_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_forward_networks sf_policy_report_forward_networks_user_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_forward_networks
+        ADD CONSTRAINT sf_policy_report_forward_networks_user_scope_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_recert_assignments sf_policy_report_recert_assignments_assignee_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_recert_assignments
+        ADD CONSTRAINT sf_policy_report_recert_assignments_assignee_username_fkey FOREIGN KEY (assignee_username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_recert_assignments sf_policy_report_recert_assignments_campaign_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_recert_assignments
+        ADD CONSTRAINT sf_policy_report_recert_assignments_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.sf_policy_report_recert_campaigns(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_recert_assignments sf_policy_report_recert_assignments_user_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_recert_assignments
+        ADD CONSTRAINT sf_policy_report_recert_assignments_user_scope_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_recert_campaigns sf_policy_report_recert_campaigns_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_recert_campaigns
+        ADD CONSTRAINT sf_policy_report_recert_campaigns_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_policy_report_recert_campaigns sf_policy_report_recert_campaigns_user_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_policy_report_recert_campaigns
+        ADD CONSTRAINT sf_policy_report_recert_campaigns_user_scope_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_aws_static_credentials sf_project_aws_static_credentials_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_aws_static_credentials
+        ADD CONSTRAINT sf_project_aws_static_credentials_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_azure_credentials sf_project_azure_credentials_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_azure_credentials
+        ADD CONSTRAINT sf_project_azure_credentials_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_eve_servers sf_user_scope_eve_servers_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_eve_servers
+        ADD CONSTRAINT sf_user_scope_eve_servers_project_id_fkey FOREIGN KEY (user_scope_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_forward_credentials sf_project_forward_credentials_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_forward_credentials
+        ADD CONSTRAINT sf_project_forward_credentials_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_gcp_credentials sf_project_gcp_credentials_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_gcp_credentials
+        ADD CONSTRAINT sf_project_gcp_credentials_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_groups sf_project_groups_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_groups
+        ADD CONSTRAINT sf_project_groups_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_members sf_project_members_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_members
+        ADD CONSTRAINT sf_project_members_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_members sf_project_members_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_members
+        ADD CONSTRAINT sf_project_members_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_netlab_servers sf_user_scope_netlab_servers_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_netlab_servers
+        ADD CONSTRAINT sf_user_scope_netlab_servers_project_id_fkey FOREIGN KEY (user_scope_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scope_variable_groups sf_project_variable_groups_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scope_variable_groups
+        ADD CONSTRAINT sf_project_variable_groups_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_scopes sf_projects_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_scopes
+        ADD CONSTRAINT sf_projects_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_resource_events sf_resource_events_actor_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_resource_events
+        ADD CONSTRAINT sf_resource_events_actor_username_fkey FOREIGN KEY (actor_username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_resource_events sf_resource_events_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_resource_events
+        ADD CONSTRAINT sf_resource_events_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE SET NULL;
+    
+    
+    --
+    -- Name: sf_resource_events sf_resource_events_resource_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_resource_events
+        ADD CONSTRAINT sf_resource_events_resource_id_fkey FOREIGN KEY (resource_id) REFERENCES public.sf_resources(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_resources sf_resources_owner_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_resources
+        ADD CONSTRAINT sf_resources_owner_username_fkey FOREIGN KEY (owner_username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_resources sf_resources_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_resources
+        ADD CONSTRAINT sf_resources_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE SET NULL;
+    
+    
+    --
+    -- Name: sf_snmp_trap_events sf_snmp_trap_events_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_snmp_trap_events
+        ADD CONSTRAINT sf_snmp_trap_events_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_snmp_trap_tokens sf_snmp_trap_tokens_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_snmp_trap_tokens
+        ADD CONSTRAINT sf_snmp_trap_tokens_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_syslog_routes sf_syslog_routes_owner_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_syslog_routes
+        ADD CONSTRAINT sf_syslog_routes_owner_username_fkey FOREIGN KEY (owner_username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_task_events sf_task_events_task_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_task_events
+        ADD CONSTRAINT sf_task_events_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.sf_tasks(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_task_logs sf_task_logs_task_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_task_logs
+        ADD CONSTRAINT sf_task_logs_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.sf_tasks(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_tasks sf_tasks_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_tasks
+        ADD CONSTRAINT sf_tasks_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_tasks sf_tasks_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_tasks
+        ADD CONSTRAINT sf_tasks_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_usage_snapshots sf_usage_snapshots_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_usage_snapshots
+        ADD CONSTRAINT sf_usage_snapshots_project_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE SET NULL;
+    
+    
+    --
+    -- Name: sf_user_aws_sso_credentials sf_user_aws_sso_credentials_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_aws_sso_credentials
+        ADD CONSTRAINT sf_user_aws_sso_credentials_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_aws_static_credentials sf_user_aws_static_credentials_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_aws_static_credentials
+        ADD CONSTRAINT sf_user_aws_static_credentials_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_azure_credentials sf_user_azure_credentials_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_azure_credentials
+        ADD CONSTRAINT sf_user_azure_credentials_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_containerlab_servers sf_user_containerlab_servers_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_containerlab_servers
+        ADD CONSTRAINT sf_user_containerlab_servers_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_eve_servers sf_user_eve_servers_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_eve_servers
+        ADD CONSTRAINT sf_user_eve_servers_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_forward_collectors sf_user_forward_collectors_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_forward_collectors
+        ADD CONSTRAINT sf_user_forward_collectors_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_gcp_credentials sf_user_gcp_credentials_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_gcp_credentials
+        ADD CONSTRAINT sf_user_gcp_credentials_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_netlab_servers sf_user_netlab_servers_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_netlab_servers
+        ADD CONSTRAINT sf_user_netlab_servers_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_servicenow_configs sf_user_servicenow_configs_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_servicenow_configs
+        ADD CONSTRAINT sf_user_servicenow_configs_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_settings sf_user_settings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_settings
+        ADD CONSTRAINT sf_user_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    
+    
+    --
+    -- Name: sf_user_variable_groups sf_user_variable_groups_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_user_variable_groups
+        ADD CONSTRAINT sf_user_variable_groups_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_webhook_events sf_webhook_events_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_webhook_events
+        ADD CONSTRAINT sf_webhook_events_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- Name: sf_webhook_tokens sf_webhook_tokens_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    --
+    
+    ALTER TABLE ONLY public.sf_webhook_tokens
+        ADD CONSTRAINT sf_webhook_tokens_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    
+    --
+    -- PostgreSQL database dump complete
+    --
