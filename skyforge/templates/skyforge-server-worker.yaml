@@ -120,6 +120,16 @@ spec:
                 secretKeyRef:
                   name: skyforge-admin-shared
                   key: password
+            - name: SKYFORGE_GITEA_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_GITEA_API_URL
+            - name: SKYFORGE_GITEA_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_GITEA_USERNAME
             - name: SKYFORGE_REGISTRY_URL
               valueFrom:
                 configMapKeyRef:
