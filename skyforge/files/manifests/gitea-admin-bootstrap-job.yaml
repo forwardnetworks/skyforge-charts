@@ -17,13 +17,6 @@ spec:
     spec:
       automountServiceAccountToken: false
       enableServiceLinks: false
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  app.kubernetes.io/name: gitea
-              topologyKey: kubernetes.io/hostname
       tolerations:
         - operator: Exists
       securityContext:
