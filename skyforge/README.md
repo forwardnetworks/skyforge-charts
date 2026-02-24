@@ -65,13 +65,15 @@ Note: the chart always forces `"TaskWorkerEnabled": true` in the worker’s `ENC
 
 ## Cron
 
-Skyforge installs Kubernetes CronJobs that call token-guarded internal bridge endpoints for:
+Skyforge uses Encore cron jobs for periodic maintenance:
 
 - worker heartbeat
 - queued/running task reconciliation
 - user sync
 - cloud credential checks
-- Forward analytics auto-refresh (`skyforge.forwardAnalyticsAutoRefresh.*`)
+- queue/capacity/governance periodic maintenance
+
+The chart no longer installs Kubernetes CronJobs for these flows.
 
 ## Admin bootstrap and password sync
 

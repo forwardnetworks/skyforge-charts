@@ -155,6 +155,8 @@ skyforge:
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
     image: "ghcr.io/forwardnetworks/skyforge-netlab-generator:latest"
     pullPolicy: "IfNotPresent"
+    applierImage: "ghcr.io/forwardnetworks/skyforge-netlab-applier:latest"
+    applierPullPolicy: "IfNotPresent"
   dns:
     enabled: false
     adminUsername: "admin"
@@ -173,11 +175,6 @@ skyforge:
     # When false, Skyforge hides Forward UI and disables Forward API endpoints.
     enabled: true
     snmpPlaceholderEnabled: true
-    snmpCommunity: "public"
-  forwardAnalyticsAutoRefresh:
-    enabled: true
-    schedule: "*/30 * * * *"
-    freshnessSlaHours: 24
   forwardCluster:
     # Global Forward Cluster UI endpoint.
     enabled: false
@@ -404,9 +401,6 @@ skyforge:
 images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
   alpine: "public.ecr.aws/docker/library/alpine:3.20"
-  # Used by internal CronJobs to call Skyforge worker endpoints (no runtime apk installs).
-  # Note: use GHCR mirror to avoid Docker Hub pull rate limits in k3s/containerd.
-  curl: "ghcr.io/forwardnetworks/skyforge-curl:8.6.0-1"
   envoy: "envoyproxy/envoy:v1.31.2"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
   # Vector publishes official images under `timberio/vector` (Docker Hub).

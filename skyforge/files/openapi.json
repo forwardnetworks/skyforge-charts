@@ -1282,11 +1282,11 @@
           "userId": {
             "type": "string"
           },
-          "value": {
-            "type": "number"
-          },
           "userScopeName": {
             "type": "string"
+          },
+          "value": {
+            "type": "number"
           }
         },
         "required": [
@@ -1797,193 +1797,6 @@
         ],
         "type": "object"
       },
-      "skyforge.SkyforgeUserScope": {
-        "description": "NOTE: This type must live in the service package (not a type alias to an internal package) to satisfy Encore's API schema rules.\n",
-        "properties": {
-          "allowCustomContainerlabServers": {
-            "type": "boolean"
-          },
-          "allowCustomEveServers": {
-            "title": "EVE-NG deployments require an endpoint. This flag enables configuring a\nper-user-scope EVE server.\n",
-            "type": "boolean"
-          },
-          "allowCustomNetlabServers": {
-            "type": "boolean"
-          },
-          "allowExternalTemplateRepos": {
-            "type": "boolean"
-          },
-          "ansibleRunTemplateId": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "artifactsBucket": {
-            "type": "string"
-          },
-          "awsAccountId": {
-            "type": "string"
-          },
-          "awsAuthMethod": {
-            "type": "string"
-          },
-          "awsRegion": {
-            "type": "string"
-          },
-          "awsRoleName": {
-            "type": "string"
-          },
-          "blueprint": {
-            "type": "string"
-          },
-          "containerlabRunTemplateId": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          },
-          "defaultBranch": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "editorGroups": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "editors": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "eveNgRunTemplateId": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "eveServer": {
-            "type": "string"
-          },
-          "externalTemplateRepos": {
-            "items": {
-              "$ref": "#/components/schemas/skyforge.ExternalTemplateRepo"
-            },
-            "type": "array"
-          },
-          "giteaOwner": {
-            "type": "string"
-          },
-          "giteaRepo": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "isPublic": {
-            "type": "boolean"
-          },
-          "name": {
-            "type": "string"
-          },
-          "netlabRunTemplateId": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "netlabServer": {
-            "type": "string"
-          },
-          "ownerGroups": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "owners": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "terraformApplyTemplateId": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "terraformInitTemplateId": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "terraformPlanTemplateId": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "terraformStateKey": {
-            "type": "string"
-          },
-          "viewerGroups": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "viewers": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "id",
-          "slug",
-          "name",
-          "description",
-          "createdAt",
-          "createdBy",
-          "isPublic",
-          "owners",
-          "ownerGroups",
-          "editors",
-          "editorGroups",
-          "viewers",
-          "viewerGroups",
-          "blueprint",
-          "defaultBranch",
-          "allowExternalTemplateRepos",
-          "allowCustomEveServers",
-          "allowCustomNetlabServers",
-          "allowCustomContainerlabServers",
-          "externalTemplateRepos",
-          "terraformStateKey",
-          "terraformInitTemplateId",
-          "terraformPlanTemplateId",
-          "terraformApplyTemplateId",
-          "ansibleRunTemplateId",
-          "netlabRunTemplateId",
-          "eveNgRunTemplateId",
-          "containerlabRunTemplateId",
-          "awsAccountId",
-          "awsRoleName",
-          "awsRegion",
-          "awsAuthMethod",
-          "artifactsBucket",
-          "eveServer",
-          "netlabServer",
-          "giteaOwner",
-          "giteaRepo"
-        ],
-        "title": "SkyforgeUserScope is the user-facing user-scope object stored in Postgres and\nreturned by the API.\n",
-        "type": "object"
-      },
       "skyforge.SnmpTrapEvent": {
         "properties": {
           "id": {
@@ -2485,6 +2298,193 @@
         ],
         "type": "object"
       },
+      "skyforge.UserScope": {
+        "description": "NOTE: This type must live in the service package (not a type alias to an internal package) to satisfy Encore's API schema rules.\n",
+        "properties": {
+          "allowCustomContainerlabServers": {
+            "type": "boolean"
+          },
+          "allowCustomEveServers": {
+            "title": "EVE-NG deployments require an endpoint. This flag enables configuring a\nper-user-scope EVE server.\n",
+            "type": "boolean"
+          },
+          "allowCustomNetlabServers": {
+            "type": "boolean"
+          },
+          "allowExternalTemplateRepos": {
+            "type": "boolean"
+          },
+          "ansibleRunTemplateId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "artifactsBucket": {
+            "type": "string"
+          },
+          "awsAccountId": {
+            "type": "string"
+          },
+          "awsAuthMethod": {
+            "type": "string"
+          },
+          "awsRegion": {
+            "type": "string"
+          },
+          "awsRoleName": {
+            "type": "string"
+          },
+          "blueprint": {
+            "type": "string"
+          },
+          "containerlabRunTemplateId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "defaultBranch": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "editorGroups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "editors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "eveNgRunTemplateId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "eveServer": {
+            "type": "string"
+          },
+          "externalTemplateRepos": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.ExternalTemplateRepo"
+            },
+            "type": "array"
+          },
+          "giteaOwner": {
+            "type": "string"
+          },
+          "giteaRepo": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "netlabRunTemplateId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "netlabServer": {
+            "type": "string"
+          },
+          "ownerGroups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "owners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "terraformApplyTemplateId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "terraformInitTemplateId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "terraformPlanTemplateId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "terraformStateKey": {
+            "type": "string"
+          },
+          "viewerGroups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "viewers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "description",
+          "createdAt",
+          "createdBy",
+          "isPublic",
+          "owners",
+          "ownerGroups",
+          "editors",
+          "editorGroups",
+          "viewers",
+          "viewerGroups",
+          "blueprint",
+          "defaultBranch",
+          "allowExternalTemplateRepos",
+          "allowCustomEveServers",
+          "allowCustomNetlabServers",
+          "allowCustomContainerlabServers",
+          "externalTemplateRepos",
+          "terraformStateKey",
+          "terraformInitTemplateId",
+          "terraformPlanTemplateId",
+          "terraformApplyTemplateId",
+          "ansibleRunTemplateId",
+          "netlabRunTemplateId",
+          "eveNgRunTemplateId",
+          "containerlabRunTemplateId",
+          "awsAccountId",
+          "awsRoleName",
+          "awsRegion",
+          "awsAuthMethod",
+          "artifactsBucket",
+          "eveServer",
+          "netlabServer",
+          "giteaOwner",
+          "giteaRepo"
+        ],
+        "title": "UserScope is the user-facing user-scope object stored in Postgres and returned\nby the API.\n",
+        "type": "object"
+      },
       "skyforge.UserScopeDeleteItem": {
         "properties": {
           "id": {
@@ -2501,62 +2501,6 @@
           "id",
           "slug",
           "name"
-        ],
-        "type": "object"
-      },
-      "skyforge.UserVariableGroup": {
-        "properties": {
-          "id": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          },
-          "variables": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "variables"
-        ],
-        "type": "object"
-      },
-      "skyforge.WebhookEvent": {
-        "properties": {
-          "body": {
-            "type": "string"
-          },
-          "id": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "method": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          },
-          "receivedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "sourceIp": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "receivedAt",
-          "method",
-          "path",
-          "sourceIp",
-          "body"
         ],
         "type": "object"
       },
@@ -2712,6 +2656,62 @@
           "id",
           "name",
           "variables"
+        ],
+        "type": "object"
+      },
+      "skyforge.UserVariableGroup": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "variables": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "variables"
+        ],
+        "type": "object"
+      },
+      "skyforge.WebhookEvent": {
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "receivedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceIp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "receivedAt",
+          "method",
+          "path",
+          "sourceIp",
+          "body"
         ],
         "type": "object"
       },
@@ -5032,7 +5032,7 @@
                     },
                     "userScopes": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.SkyforgeUserScope"
+                        "$ref": "#/components/schemas/skyforge.UserScope"
                       },
                       "type": "array"
                     }
@@ -8457,7 +8457,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SessionForwardAuth is a Skyforge SSO gate compatible endpoint used by Traefik\nforwardAuth.\n"
+        "summary": "SessionForwardAuth is a Skyforge SSO gate endpoint used by Traefik forwardAuth.\n"
       },
       "head": {
         "operationId": "HEAD:skyforge.SessionForwardAuthHead",
@@ -8469,7 +8469,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SessionForwardAuthHead is a Skyforge SSO gate compatible endpoint used by\nTraefik forwardAuth (HEAD).\n"
+        "summary": "SessionForwardAuthHead is a Skyforge SSO gate endpoint used by Traefik\nforwardAuth (HEAD).\n"
       }
     },
     "/api/session/forwardauth/envoy": {
@@ -8847,7 +8847,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "ListSyslogRoutes lists configured source-\u003euser mappings (admin only).\n"
+        "summary": "ListSyslogRoutes lists configured source->user mappings (admin only).\n"
       },
       "put": {
         "operationId": "PUT:skyforge.UpsertSyslogRoute",
@@ -9168,7 +9168,7 @@
                     },
                     "userScopes": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.SkyforgeUserScope"
+                        "$ref": "#/components/schemas/skyforge.UserScope"
                       },
                       "type": "array"
                     }
@@ -9871,7 +9871,7 @@
         "summary": "DeleteUserScopeArtifactObject deletes a single artifact object.\n"
       },
       "post": {
-        "description": "This is an object-store-native alternative to the legacy \\`UploadUserScopeArtifact\\` endpoint (which uses Encore's objects SDK and may require bucket subdomain DNS).\n",
+        "description": "This is an object-store-native alternative to the prior \\`UploadUserScopeArtifact\\` endpoint (which uses Encore's objects SDK and may require bucket subdomain DNS).\n",
         "operationId": "POST:skyforge.PutUserScopeArtifactObject",
         "parameters": [
           {
@@ -10827,7 +10827,7 @@
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\\u003cnormalized-name\u003e.clab.yml\".\n",
+                    "description": "Default: \"\\<normalized-name>.clab.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
@@ -11200,7 +11200,7 @@
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
+                    "description": "Default: \"\\<deployment-name>.clab.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
@@ -11288,7 +11288,7 @@
                 "properties": {
                   "netlabServer": {
                     "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
+                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:<id>\").\n",
                     "type": "string"
                   }
                 },
@@ -11371,11 +11371,11 @@
                   },
                   "netlabServer": {
                     "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
+                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:<id>\").\n",
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
+                    "description": "Default: \"\\<deployment-name>.clab.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
@@ -18381,7 +18381,7 @@
                 "schema": {
                   "properties": {
                     "userScope": {
-                      "$ref": "#/components/schemas/skyforge.SkyforgeUserScope"
+                      "$ref": "#/components/schemas/skyforge.UserScope"
                     }
                   },
                   "required": [
@@ -19236,7 +19236,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "FrontendFavicon serves the SPA favicon (and compatibility icon paths).\n"
+        "summary": "FrontendFavicon serves the SPA favicon (including alternate icon paths).\n"
       }
     },
     "/health": {
@@ -19299,7 +19299,7 @@
     },
     "/hooks/{rest}": {
       "post": {
-        "description": "Example:\n\n\tPOST https://\u003chostname\u003e/hooks/\u003ctoken\u003e/github\n",
+        "description": "Example:\n\n\tPOST https://<hostname>/hooks/<token>/github\n",
         "operationId": "POST:skyforge.WebhookIngestAny",
         "parameters": [
           {
@@ -19509,141 +19509,6 @@
           }
         },
         "summary": "IngestSyslog accepts syslog events from in-cluster collectors (Vector/Fluent\nBit/etc).\n"
-      }
-    },
-    "/internal/bridge/cloud/checks": {
-      "post": {
-        "operationId": "POST:worker.CronCloudCredentialChecksBridge",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "header",
-            "name": "x-skyforge-internal-token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "CronCloudCredentialChecksBridge triggers cloud credential checks maintenance.\n"
-      }
-    },
-    "/internal/bridge/users/sync": {
-      "post": {
-        "operationId": "POST:worker.CronUserSyncBridge",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "header",
-            "name": "x-skyforge-internal-token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "CronUserSyncBridge triggers user sync maintenance.\n"
-      }
-    },
-    "/internal/bridge/worker/heartbeat": {
-      "post": {
-        "operationId": "POST:worker.CronWorkerHeartbeatBridge",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "header",
-            "name": "x-skyforge-internal-token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "CronWorkerHeartbeatBridge triggers the worker heartbeat task.\n"
-      }
-    },
-    "/internal/bridge/worker/tasks/reconcile": {
-      "post": {
-        "operationId": "POST:worker.CronReconcileQueuedTasksBridge",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "header",
-            "name": "x-skyforge-internal-token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "CronReconcileQueuedTasksBridge triggers reconciliation for queued tasks.\n"
-      }
-    },
-    "/internal/bridge/worker/tasks/reconcile-running": {
-      "post": {
-        "operationId": "POST:worker.CronReconcileRunningTasksBridge",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "header",
-            "name": "x-skyforge-internal-token",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "CronReconcileRunningTasksBridge triggers reconciliation for running tasks.\n"
       }
     },
     "/internal/cron/capacity/cleanup": {
@@ -20261,7 +20126,7 @@
                       "format": "int64",
                       "type": "integer"
                     },
-                    "user scopesTotal": {
+                    "userScopesTotal": {
                       "format": "int64",
                       "type": "integer"
                     }
@@ -20272,7 +20137,7 @@
                     "up",
                     "down",
                     "checks",
-                    "user scopesTotal",
+                    "userScopesTotal",
                     "deploymentsTotal",
                     "deploymentsActive"
                   ],

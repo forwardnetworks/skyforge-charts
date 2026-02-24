@@ -47,6 +47,20 @@ spec:
         - name: skyforge-server-worker
           image: {{ .Values.images.skyforgeServerWorker | default .Values.images.skyforgeServer | quote }}
           imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8085
+            failureThreshold: 6
+            periodSeconds: 10
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8085
+            failureThreshold: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
           resources:
             {{- toYaml .Values.skyforge.workerResources | nindent 12 }}
           envFrom:
