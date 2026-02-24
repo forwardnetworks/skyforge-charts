@@ -28,7 +28,6 @@ pulling images or waiting on hooks.
 
 {{- if .Values.skyforge.gitea.enabled }}
   {{- $files = concat $files (list
-    "gitea-admin-bootstrap-job.yaml"
     "gitea-admin-sync-deployment.yaml"
     "gitea-deployment.yaml"
     "gitea-service.yaml"
