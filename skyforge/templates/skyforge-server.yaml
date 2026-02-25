@@ -155,6 +155,12 @@ spec:
               key: yaade-admin-password
         - name: SKYFORGE_NETLAB_SERVERS_FILE
           value: /run/secrets/skyforge-netlab-servers
+        - name: SKYFORGE_SROS_LICENSE_B64
+          valueFrom:
+            secretKeyRef:
+              name: sros-license
+              key: sros-license-b64
+              optional: true
         - name: SKYFORGE_LDAP_BIND_TEMPLATE
           valueFrom:
             secretKeyRef:

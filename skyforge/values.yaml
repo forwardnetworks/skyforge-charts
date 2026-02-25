@@ -10,12 +10,34 @@ skyforge:
   migrateJob:
     enabled: false
 
-  # Resources for the singleton worker Deployment.
-  workerResources:
-    requests:
-      cpu: "250m"
-      memory: "1Gi"
-    limits: {}
+  worker:
+    replicas: 1
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "1Gi"
+      limits: {}
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 70
+    pdb:
+      enabled: true
+      minAvailable: 1
+    tuning:
+      interactiveConcurrency: 8
+      interactiveQueueSize: 64
+      backgroundConcurrency: 2
+      backgroundQueueSize: 16
+      heartbeatIntervalSeconds: 30
+      reconcileQueuedIntervalSeconds: 30
+      reconcileRunningIntervalSeconds: 300
+      activationIntervalSeconds: 20
+      activationMinQueuedAgeSeconds: 20
+      activationBatchSize: 200
+      diagStaleHeartbeatSeconds: 120
+      diagOldestQueuedSeconds: 300
 
   # Optional: provide ENCORE_RUNTIME_CONFIG for Encore runtime infrastructure config.
   # NOTE: This is NOT the same as typed Encore config loaded via config.Load.

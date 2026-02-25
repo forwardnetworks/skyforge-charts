@@ -105,6 +105,27 @@ skyforge:
   ldap:
     skipTlsVerify: true
 
+  worker:
+    replicas: 1
+    autoscaling:
+      enabled: false
+    pdb:
+      enabled: true
+      minAvailable: 1
+    tuning:
+      interactiveConcurrency: 8
+      interactiveQueueSize: 64
+      backgroundConcurrency: 2
+      backgroundQueueSize: 16
+      heartbeatIntervalSeconds: 30
+      reconcileQueuedIntervalSeconds: 30
+      reconcileRunningIntervalSeconds: 300
+      activationIntervalSeconds: 20
+      activationMinQueuedAgeSeconds: 20
+      activationBatchSize: 200
+      diagStaleHeartbeatSeconds: 120
+      diagOldestQueuedSeconds: 300
+
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260221-e2e-iosxr-cumulus"

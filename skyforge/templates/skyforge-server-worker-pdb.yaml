@@ -1,0 +1,15 @@
+{{- if .Values.skyforge.worker.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: skyforge-server-worker
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  minAvailable: {{ default 1 .Values.skyforge.worker.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge
+      app.kubernetes.io/component: worker
+{{- end }}

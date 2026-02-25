@@ -1,0 +1,23 @@
+{{- if .Values.skyforge.worker.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: skyforge-server-worker
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: skyforge-server-worker
+  minReplicas: {{ default 1 .Values.skyforge.worker.autoscaling.minReplicas }}
+  maxReplicas: {{ default 3 .Values.skyforge.worker.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ default 70 .Values.skyforge.worker.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
