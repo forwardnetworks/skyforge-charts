@@ -47,7 +47,7 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `skyforge.encoreRuntimeConfig`: Optional Encore runtime infrastructure config (`ENCORE_RUNTIME_CONFIG`).
 - `skyforge.encoreCfg`: Optional typed Encore config for the `skyforge` service (`ENCORE_CFG_SKYFORGE`).
 - `images.*`: Override container images.
-- `images.skyforgeServerWorker`: Dedicated task worker image (built with `encore build docker --services=...` including the `worker` service).
+- `images.skyforgeServerWorker`: Dedicated task worker image (built by `./scripts/build-push-skyforge-server.sh --tag <tag>`, which always publishes `<tag>-worker`).
 - `secrets.items`: Provide secret values.
 - `secrets.items.skyforge-admin-shared.password`: Shared admin password used to seed Skyforge, Gitea,
   NetBox and Nautobot.
