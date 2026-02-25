@@ -2882,3 +2882,35 @@ data:
     --
     -- PostgreSQL database dump complete
     --
+
+  20260225113000_servicenow_zero_touch_setup.up.sql: |
+    ALTER TABLE public.sf_user_servicenow_configs
+      ADD COLUMN IF NOT EXISTS forward_credential_set_id text DEFAULT '';
+    
+    UPDATE public.sf_user_servicenow_configs
+    SET forward_credential_set_id = COALESCE(forward_credential_set_id, '')
+    WHERE COALESCE(forward_credential_set_id, '') = '';
+    
+    CREATE TABLE IF NOT EXISTS public.sf_user_servicenow_setup_runs (
+      run_id text PRIMARY KEY,
+      username text NOT NULL,
+      status text NOT NULL,
+      current_step text NOT NULL DEFAULT '',
+      steps_json jsonb NOT NULL DEFAULT '[]'::jsonb,
+      remediation_json jsonb NOT NULL DEFAULT '[]'::jsonb,
+      last_error text NOT NULL DEFAULT '',
+      ticketing_supported boolean,
+      ticketing_checked_at timestamptz,
+      started_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      finished_at timestamptz,
+      CONSTRAINT sf_user_servicenow_setup_runs_username_fkey
+        FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_servicenow_setup_runs_username_started_idx
+      ON public.sf_user_servicenow_setup_runs (username, started_at DESC);
+    
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_user_servicenow_setup_runs_active_idx
+      ON public.sf_user_servicenow_setup_runs (username)
+      WHERE status = 'running';
