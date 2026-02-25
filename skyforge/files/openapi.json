@@ -35,6 +35,12 @@
       }
     },
     "schemas": {
+      "deploycore.Action": {
+        "type": "string"
+      },
+      "deploycore.Reason": {
+        "type": "string"
+      },
       "skyforge.AssignableUser": {
         "properties": {
           "display": {
@@ -592,10 +598,10 @@
       "skyforge.DeploymentActionState": {
         "properties": {
           "desired": {
-            "type": "string"
+            "$ref": "#/components/schemas/skyforge.DeploymentPresenceState"
           },
           "observed": {
-            "type": "string"
+            "$ref": "#/components/schemas/skyforge.DeploymentPresenceState"
           }
         },
         "required": [
@@ -733,6 +739,9 @@
           "edgeId"
         ],
         "type": "object"
+      },
+      "skyforge.DeploymentPresenceState": {
+        "type": "string"
       },
       "skyforge.DeploymentUIEvent": {
         "properties": {
@@ -11543,7 +11552,7 @@
                       "type": "boolean"
                     },
                     "reason": {
-                      "type": "string"
+                      "$ref": "#/components/schemas/deploycore.Reason"
                     },
                     "run": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -11746,8 +11755,7 @@
               "schema": {
                 "properties": {
                   "action": {
-                    "title": "create, start, stop, destroy, export\n",
-                    "type": "string"
+                    "$ref": "#/components/schemas/deploycore.Action"
                   }
                 },
                 "required": [
@@ -11774,7 +11782,7 @@
                       "type": "boolean"
                     },
                     "reason": {
-                      "type": "string"
+                      "$ref": "#/components/schemas/deploycore.Reason"
                     },
                     "run": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
