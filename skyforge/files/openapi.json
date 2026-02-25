@@ -2868,6 +2868,29 @@
         ],
         "type": "object"
       },
+      "skyforge.serviceNowSetupStepResult": {
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "step": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "step",
+          "status",
+          "detail",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "skyforge.storageObjectSummary": {
         "properties": {
           "contentType": {
@@ -5658,6 +5681,170 @@
         "summary": "GetUserForwardCollectorConfigRuntime returns runtime state for a configured\ncollector.\n"
       }
     },
+    "/api/forward/collector-configs/{id}/update": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserForwardCollectorConfigUpdate",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "collectorNotFound": {
+                      "type": "boolean"
+                    },
+                    "deploymentName": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "string"
+                    },
+                    "imageId": {
+                      "type": "string"
+                    },
+                    "remoteDigest": {
+                      "type": "string"
+                    },
+                    "runtime": {
+                      "$ref": "#/components/schemas/skyforge.collectorRuntimeStatus"
+                    },
+                    "updateAvailable": {
+                      "type": "boolean"
+                    },
+                    "updateStatus": {
+                      "type": "string"
+                    },
+                    "updatedImage": {
+                      "type": "string"
+                    },
+                    "upgraded": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "deploymentName",
+                    "image",
+                    "imageId",
+                    "remoteDigest",
+                    "updateStatus",
+                    "updateAvailable",
+                    "upgraded",
+                    "updatedImage",
+                    "runtime",
+                    "collectorNotFound"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserForwardCollectorConfigUpdate checks remote registry digest and reports\nwhether a collector upgrade is available.\n"
+      }
+    },
+    "/api/forward/collector-configs/{id}/upgrade": {
+      "post": {
+        "operationId": "POST:skyforge.UpgradeUserForwardCollectorConfig",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "collectorNotFound": {
+                      "type": "boolean"
+                    },
+                    "deploymentName": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "string"
+                    },
+                    "imageId": {
+                      "type": "string"
+                    },
+                    "remoteDigest": {
+                      "type": "string"
+                    },
+                    "runtime": {
+                      "$ref": "#/components/schemas/skyforge.collectorRuntimeStatus"
+                    },
+                    "updateAvailable": {
+                      "type": "boolean"
+                    },
+                    "updateStatus": {
+                      "type": "string"
+                    },
+                    "updatedImage": {
+                      "type": "string"
+                    },
+                    "upgraded": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "deploymentName",
+                    "image",
+                    "imageId",
+                    "remoteDigest",
+                    "updateStatus",
+                    "updateAvailable",
+                    "upgraded",
+                    "updatedImage",
+                    "runtime",
+                    "collectorNotFound"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpgradeUserForwardCollectorConfig upgrades a collector deployment to the latest\ndigest for its current image tag.\n"
+      }
+    },
     "/api/forward/collectors": {
       "get": {
         "operationId": "GET:skyforge.ListForwardCollectors",
@@ -7013,18 +7200,10 @@
                     "configured": {
                       "type": "boolean"
                     },
-                    "forwardCollectorConfigId": {
-                      "type": "string"
-                    },
-                    "forwardUsername": {
-                      "title": "custom username (if using custom creds)\n",
+                    "forwardCredentialSetId": {
                       "type": "string"
                     },
                     "hasAdminPassword": {
-                      "type": "boolean"
-                    },
-                    "hasForwardPassword": {
-                      "title": "true if a custom password is stored\n",
                       "type": "boolean"
                     },
                     "instanceUrl": {
@@ -7051,9 +7230,7 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "forwardCollectorConfigId",
-                    "forwardUsername",
-                    "hasForwardPassword",
+                    "forwardCredentialSetId",
                     "updatedAt",
                     "lastInstallStatus",
                     "lastInstallError",
@@ -7088,10 +7265,7 @@
                   "forwardCollectorConfigId": {
                     "type": "string"
                   },
-                  "forwardPassword": {
-                    "type": "string"
-                  },
-                  "forwardUsername": {
+                  "forwardCredentialSetId": {
                     "type": "string"
                   },
                   "instanceUrl": {
@@ -7102,9 +7276,8 @@
                   "instanceUrl",
                   "adminUsername",
                   "adminPassword",
-                  "forwardCollectorConfigId",
-                  "forwardUsername",
-                  "forwardPassword"
+                  "forwardCredentialSetId",
+                  "forwardCollectorConfigId"
                 ],
                 "type": "object"
               }
@@ -7123,18 +7296,10 @@
                     "configured": {
                       "type": "boolean"
                     },
-                    "forwardCollectorConfigId": {
-                      "type": "string"
-                    },
-                    "forwardUsername": {
-                      "title": "custom username (if using custom creds)\n",
+                    "forwardCredentialSetId": {
                       "type": "string"
                     },
                     "hasAdminPassword": {
-                      "type": "boolean"
-                    },
-                    "hasForwardPassword": {
-                      "title": "true if a custom password is stored\n",
                       "type": "boolean"
                     },
                     "instanceUrl": {
@@ -7161,9 +7326,7 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "forwardCollectorConfigId",
-                    "forwardUsername",
-                    "hasForwardPassword",
+                    "forwardCredentialSetId",
                     "updatedAt",
                     "lastInstallStatus",
                     "lastInstallError",
@@ -7339,6 +7502,202 @@
           }
         },
         "summary": "GetUserServiceNowSchemaStatus checks whether the ServiceNow demo schema is\ninstalled.\n"
+      }
+    },
+    "/api/me/integrations/servicenow/setup": {
+      "post": {
+        "operationId": "POST:skyforge.StartOrResumeUserServiceNowSetup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "resume": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "resume"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "currentStep": {
+                      "type": "string"
+                    },
+                    "finishedAt": {
+                      "type": "string"
+                    },
+                    "lastError": {
+                      "type": "string"
+                    },
+                    "remediation": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "runId": {
+                      "type": "string"
+                    },
+                    "startedAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "steps": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.serviceNowSetupStepResult"
+                      },
+                      "type": "array"
+                    },
+                    "ticketingCheckedAt": {
+                      "type": "string"
+                    },
+                    "ticketingIntegrationSupported": {
+                      "type": "boolean"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "runId",
+                    "status",
+                    "currentStep",
+                    "steps",
+                    "remediation",
+                    "lastError",
+                    "ticketingIntegrationSupported",
+                    "ticketingCheckedAt",
+                    "startedAt",
+                    "updatedAt",
+                    "finishedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "StartOrResumeUserServiceNowSetup runs the near-zero-touch ServiceNow setup\nworkflow.\n"
+      }
+    },
+    "/api/me/integrations/servicenow/setup/cancel": {
+      "post": {
+        "operationId": "POST:skyforge.CancelUserServiceNowSetup",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "canceled": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "canceled"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CancelUserServiceNowSetup marks an active setup run as canceled.\n"
+      }
+    },
+    "/api/me/integrations/servicenow/setup/status": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserServiceNowSetupStatus",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "currentStep": {
+                      "type": "string"
+                    },
+                    "finishedAt": {
+                      "type": "string"
+                    },
+                    "lastError": {
+                      "type": "string"
+                    },
+                    "remediation": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "runId": {
+                      "type": "string"
+                    },
+                    "startedAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "steps": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.serviceNowSetupStepResult"
+                      },
+                      "type": "array"
+                    },
+                    "ticketingCheckedAt": {
+                      "type": "string"
+                    },
+                    "ticketingIntegrationSupported": {
+                      "type": "boolean"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "runId",
+                    "status",
+                    "currentStep",
+                    "steps",
+                    "remediation",
+                    "lastError",
+                    "ticketingIntegrationSupported",
+                    "ticketingCheckedAt",
+                    "startedAt",
+                    "updatedAt",
+                    "finishedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserServiceNowSetupStatus returns the latest setup run for the current user.\n"
       }
     },
     "/api/me/integrations/servicenow/wake": {
@@ -13162,6 +13521,192 @@
           }
         },
         "summary": "GetUserScopeDeploymentInventory returns a simple inventory of nodes and\nmanagement IPs.\n"
+      }
+    },
+    "/api/users/{id}/deployments/{deploymentID}/lease": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserScopeDeploymentLease",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deploymentId": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "expiresAt": {
+                      "type": "string"
+                    },
+                    "hours": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "stopTaskId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "stoppedAt": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deploymentId",
+                    "enabled",
+                    "hours",
+                    "expiresAt",
+                    "stoppedAt",
+                    "stopTaskId",
+                    "status"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserScopeDeploymentLease returns executive lease metadata for a deployment.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.PutUserScopeDeploymentLease",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "hours": {
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "hours"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deploymentId": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "expiresAt": {
+                      "type": "string"
+                    },
+                    "hours": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "stopTaskId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "stoppedAt": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deploymentId",
+                    "enabled",
+                    "hours",
+                    "expiresAt",
+                    "stoppedAt",
+                    "stopTaskId",
+                    "status"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutUserScopeDeploymentLease upserts executive lease metadata for a deployment.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/links/admin": {
@@ -19426,6 +19971,21 @@
             "$ref": "#/components/responses/APIError"
           }
         }
+      }
+    },
+    "/internal/cron/deployments/executive-leases": {
+      "post": {
+        "description": "Stops expired netlab-c9s executive labs.\n",
+        "operationId": "POST:skyforge.CronSweepExecutiveDeploymentLeases",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "Executive lease sweeper\n"
       }
     },
     "/internal/cron/governance/usage/cleanup": {
