@@ -9,6 +9,12 @@ early when required configuration is missing.
   {{- if not (trim (default "" .Values.skyforge.netlabC9s.image)) -}}
     {{- fail "skyforge.netlabC9s.image must be set (required for netlab-c9s mode)" -}}
   {{- end -}}
+  {{- if hasKey .Values.skyforge.netlabC9s "applierImage" -}}
+    {{- fail "skyforge.netlabC9s.applierImage is deprecated and no longer supported; use skyforge.netlabC9s.image" -}}
+  {{- end -}}
+  {{- if hasKey .Values.skyforge.netlabC9s "applierPullPolicy" -}}
+    {{- fail "skyforge.netlabC9s.applierPullPolicy is deprecated and no longer supported; use skyforge.netlabC9s.pullPolicy" -}}
+  {{- end -}}
 {{- end -}}
 
 {{- if not .Values.skyforge.gitea.enabled -}}
