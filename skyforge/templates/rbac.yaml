@@ -72,6 +72,11 @@ rules:
   - apiGroups: ["clabernetes.containerlab.dev"]
     resources: ["topologies/status", "topologies/finalizers"]
     verbs: ["get", "update", "patch"]
+  # Preflight checks verify the clabernetes CRD exists before queueing runs.
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    resourceNames: ["topologies.clabernetes.containerlab.dev"]
+    verbs: ["get"]
   - apiGroups: ["batch"]
     resources: ["jobs"]
     verbs: ["get", "list", "create", "update", "patch", "delete", "deletecollection", "watch"]
