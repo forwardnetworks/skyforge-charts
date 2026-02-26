@@ -2883,6 +2883,29 @@
         ],
         "type": "object"
       },
+      "skyforge.quickDeployTemplate": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "template"
+        ],
+        "type": "object"
+      },
       "skyforge.serviceNowSetupStepResult": {
         "properties": {
           "detail": {
@@ -5142,6 +5165,67 @@
           }
         },
         "summary": "DashboardSnapshot returns the latest dashboard snapshot.\n"
+      }
+    },
+    "/api/deployment-lifetime/policy": {
+      "get": {
+        "operationId": "GET:skyforge.GetDeploymentLifetimePolicy",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "allowNoExpiry": {
+                      "type": "boolean"
+                    },
+                    "allowedHours": {
+                      "items": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "array"
+                    },
+                    "defaultHours": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "expiryActions": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "managedTypes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "maxHoursNonAdmin": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "managedTypes",
+                    "allowedHours",
+                    "defaultHours",
+                    "maxHoursNonAdmin",
+                    "allowNoExpiry",
+                    "expiryActions"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetDeploymentLifetimePolicy returns deployment lifetime policy used by the UI.\n"
       }
     },
     "/api/dns/bootstrap": {
@@ -8374,6 +8458,122 @@
           }
         },
         "summary": "PublicConfig exposes non-sensitive public UI configuration.\n"
+      }
+    },
+    "/api/quick-deploy/catalog": {
+      "get": {
+        "operationId": "GET:skyforge.GetQuickDeployCatalog",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "defaultLeaseHours": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "leaseOptions": {
+                      "items": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "array"
+                    },
+                    "templates": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.quickDeployTemplate"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "templates",
+                    "leaseOptions",
+                    "defaultLeaseHours"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetQuickDeployCatalog returns the curated one-click quick deploy template\ncatalog.\n"
+      }
+    },
+    "/api/quick-deploy/deploy": {
+      "post": {
+        "operationId": "POST:skyforge.RunQuickDeploy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "leaseHours": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "template": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "template",
+                  "leaseHours",
+                  "name"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deploymentId": {
+                      "type": "string"
+                    },
+                    "deploymentName": {
+                      "type": "string"
+                    },
+                    "noOp": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "$ref": "#/components/schemas/deploycore.Reason"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deploymentId",
+                    "deploymentName",
+                    "noOp",
+                    "reason"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RunQuickDeploy provisions a curated netlab-c9s deployment with managed\nin-cluster Forward sync.\n"
       }
     },
     "/api/reauth": {
