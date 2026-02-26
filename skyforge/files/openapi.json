@@ -2868,6 +2868,21 @@
         ],
         "type": "object"
       },
+      "skyforge.deploymentPreflightSummary": {
+        "properties": {
+          "capacity": {
+            "$ref": "#/components/schemas/skyforge.JSONMap"
+          },
+          "compatibility": {
+            "$ref": "#/components/schemas/skyforge.JSONMap"
+          }
+        },
+        "required": [
+          "compatibility",
+          "capacity"
+        ],
+        "type": "object"
+      },
       "skyforge.serviceNowSetupStepResult": {
         "properties": {
           "detail": {
@@ -14758,6 +14773,109 @@
         "summary": "SaveUserScopeDeploymentNodeConfig triggers a best-effort \"save config\" operation\non a node.\n"
       }
     },
+    "/api/users/{id}/deployments/{deploymentID}/preflight": {
+      "post": {
+        "description": "queueing a run.\n",
+        "operationId": "POST:skyforge.PreflightUserScopeDeploymentAction",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "action": {
+                    "$ref": "#/components/schemas/deploycore.Action"
+                  }
+                },
+                "required": [
+                  "action"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "action": {
+                      "$ref": "#/components/schemas/deploycore.Action"
+                    },
+                    "deployment": {
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
+                    },
+                    "idempotent": {
+                      "type": "boolean"
+                    },
+                    "noOp": {
+                      "type": "boolean"
+                    },
+                    "operationKey": {
+                      "type": "string"
+                    },
+                    "preflight": {
+                      "$ref": "#/components/schemas/skyforge.deploymentPreflightSummary"
+                    },
+                    "reason": {
+                      "$ref": "#/components/schemas/deploycore.Reason"
+                    },
+                    "state": {
+                      "$ref": "#/components/schemas/skyforge.DeploymentActionState"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deployment",
+                    "action",
+                    "operationKey",
+                    "preflight",
+                    "idempotent",
+                    "noOp",
+                    "reason",
+                    "state"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PreflightUserScopeDeploymentAction runs deployment preflight checks without\n"
+      }
+    },
     "/api/users/{id}/deployments/{deploymentID}/terminal/ws": {
       "get": {
         "description": "using Kubernetes \\`pods/exec\\` (SPDY) and a WebSocket transport to the browser.\n\nQuery params: - node: required (clabernetes/topologyNode) - container: optional - command: optional (defaults to \"sh\"; for EOS nodes use \"Cli\")\n",
@@ -17547,14 +17665,6 @@
                     "title": "owner/repo or URL (custom only)\n",
                     "type": "string"
                   },
-                  "setOverrides": {
-                    "description": "They are only used by the in-cluster netlab generator (netlab-c9s), not BYOS netlab.\n",
-                    "items": {
-                      "type": "string"
-                    },
-                    "title": "SetOverrides are netlab CLI `--set` overrides (highest precedence) applied\nduring validation.\n",
-                    "type": "array"
-                  },
                   "source": {
                     "title": "user|blueprints|external|custom\n",
                     "type": "string"
@@ -17569,8 +17679,7 @@
                   "repo",
                   "dir",
                   "template",
-                  "environment",
-                  "setOverrides"
+                  "environment"
                 ],
                 "type": "object"
               }
