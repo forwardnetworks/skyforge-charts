@@ -13818,7 +13818,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetUserScopeDeploymentLease returns executive lease metadata for a deployment.\n"
+        "summary": "GetUserScopeDeploymentLease returns lease metadata for a deployment.\n"
       },
       "put": {
         "operationId": "PUT:skyforge.PutUserScopeDeploymentLease",
@@ -13921,7 +13921,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PutUserScopeDeploymentLease upserts executive lease metadata for a deployment.\n"
+        "summary": "PutUserScopeDeploymentLease upserts lease metadata for a deployment.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/links/admin": {
@@ -20282,10 +20282,10 @@
         }
       }
     },
-    "/internal/cron/deployments/executive-leases": {
+    "/internal/cron/deployments/leases": {
       "post": {
-        "description": "Stops expired netlab-c9s executive labs.\n",
-        "operationId": "POST:skyforge.CronSweepExecutiveDeploymentLeases",
+        "description": "Stops expired managed deployment leases.\n",
+        "operationId": "POST:skyforge.CronSweepDeploymentLeases",
         "responses": {
           "200": {
             "description": "Success response"
@@ -20294,7 +20294,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "Executive lease sweeper\n"
+        "summary": "Deployment lease sweeper\n"
       }
     },
     "/internal/cron/governance/usage/cleanup": {

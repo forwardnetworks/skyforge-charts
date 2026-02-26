@@ -2914,3 +2914,59 @@ data:
     CREATE UNIQUE INDEX IF NOT EXISTS sf_user_servicenow_setup_runs_active_idx
       ON public.sf_user_servicenow_setup_runs (username)
       WHERE status = 'running';
+
+  20260226183000_deployment_lease_key_hard_cut.up.sql: |
+    UPDATE public.sf_deployments
+    SET
+      config = (
+        (
+          config
+          || jsonb_strip_nulls(
+            jsonb_build_object(
+              'leaseEnabled',
+              CASE
+                WHEN config ? 'leaseEnabled' THEN config -> 'leaseEnabled'
+                WHEN config ? 'executiveLeaseEnabled' THEN config -> 'executiveLeaseEnabled'
+                ELSE NULL
+              END,
+              'leaseHours',
+              CASE
+                WHEN config ? 'leaseHours' THEN config -> 'leaseHours'
+                WHEN config ? 'executiveLeaseHours' THEN config -> 'executiveLeaseHours'
+                ELSE NULL
+              END,
+              'leaseExpiresAt',
+              CASE
+                WHEN config ? 'leaseExpiresAt' THEN config -> 'leaseExpiresAt'
+                WHEN config ? 'executiveLeaseExpiresAt' THEN config -> 'executiveLeaseExpiresAt'
+                ELSE NULL
+              END,
+              'leaseStoppedAt',
+              CASE
+                WHEN config ? 'leaseStoppedAt' THEN config -> 'leaseStoppedAt'
+                WHEN config ? 'executiveLeaseStoppedAt' THEN config -> 'executiveLeaseStoppedAt'
+                ELSE NULL
+              END,
+              'leaseStopTaskId',
+              CASE
+                WHEN config ? 'leaseStopTaskId' THEN config -> 'leaseStopTaskId'
+                WHEN config ? 'executiveLeaseStopTaskId' THEN config -> 'executiveLeaseStopTaskId'
+                ELSE NULL
+              END
+            )
+          )
+        )
+        - 'executiveLeaseEnabled'
+        - 'executiveLeaseHours'
+        - 'executiveLeaseExpiresAt'
+        - 'executiveLeaseStoppedAt'
+        - 'executiveLeaseStopTaskId'
+      ),
+      updated_at = now()
+    WHERE config ?| ARRAY[
+      'executiveLeaseEnabled',
+      'executiveLeaseHours',
+      'executiveLeaseExpiresAt',
+      'executiveLeaseStoppedAt',
+      'executiveLeaseStopTaskId'
+    ];
