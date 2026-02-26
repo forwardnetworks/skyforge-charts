@@ -175,7 +175,7 @@ skyforge:
   netlabC9s:
     # Single netlab runtime image used for both create (generator) and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260226-netlab-nosnmp-2dd51da"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260226-netlab-nosnmp-contract-956715c"
     pullPolicy: "IfNotPresent"
   dns:
     enabled: false
