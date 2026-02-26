@@ -374,6 +374,18 @@ spec:
               name: skyforge-containerlab-jwt-secret
               key: skyforge-containerlab-jwt-secret
               optional: true
+        - name: SKYFORGE_QUICK_DEPLOY_FORWARD_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-quick-deploy-forward-username
+              key: skyforge-quick-deploy-forward-username
+              optional: true
+        - name: SKYFORGE_QUICK_DEPLOY_FORWARD_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-quick-deploy-forward-password
+              key: skyforge-quick-deploy-forward-password
+              optional: true
         - name: SKYFORGE_DB_HOST
           valueFrom:
             configMapKeyRef:

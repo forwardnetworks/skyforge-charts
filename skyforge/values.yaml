@@ -526,6 +526,10 @@ secrets:
       skyforge-oidc-client-id: ""
     skyforge-oidc-client-secret:
       skyforge-oidc-client-secret: ""
+    skyforge-quick-deploy-forward-username:
+      skyforge-quick-deploy-forward-username: ""
+    skyforge-quick-deploy-forward-password:
+      skyforge-quick-deploy-forward-password: ""
     yaade-admin-password:
       yaade-admin-password: ""
     gitea-secret-key:
