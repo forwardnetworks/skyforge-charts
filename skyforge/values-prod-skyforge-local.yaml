@@ -79,7 +79,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlabC9s:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260221-netlab-unified-iol-hardcut"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260226-netlab-unified-snmpv2-eosfix"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
