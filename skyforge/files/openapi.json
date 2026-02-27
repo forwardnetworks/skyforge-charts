@@ -2598,6 +2598,12 @@
           "createdBy": {
             "type": "string"
           },
+          "engine": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -2625,9 +2631,6 @@
             "format": "int64",
             "type": "integer"
           },
-          "type": {
-            "type": "string"
-          },
           "updatedAt": {
             "type": "string"
           },
@@ -2639,7 +2642,8 @@
           "id",
           "userId",
           "name",
-          "type",
+          "family",
+          "engine",
           "config",
           "createdBy",
           "createdAt",
@@ -5948,6 +5952,12 @@
                     "createdBy": {
                       "type": "string"
                     },
+                    "engine": {
+                      "type": "string"
+                    },
+                    "family": {
+                      "type": "string"
+                    },
                     "id": {
                       "type": "string"
                     },
@@ -5975,9 +5985,6 @@
                       "format": "int64",
                       "type": "integer"
                     },
-                    "type": {
-                      "type": "string"
-                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -5989,7 +5996,8 @@
                     "id",
                     "userId",
                     "name",
-                    "type",
+                    "family",
+                    "engine",
                     "config",
                     "createdBy",
                     "createdAt",
@@ -7137,7 +7145,7 @@
                       },
                       "type": "object"
                     },
-                    "managedTypes": {
+                    "managedFamilies": {
                       "items": {
                         "type": "string"
                       },
@@ -7149,7 +7157,7 @@
                     }
                   },
                   "required": [
-                    "managedTypes",
+                    "managedFamilies",
                     "allowedHours",
                     "defaultHours",
                     "maxHoursNonAdmin",
@@ -12876,10 +12884,10 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "compiler": {
+                  "dir": {
                     "type": "string"
                   },
-                  "dir": {
+                  "engine": {
                     "type": "string"
                   },
                   "kind": {
@@ -12897,7 +12905,7 @@
                 },
                 "required": [
                   "kind",
-                  "compiler",
+                  "engine",
                   "source",
                   "repo",
                   "dir",
@@ -13021,16 +13029,20 @@
                   "config": {
                     "$ref": "#/components/schemas/skyforge.JSONMap"
                   },
-                  "name": {
+                  "engine": {
                     "type": "string"
                   },
-                  "type": {
+                  "family": {
+                    "type": "string"
+                  },
+                  "name": {
                     "type": "string"
                   }
                 },
                 "required": [
                   "name",
-                  "type",
+                  "family",
+                  "engine",
                   "config"
                 ],
                 "type": "object"
@@ -13060,6 +13072,12 @@
                     "createdBy": {
                       "type": "string"
                     },
+                    "engine": {
+                      "type": "string"
+                    },
+                    "family": {
+                      "type": "string"
+                    },
                     "id": {
                       "type": "string"
                     },
@@ -13087,9 +13105,6 @@
                       "format": "int64",
                       "type": "integer"
                     },
-                    "type": {
-                      "type": "string"
-                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -13101,7 +13116,8 @@
                     "id",
                     "userId",
                     "name",
-                    "type",
+                    "family",
+                    "engine",
                     "config",
                     "createdBy",
                     "createdAt",
@@ -13486,6 +13502,12 @@
                     "createdBy": {
                       "type": "string"
                     },
+                    "engine": {
+                      "type": "string"
+                    },
+                    "family": {
+                      "type": "string"
+                    },
                     "id": {
                       "type": "string"
                     },
@@ -13513,9 +13535,6 @@
                       "format": "int64",
                       "type": "integer"
                     },
-                    "type": {
-                      "type": "string"
-                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -13527,7 +13546,8 @@
                     "id",
                     "userId",
                     "name",
-                    "type",
+                    "family",
+                    "engine",
                     "config",
                     "createdBy",
                     "createdAt",
@@ -16235,10 +16255,13 @@
                     "deploymentId": {
                       "type": "string"
                     },
+                    "engine": {
+                      "type": "string"
+                    },
                     "estimate": {
                       "$ref": "#/components/schemas/skyforge.ResourceEstimateSummary"
                     },
-                    "type": {
+                    "family": {
                       "type": "string"
                     },
                     "userId": {
@@ -16250,7 +16273,8 @@
                     "deploymentId",
                     "deployment",
                     "estimate",
-                    "type"
+                    "family",
+                    "engine"
                   ],
                   "type": "object"
                 }
