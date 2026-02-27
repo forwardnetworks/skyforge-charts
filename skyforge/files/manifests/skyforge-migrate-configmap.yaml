@@ -3363,8 +3363,8 @@ data:
     $$;
     
     WITH latest AS (
-        SELECT DISTINCT ON (t.user_id, t.deployment_id)
-            t.user_id,
+        SELECT DISTINCT ON (t.username, t.deployment_id)
+            t.username AS user_id,
             t.deployment_id,
             t.id AS task_id,
             COALESCE(NULLIF(t.metadata->>'topologyKey', ''), '') AS artifact_key,
@@ -3374,7 +3374,7 @@ data:
         WHERE t.deployment_id IS NOT NULL
           AND COALESCE(NULLIF(t.metadata->>'topologyKey', ''), '') <> ''
           AND t.task_type = ANY (ARRAY['netlab-c9s-run', 'clabernetes-run', 'containerlab-run', 'netlab-run', 'eve-ng-run'])
-        ORDER BY t.user_id, t.deployment_id, COALESCE(t.finished_at, t.started_at, t.created_at, now()) DESC, t.id DESC
+        ORDER BY t.username, t.deployment_id, COALESCE(t.finished_at, t.started_at, t.created_at, now()) DESC, t.id DESC
     )
     INSERT INTO public.sf_deployment_topology_current (
         user_id,
