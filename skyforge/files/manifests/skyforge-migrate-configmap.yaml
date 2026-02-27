@@ -24,8 +24,16 @@ data:
     
 
   atlas.sum: |
-    h1:ctlW1kum14N1whFZhG1VJtkVYMnL/S/zhNjwRCmKMso=
+    h1:aP7MiwH+Od9gJIC3Wkbma4KxW0LAIw+NEyeHH8mFAHk=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
+    20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
+    20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
+    20260227201000_netlab_status_current_and_forward_type_hard_cut.up.sql h1:w3BQZ1/eMfcNPeRT0YkYxNV1Yqe6/zqRDWMObCIe70c=
+    20260227224000_netlab_status_current_forward_type.up.sql h1:r5sYg+jKI0MSYSbyWqio0hrGX9YhfaH7T9Ksw9gLTSY=
+    20260227231000_netlab_status_current_contract_checks.up.sql h1:I21SWSiF1nCJzZlfj3a5CWpijNjDzFF9pJAMm0LGC5w=
+    20260227235500_deployment_type_model_hard_cut.up.sql h1:pbrBxOpPdQVPN5yC1WFOFDVcDflwF9B3qXUL2wBPR68=
+    20260228000500_deployment_engine_contract_hard_cut.up.sql h1:EwZtCvjUr0H+39JwPhrYC59QSWqUYkFbX2f7EGZKgLo=
+    20260228013000_deployment_runtime_state_hard_cut.up.sql h1:sj1C2rpGWewOhNhBRMH8IOYE0bD/TbvAVqzd8qCTENI=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -2970,3 +2978,572 @@ data:
       'executiveLeaseStoppedAt',
       'executiveLeaseStopTaskId'
     ];
+
+  20260227201000_netlab_status_current_and_forward_type_hard_cut.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_netlab_node_status_current (
+        user_scope_id text NOT NULL,
+        deployment_id uuid NOT NULL,
+        node_name text NOT NULL,
+        device_key text NOT NULL,
+        kind text NOT NULL,
+        image text NOT NULL,
+        mgmt_host text,
+        mgmt_ip text,
+        ping_ip text,
+        node_status text,
+        source text NOT NULL DEFAULT 'netlab_c9s_graph_snapshot',
+        task_id bigint,
+        updated_at timestamp with time zone NOT NULL DEFAULT now(),
+        PRIMARY KEY (deployment_id, node_name)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_netlab_node_status_current_user_deployment_idx
+        ON public.sf_netlab_node_status_current (user_scope_id, deployment_id);
+    
+    DROP TABLE IF EXISTS public.sf_forward_device_types;
+
+  20260227224000_netlab_status_current_forward_type.up.sql: |
+    ALTER TABLE public.sf_netlab_node_status_current
+        ADD COLUMN IF NOT EXISTS forward_type text;
+    
+    UPDATE public.sf_netlab_node_status_current
+    SET forward_type = CASE lower(device_key)
+        WHEN 'arubacx' THEN 'aruba_aos_cx_ssh'
+        WHEN 'asav' THEN 'cisco_asa_ssh'
+        WHEN 'cumulus' THEN 'cumulus_ssh'
+        WHEN 'dellos10' THEN 'dell_os10_switch_ssh'
+        WHEN 'eos' THEN 'arista_eos_ssh'
+        WHEN 'fortios' THEN 'fortinet_ssh'
+        WHEN 'iol' THEN 'cisco_ios_ssh'
+        WHEN 'ioll2' THEN 'cisco_ios_ssh'
+        WHEN 'iosxr' THEN 'cisco_ios_xr_ssh'
+        WHEN 'linux' THEN 'linux_os_ssh'
+        WHEN 'nxos' THEN 'cisco_nxos_ssh'
+        WHEN 'sros' THEN 'nokia_ssh'
+        WHEN 'vjunos-router' THEN 'juniper_junos_ssh'
+        WHEN 'vjunos-switch' THEN 'juniper_junos_ssh'
+        WHEN 'vmx' THEN 'juniper_junos_ssh'
+        WHEN 'vptx' THEN 'juniper_junos_ssh'
+        ELSE forward_type
+    END
+    WHERE COALESCE(forward_type, '') = '';
+
+  20260227231000_netlab_status_current_contract_checks.up.sql: |
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_netlab_node_status_current_device_key_nonblank'
+        ) THEN
+            ALTER TABLE public.sf_netlab_node_status_current
+                ADD CONSTRAINT sf_netlab_node_status_current_device_key_nonblank
+                CHECK (btrim(device_key) <> '') NOT VALID;
+        END IF;
+    END $$;
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_netlab_node_status_current_forward_type_nonblank'
+        ) THEN
+            ALTER TABLE public.sf_netlab_node_status_current
+                ADD CONSTRAINT sf_netlab_node_status_current_forward_type_nonblank
+                CHECK (forward_type IS NOT NULL AND btrim(forward_type) <> '') NOT VALID;
+        END IF;
+    END $$;
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_netlab_node_status_current_kind_nonblank'
+        ) THEN
+            ALTER TABLE public.sf_netlab_node_status_current
+                ADD CONSTRAINT sf_netlab_node_status_current_kind_nonblank
+                CHECK (btrim(kind) <> '') NOT VALID;
+        END IF;
+    END $$;
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_netlab_node_status_current_image_nonblank'
+        ) THEN
+            ALTER TABLE public.sf_netlab_node_status_current
+                ADD CONSTRAINT sf_netlab_node_status_current_image_nonblank
+                CHECK (btrim(image) <> '') NOT VALID;
+        END IF;
+    END $$;
+
+  20260227235500_deployment_type_model_hard_cut.up.sql: |
+    -- Hard-cut deployment type model to canonical values:
+    --   terraform | c9s | byos
+    --
+    -- Legacy deployment rows are removed instead of migrated.
+    -- Related queued/history task rows and UI event rows are removed for those deployments.
+    
+    DELETE FROM sf_tasks
+    WHERE deployment_id IN (
+      SELECT id
+      FROM sf_deployments
+      WHERE type IN ('netlab', 'netlab-c9s', 'eve_ng', 'containerlab', 'clabernetes')
+    );
+    
+    DELETE FROM sf_deployment_ui_events
+    WHERE deployment_id IN (
+      SELECT id::text
+      FROM sf_deployments
+      WHERE type IN ('netlab', 'netlab-c9s', 'eve_ng', 'containerlab', 'clabernetes')
+    );
+    
+    DELETE FROM sf_deployments
+    WHERE type IN ('netlab', 'netlab-c9s', 'eve_ng', 'containerlab', 'clabernetes');
+    
+    ALTER TABLE sf_deployments
+      DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
+    
+    ALTER TABLE sf_deployments
+      ADD CONSTRAINT sf_deployments_type_check
+      CHECK (
+        type = ANY (ARRAY['terraform'::text, 'c9s'::text, 'byos'::text])
+      );
+
+  20260228000500_deployment_engine_contract_hard_cut.up.sql: |
+    -- Hard-cut deployment engine contract:
+    --   - require config.engine for all managed families
+    --   - strip legacy config.compiler/config.driver keys
+    --   - enforce family+engine pairing in DB constraints
+    
+    DO $$
+    DECLARE
+      unresolved_count integer := 0;
+      invalid_pair_count integer := 0;
+    BEGIN
+      WITH resolved AS (
+        SELECT
+          d.id,
+          d.type,
+          CASE d.type
+            WHEN 'terraform' THEN 'terraform'
+            WHEN 'c9s' THEN COALESCE(
+              NULLIF(lower(replace(trim(d.config->>'engine'), '-', '_')), ''),
+              NULLIF(lower(replace(trim(d.config->>'compiler'), '-', '_')), '')
+            )
+            WHEN 'byos' THEN COALESCE(
+              NULLIF(lower(replace(trim(d.config->>'engine'), '-', '_')), ''),
+              NULLIF(lower(replace(trim(d.config->>'driver'), '-', '_')), ''),
+              NULLIF(lower(replace(trim(d.config->>'compiler'), '-', '_')), '')
+            )
+            ELSE NULL
+          END AS engine
+        FROM sf_deployments d
+        WHERE d.type IN ('terraform', 'c9s', 'byos')
+      )
+      SELECT count(*) INTO unresolved_count
+      FROM resolved r
+      WHERE r.engine IS NULL;
+    
+      IF unresolved_count > 0 THEN
+        RAISE EXCEPTION 'deployment engine hard-cut failed: % deployment rows have no resolvable engine', unresolved_count;
+      END IF;
+    
+      WITH resolved AS (
+        SELECT
+          d.id,
+          d.type,
+          CASE d.type
+            WHEN 'terraform' THEN 'terraform'
+            WHEN 'c9s' THEN COALESCE(
+              NULLIF(lower(replace(trim(d.config->>'engine'), '-', '_')), ''),
+              NULLIF(lower(replace(trim(d.config->>'compiler'), '-', '_')), '')
+            )
+            WHEN 'byos' THEN COALESCE(
+              NULLIF(lower(replace(trim(d.config->>'engine'), '-', '_')), ''),
+              NULLIF(lower(replace(trim(d.config->>'driver'), '-', '_')), ''),
+              NULLIF(lower(replace(trim(d.config->>'compiler'), '-', '_')), '')
+            )
+            ELSE NULL
+          END AS engine
+        FROM sf_deployments d
+        WHERE d.type IN ('terraform', 'c9s', 'byos')
+      )
+      SELECT count(*) INTO invalid_pair_count
+      FROM resolved r
+      WHERE NOT (
+        (r.type = 'terraform' AND r.engine = 'terraform') OR
+        (r.type = 'c9s' AND r.engine IN ('netlab', 'containerlab')) OR
+        (r.type = 'byos' AND r.engine IN ('netlab', 'containerlab', 'eve_ng'))
+      );
+    
+      IF invalid_pair_count > 0 THEN
+        RAISE EXCEPTION 'deployment engine hard-cut failed: % deployment rows have invalid family/engine pairs', invalid_pair_count;
+      END IF;
+    
+      UPDATE sf_deployments d
+      SET config = (
+        (d.config - 'compiler' - 'driver') ||
+        jsonb_build_object(
+          'engine',
+          CASE d.type
+            WHEN 'terraform' THEN 'terraform'
+            WHEN 'c9s' THEN COALESCE(
+              NULLIF(lower(replace(trim(d.config->>'engine'), '-', '_')), ''),
+              NULLIF(lower(replace(trim(d.config->>'compiler'), '-', '_')), '')
+            )
+            WHEN 'byos' THEN COALESCE(
+              NULLIF(lower(replace(trim(d.config->>'engine'), '-', '_')), ''),
+              NULLIF(lower(replace(trim(d.config->>'driver'), '-', '_')), ''),
+              NULLIF(lower(replace(trim(d.config->>'compiler'), '-', '_')), '')
+            )
+          END
+        )
+      )
+      WHERE d.type IN ('terraform', 'c9s', 'byos');
+    END $$;
+    
+    ALTER TABLE sf_deployments
+      DROP CONSTRAINT IF EXISTS sf_deployments_family_engine_pair_check;
+    
+    ALTER TABLE sf_deployments
+      ADD CONSTRAINT sf_deployments_family_engine_pair_check
+      CHECK (
+        (type = 'terraform' AND config->>'engine' = 'terraform') OR
+        (type = 'c9s' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'containerlab'::text])) OR
+        (type = 'byos' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'containerlab'::text, 'eve_ng'::text]))
+      );
+    
+    ALTER TABLE sf_deployments
+      DROP CONSTRAINT IF EXISTS sf_deployments_no_legacy_deployment_keys_check;
+    
+    ALTER TABLE sf_deployments
+      ADD CONSTRAINT sf_deployments_no_legacy_deployment_keys_check
+      CHECK (
+        NOT (config ? 'compiler') AND
+        NOT (config ? 'driver')
+      );
+
+  20260228013000_deployment_runtime_state_hard_cut.up.sql: |
+    -- Hard-cut deployment runtime state out of sf_deployments.config JSON.
+    -- Authoritative runtime state now lives in typed tables.
+    
+    CREATE TABLE IF NOT EXISTS public.sf_deployment_topology_current (
+        user_id text NOT NULL,
+        deployment_id uuid NOT NULL,
+        task_id bigint,
+        artifact_key text NOT NULL,
+        source text NOT NULL,
+        generated_at timestamp with time zone NOT NULL DEFAULT now(),
+        node_count integer NOT NULL DEFAULT 0,
+        edge_count integer NOT NULL DEFAULT 0,
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL DEFAULT now(),
+        PRIMARY KEY (deployment_id)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_deployment_topology_current_user_idx
+        ON public.sf_deployment_topology_current (user_id, updated_at DESC);
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_topology_current_user_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_topology_current
+                ADD CONSTRAINT sf_deployment_topology_current_user_fkey
+                FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_topology_current_deployment_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_topology_current
+                ADD CONSTRAINT sf_deployment_topology_current_deployment_fkey
+                FOREIGN KEY (deployment_id) REFERENCES public.sf_deployments(id) ON DELETE CASCADE;
+        END IF;
+    END
+    $$;
+    
+    CREATE TABLE IF NOT EXISTS public.sf_deployment_forward_state (
+        user_id text NOT NULL,
+        deployment_id uuid NOT NULL,
+        enabled boolean NOT NULL DEFAULT false,
+        collector_config_id text NOT NULL DEFAULT '',
+        collector_username text NOT NULL DEFAULT '',
+        network_id text NOT NULL DEFAULT '',
+        network_name text NOT NULL DEFAULT '',
+        snapshot_url text NOT NULL DEFAULT '',
+        cli_credential_id text NOT NULL DEFAULT '',
+        cli_credential_ids_by_device jsonb NOT NULL DEFAULT '{}'::jsonb,
+        cli_credential_fingerprints_by_device jsonb NOT NULL DEFAULT '{}'::jsonb,
+        snmp_credential_id text NOT NULL DEFAULT '',
+        jump_server_id text NOT NULL DEFAULT '',
+        endpoint_profile_id text NOT NULL DEFAULT '',
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL DEFAULT now(),
+        PRIMARY KEY (deployment_id)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_deployment_forward_state_user_idx
+        ON public.sf_deployment_forward_state (user_id, enabled, updated_at DESC);
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_forward_state_user_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_forward_state
+                ADD CONSTRAINT sf_deployment_forward_state_user_fkey
+                FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_forward_state_deployment_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_forward_state
+                ADD CONSTRAINT sf_deployment_forward_state_deployment_fkey
+                FOREIGN KEY (deployment_id) REFERENCES public.sf_deployments(id) ON DELETE CASCADE;
+        END IF;
+    END
+    $$;
+    
+    CREATE TABLE IF NOT EXISTS public.sf_deployment_leases (
+        user_id text NOT NULL,
+        deployment_id uuid NOT NULL,
+        enabled boolean NOT NULL DEFAULT false,
+        hours integer NOT NULL DEFAULT 0,
+        expires_at timestamp with time zone,
+        stopped_at timestamp with time zone,
+        stop_task_id bigint,
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL DEFAULT now(),
+        PRIMARY KEY (deployment_id),
+        CONSTRAINT sf_deployment_leases_hours_nonnegative CHECK (hours >= 0),
+        CONSTRAINT sf_deployment_leases_enabled_hours_check CHECK ((NOT enabled) OR (hours = ANY (ARRAY[4, 8, 24, 72])))
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_deployment_leases_user_idx
+        ON public.sf_deployment_leases (user_id, enabled, expires_at);
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_leases_user_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_leases
+                ADD CONSTRAINT sf_deployment_leases_user_fkey
+                FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_leases_deployment_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_leases
+                ADD CONSTRAINT sf_deployment_leases_deployment_fkey
+                FOREIGN KEY (deployment_id) REFERENCES public.sf_deployments(id) ON DELETE CASCADE;
+        END IF;
+    END
+    $$;
+    
+    WITH latest AS (
+        SELECT DISTINCT ON (t.user_id, t.deployment_id)
+            t.user_id,
+            t.deployment_id,
+            t.id AS task_id,
+            COALESCE(NULLIF(t.metadata->>'topologyKey', ''), '') AS artifact_key,
+            t.task_type,
+            COALESCE(t.finished_at, t.started_at, t.created_at, now()) AS generated_at
+        FROM public.sf_tasks t
+        WHERE t.deployment_id IS NOT NULL
+          AND COALESCE(NULLIF(t.metadata->>'topologyKey', ''), '') <> ''
+          AND t.task_type = ANY (ARRAY['netlab-c9s-run', 'clabernetes-run', 'containerlab-run', 'netlab-run', 'eve-ng-run'])
+        ORDER BY t.user_id, t.deployment_id, COALESCE(t.finished_at, t.started_at, t.created_at, now()) DESC, t.id DESC
+    )
+    INSERT INTO public.sf_deployment_topology_current (
+        user_id,
+        deployment_id,
+        task_id,
+        artifact_key,
+        source,
+        generated_at,
+        node_count,
+        edge_count,
+        created_at,
+        updated_at
+    )
+    SELECT
+        l.user_id,
+        l.deployment_id,
+        l.task_id,
+        l.artifact_key,
+        CASE
+            WHEN l.task_type = 'netlab-c9s-run' THEN 'netlab-c9s'
+            WHEN l.task_type = 'clabernetes-run' THEN 'clabernetes'
+            WHEN l.task_type = 'containerlab-run' THEN 'containerlab'
+            WHEN l.task_type = 'netlab-run' THEN 'netlab'
+            WHEN l.task_type = 'eve-ng-run' THEN 'eve-ng'
+            ELSE 'task'
+        END AS source,
+        l.generated_at,
+        0,
+        0,
+        now(),
+        now()
+    FROM latest l
+    ON CONFLICT (deployment_id) DO UPDATE
+    SET user_id = EXCLUDED.user_id,
+        task_id = EXCLUDED.task_id,
+        artifact_key = EXCLUDED.artifact_key,
+        source = EXCLUDED.source,
+        generated_at = EXCLUDED.generated_at,
+        updated_at = now();
+    
+    INSERT INTO public.sf_deployment_forward_state (
+        user_id,
+        deployment_id,
+        enabled,
+        collector_config_id,
+        collector_username,
+        network_id,
+        network_name,
+        snapshot_url,
+        cli_credential_id,
+        cli_credential_ids_by_device,
+        cli_credential_fingerprints_by_device,
+        snmp_credential_id,
+        jump_server_id,
+        endpoint_profile_id,
+        created_at,
+        updated_at
+    )
+    SELECT
+        d.user_id,
+        d.id,
+        CASE
+            WHEN lower(COALESCE(d.config->>'forwardEnabled', 'false')) = ANY (ARRAY['true', '1', 'yes', 'y', 'on']) THEN true
+            ELSE false
+        END AS enabled,
+        COALESCE(d.config->>'forwardCollectorId', ''),
+        COALESCE(d.config->>'forwardCollectorUsername', ''),
+        COALESCE(d.config->>'forwardNetworkId', ''),
+        COALESCE(d.config->>'forwardNetworkName', ''),
+        COALESCE(d.config->>'forwardSnapshotUrl', ''),
+        COALESCE(d.config->>'forwardCliCredentialId', ''),
+        CASE
+            WHEN jsonb_typeof(d.config->'forwardCliCredentialIdsByDevice') = 'object' THEN d.config->'forwardCliCredentialIdsByDevice'
+            ELSE '{}'::jsonb
+        END,
+        CASE
+            WHEN jsonb_typeof(d.config->'forwardCliCredentialFingerprintsByDevice') = 'object' THEN d.config->'forwardCliCredentialFingerprintsByDevice'
+            ELSE '{}'::jsonb
+        END,
+        COALESCE(d.config->>'forwardSnmpCredentialId', ''),
+        COALESCE(d.config->>'forwardJumpServerId', ''),
+        COALESCE(d.config->>'forwardEndpointProfileId', ''),
+        now(),
+        now()
+    FROM public.sf_deployments d
+    WHERE d.type = ANY (ARRAY['terraform', 'c9s', 'byos'])
+    ON CONFLICT (deployment_id) DO UPDATE
+    SET user_id = EXCLUDED.user_id,
+        enabled = EXCLUDED.enabled,
+        collector_config_id = EXCLUDED.collector_config_id,
+        collector_username = EXCLUDED.collector_username,
+        network_id = EXCLUDED.network_id,
+        network_name = EXCLUDED.network_name,
+        snapshot_url = EXCLUDED.snapshot_url,
+        cli_credential_id = EXCLUDED.cli_credential_id,
+        cli_credential_ids_by_device = EXCLUDED.cli_credential_ids_by_device,
+        cli_credential_fingerprints_by_device = EXCLUDED.cli_credential_fingerprints_by_device,
+        snmp_credential_id = EXCLUDED.snmp_credential_id,
+        jump_server_id = EXCLUDED.jump_server_id,
+        endpoint_profile_id = EXCLUDED.endpoint_profile_id,
+        updated_at = now();
+    
+    INSERT INTO public.sf_deployment_leases (
+        user_id,
+        deployment_id,
+        enabled,
+        hours,
+        expires_at,
+        stopped_at,
+        stop_task_id,
+        created_at,
+        updated_at
+    )
+    SELECT
+        d.user_id,
+        d.id,
+        CASE
+            WHEN lower(COALESCE(d.config->>'leaseEnabled', 'false')) = ANY (ARRAY['true', '1', 'yes', 'y', 'on']) THEN true
+            ELSE false
+        END AS enabled,
+        CASE
+            WHEN jsonb_typeof(d.config->'leaseHours') = 'number' THEN (d.config->>'leaseHours')::integer
+            WHEN COALESCE(d.config->>'leaseHours', '') ~ '^[0-9]+$' THEN (d.config->>'leaseHours')::integer
+            ELSE 0
+        END AS hours,
+        CASE
+            WHEN COALESCE(d.config->>'leaseExpiresAt', '') = '' THEN NULL
+            ELSE (d.config->>'leaseExpiresAt')::timestamp with time zone
+        END AS expires_at,
+        CASE
+            WHEN COALESCE(d.config->>'leaseStoppedAt', '') = '' THEN NULL
+            ELSE (d.config->>'leaseStoppedAt')::timestamp with time zone
+        END AS stopped_at,
+        CASE
+            WHEN jsonb_typeof(d.config->'leaseStopTaskId') = 'number' THEN (d.config->>'leaseStopTaskId')::bigint
+            WHEN COALESCE(d.config->>'leaseStopTaskId', '') ~ '^[0-9]+$' THEN (d.config->>'leaseStopTaskId')::bigint
+            ELSE NULL
+        END AS stop_task_id,
+        now(),
+        now()
+    FROM public.sf_deployments d
+    WHERE d.type = ANY (ARRAY['terraform', 'c9s', 'byos'])
+    ON CONFLICT (deployment_id) DO UPDATE
+    SET user_id = EXCLUDED.user_id,
+        enabled = EXCLUDED.enabled,
+        hours = EXCLUDED.hours,
+        expires_at = EXCLUDED.expires_at,
+        stopped_at = EXCLUDED.stopped_at,
+        stop_task_id = EXCLUDED.stop_task_id,
+        updated_at = now();
+    
+    -- Strip runtime state keys from deployment config JSON hard-cut.
+    UPDATE public.sf_deployments
+    SET config = config
+        - 'forwardEnabled'
+        - 'forwardCollectorId'
+        - 'forwardCollectorUsername'
+        - 'forwardNetworkId'
+        - 'forwardNetworkName'
+        - 'forwardSnapshotUrl'
+        - 'forwardCliCredentialId'
+        - 'forwardCliCredentialIdsByDevice'
+        - 'forwardCliCredentialFingerprintsByDevice'
+        - 'forwardSnmpCredentialId'
+        - 'forwardJumpServerId'
+        - 'forwardEndpointProfileId'
+        - 'leaseEnabled'
+        - 'leaseHours'
+        - 'leaseExpiresAt'
+        - 'leaseStoppedAt'
+        - 'leaseStopTaskId'
+    WHERE type = ANY (ARRAY['terraform', 'c9s', 'byos']);
