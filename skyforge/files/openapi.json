@@ -1690,6 +1690,49 @@
         ],
         "type": "object"
       },
+      "skyforge.ResourceEstimateSummary": {
+        "properties": {
+          "memoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "milliCpu": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "nodeCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "profiledNodeCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ramGiB": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "supported": {
+            "type": "boolean"
+          },
+          "vcpu": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "supported",
+          "vcpu",
+          "ramGiB",
+          "milliCpu",
+          "memoryBytes",
+          "nodeCount",
+          "profiledNodeCount",
+          "reason"
+        ],
+        "type": "object"
+      },
       "skyforge.SecureTrackCatalog": {
         "properties": {
           "checks": {
@@ -2888,6 +2931,9 @@
           "description": {
             "type": "string"
           },
+          "estimate": {
+            "$ref": "#/components/schemas/skyforge.ResourceEstimateSummary"
+          },
           "id": {
             "type": "string"
           },
@@ -2902,7 +2948,8 @@
           "id",
           "name",
           "description",
-          "template"
+          "template",
+          "estimate"
         ],
         "type": "object"
       },
@@ -4824,6 +4871,1900 @@
           }
         },
         "summary": "AzurePortalRedirect opens the Azure portal with a login hint.\n"
+      }
+    },
+    "/api/byos/me/containerlab/servers": {
+      "get": {
+        "operationId": "GET:skyforge.ListUserContainerlabServers",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "servers": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.UserContainerlabServerConfig"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "servers"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListUserContainerlabServers returns the current user's configured Containerlab\nBYOL endpoints.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.UpsertUserContainerlabServer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiInsecure": {
+                    "type": "boolean"
+                  },
+                  "apiPassword": {
+                    "type": "string"
+                  },
+                  "apiToken": {
+                    "type": "string"
+                  },
+                  "apiUrl": {
+                    "type": "string"
+                  },
+                  "apiUser": {
+                    "type": "string"
+                  },
+                  "hasPassword": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "apiUrl",
+                  "apiInsecure",
+                  "apiUser",
+                  "apiPassword",
+                  "apiToken",
+                  "hasPassword"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "apiInsecure": {
+                      "type": "boolean"
+                    },
+                    "apiPassword": {
+                      "type": "string"
+                    },
+                    "apiToken": {
+                      "type": "string"
+                    },
+                    "apiUrl": {
+                      "type": "string"
+                    },
+                    "apiUser": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "apiUrl",
+                    "apiInsecure",
+                    "apiUser",
+                    "apiPassword",
+                    "apiToken",
+                    "hasPassword"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpsertUserContainerlabServer creates or updates a user-scoped Containerlab\nendpoint.\n"
+      }
+    },
+    "/api/byos/me/containerlab/servers/{serverID}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteUserContainerlabServer",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "serverID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteUserContainerlabServer deletes a user-scoped Containerlab server.\n"
+      }
+    },
+    "/api/byos/me/eve/servers": {
+      "get": {
+        "operationId": "GET:skyforge.ListUserEveServers",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "servers": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.UserEveServerConfig"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "servers"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListUserEveServers returns the current user's configured EVE-NG API endpoints.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.UpsertUserEveServer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiPassword": {
+                    "type": "string"
+                  },
+                  "apiUrl": {
+                    "type": "string"
+                  },
+                  "apiUser": {
+                    "type": "string"
+                  },
+                  "hasPassword": {
+                    "type": "boolean"
+                  },
+                  "hasSshKey": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "skipTlsVerify": {
+                    "type": "boolean"
+                  },
+                  "sshHost": {
+                    "type": "string"
+                  },
+                  "sshKey": {
+                    "type": "string"
+                  },
+                  "sshUser": {
+                    "type": "string"
+                  },
+                  "webUrl": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "apiUrl",
+                  "webUrl",
+                  "skipTlsVerify",
+                  "apiUser",
+                  "apiPassword",
+                  "hasPassword",
+                  "sshHost",
+                  "sshUser",
+                  "sshKey",
+                  "hasSshKey"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "apiPassword": {
+                      "type": "string"
+                    },
+                    "apiUrl": {
+                      "type": "string"
+                    },
+                    "apiUser": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "hasSshKey": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "skipTlsVerify": {
+                      "type": "boolean"
+                    },
+                    "sshHost": {
+                      "type": "string"
+                    },
+                    "sshKey": {
+                      "type": "string"
+                    },
+                    "sshUser": {
+                      "type": "string"
+                    },
+                    "webUrl": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "apiUrl",
+                    "webUrl",
+                    "skipTlsVerify",
+                    "apiUser",
+                    "apiPassword",
+                    "hasPassword",
+                    "sshHost",
+                    "sshUser",
+                    "sshKey",
+                    "hasSshKey"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpsertUserEveServer creates or updates a user-scoped EVE-NG server.\n"
+      }
+    },
+    "/api/byos/me/eve/servers/{serverID}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteUserEveServer",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "serverID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteUserEveServer deletes a user-scoped EVE server.\n"
+      }
+    },
+    "/api/byos/me/netlab/servers": {
+      "get": {
+        "operationId": "GET:skyforge.ListUserNetlabServers",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "servers": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.UserNetlabServerConfig"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "servers"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListUserNetlabServers returns the current user's configured Netlab API\nendpoints.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.UpsertUserNetlabServer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiInsecure": {
+                    "type": "boolean"
+                  },
+                  "apiPassword": {
+                    "type": "string"
+                  },
+                  "apiToken": {
+                    "type": "string"
+                  },
+                  "apiUrl": {
+                    "type": "string"
+                  },
+                  "apiUser": {
+                    "type": "string"
+                  },
+                  "hasPassword": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "apiUrl",
+                  "apiInsecure",
+                  "apiUser",
+                  "apiPassword",
+                  "apiToken",
+                  "hasPassword"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "apiInsecure": {
+                      "type": "boolean"
+                    },
+                    "apiPassword": {
+                      "type": "string"
+                    },
+                    "apiToken": {
+                      "type": "string"
+                    },
+                    "apiUrl": {
+                      "type": "string"
+                    },
+                    "apiUser": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "apiUrl",
+                    "apiInsecure",
+                    "apiUser",
+                    "apiPassword",
+                    "apiToken",
+                    "hasPassword"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpsertUserNetlabServer creates or updates a user-scoped Netlab API endpoint.\n"
+      }
+    },
+    "/api/byos/me/netlab/servers/{serverID}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteUserNetlabServer",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "serverID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteUserNetlabServer deletes a user-scoped Netlab server.\n"
+      }
+    },
+    "/api/byos/users/{id}/containerlab/topologies": {
+      "post": {
+        "description": "deployed later (e.g. by creating a deployment referencing the file).\n",
+        "operationId": "POST:skyforge.SaveContainerlabTopologyYAML",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "title": "Name drives the default filename.\n",
+                    "type": "string"
+                  },
+                  "template": {
+                    "description": "Default: \"\\\u003cnormalized-name\u003e.clab.yml\".\n",
+                    "title": "Template is the filename to write under TemplatesDir.\n",
+                    "type": "string"
+                  },
+                  "templatesDir": {
+                    "description": "Default: \"containerlab/designer\".\n\nFor this endpoint, TemplatesDir must be under \"containerlab/\".\n",
+                    "title": "TemplatesDir is where we store the YAML inside the user-scope repo.\n",
+                    "type": "string"
+                  },
+                  "topologyYAML": {
+                    "title": "TopologyYAML is the raw containerlab topology YAML.\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "topologyYAML",
+                  "templatesDir",
+                  "template"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "branch": {
+                      "type": "string"
+                    },
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "template": {
+                      "type": "string"
+                    },
+                    "templatesDir": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "branch",
+                    "templatesDir",
+                    "template",
+                    "filePath"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "SaveContainerlabTopologyYAML writes a containerlab topology YAML into the user's\nuser-scope repo so it can be\n"
+      }
+    },
+    "/api/byos/users/{id}/deployments-designer/containerlab/from-template": {
+      "post": {
+        "description": "(no YAML commit step).\n",
+        "operationId": "POST:skyforge.CreateContainerlabDeploymentFromTemplate",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "netlabServer": {
+                    "description": "If omitted, we fall back to the user-scope default.\n",
+                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "netlabServer"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deployment": {
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
+                    },
+                    "note": {
+                      "type": "string"
+                    },
+                    "run": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deployment",
+                    "run",
+                    "note"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateContainerlabDeploymentFromTemplate creates a containerlab (BYOS)\ndeployment pointing at an existing user-scope template YAML\n"
+      }
+    },
+    "/api/byos/users/{id}/deployments-designer/containerlab/from-yaml": {
+      "post": {
+        "description": "creates a \"containerlab\" deployment referencing that template, and (optionally) queues an initial deploy.\n\nNOTE: containerlab is BYOS mode (requires a user-scope netlabServer selection).\n",
+        "operationId": "POST:skyforge.CreateContainerlabDeploymentFromYAML",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "autoDeploy": {
+                    "description": "Default: true.\n",
+                    "title": "AutoDeploy queues an initial \"create\" action after creating the deployment.\n",
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "title": "Name becomes the Skyforge deployment name (and drives the containerlab lab\nname).\n",
+                    "type": "string"
+                  },
+                  "netlabServer": {
+                    "description": "If omitted, we fall back to the user-scope default.\n",
+                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
+                    "type": "string"
+                  },
+                  "template": {
+                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
+                    "title": "Template is the filename to write under TemplatesDir.\n",
+                    "type": "string"
+                  },
+                  "templatesDir": {
+                    "description": "Default: \"containerlab/designer\".\n",
+                    "title": "TemplatesDir is where we store the YAML inside the user-scope repo.\n",
+                    "type": "string"
+                  },
+                  "topologyYAML": {
+                    "title": "TopologyYAML is the raw containerlab topology YAML.\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "netlabServer",
+                  "topologyYAML",
+                  "templatesDir",
+                  "template",
+                  "autoDeploy"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deployment": {
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
+                    },
+                    "note": {
+                      "type": "string"
+                    },
+                    "run": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deployment",
+                    "run",
+                    "note"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateContainerlabDeploymentFromYAML persists a containerlab topology YAML into\nthe user-scope repo,\n"
+      }
+    },
+    "/api/byos/users/{id}/deployments/{deploymentID}/netlab-graph": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserScopeDeploymentNetlabGraph",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "outputPath": {
+                      "type": "string"
+                    },
+                    "svg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "svg",
+                    "outputPath"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserScopeDeploymentNetlabGraph returns a rendered netlab topology graph for a\ndeployment.\n"
+      }
+    },
+    "/api/byos/users/{id}/deployments/{deploymentID}/netlab/connect": {
+      "post": {
+        "description": "This is an alternative to local SSH ProxyJump when clients can't reach the lab network.\n",
+        "operationId": "POST:skyforge.NetlabConnect",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "node": {
+                    "type": "string"
+                  },
+                  "show": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "node",
+                  "show"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "output": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "output"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "NetlabConnect executes `netlab connect` on the Netlab runner host and returns\nits output.\n"
+      }
+    },
+    "/api/byos/users/{id}/eve/convert": {
+      "post": {
+        "operationId": "POST:skyforge.ConvertUserScopeEveLab",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "containerlabServer": {
+                    "type": "string"
+                  },
+                  "createDeployment": {
+                    "type": "boolean"
+                  },
+                  "labPath": {
+                    "type": "string"
+                  },
+                  "outputDir": {
+                    "type": "string"
+                  },
+                  "outputFile": {
+                    "type": "string"
+                  },
+                  "server": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "server",
+                  "labPath",
+                  "outputDir",
+                  "outputFile",
+                  "createDeployment",
+                  "containerlabServer"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deployment": {
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "warnings": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "path",
+                    "deployment",
+                    "warnings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ConvertUserScopeEveLab exports an EVE-NG lab into a Containerlab template.\n"
+      }
+    },
+    "/api/byos/users/{id}/eve/import": {
+      "post": {
+        "operationId": "POST:skyforge.ImportUserScopeEveLab",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "deploymentName": {
+                    "type": "string"
+                  },
+                  "labPath": {
+                    "type": "string"
+                  },
+                  "server": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "server",
+                  "labPath",
+                  "deploymentName"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "activeTaskId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "activeTaskStatus": {
+                      "type": "string"
+                    },
+                    "config": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "createdBy": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "lastFinishedAt": {
+                      "type": "string"
+                    },
+                    "lastStartedAt": {
+                      "type": "string"
+                    },
+                    "lastStatus": {
+                      "type": "string"
+                    },
+                    "lastTaskId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "lastTaskUserScopeId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "queueDepth": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "userId",
+                    "name",
+                    "type",
+                    "config",
+                    "createdBy",
+                    "createdAt",
+                    "updatedAt",
+                    "lastTaskUserScopeId",
+                    "lastTaskId",
+                    "lastStatus",
+                    "lastStartedAt",
+                    "lastFinishedAt",
+                    "activeTaskId",
+                    "activeTaskStatus",
+                    "queueDepth"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ImportUserScopeEveLab registers an existing EVE-NG lab as a deployment.\n"
+      }
+    },
+    "/api/byos/users/{id}/eve/labs": {
+      "get": {
+        "operationId": "GET:skyforge.ListUserScopeEveLabs",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "server",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "path",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "recursive",
+            "schema": {
+              "type": "boolean"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "folders": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.EveFolderInfo"
+                      },
+                      "type": "array"
+                    },
+                    "labs": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.EveLabSummary"
+                      },
+                      "type": "array"
+                    },
+                    "server": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "server",
+                    "labs",
+                    "folders"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListUserScopeEveLabs returns EVE-NG labs for import.\n"
+      }
+    },
+    "/api/byos/users/{id}/netlab": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserScopeNetlab",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "netlabServer": {
+                      "type": "string"
+                    },
+                    "netlabServers": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "netlabServer",
+                    "netlabServers"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserScopeNetlab returns the user-scope netlab server selection.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.UpdateUserScopeNetlab",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "netlabServer": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "netlabServer"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "allowCustomContainerlabServers": {
+                      "type": "boolean"
+                    },
+                    "allowCustomEveServers": {
+                      "title": "EVE-NG deployments require an endpoint. This flag enables configuring a\nper-user-scope EVE server.\n",
+                      "type": "boolean"
+                    },
+                    "allowCustomNetlabServers": {
+                      "type": "boolean"
+                    },
+                    "allowExternalTemplateRepos": {
+                      "type": "boolean"
+                    },
+                    "ansibleRunTemplateId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "artifactsBucket": {
+                      "type": "string"
+                    },
+                    "awsAccountId": {
+                      "type": "string"
+                    },
+                    "awsAuthMethod": {
+                      "type": "string"
+                    },
+                    "awsRegion": {
+                      "type": "string"
+                    },
+                    "awsRoleName": {
+                      "type": "string"
+                    },
+                    "blueprint": {
+                      "type": "string"
+                    },
+                    "containerlabRunTemplateId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "createdAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "createdBy": {
+                      "type": "string"
+                    },
+                    "defaultBranch": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "editorGroups": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "editors": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "eveNgRunTemplateId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "eveServer": {
+                      "type": "string"
+                    },
+                    "externalTemplateRepos": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ExternalTemplateRepo"
+                      },
+                      "type": "array"
+                    },
+                    "giteaOwner": {
+                      "type": "string"
+                    },
+                    "giteaRepo": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "isPublic": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "netlabRunTemplateId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "netlabServer": {
+                      "type": "string"
+                    },
+                    "ownerGroups": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "owners": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "terraformApplyTemplateId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "terraformInitTemplateId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "terraformPlanTemplateId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "terraformStateKey": {
+                      "type": "string"
+                    },
+                    "viewerGroups": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "viewers": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "name",
+                    "description",
+                    "createdAt",
+                    "createdBy",
+                    "isPublic",
+                    "owners",
+                    "ownerGroups",
+                    "editors",
+                    "editorGroups",
+                    "viewers",
+                    "viewerGroups",
+                    "blueprint",
+                    "defaultBranch",
+                    "allowExternalTemplateRepos",
+                    "allowCustomEveServers",
+                    "allowCustomNetlabServers",
+                    "allowCustomContainerlabServers",
+                    "externalTemplateRepos",
+                    "terraformStateKey",
+                    "terraformInitTemplateId",
+                    "terraformPlanTemplateId",
+                    "terraformApplyTemplateId",
+                    "ansibleRunTemplateId",
+                    "netlabRunTemplateId",
+                    "eveNgRunTemplateId",
+                    "containerlabRunTemplateId",
+                    "awsAccountId",
+                    "awsRoleName",
+                    "awsRegion",
+                    "awsAuthMethod",
+                    "artifactsBucket",
+                    "eveServer",
+                    "netlabServer",
+                    "giteaOwner",
+                    "giteaRepo"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpdateUserScopeNetlab updates the user-scope netlab server selection.\n"
+      }
+    },
+    "/api/byos/users/{id}/runs/containerlab-run": {
+      "post": {
+        "operationId": "POST:skyforge.RunUserScopeContainerlab",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "action": {
+                    "title": "deploy, destroy\n",
+                    "type": "string"
+                  },
+                  "deployment": {
+                    "title": "deployment name for lab naming\n",
+                    "type": "string"
+                  },
+                  "deploymentId": {
+                    "type": "string"
+                  },
+                  "environment": {
+                    "$ref": "#/components/schemas/skyforge.JSONMap"
+                  },
+                  "gitBranch": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "netlabServer": {
+                    "type": "string"
+                  },
+                  "reconfigure": {
+                    "type": "boolean"
+                  },
+                  "template": {
+                    "title": "filename (e.g. lab.yml)\n",
+                    "type": "string"
+                  },
+                  "templateRepo": {
+                    "title": "owner/repo or URL (custom only)\n",
+                    "type": "string"
+                  },
+                  "templateSource": {
+                    "title": "user (default), blueprints, or custom\n",
+                    "type": "string"
+                  },
+                  "templatesDir": {
+                    "title": "repo-relative directory (default: blueprints/containerlab)\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "message",
+                  "gitBranch",
+                  "environment",
+                  "action",
+                  "netlabServer",
+                  "templateSource",
+                  "templateRepo",
+                  "templatesDir",
+                  "template",
+                  "deployment",
+                  "reconfigure",
+                  "deploymentId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "user": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "task",
+                    "user"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RunUserScopeContainerlab triggers a Containerlab run for a user scope.\n"
+      }
+    },
+    "/api/byos/users/{id}/runs/eve-ng-run": {
+      "post": {
+        "operationId": "POST:skyforge.RunUserScopeEveNg",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "action": {
+                    "title": "create, start, stop, destroy\n",
+                    "type": "string"
+                  },
+                  "deployment": {
+                    "title": "deployment name for lab naming\n",
+                    "type": "string"
+                  },
+                  "deploymentId": {
+                    "type": "string"
+                  },
+                  "eveServer": {
+                    "type": "string"
+                  },
+                  "labPath": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "template": {
+                    "title": "directory name under templates dir\n",
+                    "type": "string"
+                  },
+                  "templateRepo": {
+                    "title": "owner/repo or URL (custom only)\n",
+                    "type": "string"
+                  },
+                  "templateSource": {
+                    "title": "user (default), blueprints, or custom\n",
+                    "type": "string"
+                  },
+                  "templatesDir": {
+                    "title": "repo-relative directory (default: blueprints/eve-ng)\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "message",
+                  "action",
+                  "eveServer",
+                  "templateSource",
+                  "templateRepo",
+                  "templatesDir",
+                  "template",
+                  "deployment",
+                  "deploymentId",
+                  "labPath"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "user": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "task",
+                    "user"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RunUserScopeEveNg triggers an EVE-NG lab run for a user scope.\n"
+      }
+    },
+    "/api/byos/users/{id}/runs/netlab-run": {
+      "post": {
+        "operationId": "POST:skyforge.RunUserScopeNetlab",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "action": {
+                    "title": "up, create, restart, collect, status, down\n",
+                    "type": "string"
+                  },
+                  "clabCleanup": {
+                    "type": "boolean"
+                  },
+                  "clabConfigDir": {
+                    "type": "string"
+                  },
+                  "clabTarball": {
+                    "type": "string"
+                  },
+                  "cleanup": {
+                    "title": "for down/restart, remove workdir when true\n",
+                    "type": "boolean"
+                  },
+                  "deploymentId": {
+                    "type": "string"
+                  },
+                  "environment": {
+                    "$ref": "#/components/schemas/skyforge.JSONMap"
+                  },
+                  "gitBranch": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "netlabDeployment": {
+                    "type": "string"
+                  },
+                  "netlabMultilabId": {
+                    "type": "string"
+                  },
+                  "netlabPassword": {
+                    "type": "string"
+                  },
+                  "netlabServer": {
+                    "type": "string"
+                  },
+                  "netlabUserScopeDir": {
+                    "type": "string"
+                  },
+                  "template": {
+                    "title": "filename (e.g. spine-leaf.yml)\n",
+                    "type": "string"
+                  },
+                  "templateRepo": {
+                    "title": "owner/repo or URL (custom only)\n",
+                    "type": "string"
+                  },
+                  "templateSource": {
+                    "title": "user (default), blueprints, or custom\n",
+                    "type": "string"
+                  },
+                  "templatesDir": {
+                    "title": "repo-relative directory (default: blueprints/netlab)\n",
+                    "type": "string"
+                  },
+                  "topologyPath": {
+                    "title": "remote workdir-relative (or absolute) topology file\n",
+                    "type": "string"
+                  },
+                  "topologyUrl": {
+                    "title": "remote URL (only if netlab supports it)\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "message",
+                  "gitBranch",
+                  "environment",
+                  "action",
+                  "cleanup",
+                  "netlabServer",
+                  "netlabPassword",
+                  "netlabUserScopeDir",
+                  "netlabMultilabId",
+                  "netlabDeployment",
+                  "topologyPath",
+                  "topologyUrl",
+                  "templateSource",
+                  "templateRepo",
+                  "templatesDir",
+                  "template",
+                  "clabTarball",
+                  "clabConfigDir",
+                  "clabCleanup",
+                  "deploymentId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "user": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "task",
+                    "user"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RunUserScopeNetlab triggers a netlab run for a user scope.\n"
       }
     },
     "/api/cloud/aws/validate": {
@@ -6776,356 +8717,6 @@
         "summary": "PutUserIBMCredentials saves IBM Cloud credentials for the current user.\n"
       }
     },
-    "/api/me/containerlab/servers": {
-      "get": {
-        "operationId": "GET:skyforge.ListUserContainerlabServers",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "servers": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.UserContainerlabServerConfig"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "servers"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ListUserContainerlabServers returns the current user's configured Containerlab\nBYOL endpoints.\n"
-      },
-      "put": {
-        "operationId": "PUT:skyforge.UpsertUserContainerlabServer",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "apiInsecure": {
-                    "type": "boolean"
-                  },
-                  "apiPassword": {
-                    "type": "string"
-                  },
-                  "apiToken": {
-                    "type": "string"
-                  },
-                  "apiUrl": {
-                    "type": "string"
-                  },
-                  "apiUser": {
-                    "type": "string"
-                  },
-                  "hasPassword": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "id",
-                  "name",
-                  "apiUrl",
-                  "apiInsecure",
-                  "apiUser",
-                  "apiPassword",
-                  "apiToken",
-                  "hasPassword"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "apiInsecure": {
-                      "type": "boolean"
-                    },
-                    "apiPassword": {
-                      "type": "string"
-                    },
-                    "apiToken": {
-                      "type": "string"
-                    },
-                    "apiUrl": {
-                      "type": "string"
-                    },
-                    "apiUser": {
-                      "type": "string"
-                    },
-                    "hasPassword": {
-                      "type": "boolean"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "name",
-                    "apiUrl",
-                    "apiInsecure",
-                    "apiUser",
-                    "apiPassword",
-                    "apiToken",
-                    "hasPassword"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "UpsertUserContainerlabServer creates or updates a user-scoped Containerlab\nendpoint.\n"
-      }
-    },
-    "/api/me/containerlab/servers/{serverID}": {
-      "delete": {
-        "operationId": "DELETE:skyforge.DeleteUserContainerlabServer",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "serverID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "DeleteUserContainerlabServer deletes a user-scoped Containerlab server.\n"
-      }
-    },
-    "/api/me/eve/servers": {
-      "get": {
-        "operationId": "GET:skyforge.ListUserEveServers",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "servers": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.UserEveServerConfig"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "servers"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ListUserEveServers returns the current user's configured EVE-NG API endpoints.\n"
-      },
-      "put": {
-        "operationId": "PUT:skyforge.UpsertUserEveServer",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "apiPassword": {
-                    "type": "string"
-                  },
-                  "apiUrl": {
-                    "type": "string"
-                  },
-                  "apiUser": {
-                    "type": "string"
-                  },
-                  "hasPassword": {
-                    "type": "boolean"
-                  },
-                  "hasSshKey": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "skipTlsVerify": {
-                    "type": "boolean"
-                  },
-                  "sshHost": {
-                    "type": "string"
-                  },
-                  "sshKey": {
-                    "type": "string"
-                  },
-                  "sshUser": {
-                    "type": "string"
-                  },
-                  "webUrl": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "id",
-                  "name",
-                  "apiUrl",
-                  "webUrl",
-                  "skipTlsVerify",
-                  "apiUser",
-                  "apiPassword",
-                  "hasPassword",
-                  "sshHost",
-                  "sshUser",
-                  "sshKey",
-                  "hasSshKey"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "apiPassword": {
-                      "type": "string"
-                    },
-                    "apiUrl": {
-                      "type": "string"
-                    },
-                    "apiUser": {
-                      "type": "string"
-                    },
-                    "hasPassword": {
-                      "type": "boolean"
-                    },
-                    "hasSshKey": {
-                      "type": "boolean"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "skipTlsVerify": {
-                      "type": "boolean"
-                    },
-                    "sshHost": {
-                      "type": "string"
-                    },
-                    "sshKey": {
-                      "type": "string"
-                    },
-                    "sshUser": {
-                      "type": "string"
-                    },
-                    "webUrl": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "name",
-                    "apiUrl",
-                    "webUrl",
-                    "skipTlsVerify",
-                    "apiUser",
-                    "apiPassword",
-                    "hasPassword",
-                    "sshHost",
-                    "sshUser",
-                    "sshKey",
-                    "hasSshKey"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "UpsertUserEveServer creates or updates a user-scoped EVE-NG server.\n"
-      }
-    },
-    "/api/me/eve/servers/{serverID}": {
-      "delete": {
-        "operationId": "DELETE:skyforge.DeleteUserEveServer",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "serverID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "DeleteUserEveServer deletes a user-scoped EVE server.\n"
-      }
-    },
     "/api/me/git-credentials": {
       "get": {
         "operationId": "GET:skyforge.GetUserGitCredentials",
@@ -7841,165 +9432,6 @@
         "summary": "WakeServiceNowPDI attempts to wake the user's ServiceNow PDI and waits briefly\nfor it to become responsive.\n"
       }
     },
-    "/api/me/netlab/servers": {
-      "get": {
-        "operationId": "GET:skyforge.ListUserNetlabServers",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "servers": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.UserNetlabServerConfig"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "servers"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ListUserNetlabServers returns the current user's configured Netlab API\nendpoints.\n"
-      },
-      "put": {
-        "operationId": "PUT:skyforge.UpsertUserNetlabServer",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "apiInsecure": {
-                    "type": "boolean"
-                  },
-                  "apiPassword": {
-                    "type": "string"
-                  },
-                  "apiToken": {
-                    "type": "string"
-                  },
-                  "apiUrl": {
-                    "type": "string"
-                  },
-                  "apiUser": {
-                    "type": "string"
-                  },
-                  "hasPassword": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "id",
-                  "name",
-                  "apiUrl",
-                  "apiInsecure",
-                  "apiUser",
-                  "apiPassword",
-                  "apiToken",
-                  "hasPassword"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "apiInsecure": {
-                      "type": "boolean"
-                    },
-                    "apiPassword": {
-                      "type": "string"
-                    },
-                    "apiToken": {
-                      "type": "string"
-                    },
-                    "apiUrl": {
-                      "type": "string"
-                    },
-                    "apiUser": {
-                      "type": "string"
-                    },
-                    "hasPassword": {
-                      "type": "boolean"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "name",
-                    "apiUrl",
-                    "apiInsecure",
-                    "apiUser",
-                    "apiPassword",
-                    "apiToken",
-                    "hasPassword"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "UpsertUserNetlabServer creates or updates a user-scoped Netlab API endpoint.\n"
-      }
-    },
-    "/api/me/netlab/servers/{serverID}": {
-      "delete": {
-        "operationId": "DELETE:skyforge.DeleteUserNetlabServer",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "serverID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "DeleteUserNetlabServer deletes a user-scoped Netlab server.\n"
-      }
-    },
     "/api/me/settings": {
       "get": {
         "operationId": "GET:skyforge.GetUserSettings",
@@ -8573,7 +10005,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RunQuickDeploy provisions a curated netlab-c9s deployment with managed\nin-cluster Forward sync.\n"
+        "summary": "RunQuickDeploy provisions a curated c9s deployment with managed in-cluster\nForward sync.\n"
       }
     },
     "/api/reauth": {
@@ -11422,10 +12854,10 @@
         "summary": "GetUserScopeContainerlabTemplates lists Containerlab templates for a user scope.\n"
       }
     },
-    "/api/users/{id}/containerlab/topologies": {
+    "/api/users/{id}/deployment-templates/resource-estimate": {
       "post": {
-        "description": "deployed later (e.g. by creating a deployment referencing the file).\n",
-        "operationId": "POST:skyforge.SaveContainerlabTopologyYAML",
+        "description": "from a selected deployment template before creation.\n",
+        "operationId": "POST:skyforge.EstimateUserScopeTemplateResources",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -11444,29 +12876,31 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "name": {
-                    "title": "Name drives the default filename.\n",
+                  "compiler": {
+                    "type": "string"
+                  },
+                  "dir": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "repo": {
+                    "type": "string"
+                  },
+                  "source": {
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\\u003cnormalized-name\u003e.clab.yml\".\n",
-                    "title": "Template is the filename to write under TemplatesDir.\n",
-                    "type": "string"
-                  },
-                  "templatesDir": {
-                    "description": "Default: \"containerlab/designer\".\n\nFor this endpoint, TemplatesDir must be under \"containerlab/\".\n",
-                    "title": "TemplatesDir is where we store the YAML inside the user-scope repo.\n",
-                    "type": "string"
-                  },
-                  "topologyYAML": {
-                    "title": "TopologyYAML is the raw containerlab topology YAML.\n",
                     "type": "string"
                   }
                 },
                 "required": [
-                  "name",
-                  "topologyYAML",
-                  "templatesDir",
+                  "kind",
+                  "compiler",
+                  "source",
+                  "repo",
+                  "dir",
                   "template"
                 ],
                 "type": "object"
@@ -11480,16 +12914,16 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "branch": {
+                    "estimate": {
+                      "$ref": "#/components/schemas/skyforge.ResourceEstimateSummary"
+                    },
+                    "kind": {
                       "type": "string"
                     },
-                    "filePath": {
+                    "source": {
                       "type": "string"
                     },
                     "template": {
-                      "type": "string"
-                    },
-                    "templatesDir": {
                       "type": "string"
                     },
                     "userId": {
@@ -11498,10 +12932,10 @@
                   },
                   "required": [
                     "userId",
-                    "branch",
-                    "templatesDir",
+                    "kind",
+                    "source",
                     "template",
-                    "filePath"
+                    "estimate"
                   ],
                   "type": "object"
                 }
@@ -11513,7 +12947,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SaveContainerlabTopologyYAML writes a containerlab topology YAML into the user's\nuser-scope repo so it can be\n"
+        "summary": "EstimateUserScopeTemplateResources calculates an estimated vCPU/RAM footprint\n"
       }
     },
     "/api/users/{id}/deployments": {
@@ -11884,182 +13318,6 @@
           }
         },
         "summary": "CreateClabernetesDeploymentFromYAML persists a containerlab topology YAML into\nthe user-scope repo,\n"
-      }
-    },
-    "/api/users/{id}/deployments-designer/containerlab/from-template": {
-      "post": {
-        "description": "(no YAML commit step).\n",
-        "operationId": "POST:skyforge.CreateContainerlabDeploymentFromTemplate",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "netlabServer": {
-                    "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "netlabServer"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "deployment": {
-                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
-                    },
-                    "note": {
-                      "type": "string"
-                    },
-                    "run": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "deployment",
-                    "run",
-                    "note"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "CreateContainerlabDeploymentFromTemplate creates a containerlab (BYOS)\ndeployment pointing at an existing user-scope template YAML\n"
-      }
-    },
-    "/api/users/{id}/deployments-designer/containerlab/from-yaml": {
-      "post": {
-        "description": "creates a \"containerlab\" deployment referencing that template, and (optionally) queues an initial deploy.\n\nNOTE: containerlab is BYOS mode (requires a user-scope netlabServer selection).\n",
-        "operationId": "POST:skyforge.CreateContainerlabDeploymentFromYAML",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "autoDeploy": {
-                    "description": "Default: true.\n",
-                    "title": "AutoDeploy queues an initial \"create\" action after creating the deployment.\n",
-                    "type": "boolean"
-                  },
-                  "name": {
-                    "title": "Name becomes the Skyforge deployment name (and drives the containerlab lab\nname).\n",
-                    "type": "string"
-                  },
-                  "netlabServer": {
-                    "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
-                    "type": "string"
-                  },
-                  "template": {
-                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
-                    "title": "Template is the filename to write under TemplatesDir.\n",
-                    "type": "string"
-                  },
-                  "templatesDir": {
-                    "description": "Default: \"containerlab/designer\".\n",
-                    "title": "TemplatesDir is where we store the YAML inside the user-scope repo.\n",
-                    "type": "string"
-                  },
-                  "topologyYAML": {
-                    "title": "TopologyYAML is the raw containerlab topology YAML.\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name",
-                  "netlabServer",
-                  "topologyYAML",
-                  "templatesDir",
-                  "template",
-                  "autoDeploy"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "deployment": {
-                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
-                    },
-                    "note": {
-                      "type": "string"
-                    },
-                    "run": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "deployment",
-                    "run",
-                    "note"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "CreateContainerlabDeploymentFromYAML persists a containerlab topology YAML into\nthe user-scope repo,\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}": {
@@ -14363,145 +15621,6 @@
         "summary": "GetUserScopeDeploymentLinkStatsEvents streams link stats snapshots as SSE.\n"
       }
     },
-    "/api/users/{id}/deployments/{deploymentID}/netlab-graph": {
-      "get": {
-        "operationId": "GET:skyforge.GetUserScopeDeploymentNetlabGraph",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "deploymentID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "generatedAt": {
-                      "type": "string"
-                    },
-                    "outputPath": {
-                      "type": "string"
-                    },
-                    "svg": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "generatedAt",
-                    "svg",
-                    "outputPath"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "GetUserScopeDeploymentNetlabGraph returns a rendered netlab topology graph for a\ndeployment.\n"
-      }
-    },
-    "/api/users/{id}/deployments/{deploymentID}/netlab/connect": {
-      "post": {
-        "description": "This is an alternative to local SSH ProxyJump when clients can't reach the lab network.\n",
-        "operationId": "POST:skyforge.NetlabConnect",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "deploymentID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "node": {
-                    "type": "string"
-                  },
-                  "show": {
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  }
-                },
-                "required": [
-                  "node",
-                  "show"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "output": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "output"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "NetlabConnect executes `netlab connect` on the Netlab runner host and returns\nits output.\n"
-      }
-    },
     "/api/users/{id}/deployments/{deploymentID}/nodes/{node}/describe": {
       "get": {
         "operationId": "GET:skyforge.GetUserScopeDeploymentNodeDescribe",
@@ -15076,6 +16195,76 @@
         "summary": "PreflightUserScopeDeploymentAction runs deployment preflight checks without\n"
       }
     },
+    "/api/users/{id}/deployments/{deploymentID}/resource-estimate": {
+      "get": {
+        "description": "footprint for an existing deployment using its selected template.\n",
+        "operationId": "GET:skyforge.GetUserScopeDeploymentResourceEstimate",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deployment": {
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
+                    },
+                    "deploymentId": {
+                      "type": "string"
+                    },
+                    "estimate": {
+                      "$ref": "#/components/schemas/skyforge.ResourceEstimateSummary"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deploymentId",
+                    "deployment",
+                    "estimate",
+                    "type"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserScopeDeploymentResourceEstimate calculates the estimated vCPU/RAM\n"
+      }
+    },
     "/api/users/{id}/deployments/{deploymentID}/terminal/ws": {
       "get": {
         "description": "using Kubernetes \\`pods/exec\\` (SPDY) and a WebSocket transport to the browser.\n\nQuery params: - node: required (clabernetes/topologyNode) - container: optional - command: optional (defaults to \"sh\"; for EOS nodes use \"Cli\")\n",
@@ -15315,321 +16504,6 @@
           }
         },
         "summary": "DeploymentUIEventsStream streams deployment UI events as SSE.\n"
-      }
-    },
-    "/api/users/{id}/eve/convert": {
-      "post": {
-        "operationId": "POST:skyforge.ConvertUserScopeEveLab",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "containerlabServer": {
-                    "type": "string"
-                  },
-                  "createDeployment": {
-                    "type": "boolean"
-                  },
-                  "labPath": {
-                    "type": "string"
-                  },
-                  "outputDir": {
-                    "type": "string"
-                  },
-                  "outputFile": {
-                    "type": "string"
-                  },
-                  "server": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "server",
-                  "labPath",
-                  "outputDir",
-                  "outputFile",
-                  "createDeployment",
-                  "containerlabServer"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "deployment": {
-                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
-                    },
-                    "path": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    },
-                    "warnings": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "path",
-                    "deployment",
-                    "warnings"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ConvertUserScopeEveLab exports an EVE-NG lab into a Containerlab template.\n"
-      }
-    },
-    "/api/users/{id}/eve/import": {
-      "post": {
-        "operationId": "POST:skyforge.ImportUserScopeEveLab",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "deploymentName": {
-                    "type": "string"
-                  },
-                  "labPath": {
-                    "type": "string"
-                  },
-                  "server": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "server",
-                  "labPath",
-                  "deploymentName"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "activeTaskId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "activeTaskStatus": {
-                      "type": "string"
-                    },
-                    "config": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "createdAt": {
-                      "type": "string"
-                    },
-                    "createdBy": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "lastFinishedAt": {
-                      "type": "string"
-                    },
-                    "lastStartedAt": {
-                      "type": "string"
-                    },
-                    "lastStatus": {
-                      "type": "string"
-                    },
-                    "lastTaskId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "lastTaskUserScopeId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "queueDepth": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "type": {
-                      "type": "string"
-                    },
-                    "updatedAt": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "userId",
-                    "name",
-                    "type",
-                    "config",
-                    "createdBy",
-                    "createdAt",
-                    "updatedAt",
-                    "lastTaskUserScopeId",
-                    "lastTaskId",
-                    "lastStatus",
-                    "lastStartedAt",
-                    "lastFinishedAt",
-                    "activeTaskId",
-                    "activeTaskStatus",
-                    "queueDepth"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ImportUserScopeEveLab registers an existing EVE-NG lab as a deployment.\n"
-      }
-    },
-    "/api/users/{id}/eve/labs": {
-      "get": {
-        "operationId": "GET:skyforge.ListUserScopeEveLabs",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "server",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "path",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "recursive",
-            "schema": {
-              "type": "boolean"
-            },
-            "style": "form"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "folders": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.EveFolderInfo"
-                      },
-                      "type": "array"
-                    },
-                    "labs": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.EveLabSummary"
-                      },
-                      "type": "array"
-                    },
-                    "server": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "server",
-                    "labs",
-                    "folders"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ListUserScopeEveLabs returns EVE-NG labs for import.\n"
       }
     },
     "/api/users/{id}/forward-networks": {
@@ -17329,290 +18203,6 @@
         "summary": "UpdateUserScopeMembers updates user-scope membership.\n"
       }
     },
-    "/api/users/{id}/netlab": {
-      "get": {
-        "operationId": "GET:skyforge.GetUserScopeNetlab",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "netlabServer": {
-                      "type": "string"
-                    },
-                    "netlabServers": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "netlabServer",
-                    "netlabServers"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "GetUserScopeNetlab returns the user-scope netlab server selection.\n"
-      },
-      "put": {
-        "operationId": "PUT:skyforge.UpdateUserScopeNetlab",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "netlabServer": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "netlabServer"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "allowCustomContainerlabServers": {
-                      "type": "boolean"
-                    },
-                    "allowCustomEveServers": {
-                      "title": "EVE-NG deployments require an endpoint. This flag enables configuring a\nper-user-scope EVE server.\n",
-                      "type": "boolean"
-                    },
-                    "allowCustomNetlabServers": {
-                      "type": "boolean"
-                    },
-                    "allowExternalTemplateRepos": {
-                      "type": "boolean"
-                    },
-                    "ansibleRunTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "artifactsBucket": {
-                      "type": "string"
-                    },
-                    "awsAccountId": {
-                      "type": "string"
-                    },
-                    "awsAuthMethod": {
-                      "type": "string"
-                    },
-                    "awsRegion": {
-                      "type": "string"
-                    },
-                    "awsRoleName": {
-                      "type": "string"
-                    },
-                    "blueprint": {
-                      "type": "string"
-                    },
-                    "containerlabRunTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "createdAt": {
-                      "format": "date-time",
-                      "type": "string"
-                    },
-                    "createdBy": {
-                      "type": "string"
-                    },
-                    "defaultBranch": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "editorGroups": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "editors": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "eveNgRunTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "eveServer": {
-                      "type": "string"
-                    },
-                    "externalTemplateRepos": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.ExternalTemplateRepo"
-                      },
-                      "type": "array"
-                    },
-                    "giteaOwner": {
-                      "type": "string"
-                    },
-                    "giteaRepo": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "isPublic": {
-                      "type": "boolean"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "netlabRunTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "netlabServer": {
-                      "type": "string"
-                    },
-                    "ownerGroups": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "owners": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "slug": {
-                      "type": "string"
-                    },
-                    "terraformApplyTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "terraformInitTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "terraformPlanTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "terraformStateKey": {
-                      "type": "string"
-                    },
-                    "viewerGroups": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "viewers": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "slug",
-                    "name",
-                    "description",
-                    "createdAt",
-                    "createdBy",
-                    "isPublic",
-                    "owners",
-                    "ownerGroups",
-                    "editors",
-                    "editorGroups",
-                    "viewers",
-                    "viewerGroups",
-                    "blueprint",
-                    "defaultBranch",
-                    "allowExternalTemplateRepos",
-                    "allowCustomEveServers",
-                    "allowCustomNetlabServers",
-                    "allowCustomContainerlabServers",
-                    "externalTemplateRepos",
-                    "terraformStateKey",
-                    "terraformInitTemplateId",
-                    "terraformPlanTemplateId",
-                    "terraformApplyTemplateId",
-                    "ansibleRunTemplateId",
-                    "netlabRunTemplateId",
-                    "eveNgRunTemplateId",
-                    "containerlabRunTemplateId",
-                    "awsAccountId",
-                    "awsRoleName",
-                    "awsRegion",
-                    "awsAuthMethod",
-                    "artifactsBucket",
-                    "eveServer",
-                    "netlabServer",
-                    "giteaOwner",
-                    "giteaRepo"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "UpdateUserScopeNetlab updates the user-scope netlab server selection.\n"
-      }
-    },
     "/api/users/{id}/netlab/template": {
       "get": {
         "description": "This powers \"View template\" in the deployment creation flow.\n",
@@ -17968,375 +18558,6 @@
           }
         },
         "summary": "RunUserScopeAnsible triggers an ansible run for a user scope.\n"
-      }
-    },
-    "/api/users/{id}/runs/containerlab-run": {
-      "post": {
-        "operationId": "POST:skyforge.RunUserScopeContainerlab",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "action": {
-                    "title": "deploy, destroy\n",
-                    "type": "string"
-                  },
-                  "deployment": {
-                    "title": "deployment name for lab naming\n",
-                    "type": "string"
-                  },
-                  "environment": {
-                    "$ref": "#/components/schemas/skyforge.JSONMap"
-                  },
-                  "gitBranch": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "netlabServer": {
-                    "type": "string"
-                  },
-                  "reconfigure": {
-                    "type": "boolean"
-                  },
-                  "template": {
-                    "title": "filename (e.g. lab.yml)\n",
-                    "type": "string"
-                  },
-                  "templateRepo": {
-                    "title": "owner/repo or URL (custom only)\n",
-                    "type": "string"
-                  },
-                  "templateSource": {
-                    "title": "user (default), blueprints, or custom\n",
-                    "type": "string"
-                  },
-                  "templatesDir": {
-                    "title": "repo-relative directory (default: blueprints/containerlab)\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "message",
-                  "gitBranch",
-                  "environment",
-                  "action",
-                  "netlabServer",
-                  "templateSource",
-                  "templateRepo",
-                  "templatesDir",
-                  "template",
-                  "deployment",
-                  "reconfigure"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "task": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "user": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "task",
-                    "user"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "RunUserScopeContainerlab triggers a Containerlab run for a user scope.\n"
-      }
-    },
-    "/api/users/{id}/runs/eve-ng-run": {
-      "post": {
-        "operationId": "POST:skyforge.RunUserScopeEveNg",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "action": {
-                    "title": "create, start, stop, destroy\n",
-                    "type": "string"
-                  },
-                  "deployment": {
-                    "title": "deployment name for lab naming\n",
-                    "type": "string"
-                  },
-                  "deploymentId": {
-                    "type": "string"
-                  },
-                  "eveServer": {
-                    "type": "string"
-                  },
-                  "labPath": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "template": {
-                    "title": "directory name under templates dir\n",
-                    "type": "string"
-                  },
-                  "templateRepo": {
-                    "title": "owner/repo or URL (custom only)\n",
-                    "type": "string"
-                  },
-                  "templateSource": {
-                    "title": "user (default), blueprints, or custom\n",
-                    "type": "string"
-                  },
-                  "templatesDir": {
-                    "title": "repo-relative directory (default: blueprints/eve-ng)\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "message",
-                  "action",
-                  "eveServer",
-                  "templateSource",
-                  "templateRepo",
-                  "templatesDir",
-                  "template",
-                  "deployment",
-                  "deploymentId",
-                  "labPath"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "task": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "user": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "task",
-                    "user"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "RunUserScopeEveNg triggers an EVE-NG lab run for a user scope.\n"
-      }
-    },
-    "/api/users/{id}/runs/netlab-run": {
-      "post": {
-        "operationId": "POST:skyforge.RunUserScopeNetlab",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "action": {
-                    "title": "up, create, restart, collect, status, down\n",
-                    "type": "string"
-                  },
-                  "clabCleanup": {
-                    "type": "boolean"
-                  },
-                  "clabConfigDir": {
-                    "type": "string"
-                  },
-                  "clabTarball": {
-                    "type": "string"
-                  },
-                  "cleanup": {
-                    "title": "for down/restart, remove workdir when true\n",
-                    "type": "boolean"
-                  },
-                  "environment": {
-                    "$ref": "#/components/schemas/skyforge.JSONMap"
-                  },
-                  "gitBranch": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "netlabDeployment": {
-                    "type": "string"
-                  },
-                  "netlabMultilabId": {
-                    "type": "string"
-                  },
-                  "netlabPassword": {
-                    "type": "string"
-                  },
-                  "netlabServer": {
-                    "type": "string"
-                  },
-                  "netlabUserScopeDir": {
-                    "type": "string"
-                  },
-                  "template": {
-                    "title": "filename (e.g. spine-leaf.yml)\n",
-                    "type": "string"
-                  },
-                  "templateRepo": {
-                    "title": "owner/repo or URL (custom only)\n",
-                    "type": "string"
-                  },
-                  "templateSource": {
-                    "title": "user (default), blueprints, or custom\n",
-                    "type": "string"
-                  },
-                  "templatesDir": {
-                    "title": "repo-relative directory (default: blueprints/netlab)\n",
-                    "type": "string"
-                  },
-                  "topologyPath": {
-                    "title": "remote workdir-relative (or absolute) topology file\n",
-                    "type": "string"
-                  },
-                  "topologyUrl": {
-                    "title": "remote URL (only if netlab supports it)\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "message",
-                  "gitBranch",
-                  "environment",
-                  "action",
-                  "cleanup",
-                  "netlabServer",
-                  "netlabPassword",
-                  "netlabUserScopeDir",
-                  "netlabMultilabId",
-                  "netlabDeployment",
-                  "topologyPath",
-                  "topologyUrl",
-                  "templateSource",
-                  "templateRepo",
-                  "templatesDir",
-                  "template",
-                  "clabTarball",
-                  "clabConfigDir",
-                  "clabCleanup"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "task": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "user": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "task",
-                    "user"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "RunUserScopeNetlab triggers a netlab run for a user scope.\n"
       }
     },
     "/api/users/{id}/runs/terraform-apply": {
