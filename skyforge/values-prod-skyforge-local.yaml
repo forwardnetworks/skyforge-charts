@@ -20,10 +20,6 @@ skyforge:
   # Comma-separated usernames/emails that should see admin-only UI + APIs.
   # NOTE: Server-side admin checks are exact-match (no wildcards).
   adminUsers: "skyforge,craigjohnson,craigjohnson@forwardnetworks.com"
-  e2eAdmin:
-    enabled: true
-    tokenSecretName: "skyforge-internal-token"
-    tokenSecretKey: "skyforge-internal-token"
 
   encoreCfg:
     # Manage the API service typed config secret via Helm so feature flags and
@@ -71,7 +67,7 @@ skyforge:
     serviceNamespace: "forward"
     servicePort: 8080
 
-  # Enable Gitea provisioning for blueprint-backed workflows and E2E tests.
+  # Enable Gitea provisioning for blueprint-backed workflows.
   # API URL is in-cluster; UI URL is the SSO-proxied external path.
   gitea:
     apiUrl: http://gitea:3000/api/v1
@@ -83,7 +79,7 @@ skyforge:
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
-  # This must be enabled for E2E deploy tests and user deployments to reconcile.
+  # This must be enabled for user deployments to reconcile.
   clabernetes:
     enabled: true
     managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260221-iosxr-kindfix"

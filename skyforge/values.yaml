@@ -72,10 +72,6 @@ skyforge:
   # `.forwardnetworks.com` so SSO cookies work across subdomains.
   cookieDomain: ""
   adminUsers: "skyforge"
-  e2eAdmin:
-    enabled: true
-    tokenSecretName: "skyforge-internal-token"
-    tokenSecretKey: "skyforge-internal-token"
   awsSsoRegion: "us-east-1"
   awsSsoStartUrl: ""
   gitea:
