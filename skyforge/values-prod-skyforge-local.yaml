@@ -61,7 +61,7 @@ skyforge:
   # Forward in-cluster collector image + pull credentials.
   # Pin to a concrete tag to avoid drifting when `latest` is retagged.
   forwardCollector:
-    image: quay.io/forwardnetworks/cloud-collector:26.1.3-01
+    image: quay.io/forwardnetworks/cloud-collector:26.2.2-01
     imagePullSecretName: quay-pull
     imagePullSecretNamespace: skyforge
   forwardCluster:
@@ -78,8 +78,8 @@ skyforge:
     url: https://skyforge.local.forwardnetworks.com/git
 
   # Pin the single netlab runtime image used by both create/apply phases.
-  netlabC9s:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab-generator:20260228-1310-netlab-apply-workdir"
+  netlab:
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260228-1310-netlab-apply-workdir"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.

@@ -3264,9 +3264,9 @@
                       },
                       "type": "array"
                     },
-                    "netlabGenerator": {
+                    "netlab": {
                       "properties": {
-                        "generatorImage": {
+                        "image": {
                           "type": "string"
                         },
                         "mode": {
@@ -3278,7 +3278,7 @@
                       },
                       "required": [
                         "mode",
-                        "generatorImage",
+                        "image",
                         "pullPolicy"
                       ],
                       "type": "object"
@@ -3305,7 +3305,7 @@
                   "required": [
                     "publicUrl",
                     "flags",
-                    "netlabGenerator",
+                    "netlab",
                     "objectStorage",
                     "integrations",
                     "forwardCollector",
