@@ -142,8 +142,6 @@ skyforge:
     # Namespace selector for enforcement (only namespaces matching this label are checked).
     namespaceSelectorLabel: "skyforge-managed"
     namespaceSelectorValue: "true"
-    # Require Topology.spec.deployment.nativeMode == true (deny CREATE/UPDATE otherwise).
-    requireClabernetesNativeMode: true
     # Deny Pods that mount /var/run/docker.sock via hostPath.
     forbidDockerSock: true
   staticRoot: "/opt/skyforge/static"
