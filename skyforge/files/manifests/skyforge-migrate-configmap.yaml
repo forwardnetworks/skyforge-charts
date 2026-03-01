@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:aP7MiwH+Od9gJIC3Wkbma4KxW0LAIw+NEyeHH8mFAHk=
+    h1:dDI++/XWQMh7LW76owFs0rf97RZI62bUg9H92516mMY=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
@@ -33,7 +33,8 @@ data:
     20260227231000_netlab_status_current_contract_checks.up.sql h1:I21SWSiF1nCJzZlfj3a5CWpijNjDzFF9pJAMm0LGC5w=
     20260227235500_deployment_type_model_hard_cut.up.sql h1:pbrBxOpPdQVPN5yC1WFOFDVcDflwF9B3qXUL2wBPR68=
     20260228000500_deployment_engine_contract_hard_cut.up.sql h1:EwZtCvjUr0H+39JwPhrYC59QSWqUYkFbX2f7EGZKgLo=
-    20260228013000_deployment_runtime_state_hard_cut.up.sql h1:sj1C2rpGWewOhNhBRMH8IOYE0bD/TbvAVqzd8qCTENI=
+    20260228013000_deployment_runtime_state_hard_cut.up.sql h1:x9kYWfC0a0w1Fz1gMggASYYBM47kMH86KvkT5ZvyITw=
+    20260228193000_netlab_artifact_index.up.sql h1:K5KJMK0DTZzCDIKda1FgzCxiPHhR9kfObrA7K9VAmzg=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -3549,3 +3550,134 @@ data:
         - 'leaseStoppedAt'
         - 'leaseStopTaskId'
     WHERE type = ANY (ARRAY['terraform', 'c9s', 'byos']);
+
+  20260228193000_netlab_artifact_index.up.sql: |
+    -- Hard-cut netlab artifact index out of task JSON metadata into a typed table
+    -- for queryability and auditing.
+    
+    CREATE TABLE IF NOT EXISTS public.sf_netlab_artifact_index (
+        task_id bigint NOT NULL,
+        user_scope_id text NOT NULL,
+        deployment_id uuid NOT NULL,
+        topology_name text NOT NULL DEFAULT '',
+        lab_name text NOT NULL DEFAULT '',
+        artifact_prefix text NOT NULL DEFAULT '',
+        artifact_path text NOT NULL,
+        object_key text NOT NULL,
+        content_type text NOT NULL DEFAULT '',
+        size_bytes integer NOT NULL DEFAULT 0,
+        sha256 text NOT NULL DEFAULT '',
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL DEFAULT now(),
+        PRIMARY KEY (task_id, artifact_path),
+        CONSTRAINT sf_netlab_artifact_index_size_nonnegative CHECK (size_bytes >= 0)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_netlab_artifact_index_scope_deployment_idx
+        ON public.sf_netlab_artifact_index (user_scope_id, deployment_id, created_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS sf_netlab_artifact_index_topology_idx
+        ON public.sf_netlab_artifact_index (user_scope_id, topology_name, created_at DESC);
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_netlab_artifact_index_task_fkey'
+        ) THEN
+            ALTER TABLE public.sf_netlab_artifact_index
+                ADD CONSTRAINT sf_netlab_artifact_index_task_fkey
+                FOREIGN KEY (task_id) REFERENCES public.sf_tasks(id) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_netlab_artifact_index_user_fkey'
+        ) THEN
+            ALTER TABLE public.sf_netlab_artifact_index
+                ADD CONSTRAINT sf_netlab_artifact_index_user_fkey
+                FOREIGN KEY (user_scope_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_netlab_artifact_index_deployment_fkey'
+        ) THEN
+            ALTER TABLE public.sf_netlab_artifact_index
+                ADD CONSTRAINT sf_netlab_artifact_index_deployment_fkey
+                FOREIGN KEY (deployment_id) REFERENCES public.sf_deployments(id) ON DELETE CASCADE;
+        END IF;
+    END
+    $$;
+    
+    WITH src AS (
+        SELECT
+            t.id AS task_id,
+            d.user_id AS user_scope_id,
+            t.deployment_id,
+            t.metadata->'netlabArtifacts' AS idx
+        FROM public.sf_tasks t
+        JOIN public.sf_deployments d
+          ON d.id = t.deployment_id
+        WHERE t.task_type = 'netlab-c9s-run'
+          AND t.deployment_id IS NOT NULL
+          AND jsonb_typeof(t.metadata->'netlabArtifacts') = 'object'
+    ),
+    items AS (
+        SELECT
+            s.task_id,
+            s.user_scope_id,
+            s.deployment_id,
+            COALESCE(s.idx->>'prefix', '') AS artifact_prefix,
+            item
+        FROM src s
+        CROSS JOIN LATERAL jsonb_array_elements(
+            CASE
+                WHEN jsonb_typeof(s.idx->'items') = 'array' THEN s.idx->'items'
+                ELSE '[]'::jsonb
+            END
+        ) AS item
+    )
+    INSERT INTO public.sf_netlab_artifact_index (
+        task_id,
+        user_scope_id,
+        deployment_id,
+        artifact_prefix,
+        artifact_path,
+        object_key,
+        content_type,
+        size_bytes,
+        sha256,
+        created_at,
+        updated_at
+    )
+    SELECT
+        i.task_id,
+        i.user_scope_id,
+        i.deployment_id,
+        COALESCE(i.artifact_prefix, ''),
+        COALESCE(i.item->>'path', ''),
+        COALESCE(i.item->>'key', ''),
+        COALESCE(i.item->>'contentType', ''),
+        CASE
+            WHEN COALESCE(i.item->>'sizeBytes', '') ~ '^[0-9]+$' THEN (i.item->>'sizeBytes')::integer
+            ELSE 0
+        END,
+        COALESCE(i.item->>'sha256', ''),
+        now(),
+        now()
+    FROM items i
+    WHERE COALESCE(i.item->>'path', '') <> ''
+      AND COALESCE(i.item->>'key', '') <> ''
+    ON CONFLICT (task_id, artifact_path) DO UPDATE
+    SET user_scope_id = EXCLUDED.user_scope_id,
+        deployment_id = EXCLUDED.deployment_id,
+        artifact_prefix = EXCLUDED.artifact_prefix,
+        object_key = EXCLUDED.object_key,
+        content_type = EXCLUDED.content_type,
+        size_bytes = EXCLUDED.size_bytes,
+        sha256 = EXCLUDED.sha256,
+        updated_at = now();

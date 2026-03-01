@@ -75,7 +75,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260228-123302-netlab-ssot-49be8ce"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260228-dns1035-netlab-runtime"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
