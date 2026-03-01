@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:dDI++/XWQMh7LW76owFs0rf97RZI62bUg9H92516mMY=
+    h1:FepQ9Jl2m0GNta5f7ssu6SY76ZSD0Ef3q+qBJ9FpYt8=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
@@ -35,6 +35,7 @@ data:
     20260228000500_deployment_engine_contract_hard_cut.up.sql h1:EwZtCvjUr0H+39JwPhrYC59QSWqUYkFbX2f7EGZKgLo=
     20260228013000_deployment_runtime_state_hard_cut.up.sql h1:x9kYWfC0a0w1Fz1gMggASYYBM47kMH86KvkT5ZvyITw=
     20260228193000_netlab_artifact_index.up.sql h1:K5KJMK0DTZzCDIKda1FgzCxiPHhR9kfObrA7K9VAmzg=
+    20260301080000_admin_smoke_runs.up.sql h1:NVaCnH6W7pNe2wbQ1Uzl+aR7hwjYJs00d4ndk0XNIEY=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -3681,3 +3682,27 @@ data:
         size_bytes = EXCLUDED.size_bytes,
         sha256 = EXCLUDED.sha256,
         updated_at = now();
+
+  20260301080000_admin_smoke_runs.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_deployment_smoke_runs (
+        id bigserial PRIMARY KEY,
+        actor_username text NOT NULL DEFAULT '',
+        source text NOT NULL DEFAULT 'post-deploy-smoke',
+        base_url text NOT NULL,
+        release_name text NOT NULL DEFAULT '',
+        namespace text NOT NULL DEFAULT '',
+        server_image text NOT NULL DEFAULT '',
+        worker_image text NOT NULL DEFAULT '',
+        status text NOT NULL,
+        checks jsonb NOT NULL DEFAULT '[]'::jsonb,
+        error text NOT NULL DEFAULT '',
+        metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT sf_deployment_smoke_runs_status_check CHECK (status IN ('passed', 'failed'))
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_deployment_smoke_runs_created_idx
+        ON public.sf_deployment_smoke_runs (created_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS sf_deployment_smoke_runs_status_created_idx
+        ON public.sf_deployment_smoke_runs (status, created_at DESC);

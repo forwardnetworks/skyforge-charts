@@ -41,6 +41,92 @@
       "deploycore.Reason": {
         "type": "string"
       },
+      "skyforge.AdminSmokeRunCheck": {
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "path",
+          "status",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "skyforge.AdminSmokeRunRecord": {
+        "properties": {
+          "actorUsername": {
+            "type": "string"
+          },
+          "baseUrl": {
+            "type": "string"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.AdminSmokeRunCheck"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/skyforge.JSONMap"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "releaseName": {
+            "type": "string"
+          },
+          "serverImage": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "workerImage": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "actorUsername",
+          "source",
+          "baseUrl",
+          "releaseName",
+          "namespace",
+          "serverImage",
+          "workerImage",
+          "status",
+          "error",
+          "checks",
+          "metadata",
+          "createdAt"
+        ],
+        "type": "object"
+      },
       "skyforge.AssignableUser": {
         "properties": {
           "display": {
@@ -4117,6 +4203,158 @@
           }
         },
         "summary": "ListNodeMetrics returns a lightweight, live view of node metrics (admin only).\n"
+      }
+    },
+    "/api/admin/smoke-runs": {
+      "get": {
+        "operationId": "GET:skyforge.ListAdminSmokeRuns",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminSmokeRunRecord"
+                      },
+                      "type": "array"
+                    },
+                    "limit": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "limit"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListAdminSmokeRuns returns recent post-deploy smoke run history (admin only).\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.CreateAdminSmokeRun",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "baseUrl": {
+                    "type": "string"
+                  },
+                  "checks": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.AdminSmokeRunCheck"
+                    },
+                    "type": "array"
+                  },
+                  "error": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "$ref": "#/components/schemas/skyforge.JSONMap"
+                  },
+                  "namespace": {
+                    "type": "string"
+                  },
+                  "releaseName": {
+                    "type": "string"
+                  },
+                  "serverImage": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "workerImage": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "baseUrl",
+                  "source",
+                  "releaseName",
+                  "namespace",
+                  "serverImage",
+                  "workerImage",
+                  "status",
+                  "error",
+                  "checks",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "status",
+                    "createdAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateAdminSmokeRun records a post-deploy smoke run summary (admin only).\n"
       }
     },
     "/api/admin/tasks/diag": {
