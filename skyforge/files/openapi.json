@@ -4205,6 +4205,104 @@
         "summary": "ListNodeMetrics returns a lightweight, live view of node metrics (admin only).\n"
       }
     },
+    "/api/admin/quick-deploy/catalog": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminQuickDeployCatalog",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "retrievedAt": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "templates": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.quickDeployTemplate"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "templates",
+                    "source",
+                    "retrievedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminQuickDeployCatalog returns the editable quick deploy catalog (admin\nonly).\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.UpdateAdminQuickDeployCatalog",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "templates": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.quickDeployTemplate"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "templates"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "templates": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.quickDeployTemplate"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "templates",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpdateAdminQuickDeployCatalog updates the quick deploy catalog (admin only).\n"
+      }
+    },
     "/api/admin/smoke-runs": {
       "get": {
         "operationId": "GET:skyforge.ListAdminSmokeRuns",
