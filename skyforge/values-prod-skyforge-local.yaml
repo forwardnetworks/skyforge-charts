@@ -82,8 +82,8 @@ skyforge:
   # This must be enabled for user deployments to reconcile.
   clabernetes:
     enabled: true
-    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260301224227-c9s-k8s-runtime"
-    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260301224227-c9s-k8s-runtime"
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260301-vxlan-native-e619837"
+    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260301-vxlan-native-e619837"
     nodeSysctl:
       enabled: true
       fsInotifyMaxUserInstances: 64000
