@@ -245,6 +245,8 @@ spec:
                   optional: true
             - name: SKYFORGE_NETLAB_SSH_KEY_FILE
               value: /run/secrets/netlab-runner-rsa
+            - name: SKYFORGE_C9S_RUNTIME_MODE
+              value: {{ .Values.skyforge.netlab.c9sRuntimeMode | default "pure-k8s" | quote }}
             - name: PORT
               value: "8085"
             - name: SSL_CERT_FILE
