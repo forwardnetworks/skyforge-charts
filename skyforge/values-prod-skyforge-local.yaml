@@ -36,12 +36,12 @@ skyforge:
     workerCreate: false
 
   netbox:
-    enabled: false
+    enabled: true
   netboxUrl: https://skyforge.local.forwardnetworks.com/netbox
   netboxSsoUrl: https://skyforge.local.forwardnetworks.com/netbox
 
   nautobot:
-    enabled: false
+    enabled: true
   nautobotUrl: https://skyforge.local.forwardnetworks.com/nautobot
   nautobotSsoUrl: https://skyforge.local.forwardnetworks.com/nautobot
 

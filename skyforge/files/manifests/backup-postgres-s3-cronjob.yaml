@@ -17,7 +17,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: backup
-              image: postgres:15-alpine
+              image: public.ecr.aws/docker/library/postgres:15-alpine
               command: ["/bin/sh","-lc"]
               args:
                 - |
@@ -65,4 +65,3 @@ spec:
                       items:
                         - key: aws-terraform-shared-credentials
                           path: aws-terraform-shared-credentials
-
