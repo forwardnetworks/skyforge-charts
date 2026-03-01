@@ -161,8 +161,6 @@ skyforge:
     secretKeySecretKey: "object-storage-root-password"
   terraform:
     path: ""
-    version: ""
-    url: ""
   netlab:
     sshUser: "ubuntu"
     stateRoot: "/var/lib/skyforge/netlab"

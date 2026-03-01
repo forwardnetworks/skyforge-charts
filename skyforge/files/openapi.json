@@ -9095,9 +9095,6 @@
                   "adminUsername": {
                     "type": "string"
                   },
-                  "forwardCollectorConfigId": {
-                    "type": "string"
-                  },
                   "forwardCredentialSetId": {
                     "type": "string"
                   },
@@ -9109,8 +9106,7 @@
                   "instanceUrl",
                   "adminUsername",
                   "adminPassword",
-                  "forwardCredentialSetId",
-                  "forwardCollectorConfigId"
+                  "forwardCredentialSetId"
                 ],
                 "type": "object"
               }
