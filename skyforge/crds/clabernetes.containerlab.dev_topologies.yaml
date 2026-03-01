@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.0
+    controller-gen.kubebuilder.io/version: v0.16.4
   name: topologies.clabernetes.containerlab.dev
 spec:
   group: clabernetes.containerlab.dev
@@ -362,6 +362,11 @@ spec:
                     - info
                     - debug
                     type: string
+                  nativeMode:
+                    description: |-
+                      NativeMode, when true, enables native launcher mode for this topology.
+                      If unset, behavior remains default/false.
+                    type: boolean
                   persistence:
                     description: |-
                       Persistence holds configurations relating to persisting each nodes working containerlab
@@ -471,6 +476,13 @@ spec:
                       kind/type that is *not* in this resources map will have the "default" resources from this
                       mapping applied.
                     type: object
+                  runtimeBackend:
+                    description: |-
+                      RuntimeBackend selects how launcher runtime executes node lifecycle.
+                      k8s selects the Kubernetes runtime backend path.
+                    enum:
+                    - k8s
+                    type: string
                   scheduling:
                     description: |-
                       Scheduling holds information about how the launcher pod(s) should be configured with respect
@@ -606,21 +618,6 @@ spec:
                   ImagePull holds configurations relevant to how clabernetes launcher pods handle pulling
                   images.
                 properties:
-                  dockerConfig:
-                    description: |-
-                      DockerConfig allows for setting the docker user (for root) config for all launchers in this
-                      topology. The secret *must be present in the namespace of this topology*. The secret *must*
-                      contain a key "config.json" -- as this secret will be mounted to /root/.docker/config.json
-                      and as such wil be utilized when doing docker-y things -- this means you can put auth things
-                      in here in the event your cluster doesn't support the preferred image pull through option.
-                    type: string
-                  dockerDaemonConfig:
-                    description: |-
-                      DockerDaemonConfig allows for setting the docker daemon config for all launchers in this
-                      topology. The secret *must be present in the namespace of this topology*. The secret *must*
-                      contain a key "daemon.json" -- as this secret will be mounted to /etc/docker and docker will
-                      be expecting the config at /etc/docker/daemon.json.
-                    type: string
                   insecureRegistries:
                     description: |-
                       InsecureRegistries is a slice of strings of insecure registries to configure in the launcher
@@ -728,10 +725,9 @@ spec:
                             StartupSeconds is the total amount of seconds to allow for the node to start. This defaults
                             to ~13 minutes to hopefully account for slow to boot nodes. Note that there is also a 60
                             initial delay configured, so technically the default is ~14-15 minutes. Be careful with this
-                            delay as there must be time for c9s to (via whatever means) pull the image and load it into
-                            docker on the launcher and this can take a bit! Having this be bigger than you think you need
-                            is generally better since if the startup probe succeeds ever then the readiness probe takes
-                            over anyway.
+                            delay as there must be time for c9s to pull and start all pod containers for the node group.
+                            Having this be bigger than you think you need is generally better since if the startup probe
+                            succeeds ever then the readiness probe takes over anyway.
                           type: integer
                         tcpProbeConfiguration:
                           description: TCPProbeConfiguration defines a TCP probe.
@@ -778,10 +774,9 @@ spec:
                           StartupSeconds is the total amount of seconds to allow for the node to start. This defaults
                           to ~13 minutes to hopefully account for slow to boot nodes. Note that there is also a 60
                           initial delay configured, so technically the default is ~14-15 minutes. Be careful with this
-                          delay as there must be time for c9s to (via whatever means) pull the image and load it into
-                          docker on the launcher and this can take a bit! Having this be bigger than you think you need
-                          is generally better since if the startup probe succeeds ever then the readiness probe takes
-                          over anyway.
+                          delay as there must be time for c9s to pull and start all pod containers for the node group.
+                          Having this be bigger than you think you need is generally better since if the startup probe
+                          succeeds ever then the readiness probe takes over anyway.
                         type: integer
                       tcpProbeConfiguration:
                         description: TCPProbeConfiguration defines a TCP probe.

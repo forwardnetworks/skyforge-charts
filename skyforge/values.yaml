@@ -168,10 +168,6 @@ skyforge:
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
     image: "ghcr.io/forwardnetworks/skyforge-netlab:20260301-netlab-k8s-attr-71bc08d76c49"
     pullPolicy: "IfNotPresent"
-    # Runtime mode passed to netlab+c9s pipeline.
-    # "pure-k8s" avoids Docker-in-Docker and uses container runtime native flow.
-    # Set "docker" only for explicit fallback/testing.
-    c9sRuntimeMode: "pure-k8s"
   dns:
     enabled: false
     adminUsername: "admin"

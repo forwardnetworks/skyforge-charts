@@ -20131,6 +20131,7 @@
     },
     "/api/users/{userID}/blueprint/sync": {
       "post": {
+        "description": "Blueprints are consumed directly from the shared catalog repo, so there is no per-user copy step anymore.\n",
         "operationId": "POST:skyforge.SyncUserBlueprint",
         "parameters": [
           {
@@ -20168,7 +20169,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SyncUserBlueprint syncs a user's blueprint catalog into the repo.\n"
+        "summary": "SyncUserBlueprint keeps backward compatibility for explicit blueprint sync\ncalls.\n"
       }
     },
     "/api/webhooks/events": {

@@ -77,14 +77,13 @@ skyforge:
   netlab:
     image: "ghcr.io/forwardnetworks/skyforge-netlab:20260301-purek8s-alt2"
     pullPolicy: "IfNotPresent"
-    c9sRuntimeMode: "pure-k8s"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
   # This must be enabled for user deployments to reconcile.
   clabernetes:
     enabled: true
-    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260301-purek8s-alt2"
-    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260301-purek8s-alt2"
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260301154354-runtime-contract"
+    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260301154354-runtime-contract"
     nodeSysctl:
       enabled: true
       fsInotifyMaxUserInstances: 64000

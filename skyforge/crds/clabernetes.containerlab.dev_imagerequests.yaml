@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.16.4
   name: imagerequests.clabernetes.containerlab.dev
 spec:
   group: clabernetes.containerlab.dev
@@ -19,8 +19,8 @@ spec:
       openAPIV3Schema:
         description: |-
           ImageRequest is an object that represents a request (from a launcher pod) to pull an image on a
-          given kubernetes node such that the image can be "pulled through" into the launcher docker
-          daemon.
+          given kubernetes node such that the image is available via CRI pull-through for launcher/node
+          containers on that node.
         properties:
           apiVersion:
             description: |-
