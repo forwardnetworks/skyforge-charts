@@ -75,15 +75,15 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260302-netlab-k8s-plugin-mgmt-ba83477"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260302-netlab-k8s-dns-ready-r1"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
   # This must be enabled for user deployments to reconcile.
   clabernetes:
     enabled: true
-    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260302-ceos-k8s-env-43dad0f"
-    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260302-ceos-k8s-env-43dad0f"
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260302-ceos-k8s-env-r1"
+    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260302-ceos-k8s-env-r1"
     nodeSysctl:
       enabled: true
       fsInotifyMaxUserInstances: 64000
