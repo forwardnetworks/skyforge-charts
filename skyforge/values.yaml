@@ -166,7 +166,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260302-netlab-linux-root-admin-debug-ui"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260302-netlab-sh-eos-linux-r1"
     pullPolicy: "IfNotPresent"
   dns:
     enabled: false
