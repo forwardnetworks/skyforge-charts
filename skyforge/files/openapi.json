@@ -2668,12 +2668,18 @@
       },
       "skyforge.UserScopeDeployment": {
         "properties": {
+          "actionReason": {
+            "type": "string"
+          },
           "activeTaskId": {
             "format": "int64",
             "type": "integer"
           },
           "activeTaskStatus": {
             "type": "string"
+          },
+          "autoSyncOnBringUp": {
+            "type": "boolean"
           },
           "config": {
             "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -2702,6 +2708,15 @@
           "lastStatus": {
             "type": "string"
           },
+          "lastSyncAt": {
+            "type": "string"
+          },
+          "lastSyncError": {
+            "type": "string"
+          },
+          "lastSyncStatus": {
+            "type": "string"
+          },
           "lastTaskId": {
             "format": "int64",
             "type": "integer"
@@ -2710,12 +2725,21 @@
             "format": "int64",
             "type": "integer"
           },
+          "lifecycleState": {
+            "type": "string"
+          },
           "name": {
+            "type": "string"
+          },
+          "primaryAction": {
             "type": "string"
           },
           "queueDepth": {
             "format": "int64",
             "type": "integer"
+          },
+          "syncState": {
+            "type": "string"
           },
           "updatedAt": {
             "type": "string"
@@ -2731,6 +2755,14 @@
           "family",
           "engine",
           "config",
+          "lifecycleState",
+          "primaryAction",
+          "actionReason",
+          "syncState",
+          "lastSyncAt",
+          "lastSyncStatus",
+          "lastSyncError",
+          "autoSyncOnBringUp",
           "createdBy",
           "createdAt",
           "updatedAt",
@@ -6169,12 +6201,18 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "actionReason": {
+                      "type": "string"
+                    },
                     "activeTaskId": {
                       "format": "int64",
                       "type": "integer"
                     },
                     "activeTaskStatus": {
                       "type": "string"
+                    },
+                    "autoSyncOnBringUp": {
+                      "type": "boolean"
                     },
                     "config": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -6203,6 +6241,15 @@
                     "lastStatus": {
                       "type": "string"
                     },
+                    "lastSyncAt": {
+                      "type": "string"
+                    },
+                    "lastSyncError": {
+                      "type": "string"
+                    },
+                    "lastSyncStatus": {
+                      "type": "string"
+                    },
                     "lastTaskId": {
                       "format": "int64",
                       "type": "integer"
@@ -6211,12 +6258,21 @@
                       "format": "int64",
                       "type": "integer"
                     },
+                    "lifecycleState": {
+                      "type": "string"
+                    },
                     "name": {
+                      "type": "string"
+                    },
+                    "primaryAction": {
                       "type": "string"
                     },
                     "queueDepth": {
                       "format": "int64",
                       "type": "integer"
+                    },
+                    "syncState": {
+                      "type": "string"
                     },
                     "updatedAt": {
                       "type": "string"
@@ -6232,6 +6288,14 @@
                     "family",
                     "engine",
                     "config",
+                    "lifecycleState",
+                    "primaryAction",
+                    "actionReason",
+                    "syncState",
+                    "lastSyncAt",
+                    "lastSyncStatus",
+                    "lastSyncError",
+                    "autoSyncOnBringUp",
                     "createdBy",
                     "createdAt",
                     "updatedAt",
@@ -6656,6 +6720,9 @@
                     "title": "deploy, destroy\n",
                     "type": "string"
                   },
+                  "autoForwardSyncOnBringUp": {
+                    "type": "boolean"
+                  },
                   "deployment": {
                     "title": "deployment name for lab naming\n",
                     "type": "string"
@@ -6707,7 +6774,8 @@
                   "template",
                   "deployment",
                   "reconfigure",
-                  "deploymentId"
+                  "deploymentId",
+                  "autoForwardSyncOnBringUp"
                 ],
                 "type": "object"
               }
@@ -6773,6 +6841,9 @@
                     "title": "create, start, stop, destroy\n",
                     "type": "string"
                   },
+                  "autoForwardSyncOnBringUp": {
+                    "type": "boolean"
+                  },
                   "deployment": {
                     "title": "deployment name for lab naming\n",
                     "type": "string"
@@ -6816,7 +6887,8 @@
                   "template",
                   "deployment",
                   "deploymentId",
-                  "labPath"
+                  "labPath",
+                  "autoForwardSyncOnBringUp"
                 ],
                 "type": "object"
               }
@@ -6881,6 +6953,9 @@
                   "action": {
                     "title": "up, create, restart, collect, status, down\n",
                     "type": "string"
+                  },
+                  "autoForwardSyncOnBringUp": {
+                    "type": "boolean"
                   },
                   "clabCleanup": {
                     "type": "boolean"
@@ -6967,7 +7042,8 @@
                   "clabTarball",
                   "clabConfigDir",
                   "clabCleanup",
-                  "deploymentId"
+                  "deploymentId",
+                  "autoForwardSyncOnBringUp"
                 ],
                 "type": "object"
               }
@@ -13285,12 +13361,18 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "actionReason": {
+                      "type": "string"
+                    },
                     "activeTaskId": {
                       "format": "int64",
                       "type": "integer"
                     },
                     "activeTaskStatus": {
                       "type": "string"
+                    },
+                    "autoSyncOnBringUp": {
+                      "type": "boolean"
                     },
                     "config": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -13319,6 +13401,15 @@
                     "lastStatus": {
                       "type": "string"
                     },
+                    "lastSyncAt": {
+                      "type": "string"
+                    },
+                    "lastSyncError": {
+                      "type": "string"
+                    },
+                    "lastSyncStatus": {
+                      "type": "string"
+                    },
                     "lastTaskId": {
                       "format": "int64",
                       "type": "integer"
@@ -13327,12 +13418,21 @@
                       "format": "int64",
                       "type": "integer"
                     },
+                    "lifecycleState": {
+                      "type": "string"
+                    },
                     "name": {
+                      "type": "string"
+                    },
+                    "primaryAction": {
                       "type": "string"
                     },
                     "queueDepth": {
                       "format": "int64",
                       "type": "integer"
+                    },
+                    "syncState": {
+                      "type": "string"
                     },
                     "updatedAt": {
                       "type": "string"
@@ -13348,6 +13448,14 @@
                     "family",
                     "engine",
                     "config",
+                    "lifecycleState",
+                    "primaryAction",
+                    "actionReason",
+                    "syncState",
+                    "lastSyncAt",
+                    "lastSyncStatus",
+                    "lastSyncError",
+                    "autoSyncOnBringUp",
                     "createdBy",
                     "createdAt",
                     "updatedAt",
@@ -13715,12 +13823,18 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "actionReason": {
+                      "type": "string"
+                    },
                     "activeTaskId": {
                       "format": "int64",
                       "type": "integer"
                     },
                     "activeTaskStatus": {
                       "type": "string"
+                    },
+                    "autoSyncOnBringUp": {
+                      "type": "boolean"
                     },
                     "config": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -13749,6 +13863,15 @@
                     "lastStatus": {
                       "type": "string"
                     },
+                    "lastSyncAt": {
+                      "type": "string"
+                    },
+                    "lastSyncError": {
+                      "type": "string"
+                    },
+                    "lastSyncStatus": {
+                      "type": "string"
+                    },
                     "lastTaskId": {
                       "format": "int64",
                       "type": "integer"
@@ -13757,12 +13880,21 @@
                       "format": "int64",
                       "type": "integer"
                     },
+                    "lifecycleState": {
+                      "type": "string"
+                    },
                     "name": {
+                      "type": "string"
+                    },
+                    "primaryAction": {
                       "type": "string"
                     },
                     "queueDepth": {
                       "format": "int64",
                       "type": "integer"
+                    },
+                    "syncState": {
+                      "type": "string"
                     },
                     "updatedAt": {
                       "type": "string"
@@ -13778,6 +13910,14 @@
                     "family",
                     "engine",
                     "config",
+                    "lifecycleState",
+                    "primaryAction",
+                    "actionReason",
+                    "syncState",
+                    "lastSyncAt",
+                    "lastSyncStatus",
+                    "lastSyncError",
+                    "autoSyncOnBringUp",
                     "createdBy",
                     "createdAt",
                     "updatedAt",
@@ -14928,6 +15068,9 @@
             "application/json": {
               "schema": {
                 "properties": {
+                  "autoSyncOnBringUp": {
+                    "type": "boolean"
+                  },
                   "collectorConfigId": {
                     "type": "string"
                   },
@@ -14941,7 +15084,8 @@
                 "required": [
                   "enabled",
                   "collectorConfigId",
-                  "collectorUsername"
+                  "collectorUsername",
+                  "autoSyncOnBringUp"
                 ],
                 "type": "object"
               }
@@ -14954,6 +15098,9 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "autoSyncOnBringUp": {
+                      "type": "boolean"
+                    },
                     "collectorConfigId": {
                       "type": "string"
                     },
@@ -14982,6 +15129,7 @@
                     "enabled",
                     "collectorConfigId",
                     "collectorUsername",
+                    "autoSyncOnBringUp",
                     "forwardNetworkId",
                     "forwardSnapshotUrl"
                   ],
