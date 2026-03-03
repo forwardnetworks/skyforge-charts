@@ -418,14 +418,14 @@ spec:
         imagePullPolicy: IfNotPresent
         startupProbe:
           httpGet:
-            path: /api/health
+            path: /healthz
             port: 8085
           failureThreshold: 60
           periodSeconds: 2
           timeoutSeconds: 10
         livenessProbe:
           httpGet:
-            path: /api/health
+            path: /healthz
             port: 8085
           failureThreshold: 6
           periodSeconds: 10
