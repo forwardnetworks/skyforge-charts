@@ -1,0 +1,57 @@
+{{- if and .Values.skyforge.gitea.enabled .Values.skyforge.gitea.actionsRunner.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea-actions-runner
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+    app.kubernetes.io/name: gitea-actions-runner
+spec:
+  replicas: {{ .Values.skyforge.gitea.actionsRunner.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gitea-actions-runner
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gitea-actions-runner
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: act-runner
+          image: {{ default .Values.images.giteaActRunner .Values.skyforge.gitea.actionsRunner.image | quote }}
+          imagePullPolicy: {{ .Values.skyforge.gitea.actionsRunner.pullPolicy | quote }}
+          workingDir: /tmp
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              set -eu
+              if [ ! -f /tmp/.runner ]; then
+                act_runner register --no-interactive \
+                  --instance "${GITEA_INSTANCE_URL}" \
+                  --token "${GITEA_RUNNER_REGISTRATION_TOKEN}" \
+                  --name "${GITEA_RUNNER_NAME}" \
+                  --labels "${GITEA_RUNNER_LABELS}"
+              fi
+              exec act_runner daemon --config /tmp/.runner
+          env:
+            - name: GITEA_INSTANCE_URL
+              value: "http://gitea:3000"
+            - name: GITEA_RUNNER_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.gitea.actionsRunner.tokenSecretName | quote }}
+                  key: {{ .Values.skyforge.gitea.actionsRunner.tokenSecretKey | quote }}
+            - name: GITEA_RUNNER_LABELS
+              value: {{ .Values.skyforge.gitea.actionsRunner.labels | quote }}
+            - name: GITEA_RUNNER_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: HOME
+              value: /tmp
+{{- end }}

@@ -416,20 +416,27 @@ spec:
           value: /etc/skyforge/ca/ca-certificates.crt
         image: {{ .Values.images.skyforgeServer }}
         imagePullPolicy: IfNotPresent
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: 8085
+          failureThreshold: 60
+          periodSeconds: 2
+          timeoutSeconds: 10
         livenessProbe:
           httpGet:
             path: /api/health
             port: 8085
           failureThreshold: 6
           periodSeconds: 10
-          timeoutSeconds: 2
+          timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /api/health
             port: 8085
           failureThreshold: 3
           periodSeconds: 5
-          timeoutSeconds: 2
+          timeoutSeconds: 10
         name: skyforge-server
         ports:
         - containerPort: 8085

@@ -72,6 +72,8 @@ spec:
           value: '22'
         - name: GITEA__server__START_SSH_SERVER
           value: 'false'
+        - name: GITEA__actions__ENABLED
+          value: 'true'
         - name: GITEA__service__DISABLE_REGISTRATION
           value: 'false'
         - name: GITEA__service__ALLOW_ONLY_EXTERNAL_REGISTRATION
@@ -199,8 +201,10 @@ spec:
         - containerPort: 3000
           protocol: TCP
         resources:
+          requests:
+            memory: '2147483648'
           limits:
-            memory: '1073741824'
+            memory: '2147483648'
         volumeMounts:
         - mountPath: /run/secrets
           name: run-secrets

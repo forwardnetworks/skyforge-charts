@@ -14,7 +14,7 @@
   },
   "sql_servers": [
     {
-      "host": "db:5432",
+      "host": "db.skyforge.svc.cluster.local:5432",
       "databases": {
         "skyforge_server": {
           "username": "skyforge_server",
@@ -31,13 +31,13 @@
     {
       "type": "s3",
       "region": "us-east-1",
-      "endpoint": "http://s3gw:7480",
+      "endpoint": "http://s3gw.skyforge.svc.cluster.local:7480",
       "access_key_id": "skyforge",
       "secret_access_key": "skyforge",
       "buckets": {
         "skyforge": {
           "name": "skyforge-files",
-          "public_base_url": "http://s3gw:7480/skyforge-files"
+          "public_base_url": "http://s3gw.skyforge.svc.cluster.local:7480/skyforge-files"
         }
       }
     }
@@ -45,7 +45,7 @@
   "pubsub": [
     {
       "type": "nsq",
-      "hosts": "nsq:4150",
+      "hosts": "nsq.skyforge.svc.cluster.local:4150",
       "topics": {
         "skyforge-task-cancel": {
           "name": "skyforge-task-cancel",
@@ -92,7 +92,7 @@
   ],
   "redis": {
     "default": {
-      "host": "redis:6379",
+      "host": "redis.skyforge.svc.cluster.local:6379",
       "database_index": 0,
       "key_prefix": "skyforge"
     }
@@ -124,12 +124,12 @@
     "YAADE_ADMIN_PASSWORD": { "$env": "YAADE_ADMIN_PASSWORD" }
   },
   "env": {
-    "SKYFORGE_DB_HOST": "db",
+    "SKYFORGE_DB_HOST": "db.skyforge.svc.cluster.local",
     "SKYFORGE_DB_PORT": "5432",
     "SKYFORGE_DB_NAME": "skyforge_server",
     "SKYFORGE_DB_USER": "skyforge_server",
     "SKYFORGE_DB_SSLMODE": "disable",
-    "SKYFORGE_OBJECT_STORAGE_ENDPOINT": "s3gw:7480",
+    "SKYFORGE_OBJECT_STORAGE_ENDPOINT": "s3gw.skyforge.svc.cluster.local:7480",
     "SKYFORGE_OBJECT_STORAGE_USE_SSL": "false",
     "APP_VERSION": "${APP_VERSION}",
     "BUILD_TIME": "${BUILD_TIME}",

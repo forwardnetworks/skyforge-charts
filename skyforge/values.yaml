@@ -82,6 +82,22 @@ skyforge:
     repoPrivate: true
     adminUsername: "skyforge"
     allowedDomains: ""
+    actionsRunner:
+      enabled: true
+      replicas: 1
+      # Runner image for Gitea Actions. Keep host-mode labels to avoid
+      # Docker-in-Docker dependency.
+      image: "docker.io/gitea/act_runner:latest"
+      pullPolicy: "IfNotPresent"
+      # Runner registration token secret consumed by the runner.
+      # Populate this Secret manually when secrets.create=false:
+      #   kubectl -n skyforge create secret generic gitea-actions-runner-token --from-literal=token='<token>'
+      tokenSecretName: "gitea-actions-runner-token"
+      tokenSecretKey: "token"
+      # Comma-separated labels passed to act_runner.
+      labels: "ubuntu-latest:host,self-hosted:host"
+      # Poll interval (seconds) between workflow checks.
+      fetchInterval: 2
   registry:
     # Container image registry used by the Designer palette.
     # Example: https://ghcr.io
@@ -166,7 +182,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260302-netlab-alpine313-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260302-netlab-eosshfix-02"
     pullPolicy: "IfNotPresent"
   dns:
     enabled: false
@@ -421,6 +437,7 @@ images:
   freeradius: "ghcr.io/freeradius/freeradius-server:3.2.5"
   # Prefer GHCR (Docker Hub rate limits are painful in-cluster).
   gitea: "ghcr.io/go-gitea/gitea:1.24.6-rootless"
+  giteaActRunner: "docker.io/gitea/act_runner:latest"
   coder: "ghcr.io/coder/coder:latest"
   yaade: "ghcr.io/esperotech/yaade:latest"
   dex: "ghcr.io/dexidp/dex:v2.44.0"
@@ -525,6 +542,8 @@ secrets:
       yaade-admin-password: ""
     gitea-secret-key:
       gitea-secret-key: ""
+    gitea-actions-runner-token:
+      token: ""
     coder-admin-bootstrap:
       password: ""
     gitea-ldap-binddn:

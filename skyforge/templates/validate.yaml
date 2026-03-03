@@ -70,6 +70,9 @@ early when required configuration is missing.
   {{- if .Values.skyforge.forwardCluster.enabled -}}
     {{- $requiredSecrets = concat $requiredSecrets (list "db-forward-app-password" "db-forward-fdb-password") -}}
   {{- end -}}
+  {{- if and .Values.skyforge.gitea.enabled .Values.skyforge.gitea.actionsRunner.enabled -}}
+    {{- $requiredSecrets = concat $requiredSecrets (list .Values.skyforge.gitea.actionsRunner.tokenSecretName) -}}
+  {{- end -}}
   {{- range $name := $requiredSecrets -}}
     {{- $existing := lookup "v1" "Secret" $.Release.Namespace $name -}}
     {{- if not $existing -}}
