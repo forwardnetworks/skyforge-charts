@@ -75,14 +75,14 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260303-netlab-device-override-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260304-netlab-upstreamdev-r15"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
   # This must be enabled for user deployments to reconcile.
   clabernetes:
     enabled: true
-    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260303-xrd-ssh-r4"
+    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260304-iol-runtime-contract-r12"
     launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260303-vxlan-canonical-r7"
     nodeSysctl:
       enabled: true
@@ -124,9 +124,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260301-purek8s-alt2"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260304-xr-snmp-terminal-r1"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260301-purek8s-alt2-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260304-xr-snmp-terminal-r1-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.
