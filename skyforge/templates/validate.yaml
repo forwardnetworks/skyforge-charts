@@ -53,6 +53,14 @@ early when required configuration is missing.
   {{- end -}}
 {{- end -}}
 
+{{- $uiAuthMode := default "password" .Values.skyforge.auth.mode -}}
+{{- if and (ne $uiAuthMode "password") (ne $uiAuthMode "oidc") -}}
+  {{- fail (printf "skyforge.auth.mode must be one of password or oidc (got %q)" $uiAuthMode) -}}
+{{- end -}}
+{{- if and (eq $uiAuthMode "oidc") (not .Values.skyforge.dex.enabled) -}}
+  {{- fail "skyforge.auth.mode=oidc requires skyforge.dex.enabled=true; supported browser OIDC topology is Skyforge -> Dex -> IdP" -}}
+{{- end -}}
+
 {{- if and (not .Values.secrets.create) .Values.secrets.validatePrecreated (not (.Capabilities.APIVersions.Has "helm.sh/lint")) -}}
   {{- $requiredSecrets := list
     "proxy-tls"
@@ -66,8 +74,6 @@ early when required configuration is missing.
     "db-gitea-password"
     "skyforge-ca-cert"
     "skyforge-ldap-bind-template"
-    "skyforge-oidc-client-id"
-    "skyforge-oidc-client-secret"
     "dex-client-coder-secret"
     "yaade-admin-password"
     "gitea-secret-key"
@@ -76,6 +82,12 @@ early when required configuration is missing.
     "object-storage-root-user"
     "object-storage-root-password"
   -}}
+  {{- if and .Values.skyforge.dex.enabled .Values.skyforge.dex.manageConfig -}}
+    {{- $requiredSecrets = append $requiredSecrets "skyforge-oidc-client-secret" -}}
+  {{- end -}}
+  {{- if eq $uiAuthMode "oidc" -}}
+    {{- $requiredSecrets = append $requiredSecrets "skyforge-oidc-client-id" -}}
+  {{- end -}}
   {{- if not .Values.skyforge.dex.manageConfig -}}
     {{- $requiredSecrets = append $requiredSecrets "dex-config" -}}
   {{- end -}}

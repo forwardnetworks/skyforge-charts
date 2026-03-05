@@ -42,7 +42,7 @@ spec:
               if [ ! -f /work/atlas.hcl ]; then echo "FATAL: /work/atlas.hcl missing" >&2; ls -la /work /migrations-src || true; exit 1; fi;
               i=1;
               while [ "${i}" -le 60 ]; do
-                if atlas migrate apply --config file:///work/atlas.hcl --env prod --var db_url="${db_url}"; then
+                if atlas migrate apply --config file:///work/atlas.hcl --env prod --var db_url="${db_url}" --allow-dirty; then
                   echo "Skyforge migrations complete.";
                   exit 0;
                 fi;

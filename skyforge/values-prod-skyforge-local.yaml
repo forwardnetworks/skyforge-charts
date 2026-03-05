@@ -1,4 +1,6 @@
 skyforge:
+  auth:
+    mode: oidc
   hostname: skyforge.local.forwardnetworks.com
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com

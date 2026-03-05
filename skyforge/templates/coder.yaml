@@ -32,6 +32,21 @@ spec:
               readOnly: true
             - name: skyforge-ca-bundle
               mountPath: /work
+        - name: wait-for-dex
+          image: alpine:3.20
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              for i in $(seq 1 90); do
+                if nc -z dex 5556 >/dev/null 2>&1; then
+                  exit 0
+                fi
+                sleep 2
+              done
+              echo "dex did not become reachable in time" >&2
+              exit 1
       containers:
         - name: coder
           image: {{ .Values.images.coder | quote }}

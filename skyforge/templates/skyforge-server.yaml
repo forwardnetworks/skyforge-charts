@@ -352,11 +352,13 @@ spec:
             secretKeyRef:
               name: skyforge-oidc-client-id
               key: skyforge-oidc-client-id
+              optional: true
         - name: SKYFORGE_OIDC_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
               name: skyforge-oidc-client-secret
               key: skyforge-oidc-client-secret
+              optional: true
         - name: SKYFORGE_INTERNAL_TOKEN
           valueFrom:
             secretKeyRef:
@@ -517,7 +519,7 @@ spec:
 
           i=1
           while [ "$i" -le 60 ]; do
-            if atlas migrate apply --dir file:///work/migrations --url "$db_url"; then
+            if atlas migrate apply --dir file:///work/migrations --url "$db_url" --allow-dirty; then
               echo "Skyforge migrations complete."
               exit 0
             fi
@@ -563,3 +565,20 @@ spec:
           readOnly: true
         - name: skyforge-ca-bundle
           mountPath: /work
+      - name: wait-for-nsq
+        image: {{ .Values.images.alpine }}
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - |
+          set -eu
+          host="nsq"
+          for i in $(seq 1 90); do
+            if nc -z "${host}" 4150 >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "nsq did not become reachable in time" >&2
+          exit 1

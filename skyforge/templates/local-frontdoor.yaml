@@ -1,0 +1,76 @@
+{{- if .Values.skyforge.localFrontdoor.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skyforge-local-frontdoor
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: local-frontdoor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: local-frontdoor
+        {{- include "skyforge.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: nginx
+          image: {{ .Values.skyforge.localFrontdoor.image | quote }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: {{ .Values.skyforge.hostname | quote }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: {{ .Values.skyforge.hostname | quote }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: tls
+              mountPath: /etc/nginx/tls
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: skyforge-local-frontdoor
+        - name: tls
+          secret:
+            secretName: proxy-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skyforge-local-frontdoor
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/component: local-frontdoor
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: {{ .Values.skyforge.localFrontdoor.httpNodePort }}
+    - name: https
+      port: 443
+      targetPort: 443
+      nodePort: {{ .Values.skyforge.localFrontdoor.httpsNodePort }}
+{{- end }}

@@ -299,7 +299,7 @@ spec:
           - -c
         args:
           - |
-            set -euo pipefail
+            set -eu
             export GITEA_APP_INI=/var/lib/gitea/custom/conf/app.ini
             export GITEA__security__SECRET_KEY="$(cat /run/secrets/gitea-secret-key)"
             export GITEA__database__PASSWD="$(cat /run/secrets/db-gitea-password)"
