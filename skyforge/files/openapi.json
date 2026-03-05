@@ -127,6 +127,103 @@
         ],
         "type": "object"
       },
+      "skyforge.AdminUserRoleGrant": {
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "grantedBy": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "grantedBy",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "skyforge.AdminUserRoleRecord": {
+        "properties": {
+          "directRoles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "effectiveRoles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "grants": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.AdminUserRoleGrant"
+            },
+            "type": "array"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "isConfigAdmin": {
+            "type": "boolean"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "directRoles",
+          "effectiveRoles",
+          "isConfigAdmin",
+          "isAdmin",
+          "grants"
+        ],
+        "type": "object"
+      },
+      "skyforge.AdminWorkspacePodCleanupNamespaceResult": {
+        "properties": {
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "orphanCleanupAttempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "topologiesDeleted": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "topologiesFound": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "topologyOwnersFound": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "namespace",
+          "topologiesFound",
+          "topologyOwnersFound",
+          "topologiesDeleted",
+          "orphanCleanupAttempts",
+          "errors"
+        ],
+        "type": "object"
+      },
       "skyforge.AssignableUser": {
         "properties": {
           "display": {
@@ -681,6 +778,31 @@
         ],
         "type": "object"
       },
+      "skyforge.DeploymentActionQueue": {
+        "properties": {
+          "expiresAt": {
+            "type": "string"
+          },
+          "nextRetryAt": {
+            "type": "string"
+          },
+          "position": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "queueDepth": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "queueDepth",
+          "position",
+          "nextRetryAt",
+          "expiresAt"
+        ],
+        "type": "object"
+      },
       "skyforge.DeploymentActionState": {
         "properties": {
           "desired": {
@@ -1146,6 +1268,46 @@
       "skyforge.GovernancePolicy": {
         "description": "All limits are optional. A value of 0 means \"unlimited/disabled\".\n",
         "properties": {
+          "advisoryLatencyCritMs": {
+            "format": "int64",
+            "title": "AdvisoryLatencyCritMs marks p95 latency as critical level for observability\nadvisories.\n",
+            "type": "integer"
+          },
+          "advisoryLatencyWarnMs": {
+            "format": "int64",
+            "title": "AdvisoryLatencyWarnMs marks p95 latency as warning level for observability\nadvisories.\n",
+            "type": "integer"
+          },
+          "advisoryNodeCpuCritPct": {
+            "format": "int64",
+            "title": "AdvisoryNodeCPUCritPct marks node CPU p95 percentage as critical level.\n",
+            "type": "integer"
+          },
+          "advisoryNodeCpuWarnPct": {
+            "format": "int64",
+            "title": "AdvisoryNodeCPUWarnPct marks node CPU p95 percentage as warning level.\n",
+            "type": "integer"
+          },
+          "advisoryNodeMemCritPct": {
+            "format": "int64",
+            "title": "AdvisoryNodeMemCritPct marks node memory p95 percentage as critical level.\n",
+            "type": "integer"
+          },
+          "advisoryNodeMemWarnPct": {
+            "format": "int64",
+            "title": "AdvisoryNodeMemWarnPct marks node memory p95 percentage as warning level.\n",
+            "type": "integer"
+          },
+          "advisoryQueueOldestCritSec": {
+            "format": "int64",
+            "title": "AdvisoryQueueOldestCritSec marks queued oldest-age as critical level.\n",
+            "type": "integer"
+          },
+          "advisoryQueueOldestWarnSec": {
+            "format": "int64",
+            "title": "AdvisoryQueueOldestWarnSec marks queued oldest-age as warning level.\n",
+            "type": "integer"
+          },
           "allowCustomTemplateRepos": {
             "description": "This is distinct from \"external\" because \"custom\" can reference arbitrary repos and is therefore riskier.\n",
             "title": "AllowCustomTemplateRepos controls whether non-admin users may use template\nsource = custom.\n",
@@ -1189,7 +1351,15 @@
           "allowUserByosContainerlabServers",
           "allowUserExternalTemplateRepos",
           "allowCustomTemplateRepos",
-          "blockedForwardOrgIds"
+          "blockedForwardOrgIds",
+          "advisoryLatencyWarnMs",
+          "advisoryLatencyCritMs",
+          "advisoryQueueOldestWarnSec",
+          "advisoryQueueOldestCritSec",
+          "advisoryNodeCpuWarnPct",
+          "advisoryNodeCpuCritPct",
+          "advisoryNodeMemWarnPct",
+          "advisoryNodeMemCritPct"
         ],
         "title": "GovernancePolicy is a lightweight guardrail layer (admin-configurable).\n",
         "type": "object"
@@ -1707,6 +1877,98 @@
         ],
         "type": "object"
       },
+      "skyforge.ObservabilityAdvisory": {
+        "properties": {
+          "level": {
+            "title": "ok|warn|crit\n",
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "metric": {
+            "type": "string"
+          },
+          "threshold": {
+            "type": "number"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "level",
+          "metric",
+          "value",
+          "threshold",
+          "message"
+        ],
+        "type": "object"
+      },
+      "skyforge.ObservabilitySeriesPoint": {
+        "properties": {
+          "timestamp": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "timestamp",
+          "value"
+        ],
+        "type": "object"
+      },
+      "skyforge.ObservabilitySlowRequest": {
+        "properties": {
+          "causeCode": {
+            "type": "string"
+          },
+          "collectedAt": {
+            "type": "string"
+          },
+          "endpointKey": {
+            "type": "string"
+          },
+          "phaseDbMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "phaseEnrichMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "queueOldestSec": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "statusCode": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "workerHeartbeatSec": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "collectedAt",
+          "endpointKey",
+          "statusCode",
+          "totalMs",
+          "phaseDbMs",
+          "phaseEnrichMs",
+          "queueOldestSec",
+          "workerHeartbeatSec",
+          "causeCode"
+        ],
+        "type": "object"
+      },
       "skyforge.PolicyReportForwardNetwork": {
         "properties": {
           "collectorConfigId": {
@@ -2212,6 +2474,41 @@
           "kind",
           "mgmtIp",
           "status"
+        ],
+        "type": "object"
+      },
+      "skyforge.UserAPITokenMetadata": {
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastUsedAt": {
+            "type": "string"
+          },
+          "lastUsedIp": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "revokedAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt",
+          "lastUsedAt",
+          "lastUsedIp",
+          "revokedAt"
         ],
         "type": "object"
       },
@@ -3081,6 +3378,46 @@
         ],
         "type": "object"
       },
+      "skyforge.observabilityEndpointSummary": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "endpointKey": {
+            "type": "string"
+          },
+          "errorCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "p50Ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "p95Ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "p99Ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "topCause": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpointKey",
+          "count",
+          "errorCount",
+          "p50Ms",
+          "p95Ms",
+          "p99Ms",
+          "topCause"
+        ],
+        "type": "object"
+      },
       "skyforge.quickDeployTemplate": {
         "properties": {
           "description": {
@@ -3864,6 +4201,12 @@
                     "lastCostPeriodEnd": {
                       "type": "string"
                     },
+                    "performanceAdvisories": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ObservabilityAdvisory"
+                      },
+                      "type": "array"
+                    },
                     "providerBreakdown": {
                       "items": {
                         "$ref": "#/components/schemas/skyforge.ProviderCostBreakdown"
@@ -3886,7 +4229,8 @@
                     "costLast30Days",
                     "costCurrency",
                     "lastCostPeriodEnd",
-                    "providerBreakdown"
+                    "providerBreakdown",
+                    "performanceAdvisories"
                   ],
                   "type": "object"
                 }
@@ -4165,7 +4509,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetAdminImpersonateStatus returns current impersonation status (admin only).\n"
+        "summary": "GetAdminImpersonateStatus returns current impersonation status.\n"
       }
     },
     "/api/admin/impersonate/stop": {
@@ -4237,6 +4581,209 @@
         "summary": "ListNodeMetrics returns a lightweight, live view of node metrics (admin only).\n"
       }
     },
+    "/api/admin/observability/series": {
+      "get": {
+        "operationId": "GET:skyforge.GetObservabilitySeries",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "metric",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "window",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "metric": {
+                      "type": "string"
+                    },
+                    "points": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ObservabilitySeriesPoint"
+                      },
+                      "type": "array"
+                    },
+                    "window": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "metric",
+                    "window",
+                    "points"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetObservabilitySeries returns compact observability time series for admin\nviews.\n"
+      }
+    },
+    "/api/admin/observability/slow-requests": {
+      "get": {
+        "operationId": "GET:skyforge.GetObservabilitySlowRequests",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "window",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "endpoint",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "requests": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ObservabilitySlowRequest"
+                      },
+                      "type": "array"
+                    },
+                    "window": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "window",
+                    "requests"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetObservabilitySlowRequests returns sampled slow request records (admin only).\n"
+      }
+    },
+    "/api/admin/observability/summary": {
+      "get": {
+        "operationId": "GET:skyforge.GetObservabilitySummary",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "advisories": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ObservabilityAdvisory"
+                      },
+                      "type": "array"
+                    },
+                    "endpoints": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.observabilityEndpointSummary"
+                      },
+                      "type": "array"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "nodeCpuActiveP95": {
+                      "type": "number"
+                    },
+                    "nodeMemUsedP95": {
+                      "type": "number"
+                    },
+                    "queueOldestSec": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "queueQueued": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "queueRunning": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "workerHeartbeatSec": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "endpoints",
+                    "queueQueued",
+                    "queueRunning",
+                    "queueOldestSec",
+                    "workerHeartbeatSec",
+                    "nodeCpuActiveP95",
+                    "nodeMemUsedP95",
+                    "advisories"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetObservabilitySummary returns lightweight native observability signals (admin\nonly).\n"
+      }
+    },
     "/api/admin/quick-deploy/catalog": {
       "get": {
         "operationId": "GET:skyforge.GetAdminQuickDeployCatalog",
@@ -4246,6 +4793,21 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "branch": {
+                      "type": "string"
+                    },
+                    "dir": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "repo": {
+                      "type": "string"
+                    },
                     "retrievedAt": {
                       "type": "string"
                     },
@@ -4261,6 +4823,10 @@
                   },
                   "required": [
                     "templates",
+                    "repo",
+                    "branch",
+                    "dir",
+                    "options",
                     "source",
                     "retrievedAt"
                   ],
@@ -4333,6 +4899,213 @@
           }
         },
         "summary": "UpdateAdminQuickDeployCatalog updates the quick deploy catalog (admin only).\n"
+      }
+    },
+    "/api/admin/quick-deploy/template-options": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminQuickDeployTemplateOptions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "branch": {
+                      "type": "string"
+                    },
+                    "dir": {
+                      "type": "string"
+                    },
+                    "repo": {
+                      "type": "string"
+                    },
+                    "retrievedAt": {
+                      "type": "string"
+                    },
+                    "templates": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "repo",
+                    "branch",
+                    "dir",
+                    "templates",
+                    "retrievedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminQuickDeployTemplateOptions returns available blueprint templates for\nquick deploy curation.\n"
+      }
+    },
+    "/api/admin/rbac/users": {
+      "get": {
+        "operationId": "GET:skyforge.ListAdminUserRoles",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "availableRoles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "users": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminUserRoleRecord"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "availableRoles",
+                    "users",
+                    "generatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListAdminUserRoles returns direct and effective RBAC roles for known users.\n"
+      }
+    },
+    "/api/admin/rbac/users/{username}/roles": {
+      "post": {
+        "operationId": "POST:skyforge.UpsertAdminUserRole",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "role": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "role"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/skyforge.AdminUserRoleRecord"
+                    }
+                  },
+                  "required": [
+                    "user"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpsertAdminUserRole grants or updates a direct RBAC role for a user.\n"
+      }
+    },
+    "/api/admin/rbac/users/{username}/roles/{role}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteAdminUserRole",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "removedRole": {
+                      "type": "string"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/skyforge.AdminUserRoleRecord"
+                    }
+                  },
+                  "required": [
+                    "user",
+                    "removedRole"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteAdminUserRole revokes a direct RBAC role from a user.\n"
       }
     },
     "/api/admin/smoke-runs": {
@@ -4703,6 +5476,115 @@
           }
         },
         "summary": "ReconcileRunningTasks marks tasks that appear stuck in \"running\" as failed.\n"
+      }
+    },
+    "/api/admin/tasks/workspace-pods/cleanup": {
+      "post": {
+        "description": "This is a manual safety valve when deployment delete flows leave topology pods behind.\n",
+        "operationId": "POST:skyforge.CleanupWorkspacePods",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "dryRun": {
+                    "title": "DryRun previews cleanup candidates without deleting anything.\n",
+                    "type": "boolean"
+                  },
+                  "namespace": {
+                    "title": "Optional namespace override (for targeted/manual cleanup).\n",
+                    "type": "string"
+                  },
+                  "userScopeId": {
+                    "title": "Optional user scope filter. When empty, all known user scopes are considered.\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "userScopeId",
+                  "namespace",
+                  "dryRun"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "dryRun": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "namespace": {
+                      "type": "string"
+                    },
+                    "namespaceResults": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminWorkspacePodCleanupNamespaceResult"
+                      },
+                      "type": "array"
+                    },
+                    "namespacesConsidered": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "orphanCleanupAttempts": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "topologiesDeleted": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "topologiesFound": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "topologyOwnersFound": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "dryRun",
+                    "userScopeId",
+                    "namespace",
+                    "namespacesConsidered",
+                    "topologyOwnersFound",
+                    "topologiesFound",
+                    "topologiesDeleted",
+                    "orphanCleanupAttempts",
+                    "namespaceResults",
+                    "errors"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CleanupWorkspacePods force-cleans clabernetes topology pods/resources from\nworkspace namespaces (admin only).\n"
       }
     },
     "/api/admin/users/purge": {
@@ -8425,6 +9307,180 @@
         }
       }
     },
+    "/api/me/api-tokens": {
+      "get": {
+        "operationId": "GET:skyforge.ListUserAPITokens",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "tokens": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.UserAPITokenMetadata"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "tokens"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListUserAPITokens returns metadata for the current user's API tokens.\n"
+      },
+      "post": {
+        "description": "NOTE: plaintext token is only returned once in this response.\n",
+        "operationId": "POST:skyforge.CreateUserAPIToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "tokenMeta": {
+                      "$ref": "#/components/schemas/skyforge.UserAPITokenMetadata"
+                    }
+                  },
+                  "required": [
+                    "token",
+                    "tokenMeta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateUserAPIToken creates a new API token for the current user.\n"
+      }
+    },
+    "/api/me/api-tokens/{tokenID}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.RevokeUserAPIToken",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "tokenID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "revoked": {
+                      "type": "boolean"
+                    },
+                    "tokenId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tokenId",
+                    "revoked"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RevokeUserAPIToken revokes an existing API token.\n"
+      }
+    },
+    "/api/me/api-tokens/{tokenID}/regenerate": {
+      "post": {
+        "description": "NOTE: plaintext token is only returned once in this response.\n",
+        "operationId": "POST:skyforge.RegenerateUserAPIToken",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "tokenID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "tokenMeta": {
+                      "$ref": "#/components/schemas/skyforge.UserAPITokenMetadata"
+                    }
+                  },
+                  "required": [
+                    "token",
+                    "tokenMeta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RegenerateUserAPIToken rotates the secret for an existing API token.\n"
+      }
+    },
     "/api/me/cloud/aws-sso": {
       "delete": {
         "operationId": "DELETE:skyforge.DeleteUserAWSSSOCredentials",
@@ -10761,7 +11817,13 @@
                     "displayName": {
                       "type": "string"
                     },
+                    "effectiveRole": {
+                      "type": "string"
+                    },
                     "email": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
                       "type": "string"
                     },
                     "groups": {
@@ -10776,6 +11838,12 @@
                     "isAdmin": {
                       "type": "boolean"
                     },
+                    "roles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
                     "username": {
                       "type": "string"
                     }
@@ -10787,8 +11855,11 @@
                     "email",
                     "groups",
                     "isAdmin",
+                    "roles",
+                    "effectiveRole",
                     "actorUsername",
-                    "impersonating"
+                    "impersonating",
+                    "expiresAt"
                   ],
                   "type": "object"
                 }
@@ -13736,6 +14807,9 @@
                     "noOp": {
                       "type": "boolean"
                     },
+                    "queue": {
+                      "$ref": "#/components/schemas/skyforge.DeploymentActionQueue"
+                    },
                     "reason": {
                       "$ref": "#/components/schemas/deploycore.Reason"
                     },
@@ -13747,16 +14821,24 @@
                     },
                     "userId": {
                       "type": "string"
+                    },
+                    "warnings": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
                     }
                   },
                   "required": [
                     "userId",
                     "deployment",
                     "run",
+                    "warnings",
                     "idempotent",
                     "noOp",
                     "reason",
-                    "state"
+                    "state",
+                    "queue"
                   ],
                   "type": "object"
                 }
@@ -14002,6 +15084,9 @@
                     "noOp": {
                       "type": "boolean"
                     },
+                    "queue": {
+                      "$ref": "#/components/schemas/skyforge.DeploymentActionQueue"
+                    },
                     "reason": {
                       "$ref": "#/components/schemas/deploycore.Reason"
                     },
@@ -14013,16 +15098,24 @@
                     },
                     "userId": {
                       "type": "string"
+                    },
+                    "warnings": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
                     }
                   },
                   "required": [
                     "userId",
                     "deployment",
                     "run",
+                    "warnings",
                     "idempotent",
                     "noOp",
                     "reason",
-                    "state"
+                    "state",
+                    "queue"
                   ],
                   "type": "object"
                 }
@@ -18696,6 +19789,64 @@
         "summary": "UpdateUserScopeMembers updates user-scope membership.\n"
       }
     },
+    "/api/users/{id}/netlab/device-options": {
+      "get": {
+        "description": "for deployment environment overrides such as NETLAB\\_DEVICE.\n",
+        "operationId": "GET:skyforge.GetUserScopeNetlabDeviceOptions",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "devices": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "devices",
+                    "source",
+                    "generatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserScopeNetlabDeviceOptions returns supported canonical netlab device keys\n"
+      }
+    },
     "/api/users/{id}/netlab/template": {
       "get": {
         "description": "This powers \"View template\" in the deployment creation flow.\n",
@@ -20279,7 +21430,7 @@
     },
     "/api/users/{userID}/blueprint/sync": {
       "post": {
-        "description": "Blueprints are consumed directly from the shared catalog repo, so there is no per-user copy step anymore.\n",
+        "description": "In git-native mode this endpoint only refreshes template cache state.\n",
         "operationId": "POST:skyforge.SyncUserBlueprint",
         "parameters": [
           {
@@ -20317,7 +21468,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SyncUserBlueprint keeps backward compatibility for explicit blueprint sync\ncalls.\n"
+        "summary": "SyncUserBlueprint keeps backward compatibility for legacy \"sync blueprint\"\ncalls.\n"
       }
     },
     "/api/webhooks/events": {
@@ -20523,7 +21674,13 @@
                     "displayName": {
                       "type": "string"
                     },
+                    "effectiveRole": {
+                      "type": "string"
+                    },
                     "email": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
                       "type": "string"
                     },
                     "groups": {
@@ -20538,6 +21695,12 @@
                     "isAdmin": {
                       "type": "boolean"
                     },
+                    "roles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
                     "username": {
                       "type": "string"
                     }
@@ -20549,8 +21712,11 @@
                     "email",
                     "groups",
                     "isAdmin",
+                    "roles",
+                    "effectiveRole",
                     "actorUsername",
-                    "impersonating"
+                    "impersonating",
+                    "expiresAt"
                   ],
                   "type": "object"
                 }
@@ -21028,6 +22194,32 @@
     "/internal/cron/governance/usage/snapshot": {
       "post": {
         "operationId": "POST:skyforge.CronSnapshotGovernanceUsage",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/internal/cron/observability/cleanup": {
+      "post": {
+        "operationId": "POST:skyforge.CronCleanupObservability",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/internal/cron/observability/rollup": {
+      "post": {
+        "operationId": "POST:skyforge.CronRollupObservability",
         "responses": {
           "200": {
             "description": "Success response"

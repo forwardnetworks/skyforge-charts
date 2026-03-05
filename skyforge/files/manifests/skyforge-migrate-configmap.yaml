@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:FepQ9Jl2m0GNta5f7ssu6SY76ZSD0Ef3q+qBJ9FpYt8=
+    h1:F2nJZiiGoOkfBXp7q2/tbmKKJ8CSgL0m1GmaBvjIdWk=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
@@ -36,6 +36,9 @@ data:
     20260228013000_deployment_runtime_state_hard_cut.up.sql h1:x9kYWfC0a0w1Fz1gMggASYYBM47kMH86KvkT5ZvyITw=
     20260228193000_netlab_artifact_index.up.sql h1:K5KJMK0DTZzCDIKda1FgzCxiPHhR9kfObrA7K9VAmzg=
     20260301080000_admin_smoke_runs.up.sql h1:NVaCnH6W7pNe2wbQ1Uzl+aR7hwjYJs00d4ndk0XNIEY=
+    20260301113000_task_runtime_contracts.up.sql h1:Qta2S1JVTaMlu2DCv/dcHzcNeLZiMklDfYzDtav1eYI=
+    20260301140000_servicenow_schema_hard_cut.up.sql h1:B6zea6nWqYS5HXqwMVYPDyJBV0Lbu3ohSJQ1XcyZbx4=
+    20260304194500_user_api_tokens.up.sql h1:95NjjU+KKRaYKvCu4Da5FP6MVUtYEA9n4tggMfIVtwQ=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -3706,3 +3709,79 @@ data:
     
     CREATE INDEX IF NOT EXISTS sf_deployment_smoke_runs_status_created_idx
         ON public.sf_deployment_smoke_runs (status, created_at DESC);
+
+  20260301113000_task_runtime_contracts.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_task_runtime_contracts (
+        task_id bigint PRIMARY KEY
+            REFERENCES sf_tasks(id) ON DELETE CASCADE,
+        user_id text NOT NULL,
+        deployment_id text,
+    
+        clabernetes_deploy_policy jsonb,
+        clabernetes_compatibility_preflight jsonb,
+        clabernetes_capacity_preflight jsonb,
+        clabernetes_apply_summary jsonb,
+    
+        netlab_catalog_provenance jsonb,
+        netlab_contract jsonb,
+        netlab_k8s_contract jsonb,
+        netlab_node_resolution_summary jsonb,
+        netlab_node_status_current jsonb,
+    
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_task_runtime_contracts_user_deployment_idx
+        ON sf_task_runtime_contracts (user_id, deployment_id);
+
+  20260301140000_servicenow_schema_hard_cut.up.sql: |
+    ALTER TABLE public.sf_user_servicenow_configs
+      ALTER COLUMN forward_credential_set_id SET DEFAULT ''::text;
+    
+    UPDATE public.sf_user_servicenow_configs
+    SET forward_credential_set_id = COALESCE(forward_credential_set_id, '')
+    WHERE forward_credential_set_id IS NULL;
+    
+    ALTER TABLE public.sf_user_servicenow_configs
+      ALTER COLUMN forward_credential_set_id SET NOT NULL;
+    
+    ALTER TABLE public.sf_user_servicenow_configs
+      DROP COLUMN IF EXISTS forward_username,
+      DROP COLUMN IF EXISTS forward_password,
+      DROP COLUMN IF EXISTS forward_collector_config_id;
+
+  20260304194500_user_api_tokens.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_user_api_tokens (
+        id text PRIMARY KEY,
+        username text NOT NULL,
+        name text NOT NULL,
+        token_hash text NOT NULL,
+        token_salt text NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL DEFAULT now(),
+        last_used_at timestamp with time zone,
+        last_used_ip inet,
+        revoked_at timestamp with time zone
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_api_tokens_username_created_idx
+        ON public.sf_user_api_tokens (username, created_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS sf_user_api_tokens_username_active_idx
+        ON public.sf_user_api_tokens (username, revoked_at, created_at DESC);
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_user_api_tokens_username_fkey'
+        ) THEN
+            ALTER TABLE public.sf_user_api_tokens
+                ADD CONSTRAINT sf_user_api_tokens_username_fkey
+                FOREIGN KEY (username) REFERENCES public.sf_users(username)
+                ON UPDATE CASCADE ON DELETE CASCADE;
+        END IF;
+    END
+    $$;

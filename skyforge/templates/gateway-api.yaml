@@ -291,6 +291,17 @@ spec:
 {{- if $coderEnabled }}
     - matches:
         - path:
+            type: Exact
+            value: /coder/launch
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            statusCode: 302
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /coder/
+    - matches:
+        - path:
             type: PathPrefix
             value: /coder
       filters:
