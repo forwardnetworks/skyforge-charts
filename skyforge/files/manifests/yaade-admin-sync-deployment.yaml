@@ -1,0 +1,148 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: yaade-admin-sync
+  name: yaade-admin-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: yaade-admin-sync
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: yaade-admin-sync
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: yaade
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: yaade-admin-sync
+          image: curlimages/curl:8.12.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              set -eu
+
+              interval="${SKYFORGE_ADMIN_SYNC_SECONDS:-30}"
+              if ! echo "${interval}" | grep -Eq '^[0-9]+$' || [ "${interval}" -lt 5 ]; then
+                interval="30"
+              fi
+
+              base="http://yaade/api-testing"
+              username="${SKYFORGE_YAADE_ADMIN_USERNAME:-admin}"
+              desired_file="/run/secrets/yaade-admin-password"
+              state_dir="/var/lib/yaade-sync"
+              state_file="${state_dir}/last-password"
+              cookie_file="/tmp/yaade-cookie.txt"
+              default_password="password"
+
+              mkdir -p "${state_dir}"
+              umask 077
+
+              json_escape() {
+                printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+              }
+
+              login() {
+                pass="$1"
+                body=$(printf '{"username":"%s","password":"%s"}' "$(json_escape "${username}")" "$(json_escape "${pass}")")
+                code=$(curl -sS -o /tmp/yaade-login.out -w '%{http_code}' \
+                  -c "${cookie_file}" \
+                  -H 'Content-Type: application/json' \
+                  -d "${body}" \
+                  "${base}/api/login" || true)
+                [ "${code}" = "200" ]
+              }
+
+              change_password() {
+                current="$1"
+                next="$2"
+                body=$(printf '{"currentPassword":"%s","newPassword":"%s"}' "$(json_escape "${current}")" "$(json_escape "${next}")")
+                code=$(curl -sS -o /tmp/yaade-change.out -w '%{http_code}' \
+                  -b "${cookie_file}" \
+                  -X PUT \
+                  -H 'Content-Type: application/json' \
+                  -d "${body}" \
+                  "${base}/api/user" || true)
+                [ "${code}" = "200" ]
+              }
+
+              while true; do
+                if [ ! -s "${desired_file}" ]; then
+                  echo "yaade-admin-sync: desired password secret missing; retrying..."
+                  sleep "${interval}"
+                  continue
+                fi
+
+                desired=$(tr -d '\n' < "${desired_file}")
+                if [ -z "${desired}" ]; then
+                  echo "yaade-admin-sync: desired password empty; retrying..."
+                  sleep "${interval}"
+                  continue
+                fi
+
+                if login "${desired}"; then
+                  printf '%s' "${desired}" > "${state_file}"
+                  sleep "${interval}"
+                  continue
+                fi
+
+                synced=0
+                if [ -s "${state_file}" ]; then
+                  previous=$(cat "${state_file}")
+                  if [ "${previous}" != "${desired}" ] && login "${previous}" && change_password "${previous}" "${desired}"; then
+                    printf '%s' "${desired}" > "${state_file}"
+                    echo "yaade-admin-sync: updated admin password from prior state"
+                    synced=1
+                  fi
+                fi
+
+                if [ "${synced}" = "0" ] && [ "${default_password}" != "${desired}" ] && login "${default_password}" && change_password "${default_password}" "${desired}"; then
+                  printf '%s' "${desired}" > "${state_file}"
+                  echo "yaade-admin-sync: updated admin password from image default"
+                  synced=1
+                fi
+
+                if [ "${synced}" = "0" ]; then
+                  echo "yaade-admin-sync: unable to reconcile admin password yet; retrying..."
+                fi
+                sleep "${interval}"
+              done
+          env:
+            - name: SKYFORGE_ADMIN_SYNC_SECONDS
+              value: '30'
+            - name: SKYFORGE_YAADE_ADMIN_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_YAADE_ADMIN_USERNAME
+          volumeMounts:
+            - name: run-secrets
+              mountPath: /run/secrets
+              readOnly: true
+            - name: yaade-data
+              mountPath: /var/lib/yaade-sync
+      restartPolicy: Always
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  name: yaade-admin-password
+                  items:
+                    - key: yaade-admin-password
+                      path: yaade-admin-password
+        - name: yaade-data
+          persistentVolumeClaim:
+            claimName: yaade-data

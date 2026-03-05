@@ -43,6 +43,7 @@ pulling images or waiting on hooks.
 
 {{- if .Values.skyforge.yaade.enabled }}
   {{- $files = concat $files (list
+    "yaade-admin-sync-deployment.yaml"
     "yaade-deployment.yaml"
     "yaade-service.yaml"
   ) -}}
