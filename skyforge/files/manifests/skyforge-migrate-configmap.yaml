@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:F2nJZiiGoOkfBXp7q2/tbmKKJ8CSgL0m1GmaBvjIdWk=
+    h1:f9nSB7PqG98nDe7OoL+oyGDpU9Sp1TgEpY0R5irgvA0=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
@@ -39,6 +39,9 @@ data:
     20260301113000_task_runtime_contracts.up.sql h1:Qta2S1JVTaMlu2DCv/dcHzcNeLZiMklDfYzDtav1eYI=
     20260301140000_servicenow_schema_hard_cut.up.sql h1:B6zea6nWqYS5HXqwMVYPDyJBV0Lbu3ohSJQ1XcyZbx4=
     20260304194500_user_api_tokens.up.sql h1:95NjjU+KKRaYKvCu4Da5FP6MVUtYEA9n4tggMfIVtwQ=
+    20260305114000_user_rbac_roles.up.sql h1:Im6j4BTMTVCG85AvB8GeVXFVXYWPPmfcC3DQhgIYJr0=
+    20260306190000_user_api_permissions.up.sql h1:cG/7S9ATAEjeaMtw3OYmjiUTySIZUmoRXcbadOGxW+Y=
+    20260306213000_user_forward_tenants.up.sql h1:Mz31Kcnnis7fecRaanpFpmJ370pxzk88pZmcXuszO7w=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -3785,3 +3788,73 @@ data:
         END IF;
     END
     $$;
+
+  20260305114000_user_rbac_roles.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_user_roles (
+        username text NOT NULL,
+        role text NOT NULL,
+        granted_by text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_user_roles_pkey PRIMARY KEY (username, role),
+        CONSTRAINT sf_user_roles_role_check CHECK (role = ANY (ARRAY['USER'::text, 'ADMIN'::text])),
+        CONSTRAINT sf_user_roles_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE,
+        CONSTRAINT sf_user_roles_granted_by_fkey FOREIGN KEY (granted_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_roles_role_idx ON public.sf_user_roles(role);
+    CREATE INDEX IF NOT EXISTS sf_user_roles_granted_by_idx ON public.sf_user_roles(granted_by);
+
+  20260306190000_user_api_permissions.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_user_api_permissions (
+        username text NOT NULL,
+        service text NOT NULL,
+        endpoint text NOT NULL,
+        method text NOT NULL,
+        decision text NOT NULL,
+        granted_by text NULL,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT sf_user_api_permissions_pkey PRIMARY KEY (username, service, endpoint, method),
+        CONSTRAINT sf_user_api_permissions_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE,
+        CONSTRAINT sf_user_api_permissions_granted_by_fkey FOREIGN KEY (granted_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL,
+        CONSTRAINT sf_user_api_permissions_decision_check CHECK (decision = ANY (ARRAY['allow'::text, 'deny'::text]))
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_api_permissions_username_idx
+        ON public.sf_user_api_permissions (username);
+    
+    CREATE INDEX IF NOT EXISTS sf_user_api_permissions_service_endpoint_idx
+        ON public.sf_user_api_permissions (service, endpoint, method);
+
+  20260306213000_user_forward_tenants.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_user_forward_tenants (
+        username text PRIMARY KEY,
+        org_id text NOT NULL,
+        org_name text NOT NULL,
+        forward_username text NOT NULL,
+        forward_email text NOT NULL,
+        forward_password text NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        last_rotated_at timestamp with time zone
+    );
+    
+    DO $$
+    BEGIN
+        IF EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_schema = 'public'
+              AND table_name = 'sf_users'
+        ) THEN
+            ALTER TABLE public.sf_user_forward_tenants
+                DROP CONSTRAINT IF EXISTS sf_user_forward_tenants_username_fkey;
+    
+            ALTER TABLE public.sf_user_forward_tenants
+                ADD CONSTRAINT sf_user_forward_tenants_username_fkey
+                FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+        END IF;
+    END $$;
+    
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_user_forward_tenants_org_id_key
+        ON public.sf_user_forward_tenants (org_id);
