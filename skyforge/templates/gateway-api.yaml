@@ -234,8 +234,6 @@ spec:
             set:
               - name: X-Forwarded-Proto
                 value: https
-              - name: X-Skyforge-External-Prefix
-                value: /nautobot
         - type: URLRewrite
           urlRewrite:
             path:
@@ -243,6 +241,29 @@ spec:
               replacePrefixMatch: /
       backendRefs:
         - name: nautobot-sso-proxy
+          port: 8080
+{{- end }}
+
+{{- if .Values.skyforge.infoblox.enabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /infoblox
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Skyforge-External-Prefix
+                value: /infoblox
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: infoblox-sso-proxy
           port: 8080
 {{- end }}
 

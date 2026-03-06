@@ -65,11 +65,12 @@ skyforge:
     #   - type: IPAddress
     #     value: "10.128.16.60"
     addresses: []
-  localFrontdoor:
-    enabled: false
-    image: "public.ecr.aws/nginx/nginx:1.27-alpine"
-    httpNodePort: 30080
-    httpsNodePort: 30443
+    # Local k3d can pin the generated cilium-gateway-* Service nodePorts to
+    # stable values so host port bindings stay deterministic without adding a
+    # separate ingress implementation.
+    localNodePorts:
+      http: 30080
+      https: 30443
   # Skyforge uses Cilium Gateway API for ingress (no Traefik).
   # Optional cookie Domain attribute. Leave empty for host-only cookies.
   # If you enable any Skyforge tools on a subdomain (e.g. Hoppscotch at
@@ -117,11 +118,17 @@ skyforge:
     passwordSecretKey: "skyforge-registry-password"
   netboxSsoUrl: ""
   nautobotSsoUrl: ""
+  infobloxUrl: ""
+  jiraUrl: ""
   auth:
     # Browser authentication mode used by the Skyforge UI.
     # - password: direct Skyforge username/password login via /api/login
     # - oidc: browser login via /api/oidc/login, with Dex acting as the OIDC broker
     mode: "password"
+  debug:
+    # Optional access logging for Envoy SSO proxies. Useful when debugging
+    # Gateway/API or app-prefix issues without introducing a second proxy path.
+    ssoProxyAccessLog: false
   # Public base URL for Skyforge (used for webhook and SNMP instructions).
   publicUrl: ""
   ldap:
@@ -140,6 +147,7 @@ skyforge:
   ssoSkipTlsVerify: false
   netbox:
     enabled: false
+    internalUrl: ""
     # Redis database index for NetBox (shared Redis service).
     # Keep distinct from Skyforge (0) and Nautobot (1).
     redisDatabase: 2
@@ -147,6 +155,7 @@ skyforge:
   netboxMgmtSubnet: "10.255.0.0/24"
   nautobot:
     enabled: false
+    internalUrl: ""
     # Redis database index for Nautobot (shared Redis service).
     # Keep distinct from Skyforge (0) and NetBox (2).
     redisDatabase: 1
@@ -156,10 +165,22 @@ skyforge:
       # not required for steady-state operation).
       enabled: false
   nautobotUrl: ""
+  infoblox:
+    enabled: false
+    internalUrl: ""
+    externalPrefix: "/infoblox"
+    # Existing LAN-side appliance IP reachable from the raw in-cluster proxy.
+    upstreamHost: "192.168.1.2"
+    upstreamPort: 443
+    lanNetworkName: "infoblox-lan1"
+    nodeSelector: {}
+  jira:
+    enabled: false
   yaadeUrl: "http://yaade"
   yaadeAdminUsername: "admin"
   yaade:
     enabled: true
+    internalUrl: ""
 
   # Optional Kubernetes admission policies that harden the cluster against
   # accidental non-native clabernetes deployments (Docker-in-Docker / docker.sock).
@@ -229,7 +250,7 @@ skyforge:
     # When empty, Skyforge will not deploy a collector Pod (Collector page will
     # show "not configured").
     # Example:
-    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.1.0-05"
+    # image: "ghcr.io/forwardnetworks/forward/fwd_collector:26.2.2-01"
     image: ""
     pullPolicy: "IfNotPresent"
     heapSizeGB: 0

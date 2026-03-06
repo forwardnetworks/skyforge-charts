@@ -25,12 +25,25 @@ spec:
               export SECRET_KEY="$(cat /run/secrets/netbox-secret-key)"
               export SKYFORGE_ADMIN_PASSWORD_FILE="/run/secrets/skyforge-admin-shared"
 
-              for i in $(seq 1 60); do
+              ready=0
+              for i in $(seq 1 600); do
+                # Wait for the NetBox web process to be up before touching Django models.
+                if ! python -c "import socket, sys; s=socket.socket(); s.settimeout(3); rc=s.connect_ex(('netbox', 8080)); s.close(); sys.exit(0 if rc == 0 else 1)"; then
+                  sleep 2
+                  continue
+                fi
+
                 if python /opt/netbox/netbox/manage.py shell -c "from django.contrib.auth import get_user_model; get_user_model().objects.exists(); print('ready')"; then
+                  ready=1
                   break
                 fi
                 sleep 2
               done
+
+              if [ "${ready}" -ne 1 ]; then
+                echo "netbox-admin-bootstrap: NetBox schema did not become ready in time" >&2
+                exit 1
+              fi
 
               python /opt/netbox/netbox/manage.py shell -c "import os; from django.contrib.auth import get_user_model; password=open(os.environ['SKYFORGE_ADMIN_PASSWORD_FILE'], encoding='utf-8').read().strip(); username=os.environ.get('SKYFORGE_ADMIN_USERNAME','skyforge'); email=os.environ.get('SKYFORGE_ADMIN_EMAIL',''); User=get_user_model(); user,_=User.objects.get_or_create(username=username); user.email=email; user.is_active=True; user.is_staff=True; user.is_superuser=True; user.set_password(password); user.save(); print('netbox admin synced:', user.username)"
 

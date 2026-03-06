@@ -56,11 +56,20 @@ skyforge:
   registry:
     url: https://ghcr.io
 
+  # Staged integrations must be explicit in prod-shaped values.
+  # They remain disabled until promoted.
+  infoblox:
+    enabled: false
+  jira:
+    enabled: false
+
   # Forward in-cluster collector image + pull credentials.
   # Pin to a concrete tag to avoid drifting when `latest` is retagged.
+  forward:
+    enabled: true
   forwardCollector:
-    image: quay.io/forwardnetworks/cloud-collector:26.2.2-01
-    imagePullSecretName: quay-pull
+    image: ghcr.io/forwardnetworks/forward/fwd_collector:26.2.2-01
+    imagePullSecretName: ghcr-pull
     imagePullSecretNamespace: skyforge
   forwardCluster:
     enabled: true

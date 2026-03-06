@@ -40,16 +40,15 @@ data:
     )
     _allow_any_hosts = _env_bool("SKYFORGE_ALLOW_ANY_HOSTS", True)
 
-    # Skyforge serves Nautobot under /nautobot/, but we strip /nautobot before
-    # proxying for *dynamic* routes so Nautobot still receives root-based URLs.
-    #
-    # FORCE_SCRIPT_NAME + prefixed STATIC/MEDIA URLs ensure generated links and
-    # redirects keep the /nautobot prefix.
+    # Skyforge serves Nautobot under /nautobot/, but strips that prefix before
+    # proxying. The external prefix is restored at the Envoy layer when
+    # redirect responses are sent back to the browser, so Nautobot itself stays
+    # root-based.
     USE_X_FORWARDED_HOST = True
     USE_X_FORWARDED_PORT = True
     CSRF_TRUSTED_ORIGINS = [f"https://{hostname}" for hostname in _public_hostnames]
 
-    raw_base_path = os.getenv("SKYFORGE_NAUTOBOT_BASE_PATH", "nautobot/").strip()
+    raw_base_path = os.getenv("SKYFORGE_NAUTOBOT_BASE_PATH", "").strip()
     if raw_base_path:
         base_path = raw_base_path if raw_base_path.endswith("/") else f"{raw_base_path}/"
         script_prefix = f"/{base_path.rstrip('/')}"

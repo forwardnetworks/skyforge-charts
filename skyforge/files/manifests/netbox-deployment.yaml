@@ -107,7 +107,7 @@ spec:
             httpHeaders:
             - name: X-Forwarded-Proto
               value: https
-          failureThreshold: 60
+          failureThreshold: 240
           periodSeconds: 5
           timeoutSeconds: 2
         livenessProbe:
