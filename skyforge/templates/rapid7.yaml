@@ -59,6 +59,13 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
+          startupProbe:
+            tcpSocket:
+              port: http
+            # Rapid7 first boot can take a long time while extracting content.
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 180
           livenessProbe:
             tcpSocket:
               port: http
