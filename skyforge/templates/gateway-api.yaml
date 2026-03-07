@@ -254,117 +254,6 @@ spec:
           port: 8080
 {{- end }}
 
-{{- if .Values.skyforge.infoblox.enabled }}
-    {{- $infobloxPrefix := default "/infoblox" .Values.skyforge.infoblox.externalPrefix }}
-    {{- $infobloxServiceName := default "infoblox" .Values.skyforge.infoblox.serviceName }}
-    {{- $infobloxServicePort := default 443 .Values.skyforge.infoblox.servicePort }}
-    {{- $infobloxRewrite := true }}
-    {{- if hasKey .Values.skyforge.infoblox "rewritePrefixToRoot" }}
-    {{- $infobloxRewrite = .Values.skyforge.infoblox.rewritePrefixToRoot }}
-    {{- end }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: {{ $infobloxPrefix | quote }}
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Proto
-                value: https
-              - name: X-Forwarded-Prefix
-                value: {{ $infobloxPrefix | quote }}
-              - name: X-Skyforge-External-Prefix
-                value: {{ $infobloxPrefix | quote }}
-        {{- if $infobloxRewrite }}
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
-        {{- end }}
-      backendRefs:
-        - name: {{ $infobloxServiceName }}
-          port: {{ $infobloxServicePort }}
-          {{- with .Values.skyforge.infoblox.serviceNamespace }}
-          namespace: {{ . }}
-          {{- end }}
-{{- end }}
-
-{{- if .Values.skyforge.jira.enabled }}
-    {{- $jiraPrefix := default "/jira" .Values.skyforge.jira.externalPrefix }}
-    {{- $jiraServiceName := default "jira" .Values.skyforge.jira.serviceName }}
-    {{- $jiraServicePort := default 8080 .Values.skyforge.jira.servicePort }}
-    {{- $jiraRewrite := true }}
-    {{- if hasKey .Values.skyforge.jira "rewritePrefixToRoot" }}
-    {{- $jiraRewrite = .Values.skyforge.jira.rewritePrefixToRoot }}
-    {{- end }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: {{ $jiraPrefix | quote }}
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Proto
-                value: https
-              - name: X-Forwarded-Prefix
-                value: {{ $jiraPrefix | quote }}
-              - name: X-Skyforge-External-Prefix
-                value: {{ $jiraPrefix | quote }}
-        {{- if $jiraRewrite }}
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
-        {{- end }}
-      backendRefs:
-        - name: {{ $jiraServiceName }}
-          port: {{ $jiraServicePort }}
-          {{- with .Values.skyforge.jira.serviceNamespace }}
-          namespace: {{ . }}
-          {{- end }}
-{{- end }}
-
-{{- if .Values.skyforge.rapid7.enabled }}
-    {{- $rapid7Prefix := default "/rapid7" .Values.skyforge.rapid7.externalPrefix }}
-    {{- $rapid7ServiceName := default "rapid7" .Values.skyforge.rapid7.serviceName }}
-    {{- $rapid7ServicePort := default 3780 .Values.skyforge.rapid7.servicePort }}
-    {{- $rapid7Rewrite := true }}
-    {{- if hasKey .Values.skyforge.rapid7 "rewritePrefixToRoot" }}
-    {{- $rapid7Rewrite = .Values.skyforge.rapid7.rewritePrefixToRoot }}
-    {{- end }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: {{ $rapid7Prefix | quote }}
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Proto
-                value: https
-              - name: X-Forwarded-Prefix
-                value: {{ $rapid7Prefix | quote }}
-              - name: X-Skyforge-External-Prefix
-                value: {{ $rapid7Prefix | quote }}
-        {{- if $rapid7Rewrite }}
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
-        {{- end }}
-      backendRefs:
-        - name: {{ $rapid7ServiceName }}
-          port: {{ $rapid7ServicePort }}
-          {{- with .Values.skyforge.rapid7.serviceNamespace }}
-          namespace: {{ . }}
-          {{- end }}
-{{- end }}
-
 {{- if $giteaEnabled }}
     - matches:
         - path:
@@ -476,4 +365,128 @@ spec:
       backendRefs:
         - name: technitium-dns
           port: 5380
+{{- end }}
+{{- $toolsExtraEnabled := or .Values.skyforge.infoblox.enabled .Values.skyforge.jira.enabled .Values.skyforge.rapid7.enabled }}
+{{- if $toolsExtraEnabled }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: skyforge-tools-extra
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: skyforge
+  hostnames:
+    - {{ $host | quote }}
+  rules:
+{{- if .Values.skyforge.infoblox.enabled }}
+    {{- $infobloxPrefix := default "/infoblox" .Values.skyforge.infoblox.externalPrefix }}
+    {{- $infobloxServiceName := default "infoblox" .Values.skyforge.infoblox.serviceName }}
+    {{- $infobloxServicePort := default 443 .Values.skyforge.infoblox.servicePort }}
+    {{- $infobloxRewrite := true }}
+    {{- if hasKey .Values.skyforge.infoblox "rewritePrefixToRoot" }}
+    {{- $infobloxRewrite = .Values.skyforge.infoblox.rewritePrefixToRoot }}
+    {{- end }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ $infobloxPrefix | quote }}
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Forwarded-Prefix
+                value: {{ $infobloxPrefix | quote }}
+              - name: X-Skyforge-External-Prefix
+                value: {{ $infobloxPrefix | quote }}
+        {{- if $infobloxRewrite }}
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+        {{- end }}
+      backendRefs:
+        - name: {{ $infobloxServiceName }}
+          port: {{ $infobloxServicePort }}
+          {{- with .Values.skyforge.infoblox.serviceNamespace }}
+          namespace: {{ . }}
+          {{- end }}
+{{- end }}
+{{- if .Values.skyforge.jira.enabled }}
+    {{- $jiraPrefix := default "/jira" .Values.skyforge.jira.externalPrefix }}
+    {{- $jiraServiceName := default "jira" .Values.skyforge.jira.serviceName }}
+    {{- $jiraServicePort := default 8080 .Values.skyforge.jira.servicePort }}
+    {{- $jiraRewrite := true }}
+    {{- if hasKey .Values.skyforge.jira "rewritePrefixToRoot" }}
+    {{- $jiraRewrite = .Values.skyforge.jira.rewritePrefixToRoot }}
+    {{- end }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ $jiraPrefix | quote }}
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Forwarded-Prefix
+                value: {{ $jiraPrefix | quote }}
+              - name: X-Skyforge-External-Prefix
+                value: {{ $jiraPrefix | quote }}
+        {{- if $jiraRewrite }}
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+        {{- end }}
+      backendRefs:
+        - name: {{ $jiraServiceName }}
+          port: {{ $jiraServicePort }}
+          {{- with .Values.skyforge.jira.serviceNamespace }}
+          namespace: {{ . }}
+          {{- end }}
+{{- end }}
+{{- if .Values.skyforge.rapid7.enabled }}
+    {{- $rapid7Prefix := default "/rapid7" .Values.skyforge.rapid7.externalPrefix }}
+    {{- $rapid7ServiceName := default "rapid7" .Values.skyforge.rapid7.serviceName }}
+    {{- $rapid7ServicePort := default 3780 .Values.skyforge.rapid7.servicePort }}
+    {{- $rapid7Rewrite := true }}
+    {{- if hasKey .Values.skyforge.rapid7 "rewritePrefixToRoot" }}
+    {{- $rapid7Rewrite = .Values.skyforge.rapid7.rewritePrefixToRoot }}
+    {{- end }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ $rapid7Prefix | quote }}
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Forwarded-Prefix
+                value: {{ $rapid7Prefix | quote }}
+              - name: X-Skyforge-External-Prefix
+                value: {{ $rapid7Prefix | quote }}
+        {{- if $rapid7Rewrite }}
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+        {{- end }}
+      backendRefs:
+        - name: {{ $rapid7ServiceName }}
+          port: {{ $rapid7ServicePort }}
+          {{- with .Values.skyforge.rapid7.serviceNamespace }}
+          namespace: {{ . }}
+          {{- end }}
+{{- end }}
 {{- end }}
