@@ -1,0 +1,167 @@
+{{- if and .Values.skyforge.jira.enabled .Values.skyforge.jira.managed }}
+{{- $name := default "jira" .Values.skyforge.jira.serviceName -}}
+{{- $port := default 8080 .Values.skyforge.jira.servicePort -}}
+{{- $containerPort := default 8080 .Values.skyforge.jira.containerPort -}}
+{{- $pullPolicy := default "IfNotPresent" .Values.skyforge.jira.pullPolicy -}}
+{{- $publicHost := default "skyforge.local.forwardnetworks.com" .Values.skyforge.hostname -}}
+{{- $contextPath := default "/jira" .Values.skyforge.jira.contextPath -}}
+{{- $proxyPort := default "443" (get .Values.skyforge.jira.env "ATL_PROXY_PORT") -}}
+{{- $proxyScheme := default "https" (get .Values.skyforge.jira.env "ATL_TOMCAT_SCHEME") -}}
+{{- $proxySecure := default "true" (get .Values.skyforge.jira.env "ATL_TOMCAT_SECURE") -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}-server-xml
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+data:
+  server.xml: |
+    <?xml version="1.0" encoding="utf-8"?>
+    <Server port="8005" shutdown="SHUTDOWN">
+      <Listener className="org.apache.catalina.startup.VersionLoggerListener"/>
+      <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on"/>
+      <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener"/>
+      <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener"/>
+      <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener"/>
+      <Service name="Catalina">
+        <Connector port="{{ $containerPort }}"
+                   maxThreads="100"
+                   minSpareThreads="10"
+                   connectionTimeout="20000"
+                   enableLookups="false"
+                   protocol="HTTP/1.1"
+                   redirectPort="8443"
+                   acceptCount="10"
+                   secure="{{ $proxySecure }}"
+                   scheme="{{ $proxyScheme }}"
+                   proxyName="{{ $publicHost }}"
+                   proxyPort="{{ $proxyPort }}"
+                   relaxedPathChars="[]|"
+                   relaxedQueryChars="[]|{}^\`&quot;&lt;&gt;"
+                   bindOnInit="false"
+                   maxHttpHeaderSize="8192"
+                   useBodyEncodingForURI="true"
+                   disableUploadTimeout="true" />
+        <Engine name="Catalina" defaultHost="localhost">
+          <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
+            <Context path="{{ $contextPath }}"
+                     docBase="${catalina.home}/atlassian-jira"
+                     reloadable="false"
+                     useHttpOnly="true"
+                     suspendWrappedResponseAfterForward="false">
+              <Resource name="UserTransaction"
+                        auth="Container"
+                        type="javax.transaction.UserTransaction"
+                        factory="org.objectweb.jotm.UserTransactionFactory"
+                        jotm.timeout="60"/>
+              <Manager pathname=""/>
+              <JarScanner scanManifest="false"/>
+              <Valve className="org.apache.catalina.valves.StuckThreadDetectionValve" threshold="120" />
+            </Context>
+          </Host>
+          <Valve className="org.apache.catalina.valves.AccessLogValve"
+                 pattern="%a %{jira.request.id}r %{jira.request.username}r %t &quot;%m %U%q %H&quot; %s %b %D &quot;%{Referer}i&quot; &quot;%{User-Agent}i&quot; &quot;%{jira.request.assession.id}r&quot;"
+                 requestAttributesEnabled="false"
+                 maxDays="-1"/>
+        </Engine>
+      </Service>
+    </Server>
+---
+{{- if .Values.skyforge.jira.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}-home
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ default "20Gi" .Values.skyforge.jira.storage.size | quote }}
+  {{- with .Values.skyforge.jira.storage.storageClassName }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: jira
+    spec:
+      containers:
+        - name: jira
+          image: {{ required "skyforge.jira.image is required when jira.managed=true" .Values.skyforge.jira.image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          ports:
+            - name: http
+              containerPort: {{ $containerPort }}
+          env:
+            {{- range $k, $v := .Values.skyforge.jira.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 3
+          resources:
+{{ toYaml .Values.skyforge.jira.resources | nindent 12 }}
+          volumeMounts:
+            - name: jira-home
+              mountPath: /var/atlassian/application-data/jira
+            - name: jira-server-xml
+              mountPath: /opt/atlassian/jira/conf/server.xml
+              subPath: server.xml
+      volumes:
+        - name: jira-home
+          {{- if .Values.skyforge.jira.storage.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ $name }}-home
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: jira-server-xml
+          configMap:
+            name: {{ $name }}-server-xml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: {{ $port }}
+      targetPort: http
+{{- end }}

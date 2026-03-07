@@ -122,9 +122,9 @@ skyforge:
   jiraUrl: ""
   auth:
     # Browser authentication mode used by the Skyforge UI.
-    # - password: direct Skyforge username/password login via /api/login
+    # - local: local Skyforge/Dex username-password login
     # - oidc: browser login via /api/oidc/login, with Dex acting as the OIDC broker
-    mode: "password"
+    mode: "local"
   debug:
     # Optional access logging for Envoy SSO proxies. Useful when debugging
     # Gateway/API or app-prefix issues without introducing a second proxy path.
@@ -169,13 +169,114 @@ skyforge:
     enabled: false
     internalUrl: ""
     externalPrefix: "/infoblox"
+    # Managed KubeVirt runtime (VM + Service) for Infoblox.
+    # When enabled, skyforge.infoblox.image must be set.
+    managed: false
+    image: ""
+    pullPolicy: "IfNotPresent"
+    # Direct in-cluster service route (no extra proxy tier).
+    serviceName: "infoblox"
+    serviceNamespace: ""
+    servicePort: 443
+    rewritePrefixToRoot: true
+    vm:
+      cpuCores: 4
+      memory: "32Gi"
+      interfaceModel: "e1000"
+      # Pod network binding for the management NIC.
+      # Supported values: masquerade, bridge.
+      podNetworkBinding: "masquerade"
+      multus:
+        enabled: false
+        createNADs: false
+        lan1:
+          nadName: "infoblox-lan1"
+          networkName: "infoblox-lan1"
+          bridgeName: "br-infoblox-lan1"
+          subnet: "169.254.101.0/24"
+        ha:
+          nadName: "infoblox-ha"
+          networkName: "infoblox-ha"
+          bridgeName: "br-infoblox-ha"
+          subnet: "169.254.102.0/24"
+        lan2:
+          nadName: "infoblox-lan2"
+          networkName: "infoblox-lan2"
+          bridgeName: "br-infoblox-lan2"
+          subnet: "169.254.103.0/24"
+      nodeSelector: {}
+      tolerations: []
+    lifecycle:
+      # Managed Infoblox VM lifecycle controls.
+      # Auto-stop reduces idle resource use by halting long-running VM sessions.
+      # Reseed restarts the VM from stock containerDisk on a fixed cadence
+      # (used for temp-license renewal workflows).
+      enabled: true
+      # Optional override for the lifecycle controller image. Defaults to
+      # images.kubectl when empty.
+      image: ""
+      pullPolicy: "IfNotPresent"
+      stateConfigMapName: "infoblox-vm-lifecycle-state"
+      autoStop:
+        enabled: true
+        # Cron expression for checking VM runtime.
+        schedule: "*/15 * * * *"
+        # Halt VM after this many minutes of continuous runtime.
+        maxRunMinutes: 360
+      reseed:
+        enabled: true
+        # Cron expression for checking reseed age.
+        schedule: "17 */6 * * *"
+        # Restart VM from stock containerDisk after this many days.
+        resetAfterDays: 60
+        haltWaitSeconds: 30
+    # When true, create a simple Service alias (and Endpoints for IP targets)
+    # so Gateway can route directly without sidecar/app proxy Deployments.
+    serviceAlias:
+      enabled: true
+    # Legacy proxy mode for external/non-Kubernetes endpoints.
+    # Keep disabled by default; direct Service routing is preferred.
+    proxyEnabled: false
+    # Attach a secondary interface via Multus NAD (lanNetworkName) when needed.
+    # Used only when proxyEnabled=true.
+    attachLanNetwork: false
     # Existing LAN-side appliance IP reachable from the raw in-cluster proxy.
+    # Used only when proxyEnabled=true.
     upstreamHost: "192.168.1.2"
     upstreamPort: 443
     lanNetworkName: "infoblox-lan1"
     nodeSelector: {}
   jira:
     enabled: false
+    # In-cluster Jira Service wiring (no extra proxy).
+    managed: false
+    image: "docker.io/atlassian/jira-software:latest"
+    pullPolicy: "IfNotPresent"
+    serviceName: "jira"
+    serviceNamespace: ""
+    servicePort: 8080
+    containerPort: 8080
+    externalPrefix: "/jira"
+    rewritePrefixToRoot: false
+    contextPath: "/jira"
+    storage:
+      enabled: true
+      size: "20Gi"
+      storageClassName: ""
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+    env:
+      ATL_PROXY_NAME: "skyforge.local.forwardnetworks.com"
+      ATL_PROXY_PORT: "443"
+      ATL_TOMCAT_SCHEME: "https"
+      ATL_TOMCAT_SECURE: "true"
+      JVM_MINIMUM_MEMORY: "2048m"
+      JVM_MAXIMUM_MEMORY: "4096m"
   yaadeUrl: "http://yaade"
   yaadeAdminUsername: "admin"
   yaade:
@@ -344,7 +445,6 @@ skyforge:
     # - local: Dex static password DB (useful for tool SSO or standalone Dex testing)
     # - google: Google Project / Cloud Identity login
     # - oidc: Generic OIDC connector (for providers such as Okta)
-    # - ldap: LDAP login
     # - mock: mock callback connector (dev/test only)
     authMode: "local"
     local:
@@ -461,6 +561,7 @@ skyforge:
 images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
   alpine: "public.ecr.aws/docker/library/alpine:3.20"
+  kubectl: "bitnami/kubectl:latest"
   envoy: "envoyproxy/envoy:v1.31.2"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
   # Vector publishes official images under `timberio/vector` (Docker Hub).

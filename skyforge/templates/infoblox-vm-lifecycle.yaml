@@ -1,0 +1,253 @@
+{{- if and .Values.skyforge.infoblox.enabled .Values.skyforge.infoblox.managed .Values.skyforge.infoblox.lifecycle.enabled }}
+{{- if not (.Capabilities.APIVersions.Has "kubevirt.io/v1/VirtualMachine") -}}
+{{- fail "skyforge.infoblox.lifecycle.enabled=true requires KubeVirt CRDs (kubevirt.io/v1)" -}}
+{{- end -}}
+{{- $name := default "infoblox" .Values.skyforge.infoblox.serviceName -}}
+{{- $stateCM := default "infoblox-vm-lifecycle-state" .Values.skyforge.infoblox.lifecycle.stateConfigMapName -}}
+{{- $sa := printf "%s-vm-lifecycle" $name -}}
+{{- $image := default .Values.images.kubectl .Values.skyforge.infoblox.lifecycle.image -}}
+{{- $pullPolicy := default "IfNotPresent" .Values.skyforge.infoblox.lifecycle.pullPolicy -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $sa }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: infoblox
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $sa }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: infoblox
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "create", "patch", "update"]
+  - apiGroups: ["kubevirt.io"]
+    resources: ["virtualmachines"]
+    verbs: ["get", "list", "patch", "update"]
+  - apiGroups: ["kubevirt.io"]
+    resources: ["virtualmachineinstances"]
+    verbs: ["get", "list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $sa }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: infoblox
+subjects:
+  - kind: ServiceAccount
+    name: {{ $sa }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $sa }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $stateCM }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: infoblox
+data:
+  last_reset_epoch: "0"
+  last_auto_stop_epoch: "0"
+  last_reseed_reason: ""
+{{- if .Values.skyforge.infoblox.lifecycle.autoStop.enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $name }}-vm-autostop
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: infoblox
+spec:
+  schedule: {{ .Values.skyforge.infoblox.lifecycle.autoStop.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      template:
+        metadata:
+          labels:
+            {{- include "skyforge.labels" . | nindent 12 }}
+            app.kubernetes.io/component: infoblox
+        spec:
+          serviceAccountName: {{ $sa }}
+          enableServiceLinks: false
+          restartPolicy: OnFailure
+          containers:
+            - name: autostop
+              image: {{ $image | quote }}
+              imagePullPolicy: {{ $pullPolicy | quote }}
+              env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                - name: VM_NAME
+                  value: {{ $name | quote }}
+                - name: STATE_CM
+                  value: {{ $stateCM | quote }}
+                - name: MAX_RUN_MINUTES
+                  value: {{ .Values.skyforge.infoblox.lifecycle.autoStop.maxRunMinutes | quote }}
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+
+                  ensure_state_configmap() {
+                    if kubectl -n "${POD_NAMESPACE}" get configmap "${STATE_CM}" >/dev/null 2>&1; then
+                      return 0
+                    fi
+                    cat <<EOF | kubectl -n "${POD_NAMESPACE}" apply -f -
+                  apiVersion: v1
+                  kind: ConfigMap
+                  metadata:
+                    name: ${STATE_CM}
+                  data:
+                    last_reset_epoch: "0"
+                    last_auto_stop_epoch: "0"
+                    last_reseed_reason: ""
+                  EOF
+                  }
+
+                  set_state_value() {
+                    key="$1"
+                    value="$2"
+                    kubectl -n "${POD_NAMESPACE}" patch configmap "${STATE_CM}" --field-manager=helm --type=merge -p "{\"data\":{\"${key}\":\"${value}\"}}" >/dev/null
+                  }
+
+                  ensure_state_configmap
+                  run_strategy="$(kubectl -n "${POD_NAMESPACE}" get vm "${VM_NAME}" -o jsonpath='{.spec.runStrategy}' 2>/dev/null || true)"
+                  if [ "${run_strategy}" != "Always" ]; then
+                    exit 0
+                  fi
+
+                  created_at="$(kubectl -n "${POD_NAMESPACE}" get vmi "${VM_NAME}" -o jsonpath='{.metadata.creationTimestamp}' 2>/dev/null || true)"
+                  if [ -z "${created_at}" ]; then
+                    exit 0
+                  fi
+
+                  now_epoch="$(date -u +%s)"
+                  start_epoch="$(date -u -d "${created_at}" +%s 2>/dev/null || true)"
+                  if ! echo "${start_epoch}" | grep -Eq '^[0-9]+$'; then
+                    exit 0
+                  fi
+
+                  max_runtime_seconds="$((MAX_RUN_MINUTES * 60))"
+                  elapsed="$((now_epoch - start_epoch))"
+                  if [ "${elapsed}" -lt "${max_runtime_seconds}" ]; then
+                    exit 0
+                  fi
+
+                  kubectl -n "${POD_NAMESPACE}" patch vm "${VM_NAME}" --field-manager=helm --type=merge -p '{"spec":{"runStrategy":"Halted"}}' >/dev/null
+                  set_state_value "last_auto_stop_epoch" "${now_epoch}"
+{{- end }}
+{{- if .Values.skyforge.infoblox.lifecycle.reseed.enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $name }}-vm-reseed
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: infoblox
+spec:
+  schedule: {{ .Values.skyforge.infoblox.lifecycle.reseed.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      template:
+        metadata:
+          labels:
+            {{- include "skyforge.labels" . | nindent 12 }}
+            app.kubernetes.io/component: infoblox
+        spec:
+          serviceAccountName: {{ $sa }}
+          enableServiceLinks: false
+          restartPolicy: OnFailure
+          containers:
+            - name: reseed
+              image: {{ $image | quote }}
+              imagePullPolicy: {{ $pullPolicy | quote }}
+              env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                - name: VM_NAME
+                  value: {{ $name | quote }}
+                - name: STATE_CM
+                  value: {{ $stateCM | quote }}
+                - name: RESET_AFTER_DAYS
+                  value: {{ .Values.skyforge.infoblox.lifecycle.reseed.resetAfterDays | quote }}
+                - name: HALT_WAIT_SECONDS
+                  value: {{ .Values.skyforge.infoblox.lifecycle.reseed.haltWaitSeconds | quote }}
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+
+                  ensure_state_configmap() {
+                    if kubectl -n "${POD_NAMESPACE}" get configmap "${STATE_CM}" >/dev/null 2>&1; then
+                      return 0
+                    fi
+                    cat <<EOF | kubectl -n "${POD_NAMESPACE}" apply -f -
+                  apiVersion: v1
+                  kind: ConfigMap
+                  metadata:
+                    name: ${STATE_CM}
+                  data:
+                    last_reset_epoch: "0"
+                    last_auto_stop_epoch: "0"
+                    last_reseed_reason: ""
+                  EOF
+                  }
+
+                  set_state_value() {
+                    key="$1"
+                    value="$2"
+                    kubectl -n "${POD_NAMESPACE}" patch configmap "${STATE_CM}" --field-manager=helm --type=merge -p "{\"data\":{\"${key}\":\"${value}\"}}" >/dev/null
+                  }
+
+                  ensure_state_configmap
+                  now_epoch="$(date -u +%s)"
+                  last_reset="$(kubectl -n "${POD_NAMESPACE}" get configmap "${STATE_CM}" -o jsonpath='{.data.last_reset_epoch}' 2>/dev/null || true)"
+                  if ! echo "${last_reset}" | grep -Eq '^[0-9]+$'; then
+                    last_reset="0"
+                  fi
+
+                  if [ "${last_reset}" -le 0 ]; then
+                    set_state_value "last_reset_epoch" "${now_epoch}"
+                    exit 0
+                  fi
+
+                  age_days="$(((now_epoch - last_reset) / 86400))"
+                  if [ "${age_days}" -lt "${RESET_AFTER_DAYS}" ]; then
+                    exit 0
+                  fi
+
+                  kubectl -n "${POD_NAMESPACE}" patch vm "${VM_NAME}" --field-manager=helm --type=merge -p '{"spec":{"runStrategy":"Halted"}}' >/dev/null || true
+                  sleep "${HALT_WAIT_SECONDS}"
+                  kubectl -n "${POD_NAMESPACE}" delete vmi "${VM_NAME}" --ignore-not-found=true >/dev/null || true
+                  kubectl -n "${POD_NAMESPACE}" patch vm "${VM_NAME}" --field-manager=helm --type=merge -p '{"spec":{"runStrategy":"Always"}}' >/dev/null
+                  set_state_value "last_reset_epoch" "${now_epoch}"
+                  set_state_value "last_reseed_reason" "temp_license_renewal"
+{{- end }}
+{{- end }}

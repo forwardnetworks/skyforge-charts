@@ -53,9 +53,9 @@ early when required configuration is missing.
   {{- end -}}
 {{- end -}}
 
-{{- $uiAuthMode := default "password" .Values.skyforge.auth.mode -}}
-{{- if and (ne $uiAuthMode "password") (ne $uiAuthMode "oidc") -}}
-  {{- fail (printf "skyforge.auth.mode must be one of password or oidc (got %q)" $uiAuthMode) -}}
+{{- $uiAuthMode := default "local" .Values.skyforge.auth.mode -}}
+{{- if and (ne $uiAuthMode "local") (ne $uiAuthMode "oidc") -}}
+  {{- fail (printf "skyforge.auth.mode must be one of local or oidc (got %q)" $uiAuthMode) -}}
 {{- end -}}
 {{- if and (eq $uiAuthMode "oidc") (not .Values.skyforge.dex.enabled) -}}
   {{- fail "skyforge.auth.mode=oidc requires skyforge.dex.enabled=true; supported browser OIDC topology is Skyforge -> Dex -> IdP" -}}

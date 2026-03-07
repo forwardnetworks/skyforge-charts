@@ -1,4 +1,4 @@
-{{- if .Values.skyforge.infoblox.enabled }}
+{{- if and .Values.skyforge.infoblox.enabled .Values.skyforge.infoblox.proxyEnabled (not .Values.skyforge.infoblox.managed) }}
 {{- $upstreamHost := required "skyforge.infoblox.upstreamHost is required when infoblox is enabled" .Values.skyforge.infoblox.upstreamHost -}}
 {{- $upstreamPort := default 443 .Values.skyforge.infoblox.upstreamPort -}}
 {{- $lanNetwork := default "infoblox-lan1" .Values.skyforge.infoblox.lanNetworkName -}}
@@ -139,8 +139,10 @@ spec:
         app.kubernetes.io/name: infoblox-proxy
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: infoblox-proxy
+      {{- if .Values.skyforge.infoblox.attachLanNetwork }}
       annotations:
         k8s.v1.cni.cncf.io/networks: {{ $lanNetwork | quote }}
+      {{- end }}
     spec:
       automountServiceAccountToken: false
       {{- with .Values.skyforge.infoblox.nodeSelector }}

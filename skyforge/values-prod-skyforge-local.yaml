@@ -135,9 +135,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260306-forward-managed-token-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260306-infoblox-wake-r3"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260306-forward-managed-token-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260306-infoblox-wake-r3-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

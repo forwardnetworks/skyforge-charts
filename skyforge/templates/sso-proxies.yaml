@@ -311,10 +311,6 @@ spec:
 {{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "nautobot-sso-proxy" "upstreamServiceEnv" "NAUTOBOT_SERVICE_HOST" "upstreamPort" 8080 "responsePrefixRewrite" "/nautobot") }}
 {{- end }}
 
-{{- if .Values.skyforge.infoblox.enabled }}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "infoblox-sso-proxy" "upstreamServiceEnv" "INFOBLOX_PROXY_SERVICE_HOST" "upstreamPort" 8080 "externalPrefix" "/infoblox") }}
-{{- end }}
-
 {{- if .Values.skyforge.gitea.enabled }}
 {{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "gitea-sso-proxy" "upstreamServiceEnv" "GITEA_SERVICE_HOST" "upstreamPort" 3000 "externalPrefix" "/git") }}
 {{- end }}
