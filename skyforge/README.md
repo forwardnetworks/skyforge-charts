@@ -56,7 +56,7 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
   Postgres passwords used to provision shared DB roles and sync `forward` namespace credentials.
 - `secrets.create`: Set to `false` if you manage secrets out-of-band.
 
-Object storage note: Skyforge deploys `s3gw` for in-cluster S3. Some Gitea config keys still use `MINIO_*` naming because that is Gitea's S3 driver interface; they point at `s3gw`, not a MinIO deployment.
+Object storage note: Skyforge deploys `s3gw` for in-cluster S3. Some Gitea config keys still use provider-specific legacy key names in Gitea itself; they point at `s3gw` storage.
 
 See `components/charts/skyforge/values.yaml` for the full list of defaults.
 

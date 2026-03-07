@@ -1,0 +1,97 @@
+{{- if and .Values.skyforge.rapid7.enabled .Values.skyforge.rapid7.managed }}
+{{- $name := default "rapid7" .Values.skyforge.rapid7.serviceName -}}
+{{- $port := default 3780 .Values.skyforge.rapid7.servicePort -}}
+{{- $containerPort := default 3780 .Values.skyforge.rapid7.containerPort -}}
+{{- $pullPolicy := default "IfNotPresent" .Values.skyforge.rapid7.pullPolicy -}}
+---
+{{- if .Values.skyforge.rapid7.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}-home
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ default "50Gi" .Values.skyforge.rapid7.storage.size | quote }}
+  {{- with .Values.skyforge.rapid7.storage.storageClassName }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: rapid7
+    spec:
+      containers:
+        - name: rapid7
+          image: {{ required "skyforge.rapid7.image is required when rapid7.managed=true" .Values.skyforge.rapid7.image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          ports:
+            - name: http
+              containerPort: {{ $containerPort }}
+          env:
+            {{- range $k, $v := .Values.skyforge.rapid7.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+{{ toYaml .Values.skyforge.rapid7.resources | nindent 12 }}
+          volumeMounts:
+            - name: rapid7-home
+              mountPath: /opt/rapid7/nexpose
+      volumes:
+        - name: rapid7-home
+          {{- if .Values.skyforge.rapid7.storage.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ $name }}-home
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: {{ $port }}
+      targetPort: http
+{{- end }}

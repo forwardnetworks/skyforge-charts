@@ -16,9 +16,13 @@
 {{- if and (hasKey .Values.skyforge.infoblox.vm "multus") (hasKey .Values.skyforge.infoblox.vm.multus "enabled") -}}
 {{- $multusEnabled = .Values.skyforge.infoblox.vm.multus.enabled -}}
 {{- end -}}
-{{- $lan1NetworkName := default "infoblox-lan1" .Values.skyforge.infoblox.vm.multus.lan1.networkName -}}
-{{- $haNetworkName := default "infoblox-ha" .Values.skyforge.infoblox.vm.multus.ha.networkName -}}
-{{- $lan2NetworkName := default "infoblox-lan2" .Values.skyforge.infoblox.vm.multus.lan2.networkName -}}
+{{- $multus := default dict .Values.skyforge.infoblox.vm.multus -}}
+{{- $lan1 := default dict (get $multus "lan1") -}}
+{{- $ha := default dict (get $multus "ha") -}}
+{{- $lan2 := default dict (get $multus "lan2") -}}
+{{- $lan1NetworkName := default "infoblox-lan1" (get $lan1 "networkName") -}}
+{{- $haNetworkName := default "infoblox-ha" (get $ha "networkName") -}}
+{{- $lan2NetworkName := default "infoblox-lan2" (get $lan2 "networkName") -}}
 ---
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine

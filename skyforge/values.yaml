@@ -120,6 +120,7 @@ skyforge:
   nautobotSsoUrl: ""
   infobloxUrl: ""
   jiraUrl: ""
+  rapid7Url: ""
   auth:
     # Browser authentication mode used by the Skyforge UI.
     # - local: local Skyforge/Dex username-password login
@@ -189,21 +190,21 @@ skyforge:
       multus:
         enabled: false
         createNADs: false
-        lan1:
-          nadName: "infoblox-lan1"
-          networkName: "infoblox-lan1"
-          bridgeName: "br-infoblox-lan1"
-          subnet: "169.254.101.0/24"
-        ha:
-          nadName: "infoblox-ha"
-          networkName: "infoblox-ha"
-          bridgeName: "br-infoblox-ha"
-          subnet: "169.254.102.0/24"
-        lan2:
-          nadName: "infoblox-lan2"
-          networkName: "infoblox-lan2"
-          bridgeName: "br-infoblox-lan2"
-          subnet: "169.254.103.0/24"
+      lan1:
+        nadName: "infoblox-lan1"
+        networkName: "infoblox-lan1"
+        bridgeName: "br-ibx-l1"
+        subnet: "169.254.101.0/24"
+      ha:
+        nadName: "infoblox-ha"
+        networkName: "infoblox-ha"
+        bridgeName: "br-ibx-ha"
+        subnet: "169.254.102.0/24"
+      lan2:
+        nadName: "infoblox-lan2"
+        networkName: "infoblox-lan2"
+        bridgeName: "br-ibx-l2"
+        subnet: "169.254.103.0/24"
       nodeSelector: {}
       tolerations: []
     lifecycle:
@@ -277,6 +278,30 @@ skyforge:
       ATL_TOMCAT_SECURE: "true"
       JVM_MINIMUM_MEMORY: "2048m"
       JVM_MAXIMUM_MEMORY: "4096m"
+  rapid7:
+    enabled: false
+    # In-cluster Rapid7 Service wiring (no extra proxy).
+    managed: false
+    image: ""
+    pullPolicy: "IfNotPresent"
+    serviceName: "rapid7"
+    serviceNamespace: ""
+    servicePort: 3780
+    containerPort: 3780
+    externalPrefix: "/rapid7"
+    rewritePrefixToRoot: true
+    storage:
+      enabled: true
+      size: "50Gi"
+      storageClassName: ""
+    resources:
+      requests:
+        cpu: "2"
+        memory: "8Gi"
+      limits:
+        cpu: "4"
+        memory: "16Gi"
+    env: {}
   yaadeUrl: "http://yaade"
   yaadeAdminUsername: "admin"
   yaade:

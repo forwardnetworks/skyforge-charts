@@ -62,6 +62,8 @@ skyforge:
     enabled: false
   jira:
     enabled: false
+  rapid7:
+    enabled: false
 
   # Forward in-cluster collector image + pull credentials.
   # Pin to a concrete tag to avoid drifting when `latest` is retagged.
@@ -135,9 +137,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260306-auth-settings-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260307-infoblox-nav-r1"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260306-auth-settings-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260307-infoblox-nav-r1-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

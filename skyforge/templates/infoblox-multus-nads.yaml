@@ -2,15 +2,19 @@
 {{- if not (.Capabilities.APIVersions.Has "k8s.cni.cncf.io/v1/NetworkAttachmentDefinition") -}}
 {{- fail "skyforge.infoblox.vm.multus.createNADs=true requires Multus CRDs (k8s.cni.cncf.io/v1)" -}}
 {{- end -}}
-{{- $lan1NADName := default "infoblox-lan1" .Values.skyforge.infoblox.vm.multus.lan1.nadName -}}
-{{- $lan1Bridge := default "br-infoblox-lan1" .Values.skyforge.infoblox.vm.multus.lan1.bridgeName -}}
-{{- $lan1Subnet := default "169.254.101.0/24" .Values.skyforge.infoblox.vm.multus.lan1.subnet -}}
-{{- $haNADName := default "infoblox-ha" .Values.skyforge.infoblox.vm.multus.ha.nadName -}}
-{{- $haBridge := default "br-infoblox-ha" .Values.skyforge.infoblox.vm.multus.ha.bridgeName -}}
-{{- $haSubnet := default "169.254.102.0/24" .Values.skyforge.infoblox.vm.multus.ha.subnet -}}
-{{- $lan2NADName := default "infoblox-lan2" .Values.skyforge.infoblox.vm.multus.lan2.nadName -}}
-{{- $lan2Bridge := default "br-infoblox-lan2" .Values.skyforge.infoblox.vm.multus.lan2.bridgeName -}}
-{{- $lan2Subnet := default "169.254.103.0/24" .Values.skyforge.infoblox.vm.multus.lan2.subnet -}}
+{{- $multus := default dict .Values.skyforge.infoblox.vm.multus -}}
+{{- $lan1 := default dict (get $multus "lan1") -}}
+{{- $ha := default dict (get $multus "ha") -}}
+{{- $lan2 := default dict (get $multus "lan2") -}}
+{{- $lan1NADName := default "infoblox-lan1" (get $lan1 "nadName") -}}
+{{- $lan1Bridge := default "br-ibx-l1" (get $lan1 "bridgeName") -}}
+{{- $lan1Subnet := default "169.254.101.0/24" (get $lan1 "subnet") -}}
+{{- $haNADName := default "infoblox-ha" (get $ha "nadName") -}}
+{{- $haBridge := default "br-ibx-ha" (get $ha "bridgeName") -}}
+{{- $haSubnet := default "169.254.102.0/24" (get $ha "subnet") -}}
+{{- $lan2NADName := default "infoblox-lan2" (get $lan2 "nadName") -}}
+{{- $lan2Bridge := default "br-ibx-l2" (get $lan2 "bridgeName") -}}
+{{- $lan2Subnet := default "169.254.103.0/24" (get $lan2 "subnet") -}}
 ---
 apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
@@ -25,8 +29,8 @@ spec:
       "cniVersion" "0.4.0"
       "type" "bridge"
       "bridge" $lan1Bridge
-      "promiscMode" true
-      "hairpinMode" true
+      "promiscMode" false
+      "hairpinMode" false
       "ipMasq" false
       "ipam" (dict "type" "host-local" "ranges" (list (list (dict "subnet" $lan1Subnet))))
       | toJson }}
@@ -44,8 +48,8 @@ spec:
       "cniVersion" "0.4.0"
       "type" "bridge"
       "bridge" $haBridge
-      "promiscMode" true
-      "hairpinMode" true
+      "promiscMode" false
+      "hairpinMode" false
       "ipMasq" false
       "ipam" (dict "type" "host-local" "ranges" (list (list (dict "subnet" $haSubnet))))
       | toJson }}
@@ -63,8 +67,8 @@ spec:
       "cniVersion" "0.4.0"
       "type" "bridge"
       "bridge" $lan2Bridge
-      "promiscMode" true
-      "hairpinMode" true
+      "promiscMode" false
+      "hairpinMode" false
       "ipMasq" false
       "ipam" (dict "type" "host-local" "ranges" (list (list (dict "subnet" $lan2Subnet))))
       | toJson }}

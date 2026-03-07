@@ -2,7 +2,7 @@
 {{- $giteaEnabled := .Values.skyforge.gitea.enabled -}}
 {{- $yaadeEnabled := .Values.skyforge.yaade.enabled -}}
 {{- $redocEnabled := .Values.skyforge.redoc.enabled -}}
-{{- $dexEnabled := .Values.skyforge.dex.enabled -}}
+{{- $oidcGatewayEnabled := .Values.skyforge.dex.enabled -}}
 {{- $coderEnabled := .Values.skyforge.coder.enabled -}}
 {{- $filesBucket := .Values.skyforge.objectStorage.filesBucket | default "skyforge-files" -}}
 {{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
@@ -83,7 +83,7 @@ spec:
         - name: skyforge-server
           port: 8085
 
-{{- if $dexEnabled }}
+{{- if $oidcGatewayEnabled }}
     - matches:
         - path:
             type: PathPrefix
@@ -324,6 +324,43 @@ spec:
         - name: {{ $jiraServiceName }}
           port: {{ $jiraServicePort }}
           {{- with .Values.skyforge.jira.serviceNamespace }}
+          namespace: {{ . }}
+          {{- end }}
+{{- end }}
+
+{{- if .Values.skyforge.rapid7.enabled }}
+    {{- $rapid7Prefix := default "/rapid7" .Values.skyforge.rapid7.externalPrefix }}
+    {{- $rapid7ServiceName := default "rapid7" .Values.skyforge.rapid7.serviceName }}
+    {{- $rapid7ServicePort := default 3780 .Values.skyforge.rapid7.servicePort }}
+    {{- $rapid7Rewrite := true }}
+    {{- if hasKey .Values.skyforge.rapid7 "rewritePrefixToRoot" }}
+    {{- $rapid7Rewrite = .Values.skyforge.rapid7.rewritePrefixToRoot }}
+    {{- end }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ $rapid7Prefix | quote }}
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Forwarded-Prefix
+                value: {{ $rapid7Prefix | quote }}
+              - name: X-Skyforge-External-Prefix
+                value: {{ $rapid7Prefix | quote }}
+        {{- if $rapid7Rewrite }}
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+        {{- end }}
+      backendRefs:
+        - name: {{ $rapid7ServiceName }}
+          port: {{ $rapid7ServicePort }}
+          {{- with .Values.skyforge.rapid7.serviceNamespace }}
           namespace: {{ . }}
           {{- end }}
 {{- end }}
