@@ -32,9 +32,12 @@ spec:
               export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password)"
 
               echo "Waiting for Postgres..."
-              for i in $(seq 1 60); do
+              for i in $(seq 1 300); do
                 if pg_isready -h db -U skyforge >/dev/null 2>&1; then
                   break
+                fi
+                if [ $((i % 10)) -eq 0 ]; then
+                  echo "  still waiting for db (attempt ${i}/300)"
                 fi
                 sleep 1
               done
