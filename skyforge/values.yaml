@@ -605,8 +605,7 @@ images:
   redis: "public.ecr.aws/docker/library/redis:7-alpine"
   redoc: "redocly/redoc:v2.5.0"
   technitiumDns: "docker.io/technitium/dns-server@sha256:94f2b90d63f03181421152157a8099ea2752b13fa30b6c96833859be8e93dfa9"
-  # Mirror Atlas on GHCR to avoid Docker Hub rate limits in-cluster.
-  atlas: "ghcr.io/forwardnetworks/skyforge-atlas:20260120-1139e29a"
+  atlas: "arigaio/atlas:1.1.6-alpine"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:latest"
