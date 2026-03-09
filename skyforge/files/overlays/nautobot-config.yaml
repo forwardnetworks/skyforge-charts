@@ -26,15 +26,6 @@ data:
             return default
         return value.strip().lower() in {"1", "true", "yes", "y", "on"}
 
-    def _normalize_django_ldap_dn_template(template: str) -> str:
-        template = template.strip()
-        if "%(user)" in template:
-            return template
-        if "%s" in template:
-            return template.replace("%s", "%(user)s")
-        return template
-
-
     _public_hostnames = _split_csv(
         os.getenv("SKYFORGE_HOSTNAME", "")
     )
@@ -194,37 +185,3 @@ data:
                 user.groups.add(group)
         except Exception:
             pass
-
-    # LDAP auth (optional; enabled when SKYFORGE_LDAP_URL(_FILE) and SKYFORGE_LDAP_BIND_TEMPLATE(_FILE) are set).
-    _ldap_url = _read_secret("SKYFORGE_LDAP_URL")
-    _ldap_bind_template = _read_secret("SKYFORGE_LDAP_BIND_TEMPLATE")
-
-    if _ldap_url and _ldap_bind_template:
-        import ldap  # type: ignore
-
-        AUTHENTICATION_BACKENDS = (
-            "django_auth_ldap.backend.LDAPBackend",
-            *AUTHENTICATION_BACKENDS,
-        )
-
-        AUTH_LDAP_SERVER_URI = _ldap_url
-        AUTH_LDAP_USER_DN_TEMPLATE = _normalize_django_ldap_dn_template(_ldap_bind_template)
-        AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
-        AUTH_LDAP_START_TLS = _env_bool("SKYFORGE_LDAP_STARTTLS", False)
-
-        AUTH_LDAP_CONNECTION_OPTIONS = {
-            ldap.OPT_REFERRALS: 0,
-        }
-        if _env_bool("SKYFORGE_LDAP_SKIP_TLS_VERIFY", False):
-            AUTH_LDAP_CONNECTION_OPTIONS.update(
-                {
-                    ldap.OPT_X_TLS_REQUIRE_CERT: ldap.OPT_X_TLS_NEVER,
-                }
-            )
-
-        AUTH_LDAP_ALWAYS_UPDATE_USER = True
-        AUTH_LDAP_USER_ATTR_MAP = {
-            "first_name": "givenName",
-            "last_name": "sn",
-            "email": "mail",
-        }

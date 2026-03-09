@@ -109,11 +109,6 @@ skyforge:
       netCoreWmemMax: 67108864
       reconcileIntervalSeconds: 300
 
-  # Current LDAP endpoint in this environment requires skipping TLS verification.
-  # Set to false once LDAP cert trust is fixed.
-  ldap:
-    skipTlsVerify: true
-
   worker:
     replicas: 1
     autoscaling:

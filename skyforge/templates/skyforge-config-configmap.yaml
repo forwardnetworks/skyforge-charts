@@ -15,12 +15,6 @@ data:
   SKYFORGE_REGISTRY_URL: {{ .Values.skyforge.registry.url | quote }}
   SKYFORGE_REGISTRY_REPO_PREFIXES: {{ .Values.skyforge.registry.repoPrefixes | quote }}
   SKYFORGE_REGISTRY_SKIP_TLS_VERIFY: {{ .Values.skyforge.registry.skipTlsVerify | quote }}
-  SKYFORGE_LDAP_DISPLAY_ATTR: {{ .Values.skyforge.ldap.displayAttr | quote }}
-  SKYFORGE_LDAP_GROUP_ATTR: {{ .Values.skyforge.ldap.groupAttr | quote }}
-  SKYFORGE_LDAP_MAIL_ATTR: {{ .Values.skyforge.ldap.mailAttr | quote }}
-  SKYFORGE_LDAP_SKIP_TLS_VERIFY: {{ .Values.skyforge.ldap.skipTlsVerify | quote }}
-  SKYFORGE_LDAP_STARTTLS: {{ .Values.skyforge.ldap.startTls | quote }}
-  SKYFORGE_LDAP_BASEDN: {{ .Values.skyforge.ldap.baseDn | quote }}
   SKYFORGE_LISTEN_ADDR: {{ .Values.skyforge.listenAddr | quote }}
   SKYFORGE_MAX_GROUPS: {{ .Values.skyforge.maxGroups | quote }}
   SKYFORGE_NETBOX_URL: {{ .Values.skyforge.netboxUrl | quote }}

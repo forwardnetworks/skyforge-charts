@@ -73,7 +73,6 @@ early when required configuration is missing.
     "db-coder-password"
     "db-gitea-password"
     "skyforge-ca-cert"
-    "skyforge-ldap-bind-template"
     "dex-client-coder-secret"
     "yaade-admin-password"
     "gitea-secret-key"

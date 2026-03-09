@@ -29,10 +29,6 @@ spec:
 
           export NAUTOBOT_SUPERUSER_API_TOKEN="$(cat /run/secrets/nautobot-superuser-api-token)"
 
-          export SKYFORGE_LDAP_URL="$(cat /run/secrets/skyforge-ldap-url)"
-
-          export SKYFORGE_LDAP_BIND_TEMPLATE="$(cat /run/secrets/skyforge-ldap-bind-template)"
-
           /docker-entrypoint.sh nautobot-server collectstatic --noinput
 
           exec /docker-entrypoint.sh nautobot-server runserver 0.0.0.0:8080
@@ -71,20 +67,6 @@ spec:
           value: 'True'
         - name: NAUTOBOT_USE_X_FORWARDED_PORT
           value: 'True'
-        - name: SKYFORGE_LDAP_BIND_TEMPLATE_FILE
-          value: /run/secrets/skyforge-ldap-bind-template
-        - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-        - name: SKYFORGE_LDAP_STARTTLS
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_LDAP_STARTTLS
-        - name: SKYFORGE_LDAP_URL_FILE
-          value: /run/secrets/skyforge-ldap-url
         - name: SKYFORGE_HOSTNAME
           valueFrom:
             configMapKeyRef:
@@ -182,16 +164,6 @@ spec:
               - key: nautobot-superuser-api-token
                 path: nautobot-superuser-api-token
               name: nautobot-superuser-api-token
-          - secret:
-              items:
-              - key: skyforge-ldap-url
-                path: skyforge-ldap-url
-              name: skyforge-ldap-url
-          - secret:
-              items:
-              - key: skyforge-ldap-bind-template
-                path: skyforge-ldap-bind-template
-              name: skyforge-ldap-bind-template
       - name: nautobot-media
         emptyDir: {}
       - name: nautobot-reports

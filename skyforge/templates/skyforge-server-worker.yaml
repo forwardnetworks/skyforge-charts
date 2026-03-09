@@ -100,30 +100,6 @@ spec:
                 secretKeyRef:
                   name: skyforge-admin-shared
                   key: password
-            - name: SKYFORGE_LDAP_URL
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-ldap-url
-                  key: skyforge-ldap-url
-                  optional: true
-            - name: SKYFORGE_LDAP_BIND_TEMPLATE
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-ldap-bind-template
-                  key: skyforge-ldap-bind-template
-                  optional: true
-            - name: SKYFORGE_LDAP_LOOKUP_BINDDN
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-ldap-lookup-binddn
-                  key: skyforge-ldap-lookup-binddn
-                  optional: true
-            - name: SKYFORGE_LDAP_LOOKUP_BINDPASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-ldap-lookup-bindpassword
-                  key: skyforge-ldap-lookup-bindpassword
-                  optional: true
             - name: SKYFORGE_GITEA_PASSWORD
               valueFrom:
                 secretKeyRef:

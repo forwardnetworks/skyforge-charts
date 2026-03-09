@@ -60,7 +60,6 @@ data:
             API_TOKEN_PEPPERS = {1: str(parsed) if parsed is not None else ""}
 
 
-    ldap_url = read_file(os.getenv("SKYFORGE_LDAP_URL_FILE", "").strip()) or os.getenv("SKYFORGE_LDAP_URL", "").strip()
     remote_auth_enabled = truthy(os.getenv("SKYFORGE_SSO_ENABLED", "true"))
     oidc_discovery_url = read_file(os.getenv("SKYFORGE_OIDC_DISCOVERY_URL_FILE", "").strip()) or os.getenv(
         "SKYFORGE_OIDC_DISCOVERY_URL", ""
@@ -200,26 +199,3 @@ data:
         SOCIAL_AUTH_OIDC_EMAIL_KEY = "email"
         SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
         SOCIAL_AUTH_OIDC_VERIFY_SSL = False
-    if ldap_url and not oidc_enabled and not remote_auth_enabled:
-        # NetBox derives Django's AUTHENTICATION_BACKENDS from REMOTE_AUTH_BACKEND.
-        # Override REMOTE_AUTH_BACKEND so LDAP credentials entered into the NetBox
-        # login form are validated via the built-in LDAP backend, while preserving
-        # local admin logins via ModelBackend.
-        if "AUTHENTICATION_BACKENDS" not in globals():
-            AUTHENTICATION_BACKENDS = [
-                "netbox.authentication.LDAPBackend",
-                "django.contrib.auth.backends.ModelBackend",
-            ]
-        REMOTE_AUTH_BACKEND = [
-            "netbox.authentication.LDAPBackend",
-            "django.contrib.auth.backends.ModelBackend",
-        ]
-        AUTH_LDAP_START_TLS = truthy(os.getenv("SKYFORGE_LDAP_STARTTLS", "false"))
-        REMOTE_AUTH_ENABLED = False
-
-        ldap_config_path = "/etc/netbox/config/ldap/ldap_config.py"
-        try:
-            with open(ldap_config_path, "r", encoding="utf-8") as handle:
-                exec(handle.read(), globals())  # noqa: S102
-        except OSError:
-            pass

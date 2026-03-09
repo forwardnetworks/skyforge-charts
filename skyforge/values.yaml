@@ -132,13 +132,6 @@ skyforge:
     ssoProxyAccessLog: false
   # Public base URL for Skyforge (used for webhook and SNMP instructions).
   publicUrl: ""
-  ldap:
-    displayAttr: "cn"
-    groupAttr: "memberOf"
-    mailAttr: "mail"
-    skipTlsVerify: false
-    startTls: false
-    baseDn: ""
   oidc:
     # Internal Skyforge -> Dex discovery URL used only when skyforge.auth.mode=oidc.
     # This is not the upstream IdP/Okta endpoint; configure that under skyforge.dex.oidc.*.
@@ -509,23 +502,6 @@ skyforge:
         - profile
         - email
         - groups
-    # LDAP connector settings (used only when authMode=ldap).
-    # NOTE: This is intentionally unconfigured by default.
-    ldap:
-      host: ""
-      startTLS: false
-      insecureSkipVerify: false
-      bindDN: ""
-      bindPW: ""
-      usernamePrompt: "LDAP Username"
-      userSearch:
-        baseDN: ""
-        filter: "(objectClass=person)"
-        username: "uid"
-        idAttr: "uid"
-        emailAttr: "mail"
-        nameAttr: "cn"
-
   redoc:
     enabled: true
   clabernetes:
@@ -644,14 +620,6 @@ secrets:
       skyforge-session-secret: ""
     skyforge-admin-shared:
       password: ""
-    skyforge-ldap-url:
-      skyforge-ldap-url: ""
-    skyforge-ldap-bind-template:
-      skyforge-ldap-bind-template: ""
-    skyforge-ldap-lookup-binddn:
-      skyforge-ldap-lookup-binddn: ""
-    skyforge-ldap-lookup-bindpassword:
-      skyforge-ldap-lookup-bindpassword: ""
     skyforge-internal-token:
       skyforge-internal-token: ""
     skyforge-containerlab-jwt-secret:
@@ -704,10 +672,6 @@ secrets:
       token: ""
     coder-admin-bootstrap:
       password: ""
-    gitea-ldap-binddn:
-      gitea-ldap-binddn: ""
-    gitea-ldap-bindpassword:
-      gitea-ldap-bindpassword: ""
     object-storage-root-user:
       object-storage-root-user: ""
     object-storage-root-password:

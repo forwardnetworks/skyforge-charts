@@ -52,28 +52,6 @@ spec:
           value: redis
         - name: REDIS_PORT
           value: '6379'
-        - name: SKYFORGE_LDAP_BINDDN_FILE
-          value: /run/secrets/skyforge-ldap-binddn
-        - name: SKYFORGE_LDAP_BINDPASSWORD_FILE
-          value: /run/secrets/skyforge-ldap-bindpassword
-        - name: SKYFORGE_LDAP_BIND_TEMPLATE_FILE
-          value: /run/secrets/skyforge-ldap-bind-template
-        - name: SKYFORGE_LDAP_SEARCHDN_FILE
-          value: /run/secrets/skyforge-ldap-searchdn
-        - name: SKYFORGE_LDAP_SEARCHFILTER_FILE
-          value: /run/secrets/skyforge-ldap-searchfilter
-        - name: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_LDAP_SKIP_TLS_VERIFY
-        - name: SKYFORGE_LDAP_STARTTLS
-          valueFrom:
-            configMapKeyRef:
-              name: skyforge-config
-              key: SKYFORGE_LDAP_STARTTLS
-        - name: SKYFORGE_LDAP_URL_FILE
-          value: /run/secrets/skyforge-ldap-url
         - name: SKYFORGE_HOSTNAME
           valueFrom:
             configMapKeyRef:
@@ -180,36 +158,6 @@ spec:
               - key: netbox-secret-key
                 path: netbox-secret-key
               name: netbox-secret-key
-          - secret:
-              items:
-              - key: skyforge-ldap-url
-                path: skyforge-ldap-url
-              name: skyforge-ldap-url
-          - secret:
-              items:
-              - key: skyforge-ldap-bind-template
-                path: skyforge-ldap-bind-template
-              name: skyforge-ldap-bind-template
-          - secret:
-              items:
-              - key: skyforge-ldap-searchdn
-                path: skyforge-ldap-searchdn
-              name: skyforge-ldap-searchdn
-          - secret:
-              items:
-              - key: skyforge-ldap-searchfilter
-                path: skyforge-ldap-searchfilter
-              name: skyforge-ldap-searchfilter
-          - secret:
-              items:
-              - key: skyforge-ldap-binddn
-                path: skyforge-ldap-binddn
-              name: skyforge-ldap-binddn
-          - secret:
-              items:
-              - key: skyforge-ldap-bindpassword
-                path: skyforge-ldap-bindpassword
-              name: skyforge-ldap-bindpassword
       - name: netbox-media
         persistentVolumeClaim:
           claimName: netbox-media

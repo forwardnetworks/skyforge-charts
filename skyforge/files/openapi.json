@@ -8242,7 +8242,7 @@
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\\u003cnormalized-name\u003e.clab.yml\".\n",
+                    "description": "Default: \"\\<normalized-name>.clab.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
@@ -8333,7 +8333,7 @@
                 "properties": {
                   "netlabServer": {
                     "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
+                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:<id>\").\n",
                     "type": "string"
                   }
                 },
@@ -8416,11 +8416,11 @@
                   },
                   "netlabServer": {
                     "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
+                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:<id>\").\n",
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
+                    "description": "Default: \"\\<deployment-name>.clab.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
@@ -11760,47 +11760,6 @@
         "summary": "GetAPIHealth returns a summary of database health.\n"
       }
     },
-    "/api/health/ldap": {
-      "get": {
-        "operationId": "GET:skyforge.GetLDAPHealth",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "starttls": {
-                      "type": "boolean"
-                    },
-                    "status": {
-                      "type": "string"
-                    },
-                    "time": {
-                      "type": "string"
-                    },
-                    "url": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "url",
-                    "starttls",
-                    "time"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "GetLDAPHealth checks LDAP connectivity.\n"
-      }
-    },
     "/api/integrations/infoblox/console/ws": {
       "get": {
         "operationId": "GET:skyforge.InfobloxConsoleWS",
@@ -13523,7 +13482,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "ListSyslogRoutes lists configured source-\u003euser mappings (admin only).\n"
+        "summary": "ListSyslogRoutes lists configured source->user mappings (admin only).\n"
       },
       "put": {
         "operationId": "PUT:skyforge.UpsertSyslogRoute",
@@ -15938,7 +15897,7 @@
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
+                    "description": "Default: \"\\<deployment-name>.clab.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
@@ -25546,7 +25505,7 @@
     },
     "/hooks/{rest}": {
       "post": {
-        "description": "Example:\n\n\tPOST https://\u003chostname\u003e/hooks/\u003ctoken\u003e/github\n",
+        "description": "Example:\n\n\tPOST https://<hostname>/hooks/<token>/github\n",
         "operationId": "POST:skyforge.WebhookIngestAny",
         "parameters": [
           {
@@ -28550,7 +28509,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SearchUsers searches LDAP for users matching q.\n"
+        "summary": "SearchUsers searches known Skyforge users matching q.\n"
       }
     },
     "/variablegroups.CreateUserVariableGroup": {
