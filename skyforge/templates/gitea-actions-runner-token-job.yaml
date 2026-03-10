@@ -1,0 +1,119 @@
+{{- if and .Values.skyforge.gitea.enabled .Values.skyforge.gitea.actionsRunner.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitea-actions-runner-token-reconcile
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+    app.kubernetes.io/name: gitea-actions-runner-token-reconcile
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "15"
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gitea-actions-runner-token-reconcile
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+    app.kubernetes.io/name: gitea-actions-runner-token-reconcile
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "15"
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/exec", "secrets"]
+    verbs: ["get", "list", "create", "patch", "update"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gitea-actions-runner-token-reconcile
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+    app.kubernetes.io/name: gitea-actions-runner-token-reconcile
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "15"
+subjects:
+  - kind: ServiceAccount
+    name: gitea-actions-runner-token-reconcile
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gitea-actions-runner-token-reconcile
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gitea-actions-runner-token-reconcile
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+    app.kubernetes.io/name: gitea-actions-runner-token-reconcile
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "16"
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+{{ include "skyforge.labels" . | indent 8 }}
+        app.kubernetes.io/name: gitea-actions-runner-token-reconcile
+    spec:
+      serviceAccountName: gitea-actions-runner-token-reconcile
+      restartPolicy: OnFailure
+      containers:
+        - name: reconcile-token
+          image: {{ .Values.images.kubectl | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -lc
+          args:
+            - |
+              set -eu
+              ns="{{ .Release.Namespace }}"
+              token_secret="{{ .Values.skyforge.gitea.actionsRunner.tokenSecretName }}"
+              token_key="{{ .Values.skyforge.gitea.actionsRunner.tokenSecretKey }}"
+
+              for i in $(seq 1 120); do
+                if kubectl -n "${ns}" rollout status deploy/gitea --timeout=5s >/dev/null 2>&1; then
+                  break
+                fi
+                if [ "${i}" -eq 120 ]; then
+                  echo "gitea deployment did not become ready in time" >&2
+                  exit 1
+                fi
+                sleep 2
+              done
+
+              token="$(
+                kubectl -n "${ns}" exec deploy/gitea -- /usr/local/bin/gitea actions generate-runner-token | \
+                  tail -n 1 | tr -d '\r'
+              )"
+              if [ -z "${token}" ]; then
+                echo "empty runner token from gitea CLI" >&2
+                exit 1
+              fi
+              if ! printf '%s' "${token}" | grep -Eq '^[A-Za-z0-9]+$'; then
+                echo "runner token has unexpected format" >&2
+                exit 1
+              fi
+
+              kubectl -n "${ns}" create secret generic "${token_secret}" \
+                --from-literal="${token_key}=${token}" \
+                --dry-run=client -o yaml | kubectl -n "${ns}" apply -f -
+
+              if kubectl -n "${ns}" get deploy gitea-actions-runner >/dev/null 2>&1; then
+                kubectl -n "${ns}" rollout restart deploy/gitea-actions-runner >/dev/null 2>&1 || true
+              fi
+{{- end }}
