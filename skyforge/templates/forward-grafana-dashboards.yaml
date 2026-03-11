@@ -1,0 +1,18 @@
+{{- $forwardNamespace := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
+{{- $obsUI := .Values.skyforge.forwardCluster.observabilityUI -}}
+{{- $dashboards := default dict $obsUI.dashboards -}}
+{{- if and .Values.skyforge.forward.enabled .Values.skyforge.forwardCluster.enabled (default false $obsUI.enabled) (default false $dashboards.enabled) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skyforge-signals-dashboard
+  namespace: {{ $forwardNamespace }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    {{ default "grafana_dashboard" $dashboards.labelKey | quote }}: {{ default "1" $dashboards.labelValue | quote }}
+  annotations:
+    k8s-sidecar-target-directory: {{ default "Skyforge" $dashboards.folder | quote }}
+data:
+  skyforge-signals.json: |
+{{ .Files.Get "files/grafana-dashboards/skyforge-signals.json" | indent 4 }}
+{{- end }}

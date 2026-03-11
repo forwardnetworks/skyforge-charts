@@ -69,6 +69,8 @@ skyforge:
     # stable values so host port bindings stay deterministic without adding a
     # separate ingress implementation.
     localNodePorts:
+      enabled: false
+      serviceName: cilium-gateway-skyforge
       http: 30080
       https: 30443
   # Skyforge uses Cilium Gateway API for ingress (no Traefik).
@@ -96,8 +98,7 @@ skyforge:
       image: "docker.io/gitea/act_runner:latest"
       pullPolicy: "IfNotPresent"
       # Runner registration token secret consumed by the runner.
-      # Populate this Secret manually when secrets.create=false:
-      #   kubectl -n skyforge create secret generic gitea-actions-runner-token --from-literal=token='<token>'
+      # Managed automatically by a chart hook job on install/upgrade.
       tokenSecretName: "gitea-actions-runner-token"
       tokenSecretKey: "token"
       # Comma-separated labels passed to act_runner.
@@ -121,6 +122,7 @@ skyforge:
   infobloxUrl: ""
   jiraUrl: ""
   rapid7Url: ""
+  elkUrl: ""
   auth:
     # Browser authentication mode used by the Skyforge UI.
     # - local: local Skyforge/Dex username-password login
@@ -295,6 +297,62 @@ skyforge:
         cpu: "4"
         memory: "16Gi"
     env: {}
+  elk:
+    enabled: false
+    managed: false
+    image: "sebp/elk:8.13.4"
+    pullPolicy: "IfNotPresent"
+    # Route Kibana directly through Gateway API.
+    serviceName: "kibana"
+    serviceNamespace: ""
+    servicePort: 5601
+    containerPort: 5601
+    externalPrefix: "/elk"
+    rewritePrefixToRoot: true
+    storage:
+      enabled: true
+      size: "20Gi"
+      storageClassName: ""
+    resources:
+      requests:
+        cpu: "1000m"
+        memory: "2Gi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+    env:
+      ELASTICSEARCH_START: "1"
+      LOGSTASH_START: "1"
+      KIBANA_START: "1"
+  keda:
+    # Optional KEDA autoscaling for heavy managed integrations.
+    # Requires KEDA CRDs to be installed cluster-wide.
+    enabled: false
+    requireCRD: true
+    rapid7:
+      enabled: false
+      pollingInterval: 30
+      cooldownPeriod: 300
+      minReplicaCount: 0
+      maxReplicaCount: 1
+      # Required when rapid7.enabled=true and this block is enabled.
+      # Example:
+      # triggers:
+      #   - type: prometheus
+      #     metadata:
+      #       serverAddress: http://prometheus-server.monitoring.svc.cluster.local:9090
+      #       metricName: rapid7_requests_per_sec
+      #       query: sum(rate(http_requests_total{app="rapid7"}[2m]))
+      #       threshold: "1"
+      triggers: []
+    elkProxy:
+      enabled: false
+      pollingInterval: 30
+      cooldownPeriod: 300
+      minReplicaCount: 0
+      maxReplicaCount: 1
+      # Required when elk.enabled=true and this block is enabled.
+      triggers: []
   yaadeUrl: "http://yaade"
   yaadeAdminUsername: "admin"
   yaade:
@@ -364,6 +422,27 @@ skyforge:
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
     servicePort: 8080
+    # Optional browser-facing observability UIs from the in-cluster Forward stack.
+    observabilityUI:
+      enabled: false
+      grafana:
+        externalPrefix: "/grafana"
+        serviceName: "fwd-grafana-service"
+        servicePort: 3000
+      prometheus:
+        externalPrefix: "/prometheus"
+        serviceName: "fwd-prometheus"
+        servicePort: 9090
+        # Optional in-cluster Prometheus base URL used by Skyforge signals API.
+        # Defaults to http://<serviceName>.<forwardNamespace>.svc.cluster.local:<servicePort>
+        internalBaseURL: ""
+      dashboards:
+        # When true, create Grafana dashboard ConfigMaps in the Forward namespace.
+        # This relies on Grafana sidecar dashboard discovery conventions.
+        enabled: false
+        labelKey: "grafana_dashboard"
+        labelValue: "1"
+        folder: "Skyforge"
   forwardCollector:
     # Optional: enable the in-cluster Forward collector by configuring the image.
     # When empty, Skyforge will not deploy a collector Pod (Collector page will

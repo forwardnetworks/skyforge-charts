@@ -8,6 +8,8 @@ skyforge:
     addresses:
       - type: IPAddress
         value: "10.128.16.73"
+    localNodePorts:
+      enabled: false
   dex:
     manageConfig: true
     authMode: oidc
@@ -64,6 +66,8 @@ skyforge:
     enabled: false
   rapid7:
     enabled: false
+  elk:
+    enabled: false
 
   # Forward in-cluster collector image + pull credentials.
   # Pin to a concrete tag to avoid drifting when `latest` is retagged.
@@ -79,6 +83,8 @@ skyforge:
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
     servicePort: 8080
+    observabilityUI:
+      enabled: true
 
   # Enable Gitea provisioning for blueprint-backed workflows.
   # API URL is in-cluster; UI URL is the SSO-proxied external path.

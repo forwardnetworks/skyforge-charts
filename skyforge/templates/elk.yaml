@@ -1,0 +1,109 @@
+{{- if and .Values.skyforge.elk.enabled .Values.skyforge.elk.managed }}
+{{- $name := default "kibana" .Values.skyforge.elk.serviceName -}}
+{{- $port := default 5601 .Values.skyforge.elk.servicePort -}}
+{{- $containerPort := default 5601 .Values.skyforge.elk.containerPort -}}
+{{- $pullPolicy := default "IfNotPresent" .Values.skyforge.elk.pullPolicy -}}
+---
+{{- if .Values.skyforge.elk.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}-data
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ default "20Gi" .Values.skyforge.elk.storage.size | quote }}
+  {{- with .Values.skyforge.elk.storage.storageClassName }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: elk
+    spec:
+      containers:
+        - name: elk
+          image: {{ required "skyforge.elk.image is required when elk.managed=true" .Values.skyforge.elk.image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          ports:
+            - name: kibana
+              containerPort: {{ $containerPort }}
+            - name: elasticsearch
+              containerPort: 9200
+            - name: logstash
+              containerPort: 5044
+          env:
+            {{- range $k, $v := .Values.skyforge.elk.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          startupProbe:
+            tcpSocket:
+              port: kibana
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 120
+          readinessProbe:
+            tcpSocket:
+              port: kibana
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: kibana
+            initialDelaySeconds: 90
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+{{ toYaml .Values.skyforge.elk.resources | nindent 12 }}
+          volumeMounts:
+            - name: elk-data
+              mountPath: /var/lib/elasticsearch
+      volumes:
+        - name: elk-data
+          {{- if .Values.skyforge.elk.storage.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ $name }}-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: {{ $port }}
+      targetPort: kibana
+{{- end }}

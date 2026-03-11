@@ -1686,433 +1686,47 @@
         ],
         "type": "object"
       },
-      "skyforge.GovernanceCostInput": {
+      "skyforge.ForwardObservabilitySummary": {
         "properties": {
-          "amount": {
-            "type": "number"
-          },
-          "currency": {
+          "checkedAt": {
             "type": "string"
           },
-          "metadata": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object"
-          },
-          "periodEnd": {
+          "error": {
             "type": "string"
           },
-          "periodStart": {
-            "type": "string"
-          },
-          "provider": {
-            "type": "string"
-          },
-          "resourceId": {
-            "type": "string"
-          },
-          "source": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "userId",
-          "resourceId",
-          "provider",
-          "periodStart",
-          "periodEnd",
-          "amount",
-          "currency",
-          "source",
-          "metadata"
-        ],
-        "type": "object"
-      },
-      "skyforge.GovernanceCostSnapshot": {
-        "properties": {
-          "amount": {
-            "type": "number"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "currency": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "metadata": {
-            "type": "object"
-          },
-          "periodEnd": {
-            "type": "string"
-          },
-          "periodStart": {
-            "type": "string"
-          },
-          "provider": {
-            "type": "string"
-          },
-          "resourceId": {
-            "type": "string"
-          },
-          "source": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "userScopeName": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "userId",
-          "userScopeName",
-          "resourceId",
-          "provider",
-          "periodStart",
-          "periodEnd",
-          "amount",
-          "currency",
-          "source",
-          "metadata",
-          "createdAt"
-        ],
-        "type": "object"
-      },
-      "skyforge.GovernancePolicy": {
-        "description": "All limits are optional. A value of 0 means \"unlimited/disabled\".\n",
-        "properties": {
-          "advisoryLatencyCritMs": {
-            "format": "int64",
-            "title": "AdvisoryLatencyCritMs marks p95 latency as critical level for observability\nadvisories.\n",
-            "type": "integer"
-          },
-          "advisoryLatencyWarnMs": {
-            "format": "int64",
-            "title": "AdvisoryLatencyWarnMs marks p95 latency as warning level for observability\nadvisories.\n",
-            "type": "integer"
-          },
-          "advisoryNodeCpuCritPct": {
-            "format": "int64",
-            "title": "AdvisoryNodeCPUCritPct marks node CPU p95 percentage as critical level.\n",
-            "type": "integer"
-          },
-          "advisoryNodeCpuWarnPct": {
-            "format": "int64",
-            "title": "AdvisoryNodeCPUWarnPct marks node CPU p95 percentage as warning level.\n",
-            "type": "integer"
-          },
-          "advisoryNodeMemCritPct": {
-            "format": "int64",
-            "title": "AdvisoryNodeMemCritPct marks node memory p95 percentage as critical level.\n",
-            "type": "integer"
-          },
-          "advisoryNodeMemWarnPct": {
-            "format": "int64",
-            "title": "AdvisoryNodeMemWarnPct marks node memory p95 percentage as warning level.\n",
-            "type": "integer"
-          },
-          "advisoryQueueOldestCritSec": {
-            "format": "int64",
-            "title": "AdvisoryQueueOldestCritSec marks queued oldest-age as critical level.\n",
-            "type": "integer"
-          },
-          "advisoryQueueOldestWarnSec": {
-            "format": "int64",
-            "title": "AdvisoryQueueOldestWarnSec marks queued oldest-age as warning level.\n",
-            "type": "integer"
-          },
-          "allowCustomTemplateRepos": {
-            "description": "This is distinct from \"external\" because \"custom\" can reference arbitrary repos and is therefore riskier.\n",
-            "title": "AllowCustomTemplateRepos controls whether non-admin users may use template\nsource = custom.\n",
+          "grafanaService": {
             "type": "boolean"
           },
-          "allowUserByosContainerlabServers": {
-            "title": "AllowUserByosContainerlabServers controls whether non-admin users may use\nuser-scoped Containerlab BYOS servers (user:... refs).\n",
+          "namespace": {
+            "type": "string"
+          },
+          "prometheusReachable": {
             "type": "boolean"
           },
-          "allowUserByosNetlabServers": {
-            "title": "AllowUserByosNetlabServers controls whether non-admin users may use user-scoped\nNetlab BYOS servers (user:... refs).\n",
+          "prometheusService": {
             "type": "boolean"
           },
-          "allowUserExternalTemplateRepos": {
-            "title": "AllowUserExternalTemplateRepos controls whether non-admin users may use template\nsource = external (user-scoped external repos).\n",
-            "type": "boolean"
-          },
-          "blockedForwardOrgIds": {
-            "description": "This is primarily used to protect shared/demo orgs from accidental Skyforge collector installs.\n",
-            "items": {
-              "type": "string"
-            },
-            "title": "BlockedForwardOrgIDs denies Forward collector credential setup for these Forward\norg IDs.\n",
-            "type": "array"
-          },
-          "maxCollectorsPerUser": {
-            "format": "int64",
-            "title": "MaxCollectorsPerUser caps the number of in-cluster Forward collectors a user can\ncreate.\n",
-            "type": "integer"
-          },
-          "maxDeploymentsPerUser": {
-            "format": "int64",
-            "title": "MaxDeploymentsPerUser caps the number of deployment definitions a user can\ncreate across all user scopes.\n",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "maxDeploymentsPerUser",
-          "maxCollectorsPerUser",
-          "allowUserByosNetlabServers",
-          "allowUserByosContainerlabServers",
-          "allowUserExternalTemplateRepos",
-          "allowCustomTemplateRepos",
-          "blockedForwardOrgIds",
-          "advisoryLatencyWarnMs",
-          "advisoryLatencyCritMs",
-          "advisoryQueueOldestWarnSec",
-          "advisoryQueueOldestCritSec",
-          "advisoryNodeCpuWarnPct",
-          "advisoryNodeCpuCritPct",
-          "advisoryNodeMemWarnPct",
-          "advisoryNodeMemCritPct"
-        ],
-        "title": "GovernancePolicy is a lightweight guardrail layer (admin-configurable).\n",
-        "type": "object"
-      },
-      "skyforge.GovernanceResource": {
-        "properties": {
-          "accountId": {
-            "type": "string"
-          },
-          "firstSeen": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "lastSeen": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "metadata": {
-            "type": "object"
-          },
-          "name": {
-            "type": "string"
-          },
-          "owner": {
-            "type": "string"
-          },
-          "provider": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "resourceId": {
-            "type": "string"
-          },
-          "resourceType": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "tags": {
-            "type": "object"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "userScopeName": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "userId",
-          "userScopeName",
-          "provider",
-          "resourceId",
-          "resourceType",
-          "name",
-          "region",
-          "accountId",
-          "owner",
-          "status",
-          "tags",
-          "metadata",
-          "firstSeen",
-          "lastSeen",
-          "updatedAt"
-        ],
-        "type": "object"
-      },
-      "skyforge.GovernanceResourceInput": {
-        "properties": {
-          "accountId": {
-            "type": "string"
-          },
-          "eventType": {
-            "type": "string"
-          },
-          "metadata": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object"
-          },
-          "name": {
-            "type": "string"
-          },
-          "owner": {
-            "type": "string"
-          },
-          "provider": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "resourceId": {
-            "type": "string"
-          },
-          "resourceType": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "tags": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object"
-          },
-          "userId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "userId",
-          "provider",
-          "resourceId",
-          "resourceType",
-          "name",
-          "region",
-          "accountId",
-          "owner",
-          "status",
-          "eventType",
-          "tags",
-          "metadata"
-        ],
-        "type": "object"
-      },
-      "skyforge.GovernanceUsageInput": {
-        "properties": {
-          "metadata": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object"
-          },
-          "metric": {
-            "type": "string"
-          },
-          "provider": {
-            "type": "string"
-          },
-          "scopeId": {
-            "type": "string"
-          },
-          "scopeType": {
-            "type": "string"
-          },
-          "unit": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "value": {
+          "prometheusTargetCount": {
             "type": "number"
-          }
-        },
-        "required": [
-          "userId",
-          "provider",
-          "scopeType",
-          "scopeId",
-          "metric",
-          "value",
-          "unit",
-          "metadata"
-        ],
-        "type": "object"
-      },
-      "skyforge.GovernanceUsageSnapshot": {
-        "properties": {
-          "collectedAt": {
-            "format": "date-time",
-            "type": "string"
           },
-          "id": {
-            "type": "string"
-          },
-          "metadata": {
-            "type": "object"
-          },
-          "metric": {
-            "type": "string"
-          },
-          "provider": {
-            "type": "string"
-          },
-          "scopeId": {
-            "type": "string"
-          },
-          "scopeType": {
-            "type": "string"
-          },
-          "unit": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "userScopeName": {
-            "type": "string"
-          },
-          "value": {
+          "prometheusUpSum": {
             "type": "number"
+          },
+          "sourceStatus": {
+            "title": "ok|degraded|missing\n",
+            "type": "string"
           }
         },
         "required": [
-          "id",
-          "userId",
-          "userScopeName",
-          "provider",
-          "scopeType",
-          "scopeId",
-          "metric",
-          "value",
-          "unit",
-          "metadata",
-          "collectedAt"
+          "namespace",
+          "sourceStatus",
+          "prometheusService",
+          "grafanaService",
+          "prometheusReachable",
+          "prometheusUpSum",
+          "prometheusTargetCount",
+          "error",
+          "checkedAt"
         ],
         "type": "object"
       },
@@ -2492,6 +2106,59 @@
         ],
         "type": "object"
       },
+      "skyforge.ObservabilitySummaryResponse": {
+        "properties": {
+          "advisories": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.ObservabilityAdvisory"
+            },
+            "type": "array"
+          },
+          "endpoints": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.observabilityEndpointSummary"
+            },
+            "type": "array"
+          },
+          "generatedAt": {
+            "type": "string"
+          },
+          "nodeCpuActiveP95": {
+            "type": "number"
+          },
+          "nodeMemUsedP95": {
+            "type": "number"
+          },
+          "queueOldestSec": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "queueQueued": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "queueRunning": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "workerHeartbeatSec": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "generatedAt",
+          "endpoints",
+          "queueQueued",
+          "queueRunning",
+          "queueOldestSec",
+          "workerHeartbeatSec",
+          "nodeCpuActiveP95",
+          "nodeMemUsedP95",
+          "advisories"
+        ],
+        "type": "object"
+      },
       "skyforge.PolicyReportForwardNetwork": {
         "properties": {
           "collectorConfigId": {
@@ -2534,30 +2201,6 @@
           "createdBy",
           "createdAt",
           "updatedAt"
-        ],
-        "type": "object"
-      },
-      "skyforge.ProviderCostBreakdown": {
-        "properties": {
-          "cost": {
-            "type": "number"
-          },
-          "currency": {
-            "type": "string"
-          },
-          "provider": {
-            "type": "string"
-          },
-          "resourceCount": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "provider",
-          "resourceCount",
-          "cost",
-          "currency"
         ],
         "type": "object"
       },
@@ -3965,7 +3608,16 @@
           "dnsEnabled": {
             "type": "boolean"
           },
+          "elkEnabled": {
+            "type": "boolean"
+          },
           "forwardEnabled": {
+            "type": "boolean"
+          },
+          "forwardGrafanaEnabled": {
+            "type": "boolean"
+          },
+          "forwardPrometheusEnabled": {
             "type": "boolean"
           },
           "giteaEnabled": {
@@ -4004,6 +3656,9 @@
           "infobloxEnabled",
           "jiraEnabled",
           "rapid7Enabled",
+          "elkEnabled",
+          "forwardGrafanaEnabled",
+          "forwardPrometheusEnabled",
           "dnsEnabled"
         ],
         "type": "object"
@@ -4568,6 +4223,9 @@
                     },
                     "integrations": {
                       "properties": {
+                        "elkBaseUrl": {
+                          "type": "string"
+                        },
                         "giteaBaseUrl": {
                           "type": "string"
                         },
@@ -4597,6 +4255,7 @@
                         "infobloxBaseUrl",
                         "jiraBaseUrl",
                         "rapid7BaseUrl",
+                        "elkBaseUrl",
                         "yaadeBaseUrl"
                       ],
                       "type": "object"
@@ -4665,608 +4324,6 @@
           }
         },
         "summary": "GetAdminEffectiveConfig returns the effective (non-secret) typed Encore config\n(admin only).\n"
-      }
-    },
-    "/api/admin/governance/costs": {
-      "get": {
-        "operationId": "GET:skyforge.ListGovernanceCosts",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "user_id",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "provider",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "style": "form"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "costs": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.GovernanceCostSnapshot"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "costs"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ListGovernanceCosts lists cost snapshots (admin only).\n"
-      }
-    },
-    "/api/admin/governance/costs/ingest": {
-      "post": {
-        "operationId": "POST:skyforge.IngestGovernanceCosts",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "snapshots": {
-                    "items": {
-                      "$ref": "#/components/schemas/skyforge.GovernanceCostInput"
-                    },
-                    "type": "array"
-                  }
-                },
-                "required": [
-                  "snapshots"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "costs": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.GovernanceCostSnapshot"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "costs"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "IngestGovernanceCosts ingests cost snapshots (admin only).\n"
-      }
-    },
-    "/api/admin/governance/policy": {
-      "get": {
-        "operationId": "GET:skyforge.GetGovernancePolicy",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "policy": {
-                      "$ref": "#/components/schemas/skyforge.GovernancePolicy"
-                    },
-                    "retrievedAt": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "policy",
-                    "retrievedAt"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "GetGovernancePolicy returns the current governance policy (admin only).\n"
-      },
-      "put": {
-        "operationId": "PUT:skyforge.UpdateGovernancePolicy",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "policy": {
-                    "$ref": "#/components/schemas/skyforge.GovernancePolicy"
-                  }
-                },
-                "required": [
-                  "policy"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "policy": {
-                      "$ref": "#/components/schemas/skyforge.GovernancePolicy"
-                    },
-                    "status": {
-                      "type": "string"
-                    },
-                    "updatedAt": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "policy",
-                    "updatedAt"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "UpdateGovernancePolicy updates the governance policy (admin only).\n"
-      }
-    },
-    "/api/admin/governance/resources": {
-      "get": {
-        "operationId": "GET:skyforge.ListGovernanceResources",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "user_id",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "provider",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "status",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "owner",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "type",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "q",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "style": "form"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "resources": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.GovernanceResource"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "resources"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ListGovernanceResources lists tracked resources (admin only).\n"
-      }
-    },
-    "/api/admin/governance/resources/ingest": {
-      "post": {
-        "operationId": "POST:skyforge.IngestGovernanceResources",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "observedAt": {
-                    "type": "string"
-                  },
-                  "resources": {
-                    "items": {
-                      "$ref": "#/components/schemas/skyforge.GovernanceResourceInput"
-                    },
-                    "type": "array"
-                  },
-                  "source": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "source",
-                  "observedAt",
-                  "resources"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "resources": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.GovernanceResource"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "resources"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "IngestGovernanceResources ingests resource inventory (admin only).\n"
-      }
-    },
-    "/api/admin/governance/summary": {
-      "get": {
-        "operationId": "GET:skyforge.GetGovernanceSummary",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "activeResources": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "costCurrency": {
-                      "type": "string"
-                    },
-                    "costLast30Days": {
-                      "type": "number"
-                    },
-                    "lastCostPeriodEnd": {
-                      "type": "string"
-                    },
-                    "performanceAdvisories": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.ObservabilityAdvisory"
-                      },
-                      "type": "array"
-                    },
-                    "providerBreakdown": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.ProviderCostBreakdown"
-                      },
-                      "type": "array"
-                    },
-                    "resourceCount": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "userScopesTracked": {
-                      "format": "int64",
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "resourceCount",
-                    "activeResources",
-                    "userScopesTracked",
-                    "costLast30Days",
-                    "costCurrency",
-                    "lastCostPeriodEnd",
-                    "providerBreakdown",
-                    "performanceAdvisories"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "GetGovernanceSummary returns governance summary metrics (admin only).\n"
-      }
-    },
-    "/api/admin/governance/sync": {
-      "post": {
-        "operationId": "POST:skyforge.SyncGovernanceSources",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "resourceCount": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "usageCount": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "warnings": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "resourceCount",
-                    "usageCount",
-                    "warnings"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "SyncGovernanceSources refreshes inventory from known sources (admin only).\n"
-      }
-    },
-    "/api/admin/governance/usage": {
-      "get": {
-        "operationId": "GET:skyforge.ListGovernanceUsage",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "user_id",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "provider",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "metric",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "style": "form"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "usage": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.GovernanceUsageSnapshot"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "usage"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ListGovernanceUsage lists usage snapshots (admin only).\n"
-      }
-    },
-    "/api/admin/governance/usage/ingest": {
-      "post": {
-        "operationId": "POST:skyforge.IngestGovernanceUsage",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "snapshots": {
-                    "items": {
-                      "$ref": "#/components/schemas/skyforge.GovernanceUsageInput"
-                    },
-                    "type": "array"
-                  }
-                },
-                "required": [
-                  "snapshots"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "usage": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.GovernanceUsageSnapshot"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "usage"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "IngestGovernanceUsage ingests usage snapshots (admin only).\n"
       }
     },
     "/api/admin/impersonate/start": {
@@ -8242,7 +7299,7 @@
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\<normalized-name>.clab.yml\".\n",
+                    "description": "Default: \"\\\u003cnormalized-name\u003e.clab.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
@@ -8333,7 +7390,7 @@
                 "properties": {
                   "netlabServer": {
                     "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:<id>\").\n",
+                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
                     "type": "string"
                   }
                 },
@@ -8416,11 +7473,11 @@
                   },
                   "netlabServer": {
                     "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:<id>\").\n",
+                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\<deployment-name>.clab.yml\".\n",
+                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
@@ -8548,7 +7605,7 @@
     },
     "/api/byos/users/{id}/deployments/{deploymentID}/netlab/connect": {
       "post": {
-        "description": "This is an alternative to local SSH ProxyJump when clients can't reach the lab network.\n",
+        "description": "This is an alternative to local SSH ProxyJump when clients cannot reach the lab network.\n",
         "operationId": "POST:skyforge.NetlabConnect",
         "parameters": [
           {
@@ -12525,6 +11582,115 @@
         "summary": "NotificationsEvents streams notifications as Server-Sent Events (SSE).\n"
       }
     },
+    "/api/observability/series": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserObservabilitySeries",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "metric",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "window",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "metric": {
+                      "type": "string"
+                    },
+                    "points": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ObservabilitySeriesPoint"
+                      },
+                      "type": "array"
+                    },
+                    "scope": {
+                      "type": "string"
+                    },
+                    "window": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "scope",
+                    "metric",
+                    "window",
+                    "points"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserObservabilitySeries returns role-scoped observability time series.\n"
+      }
+    },
+    "/api/observability/summary": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserObservabilitySummary",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "forward": {
+                      "$ref": "#/components/schemas/skyforge.ForwardObservabilitySummary"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "title": "user|admin\n",
+                      "type": "string"
+                    },
+                    "skyforge": {
+                      "$ref": "#/components/schemas/skyforge.ObservabilitySummaryResponse"
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "scope",
+                    "skyforge",
+                    "forward"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserObservabilitySummary returns role-scoped observability signals for all\nauthenticated users.\n"
+      }
+    },
     "/api/public/config": {
       "get": {
         "operationId": "GET:platform.PublicConfig",
@@ -13482,7 +12648,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "ListSyslogRoutes lists configured source->user mappings (admin only).\n"
+        "summary": "ListSyslogRoutes lists configured source-\u003euser mappings (admin only).\n"
       },
       "put": {
         "operationId": "PUT:skyforge.UpsertSyslogRoute",
@@ -13719,6 +12885,9 @@
                     "authMode": {
                       "type": "string"
                     },
+                    "elkBaseUrl": {
+                      "type": "string"
+                    },
                     "externalUrl": {
                       "type": "string"
                     },
@@ -13782,6 +12951,7 @@
                     "infobloxBaseUrl",
                     "jiraBaseUrl",
                     "rapid7BaseUrl",
+                    "elkBaseUrl",
                     "features"
                   ],
                   "type": "object"
@@ -15897,7 +15067,7 @@
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\<deployment-name>.clab.yml\".\n",
+                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
@@ -16801,132 +15971,6 @@
           }
         },
         "summary": "PostUserScopeDeploymentCapacityDeviceMetricsHistory proxies Forward's\ndevice-metrics-history endpoint.\n"
-      }
-    },
-    "/api/users/{id}/deployments/{deploymentID}/capacity/perf/interface-metrics": {
-      "get": {
-        "operationId": "GET:skyforge.GetUserScopeDeploymentCapacityInterfaceMetrics",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "deploymentID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "type",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "days",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "direction",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "interface",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "interfaceFilter",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "snapshotId",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "endTime",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "body": {
-                      "type": "object"
-                    }
-                  },
-                  "required": [
-                    "body"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "GetUserScopeDeploymentCapacityInterfaceMetrics proxies Forward's\ninterface-metrics endpoint.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/perf/interface-metrics-history": {
@@ -19109,7 +18153,7 @@
     },
     "/api/users/{id}/deployments/{deploymentID}/topology": {
       "get": {
-        "description": "For containerlab, the topology is sourced from the containerlab API after deploy so we can reflect the resolved management IPs.\n",
+        "description": "Topology is sourced from generated deployment topology artifacts.\n",
         "operationId": "GET:skyforge.GetUserScopeDeploymentTopology",
         "parameters": [
           {
@@ -25505,7 +24549,7 @@
     },
     "/hooks/{rest}": {
       "post": {
-        "description": "Example:\n\n\tPOST https://<hostname>/hooks/<token>/github\n",
+        "description": "Example:\n\n\tPOST https://\u003chostname\u003e/hooks/\u003ctoken\u003e/github\n",
         "operationId": "POST:skyforge.WebhookIngestAny",
         "parameters": [
           {
@@ -25831,32 +24875,6 @@
           }
         },
         "summary": "Deployment lease sweeper\n"
-      }
-    },
-    "/internal/cron/governance/usage/cleanup": {
-      "post": {
-        "operationId": "POST:skyforge.CronCleanupGovernanceUsage",
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        }
-      }
-    },
-    "/internal/cron/governance/usage/snapshot": {
-      "post": {
-        "operationId": "POST:skyforge.CronSnapshotGovernanceUsage",
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        }
       }
     },
     "/internal/cron/observability/cleanup": {
@@ -28433,6 +27451,233 @@
             "$ref": "#/components/responses/APIError"
           }
         }
+      }
+    },
+    "/taskruns.ReconcileQueuedTasks": {
+      "post": {
+        "operationId": "POST:taskruns.ReconcileQueuedTasks",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "limit": {
+                    "format": "int64",
+                    "title": "Limit caps the number of queued tasks to republish.\n",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "limit"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "consideredTasks": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "publishErrors": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "republished": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "consideredTasks",
+                    "republished",
+                    "publishErrors"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ReconcileQueuedTasks republishes queue events for tasks stuck in queued state.\n"
+      }
+    },
+    "/taskruns.ReconcileRunningTasks": {
+      "post": {
+        "operationId": "POST:taskruns.ReconcileRunningTasks",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "hardMaxRuntimeMinutes": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "limit": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "maxIdleMinutes": {
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "limit",
+                  "hardMaxRuntimeMinutes",
+                  "maxIdleMinutes"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "consideredTasks": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "finishErrors": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "markedFailed": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "consideredTasks",
+                    "markedFailed",
+                    "finishErrors"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ReconcileRunningTasks marks apparently stuck running tasks as failed.\n"
+      }
+    },
+    "/taskruns.TaskQueueDiag": {
+      "post": {
+        "operationId": "POST:taskruns.TaskQueueDiag",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "oldestQueuedSec": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "staleHeartbeatSec": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "stuckQueuedBatch": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "stuckQueuedMinAgeMs": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "workerEnabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "workerEnabled",
+                  "staleHeartbeatSec",
+                  "oldestQueuedSec",
+                  "stuckQueuedBatch",
+                  "stuckQueuedMinAgeMs"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "oldestQueuedAgeSec": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "publishFailures10m": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "publishFailuresLatest": {
+                      "type": "string"
+                    },
+                    "queued": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "running": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "stuckQueuedCandidates": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "workerHeartbeatAgeSec": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "queued",
+                    "running",
+                    "oldestQueuedAgeSec",
+                    "workerHeartbeatAgeSec",
+                    "publishFailures10m",
+                    "publishFailuresLatest",
+                    "stuckQueuedCandidates",
+                    "status"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "TaskQueueDiag returns queue diagnostics from task storage.\n"
       }
     },
     "/users/assignable": {

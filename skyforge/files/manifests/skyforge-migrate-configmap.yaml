@@ -3858,3 +3858,6 @@ data:
     
     CREATE UNIQUE INDEX IF NOT EXISTS sf_user_forward_tenants_org_id_key
         ON public.sf_user_forward_tenants (org_id);
+
+  20260309190000_remove_ldap_password_cache.up.sql: |
+    DROP TABLE IF EXISTS public.sf_ldap_password_cache;

@@ -21,6 +21,7 @@ We keep these proxies per-tool so redirects preserve each tool's external prefix
 {{- $root := .root -}}
 {{- $name := .name -}}
 {{- $upstreamServiceEnv := .upstreamServiceEnv -}}
+{{- $upstreamHost := default "" .upstreamHost -}}
 {{- $upstreamPort := .upstreamPort -}}
 {{- $externalPrefix := .externalPrefix -}}
 {{- $responsePrefixRewrite := .responsePrefixRewrite -}}
@@ -147,7 +148,7 @@ data:
                               uri: http://${SKYFORGE_SERVER_HOST}:8085
                               cluster: skyforge_server
                               timeout: 2s
-                            path_prefix: /api/session/forwardauth/envoy
+                            path_prefix: /api/auth/forwardauth/envoy
                             authorization_request:
                               allowed_headers:
                                 patterns:
@@ -195,7 +196,8 @@ data:
                           port_value: 8085
 
         - name: upstream
-          type: STATIC
+          type: STRICT_DNS
+          dns_lookup_family: V4_ONLY
           connect_timeout: 5s
           load_assignment:
             cluster_name: upstream
@@ -237,8 +239,16 @@ spec:
             - -ceu
             - |
               : "${SKYFORGE_SERVER_SERVICE_HOST:?missing SKYFORGE_SERVER_SERVICE_HOST}"
-              upstream_host="$(printenv {{ $upstreamServiceEnv | quote }})"
-              : "${upstream_host:?missing {{ $upstreamServiceEnv }}}"
+              upstream_host={{ $upstreamHost | quote }}
+              if [ -z "${upstream_host}" ]; then
+                {{- if $upstreamServiceEnv }}
+                upstream_host="$(printenv {{ $upstreamServiceEnv | quote }})"
+                : "${upstream_host:?missing {{ $upstreamServiceEnv }}}"
+                {{- else }}
+                echo "missing upstreamHost or upstreamServiceEnv for {{ $name }}" >&2
+                exit 1
+                {{- end }}
+              fi
               export SKYFORGE_SERVER_HOST="${SKYFORGE_SERVER_SERVICE_HOST}"
               export UPSTREAM_HOST="${upstream_host}"
               sed \
@@ -301,20 +311,20 @@ spec:
     - name: http
       port: 8080
       targetPort: 8080
-{{- end -}}
+{{- end }}
 
-{{- if .Values.skyforge.netbox.enabled }}
+{{ if .Values.skyforge.netbox.enabled }}
 {{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "netbox-sso-proxy" "upstreamServiceEnv" "NETBOX_SERVICE_HOST" "upstreamPort" 8080 "externalPrefix" "") }}
-{{- end }}
+{{ end }}
 
-{{- if .Values.skyforge.nautobot.enabled }}
+{{ if .Values.skyforge.nautobot.enabled }}
 {{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "nautobot-sso-proxy" "upstreamServiceEnv" "NAUTOBOT_SERVICE_HOST" "upstreamPort" 8080 "responsePrefixRewrite" "/nautobot") }}
-{{- end }}
+{{ end }}
 
-{{- if .Values.skyforge.gitea.enabled }}
+{{ if .Values.skyforge.gitea.enabled }}
 {{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "gitea-sso-proxy" "upstreamServiceEnv" "GITEA_SERVICE_HOST" "upstreamPort" 3000 "externalPrefix" "/git") }}
-{{- end }}
+{{ end }}
 
-{{- if .Values.skyforge.redoc.enabled }}
+{{ if .Values.skyforge.redoc.enabled }}
 {{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "redoc-sso-proxy" "upstreamServiceEnv" "REDOC_SERVICE_HOST" "upstreamPort" 80 "externalPrefix" "/redoc") }}
-{{- end }}
+{{ end }}

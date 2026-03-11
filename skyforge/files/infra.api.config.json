@@ -7,6 +7,29 @@
     "cloud": "local",
     "base_url": "http://skyforge-server:8085"
   },
+  "service_discovery": {
+    "authn": {
+      "base_url": "http://skyforge-server:8085"
+    },
+    "forwardregistry": {
+      "base_url": "http://skyforge-server:8085"
+    },
+    "forwardtenant": {
+      "base_url": "http://skyforge-server:8085"
+    },
+    "gitcredentials": {
+      "base_url": "http://skyforge-server:8085"
+    },
+    "servicenow": {
+      "base_url": "http://skyforge-server:8085"
+    },
+    "settings": {
+      "base_url": "http://skyforge-server:8085"
+    },
+    "skyforge": {
+      "base_url": "http://skyforge-server:8085"
+    }
+  },
   "sql_servers": [
     {
       "host": "db:5432",
