@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:f9nSB7PqG98nDe7OoL+oyGDpU9Sp1TgEpY0R5irgvA0=
+    h1:uq3sWJv9y3RWRjG9OpQe9qA4pJostGbeVvPmmWfsRBM=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
@@ -42,6 +42,9 @@ data:
     20260305114000_user_rbac_roles.up.sql h1:Im6j4BTMTVCG85AvB8GeVXFVXYWPPmfcC3DQhgIYJr0=
     20260306190000_user_api_permissions.up.sql h1:cG/7S9ATAEjeaMtw3OYmjiUTySIZUmoRXcbadOGxW+Y=
     20260306213000_user_forward_tenants.up.sql h1:Mz31Kcnnis7fecRaanpFpmJ370pxzk88pZmcXuszO7w=
+    20260309190000_remove_ldap_password_cache.up.sql h1:HitXVc0AbyANKkvd85iDI//CHwgAeZqJFwYZhPL3qo0=
+    20260311103000_servicenow_global_tenant_model.up.sql h1:8aLh8U3FMpru850ULwQqWuqJ8BQc7fac5E788k4Silw=
+    20260311170000_teams_bridge.up.sql h1:rG4QmTw0i455OON2edqj2ZXh0vy4Nlo8O74dhU5fnLI=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -3875,3 +3878,17 @@ data:
     WHERE tenant_username IS NULL
        OR tenant_password IS NULL
        OR tenant_sys_id IS NULL;
+
+  20260311170000_teams_bridge.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_user_teams_configs (
+      username text PRIMARY KEY,
+      teams_user_ref text NOT NULL DEFAULT ''::text,
+      outbound_webhook_url text NOT NULL DEFAULT ''::text,
+      forward_credential_set_id text NOT NULL DEFAULT ''::text,
+      default_network_id text NOT NULL DEFAULT ''::text,
+      enabled boolean NOT NULL DEFAULT false,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_user_teams_configs_forward_credential_set_id
+      ON public.sf_user_teams_configs (forward_credential_set_id);
