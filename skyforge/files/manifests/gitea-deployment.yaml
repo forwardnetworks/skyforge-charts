@@ -60,7 +60,7 @@ spec:
               key: GITEA_ROOT_URL
               name: skyforge-config
         - name: GITEA__server__SERVE_FROM_SUB_PATH
-          value: 'false'
+          value: 'true'
         - name: GITEA__server__SSH_DOMAIN
           valueFrom:
             configMapKeyRef:

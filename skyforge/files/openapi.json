@@ -3281,6 +3281,65 @@
         ],
         "type": "object"
       },
+      "skyforge.UserServiceNowConfigResponse": {
+        "properties": {
+          "adminUsername": {
+            "type": "string"
+          },
+          "configured": {
+            "type": "boolean"
+          },
+          "forwardCredentialSetId": {
+            "type": "string"
+          },
+          "globalConfigured": {
+            "type": "boolean"
+          },
+          "hasAdminPassword": {
+            "type": "boolean"
+          },
+          "instanceUrl": {
+            "type": "string"
+          },
+          "lastInstallError": {
+            "type": "string"
+          },
+          "lastInstallFinishedAt": {
+            "type": "string"
+          },
+          "lastInstallStartedAt": {
+            "type": "string"
+          },
+          "lastInstallStatus": {
+            "type": "string"
+          },
+          "tenantProvisioned": {
+            "type": "boolean"
+          },
+          "tenantUsername": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "configured",
+          "globalConfigured",
+          "instanceUrl",
+          "adminUsername",
+          "hasAdminPassword",
+          "forwardCredentialSetId",
+          "tenantUsername",
+          "tenantProvisioned",
+          "updatedAt",
+          "lastInstallStatus",
+          "lastInstallError",
+          "lastInstallStartedAt",
+          "lastInstallFinishedAt"
+        ],
+        "type": "object"
+      },
       "skyforge.WebhookEvent": {
         "properties": {
           "body": {
@@ -4458,6 +4517,168 @@
             "$ref": "#/components/responses/APIError"
           }
         }
+      }
+    },
+    "/api/admin/integrations/servicenow/global-config": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminServiceNowGlobalConfig",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminUsername": {
+                      "type": "string"
+                    },
+                    "bootstrapCredentialSet": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "hasAdminPassword": {
+                      "type": "boolean"
+                    },
+                    "instanceUrl": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "instanceUrl",
+                    "adminUsername",
+                    "hasAdminPassword",
+                    "bootstrapCredentialSet",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminServiceNowGlobalConfig returns global ServiceNow PDI settings (admin\nonly).\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.PutAdminServiceNowGlobalConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "adminPassword": {
+                    "type": "string"
+                  },
+                  "adminUsername": {
+                    "type": "string"
+                  },
+                  "bootstrapCredentialSet": {
+                    "type": "string"
+                  },
+                  "instanceUrl": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "instanceUrl",
+                  "adminUsername",
+                  "adminPassword",
+                  "bootstrapCredentialSet"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminUsername": {
+                      "type": "string"
+                    },
+                    "bootstrapCredentialSet": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "hasAdminPassword": {
+                      "type": "boolean"
+                    },
+                    "instanceUrl": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "instanceUrl",
+                    "adminUsername",
+                    "hasAdminPassword",
+                    "bootstrapCredentialSet",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutAdminServiceNowGlobalConfig updates global ServiceNow PDI settings (admin\nonly).\n"
+      }
+    },
+    "/api/admin/integrations/servicenow/push-forward-config": {
+      "post": {
+        "operationId": "POST:skyforge.PushAdminServiceNowForwardConfig",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "message",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PushAdminServiceNowForwardConfig performs admin-driven app/bootstrap push (admin\nonly).\n"
       }
     },
     "/api/admin/node-metrics": {
@@ -10971,6 +11192,9 @@
                     "forwardCredentialSetId": {
                       "type": "string"
                     },
+                    "globalConfigured": {
+                      "type": "boolean"
+                    },
                     "hasAdminPassword": {
                       "type": "boolean"
                     },
@@ -10989,16 +11213,25 @@
                     "lastInstallStatus": {
                       "type": "string"
                     },
+                    "tenantProvisioned": {
+                      "type": "boolean"
+                    },
+                    "tenantUsername": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     }
                   },
                   "required": [
                     "configured",
+                    "globalConfigured",
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
                     "forwardCredentialSetId",
+                    "tenantUsername",
+                    "tenantProvisioned",
                     "updatedAt",
                     "lastInstallStatus",
                     "lastInstallError",
@@ -11024,23 +11257,11 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "adminPassword": {
-                    "type": "string"
-                  },
-                  "adminUsername": {
-                    "type": "string"
-                  },
                   "forwardCredentialSetId": {
-                    "type": "string"
-                  },
-                  "instanceUrl": {
                     "type": "string"
                   }
                 },
                 "required": [
-                  "instanceUrl",
-                  "adminUsername",
-                  "adminPassword",
                   "forwardCredentialSetId"
                 ],
                 "type": "object"
@@ -11063,6 +11284,9 @@
                     "forwardCredentialSetId": {
                       "type": "string"
                     },
+                    "globalConfigured": {
+                      "type": "boolean"
+                    },
                     "hasAdminPassword": {
                       "type": "boolean"
                     },
@@ -11081,16 +11305,25 @@
                     "lastInstallStatus": {
                       "type": "string"
                     },
+                    "tenantProvisioned": {
+                      "type": "boolean"
+                    },
+                    "tenantUsername": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     }
                   },
                   "required": [
                     "configured",
+                    "globalConfigured",
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
                     "forwardCredentialSetId",
+                    "tenantUsername",
+                    "tenantProvisioned",
                     "updatedAt",
                     "lastInstallStatus",
                     "lastInstallError",
@@ -11461,6 +11694,35 @@
           }
         },
         "summary": "GetUserServiceNowSetupStatus returns the latest setup run for the current user.\n"
+      }
+    },
+    "/api/integrations/servicenow/tenant/reset": {
+      "post": {
+        "operationId": "POST:skyforge.RotateUserServiceNowTenant",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "config": {
+                      "$ref": "#/components/schemas/skyforge.UserServiceNowConfigResponse"
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RotateUserServiceNowTenant rotates the current user's ServiceNow tenant password\nand reprovisions linkage.\n"
       }
     },
     "/api/integrations/servicenow/wake": {
@@ -24877,6 +25139,19 @@
         "summary": "Deployment lease sweeper\n"
       }
     },
+    "/internal/cron/forward/collectors/idle": {
+      "post": {
+        "operationId": "POST:skyforge.CronScaleIdleForwardCollectors",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
     "/internal/cron/observability/cleanup": {
       "post": {
         "operationId": "POST:skyforge.CronCleanupObservability",
@@ -25496,6 +25771,114 @@
         }
       }
     },
+    "/servicenow.EnsureTenantProvisioning": {
+      "post": {
+        "operationId": "POST:servicenow.EnsureTenantProvisioning",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sessionSecret": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "sessionSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminPassword": {
+                      "type": "string"
+                    },
+                    "adminUsername": {
+                      "type": "string"
+                    },
+                    "decryptionFailed": {
+                      "type": "boolean"
+                    },
+                    "forwardBaseUrl": {
+                      "type": "string"
+                    },
+                    "forwardCredentialSetId": {
+                      "type": "string"
+                    },
+                    "instanceUrl": {
+                      "type": "string"
+                    },
+                    "lastInstallError": {
+                      "type": "string"
+                    },
+                    "lastInstallFinishedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "lastInstallStartedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "lastInstallStatus": {
+                      "type": "string"
+                    },
+                    "tenantPassword": {
+                      "type": "string"
+                    },
+                    "tenantSysId": {
+                      "type": "string"
+                    },
+                    "tenantUsername": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "instanceUrl",
+                    "adminUsername",
+                    "adminPassword",
+                    "forwardBaseUrl",
+                    "forwardCredentialSetId",
+                    "tenantUsername",
+                    "tenantPassword",
+                    "tenantSysId",
+                    "lastInstallStatus",
+                    "lastInstallError",
+                    "lastInstallStartedAt",
+                    "lastInstallFinishedAt",
+                    "updatedAt",
+                    "decryptionFailed"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
     "/servicenow.ForwardIntegrationSupported": {
       "post": {
         "operationId": "POST:servicenow.ForwardIntegrationSupported",
@@ -25580,6 +25963,9 @@
                     "forwardCredentialSetId": {
                       "type": "string"
                     },
+                    "globalConfigured": {
+                      "type": "boolean"
+                    },
                     "hasAdminPassword": {
                       "type": "boolean"
                     },
@@ -25598,16 +25984,25 @@
                     "lastInstallStatus": {
                       "type": "string"
                     },
+                    "tenantProvisioned": {
+                      "type": "boolean"
+                    },
+                    "tenantUsername": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     }
                   },
                   "required": [
                     "configured",
+                    "globalConfigured",
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
                     "forwardCredentialSetId",
+                    "tenantUsername",
+                    "tenantProvisioned",
                     "updatedAt",
                     "lastInstallStatus",
                     "lastInstallError",
@@ -25688,6 +26083,15 @@
                     "lastInstallStatus": {
                       "type": "string"
                     },
+                    "tenantPassword": {
+                      "type": "string"
+                    },
+                    "tenantSysId": {
+                      "type": "string"
+                    },
+                    "tenantUsername": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "format": "date-time",
                       "type": "string"
@@ -25703,12 +26107,137 @@
                     "adminPassword",
                     "forwardBaseUrl",
                     "forwardCredentialSetId",
+                    "tenantUsername",
+                    "tenantPassword",
+                    "tenantSysId",
                     "lastInstallStatus",
                     "lastInstallError",
                     "lastInstallStartedAt",
                     "lastInstallFinishedAt",
                     "updatedAt",
                     "decryptionFailed"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/servicenow.GetGlobalConfig": {
+      "post": {
+        "operationId": "POST:servicenow.GetGlobalConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sessionSecret": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sessionSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminUsername": {
+                      "type": "string"
+                    },
+                    "bootstrapCredentialSet": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "hasAdminPassword": {
+                      "type": "boolean"
+                    },
+                    "instanceUrl": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "instanceUrl",
+                    "adminUsername",
+                    "hasAdminPassword",
+                    "bootstrapCredentialSet",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/servicenow.GetGlobalConfigRecord": {
+      "post": {
+        "operationId": "POST:servicenow.GetGlobalConfigRecord",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sessionSecret": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sessionSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminPassword": {
+                      "type": "string"
+                    },
+                    "adminUsername": {
+                      "type": "string"
+                    },
+                    "bootstrapCredentialSet": {
+                      "type": "string"
+                    },
+                    "instanceUrl": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "instanceUrl",
+                    "adminUsername",
+                    "adminPassword",
+                    "bootstrapCredentialSet"
                   ],
                   "type": "object"
                 }
@@ -26062,16 +26591,7 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "adminPassword": {
-                    "type": "string"
-                  },
-                  "adminUsername": {
-                    "type": "string"
-                  },
                   "forwardCredentialSetId": {
-                    "type": "string"
-                  },
-                  "instanceUrl": {
                     "type": "string"
                   },
                   "sessionSecret": {
@@ -26084,9 +26604,6 @@
                 "required": [
                   "username",
                   "sessionSecret",
-                  "instanceUrl",
-                  "adminUsername",
-                  "adminPassword",
                   "forwardCredentialSetId"
                 ],
                 "type": "object"
@@ -26109,6 +26626,9 @@
                     "forwardCredentialSetId": {
                       "type": "string"
                     },
+                    "globalConfigured": {
+                      "type": "boolean"
+                    },
                     "hasAdminPassword": {
                       "type": "boolean"
                     },
@@ -26127,6 +26647,100 @@
                     "lastInstallStatus": {
                       "type": "string"
                     },
+                    "tenantProvisioned": {
+                      "type": "boolean"
+                    },
+                    "tenantUsername": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "globalConfigured",
+                    "instanceUrl",
+                    "adminUsername",
+                    "hasAdminPassword",
+                    "forwardCredentialSetId",
+                    "tenantUsername",
+                    "tenantProvisioned",
+                    "updatedAt",
+                    "lastInstallStatus",
+                    "lastInstallError",
+                    "lastInstallStartedAt",
+                    "lastInstallFinishedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/servicenow.PutGlobalConfig": {
+      "post": {
+        "operationId": "POST:servicenow.PutGlobalConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "adminPassword": {
+                    "type": "string"
+                  },
+                  "adminUsername": {
+                    "type": "string"
+                  },
+                  "bootstrapCredentialSet": {
+                    "type": "string"
+                  },
+                  "instanceUrl": {
+                    "type": "string"
+                  },
+                  "sessionSecret": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sessionSecret",
+                  "instanceUrl",
+                  "adminUsername",
+                  "adminPassword",
+                  "bootstrapCredentialSet"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminUsername": {
+                      "type": "string"
+                    },
+                    "bootstrapCredentialSet": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "hasAdminPassword": {
+                      "type": "boolean"
+                    },
+                    "instanceUrl": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     }
@@ -26136,12 +26750,8 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "forwardCredentialSetId",
-                    "updatedAt",
-                    "lastInstallStatus",
-                    "lastInstallError",
-                    "lastInstallStartedAt",
-                    "lastInstallFinishedAt"
+                    "bootstrapCredentialSet",
+                    "updatedAt"
                   ],
                   "type": "object"
                 }
@@ -26207,6 +26817,103 @@
                     "skipTlsVerify",
                     "username",
                     "password"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/servicenow.RotateTenantCredentials": {
+      "post": {
+        "operationId": "POST:servicenow.RotateTenantCredentials",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sessionSecret": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "sessionSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminUsername": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "forwardCredentialSetId": {
+                      "type": "string"
+                    },
+                    "globalConfigured": {
+                      "type": "boolean"
+                    },
+                    "hasAdminPassword": {
+                      "type": "boolean"
+                    },
+                    "instanceUrl": {
+                      "type": "string"
+                    },
+                    "lastInstallError": {
+                      "type": "string"
+                    },
+                    "lastInstallFinishedAt": {
+                      "type": "string"
+                    },
+                    "lastInstallStartedAt": {
+                      "type": "string"
+                    },
+                    "lastInstallStatus": {
+                      "type": "string"
+                    },
+                    "tenantProvisioned": {
+                      "type": "boolean"
+                    },
+                    "tenantUsername": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "globalConfigured",
+                    "instanceUrl",
+                    "adminUsername",
+                    "hasAdminPassword",
+                    "forwardCredentialSetId",
+                    "tenantUsername",
+                    "tenantProvisioned",
+                    "updatedAt",
+                    "lastInstallStatus",
+                    "lastInstallError",
+                    "lastInstallStartedAt",
+                    "lastInstallFinishedAt"
                   ],
                   "type": "object"
                 }

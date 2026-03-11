@@ -3861,3 +3861,17 @@ data:
 
   20260309190000_remove_ldap_password_cache.up.sql: |
     DROP TABLE IF EXISTS public.sf_ldap_password_cache;
+
+  20260311103000_servicenow_global_tenant_model.up.sql: |
+    ALTER TABLE public.sf_user_servicenow_configs
+      ADD COLUMN IF NOT EXISTS tenant_username text DEFAULT ''::text NOT NULL,
+      ADD COLUMN IF NOT EXISTS tenant_password text DEFAULT ''::text NOT NULL,
+      ADD COLUMN IF NOT EXISTS tenant_sys_id text DEFAULT ''::text NOT NULL;
+    
+    UPDATE public.sf_user_servicenow_configs
+    SET tenant_username = COALESCE(tenant_username, ''),
+        tenant_password = COALESCE(tenant_password, ''),
+        tenant_sys_id = COALESCE(tenant_sys_id, '')
+    WHERE tenant_username IS NULL
+       OR tenant_password IS NULL
+       OR tenant_sys_id IS NULL;
