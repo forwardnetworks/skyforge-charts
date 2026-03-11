@@ -2,7 +2,123 @@
 {{- if and (default true .Values.skyforge.keda.requireCRD) (not (.Capabilities.APIVersions.Has "keda.sh/v1alpha1/ScaledObject")) -}}
 {{- fail "skyforge.keda.enabled=true requires KEDA CRDs (keda.sh/v1alpha1/ScaledObject)" -}}
 {{- end -}}
+
+{{- if .Values.skyforge.keda.worker.enabled }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: skyforge-worker-postgresql-auth
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: db-skyforge-server-password
+      key: db-skyforge-server-password
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: skyforge-server-worker
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: skyforge-server-worker
+  pollingInterval: {{ default 15 .Values.skyforge.keda.worker.pollingInterval }}
+  cooldownPeriod: {{ default 120 .Values.skyforge.keda.worker.cooldownPeriod }}
+  minReplicaCount: {{ default 1 .Values.skyforge.keda.worker.minReplicaCount }}
+  maxReplicaCount: {{ default 6 .Values.skyforge.keda.worker.maxReplicaCount }}
+  triggers:
+    - type: postgresql
+      metadata:
+        host: {{ default "db" .Values.skyforge.db.host | quote }}
+        port: {{ default "5432" .Values.skyforge.db.port | quote }}
+        dbName: {{ default "skyforge_server" .Values.skyforge.db.name | quote }}
+        userName: {{ default "skyforge_server" .Values.skyforge.db.user | quote }}
+        sslmode: {{ default "disable" .Values.skyforge.db.sslmode | quote }}
+        query: {{ default "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'" .Values.skyforge.keda.worker.query | quote }}
+        targetQueryValue: {{ printf "%v" (default "5" .Values.skyforge.keda.worker.targetQueryValue) | quote }}
+        activationTargetQueryValue: {{ printf "%v" (default (default "1" .Values.skyforge.keda.worker.activationQueryValue) .Values.skyforge.keda.worker.activationTargetQueryValue) | quote }}
+      authenticationRef:
+        name: skyforge-worker-postgresql-auth
+{{- end }}
+
+{{- if and .Values.skyforge.jira.enabled .Values.skyforge.jira.managed .Values.skyforge.keda.jira.enabled }}
+{{- $triggers := default (list) .Values.skyforge.keda.jira.triggers -}}
+{{- if eq (len $triggers) 0 -}}
+{{- fail "skyforge.keda.jira.enabled=true requires skyforge.keda.jira.triggers" -}}
+{{- end -}}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: jira
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ default "jira" .Values.skyforge.jira.serviceName }}
+  pollingInterval: {{ default 30 .Values.skyforge.keda.jira.pollingInterval }}
+  cooldownPeriod: {{ default 900 .Values.skyforge.keda.jira.cooldownPeriod }}
+  minReplicaCount: {{ default 1 .Values.skyforge.keda.jira.minReplicaCount }}
+  maxReplicaCount: {{ default 2 .Values.skyforge.keda.jira.maxReplicaCount }}
+  triggers:
+{{ toYaml $triggers | indent 4 }}
+{{- end }}
+
+{{- if and .Values.skyforge.netbox.enabled .Values.skyforge.keda.netbox.enabled }}
+{{- $triggers := default (list) .Values.skyforge.keda.netbox.triggers -}}
+{{- if eq (len $triggers) 0 -}}
+{{- fail "skyforge.keda.netbox.enabled=true requires skyforge.keda.netbox.triggers" -}}
+{{- end -}}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: netbox
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: netbox
+  pollingInterval: {{ default 30 .Values.skyforge.keda.netbox.pollingInterval }}
+  cooldownPeriod: {{ default 900 .Values.skyforge.keda.netbox.cooldownPeriod }}
+  minReplicaCount: {{ default 1 .Values.skyforge.keda.netbox.minReplicaCount }}
+  maxReplicaCount: {{ default 2 .Values.skyforge.keda.netbox.maxReplicaCount }}
+  triggers:
+{{ toYaml $triggers | indent 4 }}
+{{- end }}
+
+{{- if and .Values.skyforge.nautobot.enabled .Values.skyforge.keda.nautobot.enabled }}
+{{- $triggers := default (list) .Values.skyforge.keda.nautobot.triggers -}}
+{{- if eq (len $triggers) 0 -}}
+{{- fail "skyforge.keda.nautobot.enabled=true requires skyforge.keda.nautobot.triggers" -}}
+{{- end -}}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: nautobot
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: nautobot
+  pollingInterval: {{ default 30 .Values.skyforge.keda.nautobot.pollingInterval }}
+  cooldownPeriod: {{ default 900 .Values.skyforge.keda.nautobot.cooldownPeriod }}
+  minReplicaCount: {{ default 1 .Values.skyforge.keda.nautobot.minReplicaCount }}
+  maxReplicaCount: {{ default 2 .Values.skyforge.keda.nautobot.maxReplicaCount }}
+  triggers:
+{{ toYaml $triggers | indent 4 }}
+{{- end }}
+
 {{- if and .Values.skyforge.rapid7.enabled .Values.skyforge.rapid7.managed .Values.skyforge.keda.rapid7.enabled }}
+{{- $triggers := default (list) .Values.skyforge.keda.rapid7.triggers -}}
+{{- if eq (len $triggers) 0 -}}
+{{- fail "skyforge.keda.rapid7.enabled=true requires skyforge.keda.rapid7.triggers" -}}
+{{- end -}}
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -14,16 +130,18 @@ spec:
   scaleTargetRef:
     name: {{ default "rapid7" .Values.skyforge.rapid7.serviceName }}
   pollingInterval: {{ default 30 .Values.skyforge.keda.rapid7.pollingInterval }}
-  cooldownPeriod: {{ default 300 .Values.skyforge.keda.rapid7.cooldownPeriod }}
-  minReplicaCount: {{ default 0 .Values.skyforge.keda.rapid7.minReplicaCount }}
-  maxReplicaCount: {{ default 1 .Values.skyforge.keda.rapid7.maxReplicaCount }}
-  {{- if not .Values.skyforge.keda.rapid7.triggers }}
-  {{- fail "skyforge.keda.rapid7.enabled=true requires skyforge.keda.rapid7.triggers" }}
-  {{- end }}
+  cooldownPeriod: {{ default 900 .Values.skyforge.keda.rapid7.cooldownPeriod }}
+  minReplicaCount: {{ default 1 .Values.skyforge.keda.rapid7.minReplicaCount }}
+  maxReplicaCount: {{ default 2 .Values.skyforge.keda.rapid7.maxReplicaCount }}
   triggers:
-{{ toYaml .Values.skyforge.keda.rapid7.triggers | indent 4 }}
+{{ toYaml $triggers | indent 4 }}
 {{- end }}
+
 {{- if and .Values.skyforge.elk.enabled .Values.skyforge.keda.elkProxy.enabled }}
+{{- $triggers := default (list) .Values.skyforge.keda.elkProxy.triggers -}}
+{{- if eq (len $triggers) 0 -}}
+{{- fail "skyforge.keda.elkProxy.enabled=true requires skyforge.keda.elkProxy.triggers" -}}
+{{- end -}}
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -35,13 +153,11 @@ spec:
   scaleTargetRef:
     name: {{ default "kibana" .Values.skyforge.elk.serviceName }}
   pollingInterval: {{ default 30 .Values.skyforge.keda.elkProxy.pollingInterval }}
-  cooldownPeriod: {{ default 300 .Values.skyforge.keda.elkProxy.cooldownPeriod }}
-  minReplicaCount: {{ default 0 .Values.skyforge.keda.elkProxy.minReplicaCount }}
-  maxReplicaCount: {{ default 1 .Values.skyforge.keda.elkProxy.maxReplicaCount }}
-  {{- if not .Values.skyforge.keda.elkProxy.triggers }}
-  {{- fail "skyforge.keda.elkProxy.enabled=true requires skyforge.keda.elkProxy.triggers" }}
-  {{- end }}
+  cooldownPeriod: {{ default 900 .Values.skyforge.keda.elkProxy.cooldownPeriod }}
+  minReplicaCount: {{ default 1 .Values.skyforge.keda.elkProxy.minReplicaCount }}
+  maxReplicaCount: {{ default 2 .Values.skyforge.keda.elkProxy.maxReplicaCount }}
   triggers:
-{{ toYaml .Values.skyforge.keda.elkProxy.triggers | indent 4 }}
+{{ toYaml $triggers | indent 4 }}
 {{- end }}
+
 {{- end }}

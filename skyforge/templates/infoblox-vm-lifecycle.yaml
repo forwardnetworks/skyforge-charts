@@ -7,6 +7,11 @@
 {{- $sa := printf "%s-vm-lifecycle" $name -}}
 {{- $image := default .Values.images.kubectl .Values.skyforge.infoblox.lifecycle.image -}}
 {{- $pullPolicy := default "IfNotPresent" .Values.skyforge.infoblox.lifecycle.pullPolicy -}}
+{{- $autoStop := default dict .Values.skyforge.infoblox.lifecycle.autoStop -}}
+{{- $autoStopMaxIdleMinutes := default 45 $autoStop.maxIdleMinutes -}}
+{{- $autoStopMaxRunMinutes := default 360 $autoStop.maxRunMinutes -}}
+{{- $reseed := default dict .Values.skyforge.infoblox.lifecycle.reseed -}}
+{{- $license := default dict .Values.skyforge.infoblox.lifecycle.license -}}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -33,6 +38,9 @@ rules:
   - apiGroups: ["kubevirt.io"]
     resources: ["virtualmachineinstances"]
     verbs: ["get", "list", "delete"]
+  - apiGroups: ["subresources.kubevirt.io"]
+    resources: ["virtualmachineinstances/console"]
+    verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -60,7 +68,10 @@ data:
   last_reset_epoch: "0"
   last_auto_stop_epoch: "0"
   last_reseed_reason: ""
-{{- if .Values.skyforge.infoblox.lifecycle.autoStop.enabled }}
+  last_access_epoch: "0"
+  license_pending: "false"
+  license_last_apply_epoch: "0"
+{{- if $autoStop.enabled }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -70,7 +81,7 @@ metadata:
     {{- include "skyforge.labels" . | nindent 4 }}
     app.kubernetes.io/component: infoblox
 spec:
-  schedule: {{ .Values.skyforge.infoblox.lifecycle.autoStop.schedule | quote }}
+  schedule: {{ $autoStop.schedule | quote }}
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
@@ -100,7 +111,9 @@ spec:
                 - name: STATE_CM
                   value: {{ $stateCM | quote }}
                 - name: MAX_RUN_MINUTES
-                  value: {{ .Values.skyforge.infoblox.lifecycle.autoStop.maxRunMinutes | quote }}
+                  value: {{ $autoStopMaxRunMinutes | quote }}
+                - name: MAX_IDLE_MINUTES
+                  value: {{ $autoStopMaxIdleMinutes | quote }}
               command:
                 - /bin/sh
                 - -ec
@@ -120,6 +133,9 @@ spec:
                     last_reset_epoch: "0"
                     last_auto_stop_epoch: "0"
                     last_reseed_reason: ""
+                    last_access_epoch: "0"
+                    license_pending: "false"
+                    license_last_apply_epoch: "0"
                   EOF
                   }
 
@@ -127,6 +143,11 @@ spec:
                     key="$1"
                     value="$2"
                     kubectl -n "${POD_NAMESPACE}" patch configmap "${STATE_CM}" --field-manager=helm --type=merge -p "{\"data\":{\"${key}\":\"${value}\"}}" >/dev/null
+                  }
+
+                  get_state_value() {
+                    key="$1"
+                    kubectl -n "${POD_NAMESPACE}" get configmap "${STATE_CM}" -o jsonpath="{.data.${key}}" 2>/dev/null || true
                   }
 
                   ensure_state_configmap
@@ -146,16 +167,36 @@ spec:
                     exit 0
                   fi
 
+                  last_access="$(get_state_value "last_access_epoch")"
+                  if ! echo "${last_access}" | grep -Eq '^[0-9]+$'; then
+                    last_access="0"
+                  fi
+                  if [ "${last_access}" -le 0 ]; then
+                    last_access="${start_epoch}"
+                    set_state_value "last_access_epoch" "${last_access}"
+                  fi
+
                   max_runtime_seconds="$((MAX_RUN_MINUTES * 60))"
-                  elapsed="$((now_epoch - start_epoch))"
-                  if [ "${elapsed}" -lt "${max_runtime_seconds}" ]; then
+                  max_idle_seconds="$((MAX_IDLE_MINUTES * 60))"
+                  runtime_elapsed="$((now_epoch - start_epoch))"
+                  idle_elapsed="$((now_epoch - last_access))"
+
+                  stop_reason=""
+                  if [ "${max_runtime_seconds}" -gt 0 ] && [ "${runtime_elapsed}" -ge "${max_runtime_seconds}" ]; then
+                    stop_reason="max_runtime"
+                  fi
+                  if [ -z "${stop_reason}" ] && [ "${max_idle_seconds}" -gt 0 ] && [ "${idle_elapsed}" -ge "${max_idle_seconds}" ]; then
+                    stop_reason="idle_timeout"
+                  fi
+                  if [ -z "${stop_reason}" ]; then
                     exit 0
                   fi
 
                   kubectl -n "${POD_NAMESPACE}" patch vm "${VM_NAME}" --field-manager=helm --type=merge -p '{"spec":{"runStrategy":"Halted"}}' >/dev/null
                   set_state_value "last_auto_stop_epoch" "${now_epoch}"
+                  set_state_value "last_reseed_reason" "${stop_reason}"
 {{- end }}
-{{- if .Values.skyforge.infoblox.lifecycle.reseed.enabled }}
+{{- if $reseed.enabled }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -165,7 +206,7 @@ metadata:
     {{- include "skyforge.labels" . | nindent 4 }}
     app.kubernetes.io/component: infoblox
 spec:
-  schedule: {{ .Values.skyforge.infoblox.lifecycle.reseed.schedule | quote }}
+  schedule: {{ $reseed.schedule | quote }}
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
@@ -195,9 +236,9 @@ spec:
                 - name: STATE_CM
                   value: {{ $stateCM | quote }}
                 - name: RESET_AFTER_DAYS
-                  value: {{ .Values.skyforge.infoblox.lifecycle.reseed.resetAfterDays | quote }}
+                  value: {{ default 60 $reseed.resetAfterDays | quote }}
                 - name: HALT_WAIT_SECONDS
-                  value: {{ .Values.skyforge.infoblox.lifecycle.reseed.haltWaitSeconds | quote }}
+                  value: {{ default 30 $reseed.haltWaitSeconds | quote }}
               command:
                 - /bin/sh
                 - -ec
@@ -217,6 +258,9 @@ spec:
                     last_reset_epoch: "0"
                     last_auto_stop_epoch: "0"
                     last_reseed_reason: ""
+                    last_access_epoch: "0"
+                    license_pending: "false"
+                    license_last_apply_epoch: "0"
                   EOF
                   }
 
@@ -247,7 +291,255 @@ spec:
                   sleep "${HALT_WAIT_SECONDS}"
                   kubectl -n "${POD_NAMESPACE}" delete vmi "${VM_NAME}" --ignore-not-found=true >/dev/null || true
                   kubectl -n "${POD_NAMESPACE}" patch vm "${VM_NAME}" --field-manager=helm --type=merge -p '{"spec":{"runStrategy":"Always"}}' >/dev/null
+
                   set_state_value "last_reset_epoch" "${now_epoch}"
                   set_state_value "last_reseed_reason" "temp_license_renewal"
+                  set_state_value "license_pending" "true"
+                  set_state_value "last_access_epoch" "${now_epoch}"
+{{- end }}
+{{- if $license.enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $name }}-vm-license
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: infoblox
+spec:
+  schedule: {{ $license.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      template:
+        metadata:
+          labels:
+            {{- include "skyforge.labels" . | nindent 12 }}
+            app.kubernetes.io/component: infoblox
+        spec:
+          serviceAccountName: {{ $sa }}
+          enableServiceLinks: false
+          restartPolicy: OnFailure
+          containers:
+            - name: license
+              image: {{ $image | quote }}
+              imagePullPolicy: {{ $pullPolicy | quote }}
+              env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                - name: VM_NAME
+                  value: {{ $name | quote }}
+                - name: STATE_CM
+                  value: {{ $stateCM | quote }}
+                - name: MAX_ATTEMPTS
+                  value: {{ default 3 $license.maxAttempts | quote }}
+                - name: ATTEMPT_SLEEP_SECONDS
+                  value: {{ default 20 $license.attemptSleepSeconds | quote }}
+                - name: PROMPT_WAIT_SECONDS
+                  value: {{ default 180 $license.promptWaitSeconds | quote }}
+                - name: CONSOLE_TIMEOUT_SECONDS
+                  value: {{ default 240 $license.consoleTimeoutSeconds | quote }}
+                - name: POST_BOOTSTRAP_WAIT_SECONDS
+                  value: {{ default 45 $license.postBootstrapWaitSeconds | quote }}
+                - name: INITIAL_WAIT_SECONDS
+                  value: {{ default 8 $license.initialWaitSeconds | quote }}
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+
+                  ensure_state_configmap() {
+                    if kubectl -n "${POD_NAMESPACE}" get configmap "${STATE_CM}" >/dev/null 2>&1; then
+                      return 0
+                    fi
+                    cat <<EOF | kubectl -n "${POD_NAMESPACE}" apply -f -
+                  apiVersion: v1
+                  kind: ConfigMap
+                  metadata:
+                    name: ${STATE_CM}
+                  data:
+                    last_reset_epoch: "0"
+                    last_auto_stop_epoch: "0"
+                    last_reseed_reason: ""
+                    last_access_epoch: "0"
+                    license_pending: "false"
+                    license_last_apply_epoch: "0"
+                  EOF
+                  }
+
+                  get_state_value() {
+                    key="$1"
+                    kubectl -n "${POD_NAMESPACE}" get configmap "${STATE_CM}" -o jsonpath="{.data.${key}}" 2>/dev/null || true
+                  }
+
+                  set_state_value() {
+                    key="$1"
+                    value="$2"
+                    kubectl -n "${POD_NAMESPACE}" patch configmap "${STATE_CM}" --field-manager=helm --type=merge -p "{\"data\":{\"${key}\":\"${value}\"}}" >/dev/null
+                  }
+
+                  probe_https_code() {
+                    code="$(curl -k -sS -m 10 -o /dev/null -w "%{http_code}" "https://{{ $name }}" 2>/dev/null || echo "000")"
+                    if ! echo "${code}" | grep -Eq '^[0-9]{3}$'; then
+                      code="000"
+                    fi
+                    printf '%s\n' "${code}"
+                  }
+
+                  install_pkgs() {
+                    if command -v apk >/dev/null 2>&1; then
+                      apk add --no-cache "$@"
+                      return 0
+                    fi
+                    if command -v apt-get >/dev/null 2>&1; then
+                      apt-get update >/dev/null
+                      DEBIAN_FRONTEND=noninteractive apt-get install -y "$@" >/dev/null
+                      return 0
+                    fi
+                    if command -v microdnf >/dev/null 2>&1; then
+                      microdnf install -y "$@" >/dev/null
+                      return 0
+                    fi
+                    return 1
+                  }
+
+                  ensure_expect() {
+                    if command -v expect >/dev/null 2>&1; then
+                      return 0
+                    fi
+                    install_pkgs expect || return 1
+                    command -v expect >/dev/null 2>&1
+                  }
+
+                  ensure_curl() {
+                    if command -v curl >/dev/null 2>&1; then
+                      return 0
+                    fi
+                    install_pkgs curl || return 1
+                    command -v curl >/dev/null 2>&1
+                  }
+
+                  ensure_virtctl() {
+                    if command -v virtctl >/dev/null 2>&1; then
+                      return 0
+                    fi
+                    ensure_curl || return 1
+
+                    kv_ver="$(kubectl -n kubevirt get kubevirt kubevirt -o jsonpath='{.status.observedKubeVirtVersion}' 2>/dev/null || true)"
+                    if [ -z "${kv_ver}" ]; then
+                      kv_img="$(kubectl -n kubevirt get deploy virt-api -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || true)"
+                      kv_ver="${kv_img##*:}"
+                    fi
+                    if [ -z "${kv_ver}" ]; then
+                      kv_ver="v1.6.0"
+                    fi
+                    case "${kv_ver}" in
+                      v*) ;;
+                      *) kv_ver="v${kv_ver}" ;;
+                    esac
+
+                    arch="$(uname -m)"
+                    case "${arch}" in
+                      x86_64|amd64) arch="amd64" ;;
+                      aarch64|arm64) arch="arm64" ;;
+                      *) arch="amd64" ;;
+                    esac
+
+                    url="https://github.com/kubevirt/kubevirt/releases/download/${kv_ver}/virtctl-${kv_ver}-linux-${arch}"
+                    curl -fsSL -o /tmp/virtctl "${url}" || return 1
+                    chmod +x /tmp/virtctl
+                    mv /tmp/virtctl /usr/local/bin/virtctl || return 1
+                    command -v virtctl >/dev/null 2>&1
+                  }
+
+                  run_bootstrap_once() {
+                    timeout_cmd=""
+                    if command -v timeout >/dev/null 2>&1; then
+                      timeout_cmd="timeout ${CONSOLE_TIMEOUT_SECONDS}s"
+                    fi
+
+                    # shellcheck disable=SC2086
+                    ${timeout_cmd} expect <<'EOF'
+                  set timeout $env(PROMPT_WAIT_SECONDS)
+                  log_user 1
+                  spawn virtctl --namespace $env(POD_NAMESPACE) console $env(VM_NAME)
+                  after [expr {$env(INITIAL_WAIT_SECONDS) * 1000}]
+                  for {set i 0} {$i < 4} {incr i} {
+                    send -- "\r"
+                    after 250
+                  }
+
+                  send -- "set network\r"
+                  after 1500
+                  for {set i 0} {$i < 10} {incr i} {
+                    send -- "\r"
+                    send -- "y\r"
+                    after 250
+                  }
+
+                  send -- "set temp_license\r"
+                  after 1500
+                  for {set i 0} {$i < 24} {incr i} {
+                    send -- "\r"
+                    send -- "y\r"
+                    after 250
+                  }
+
+                  send -- "save config\r"
+                  after 1200
+                  send -- "exit\r"
+                  after 500
+                  send "\035"
+                  expect {
+                    eof {}
+                    timeout {}
+                  }
+                  EOF
+                  }
+
+                  ensure_state_configmap
+                  run_strategy="$(kubectl -n "${POD_NAMESPACE}" get vm "${VM_NAME}" -o jsonpath='{.spec.runStrategy}' 2>/dev/null || true)"
+                  if [ "${run_strategy}" != "Always" ]; then
+                    exit 0
+                  fi
+                  if ! kubectl -n "${POD_NAMESPACE}" get vmi "${VM_NAME}" >/dev/null 2>&1; then
+                    exit 0
+                  fi
+
+                  pending="$(get_state_value license_pending)"
+                  code="$(probe_https_code)"
+                  if [ "${pending}" != "true" ] && [ "${code}" != "000" ]; then
+                    exit 0
+                  fi
+
+                  if ! ensure_expect || ! ensure_virtctl; then
+                    set_state_value "license_pending" "true"
+                    exit 0
+                  fi
+
+                  attempt=1
+                  while [ "${attempt}" -le "${MAX_ATTEMPTS}" ]; do
+                    if run_bootstrap_once; then
+                      sleep "${POST_BOOTSTRAP_WAIT_SECONDS}"
+                      code="$(probe_https_code)"
+                      if [ "${code}" != "000" ]; then
+                        now_epoch="$(date -u +%s)"
+                        set_state_value "license_pending" "false"
+                        set_state_value "license_last_apply_epoch" "${now_epoch}"
+                        set_state_value "last_access_epoch" "${now_epoch}"
+                        exit 0
+                      fi
+                    fi
+                    sleep "${ATTEMPT_SLEEP_SECONDS}"
+                    attempt="$((attempt + 1))"
+                  done
+
+                  set_state_value "license_pending" "true"
 {{- end }}
 {{- end }}

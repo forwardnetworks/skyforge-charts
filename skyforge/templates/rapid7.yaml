@@ -48,7 +48,7 @@ spec:
           image: {{ required "skyforge.rapid7.image is required when rapid7.managed=true" .Values.skyforge.rapid7.image | quote }}
           imagePullPolicy: {{ $pullPolicy | quote }}
           ports:
-            - name: http
+            - name: https
               containerPort: {{ $containerPort }}
           env:
             {{- range $k, $v := .Values.skyforge.rapid7.env }}
@@ -57,20 +57,20 @@ spec:
             {{- end }}
           readinessProbe:
             tcpSocket:
-              port: http
+              port: https
             initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
           startupProbe:
             tcpSocket:
-              port: http
+              port: https
             # Rapid7 first boot can take a long time while extracting content.
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 180
           livenessProbe:
             tcpSocket:
-              port: http
+              port: https
             initialDelaySeconds: 120
             periodSeconds: 20
             timeoutSeconds: 5
@@ -100,7 +100,8 @@ spec:
     app.kubernetes.io/name: {{ $name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
   ports:
-    - name: http
+    - name: https
       port: {{ $port }}
-      targetPort: http
+      targetPort: https
+      appProtocol: https
 {{- end }}

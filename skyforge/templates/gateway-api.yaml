@@ -16,9 +16,11 @@
 {{- $forwardGrafanaPrefix := default "/grafana" .Values.skyforge.forwardCluster.observabilityUI.grafana.externalPrefix -}}
 {{- $forwardGrafanaSvcName := default "fwd-grafana-service" .Values.skyforge.forwardCluster.observabilityUI.grafana.serviceName -}}
 {{- $forwardGrafanaSvcPort := default 3000 .Values.skyforge.forwardCluster.observabilityUI.grafana.servicePort -}}
+{{- $forwardGrafanaRewriteTarget := default "/" .Values.skyforge.forwardCluster.observabilityUI.grafana.rewritePrefixMatch -}}
 {{- $forwardPromPrefix := default "/prometheus" .Values.skyforge.forwardCluster.observabilityUI.prometheus.externalPrefix -}}
 {{- $forwardPromSvcName := default "fwd-prometheus" .Values.skyforge.forwardCluster.observabilityUI.prometheus.serviceName -}}
 {{- $forwardPromSvcPort := default 9090 .Values.skyforge.forwardCluster.observabilityUI.prometheus.servicePort -}}
+{{- $forwardPromRewriteTarget := default "/" .Values.skyforge.forwardCluster.observabilityUI.prometheus.rewritePrefixMatch -}}
 
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -198,7 +200,7 @@ spec:
           urlRewrite:
             path:
               type: ReplacePrefixMatch
-              replacePrefixMatch: /
+              replacePrefixMatch: {{ $forwardGrafanaRewriteTarget | quote }}
       backendRefs:
         - name: {{ $forwardGrafanaSvcName }}
           port: {{ int $forwardGrafanaSvcPort }}
@@ -220,7 +222,7 @@ spec:
           urlRewrite:
             path:
               type: ReplacePrefixMatch
-              replacePrefixMatch: /
+              replacePrefixMatch: {{ $forwardPromRewriteTarget | quote }}
       backendRefs:
         - name: {{ $forwardPromSvcName }}
           port: {{ int $forwardPromSvcPort }}

@@ -3,6 +3,7 @@
 {{- $port := default 5601 .Values.skyforge.elk.servicePort -}}
 {{- $containerPort := default 5601 .Values.skyforge.elk.containerPort -}}
 {{- $pullPolicy := default "IfNotPresent" .Values.skyforge.elk.pullPolicy -}}
+{{- $elkPrefix := default "/elk" .Values.skyforge.elk.externalPrefix -}}
 ---
 {{- if .Values.skyforge.elk.storage.enabled }}
 apiVersion: v1
@@ -47,6 +48,31 @@ spec:
         - name: elk
           image: {{ required "skyforge.elk.image is required when elk.managed=true" .Values.skyforge.elk.image | quote }}
           imagePullPolicy: {{ $pullPolicy | quote }}
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              KIBANA_CFG="/opt/kibana/config/kibana.yml"
+              upsert_cfg() {
+                local match_expr="$1"
+                local replacement="$2"
+                if grep -Eq "${match_expr}" "${KIBANA_CFG}"; then
+                  sed -Ei "s|${match_expr}.*|${replacement}|" "${KIBANA_CFG}"
+                else
+                  printf '\n%s\n' "${replacement}" >> "${KIBANA_CFG}"
+                fi
+              }
+              if [ -n "${SERVER_BASEPATH:-}" ]; then
+                upsert_cfg "^[#[:space:]]*server\\.basePath:" "server.basePath: ${SERVER_BASEPATH}"
+              fi
+              if [ -n "${SERVER_REWRITEBASEPATH:-}" ]; then
+                upsert_cfg "^[#[:space:]]*server\\.rewriteBasePath:" "server.rewriteBasePath: ${SERVER_REWRITEBASEPATH}"
+              fi
+              if [ -n "${SERVER_PUBLICBASEURL:-}" ]; then
+                upsert_cfg "^[#[:space:]]*server\\.publicBaseUrl:" "server.publicBaseUrl: ${SERVER_PUBLICBASEURL}"
+              fi
+              exec /usr/local/bin/start.sh
           ports:
             - name: kibana
               containerPort: {{ $containerPort }}
@@ -55,6 +81,18 @@ spec:
             - name: logstash
               containerPort: 5044
           env:
+            {{- if not (hasKey .Values.skyforge.elk.env "SERVER_BASEPATH") }}
+            - name: SERVER_BASEPATH
+              value: {{ $elkPrefix | quote }}
+            {{- end }}
+            {{- if not (hasKey .Values.skyforge.elk.env "SERVER_REWRITEBASEPATH") }}
+            - name: SERVER_REWRITEBASEPATH
+              value: "true"
+            {{- end }}
+            {{- if and (not (hasKey .Values.skyforge.elk.env "SERVER_PUBLICBASEURL")) (ne (default "" .Values.skyforge.elkUrl | trim) "") }}
+            - name: SERVER_PUBLICBASEURL
+              value: {{ .Values.skyforge.elkUrl | quote }}
+            {{- end }}
             {{- range $k, $v := .Values.skyforge.elk.env }}
             - name: {{ $k }}
               value: {{ $v | quote }}

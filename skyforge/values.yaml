@@ -217,7 +217,11 @@ skyforge:
         enabled: true
         # Cron expression for checking VM runtime.
         schedule: "*/15 * * * *"
+        # Halt VM after this many minutes without observed Skyforge access.
+        # Access timestamps are updated from Infoblox status/wake/console flows.
+        maxIdleMinutes: 45
         # Halt VM after this many minutes of continuous runtime.
+        # This is a hard safety cap even if access signals continue.
         maxRunMinutes: 360
       reseed:
         enabled: true
@@ -226,6 +230,18 @@ skyforge:
         # Restart VM from stock containerDisk after this many days.
         resetAfterDays: 60
         haltWaitSeconds: 30
+      license:
+        # Best-effort periodic temp-license reconcile.
+        # Runs non-interactive console bootstrap when HTTPS is still down
+        # or when reseed marks license_pending=true.
+        enabled: true
+        schedule: "*/20 * * * *"
+        maxAttempts: 3
+        attemptSleepSeconds: 20
+        promptWaitSeconds: 180
+        consoleTimeoutSeconds: 240
+        postBootstrapWaitSeconds: 45
+        initialWaitSeconds: 8
     # When true, create a simple Service alias (and Endpoints for IP targets)
     # so Gateway can route directly without sidecar/app proxy Deployments.
     serviceAlias:
@@ -275,7 +291,7 @@ skyforge:
       JVM_MAXIMUM_MEMORY: "4096m"
   rapid7:
     enabled: false
-    # In-cluster Rapid7 Service wiring (no extra proxy).
+    # In-cluster Rapid7 Service wiring.
     managed: false
     image: ""
     pullPolicy: "IfNotPresent"
@@ -297,6 +313,11 @@ skyforge:
         cpu: "4"
         memory: "16Gi"
     env: {}
+    backendTLS:
+      enabled: false
+      hostname: "rapid7"
+      caConfigMapName: "rapid7-ca"
+      policyName: "rapid7-backend-tls"
   elk:
     enabled: false
     managed: false
@@ -308,7 +329,7 @@ skyforge:
     servicePort: 5601
     containerPort: 5601
     externalPrefix: "/elk"
-    rewritePrefixToRoot: true
+    rewritePrefixToRoot: false
     storage:
       enabled: true
       size: "20Gi"
@@ -324,35 +345,78 @@ skyforge:
       ELASTICSEARCH_START: "1"
       LOGSTASH_START: "1"
       KIBANA_START: "1"
+      SERVER_BASEPATH: "/elk"
+      SERVER_REWRITEBASEPATH: "true"
   keda:
     # Optional KEDA autoscaling for heavy managed integrations.
     # Requires KEDA CRDs to be installed cluster-wide.
     enabled: false
     requireCRD: true
+    worker:
+      enabled: false
+      pollingInterval: 15
+      cooldownPeriod: 120
+      minReplicaCount: 1
+      maxReplicaCount: 6
+      # Queue pressure query against Skyforge task state.
+      query: "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'"
+      activationTargetQueryValue: "1"
+      targetQueryValue: "5"
+    jira:
+      enabled: false
+      pollingInterval: 30
+      cooldownPeriod: 900
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      triggers:
+        - type: cpu
+          metricType: Utilization
+          metadata:
+            value: "70"
+    netbox:
+      enabled: false
+      pollingInterval: 30
+      cooldownPeriod: 900
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      triggers:
+        - type: cpu
+          metricType: Utilization
+          metadata:
+            value: "70"
+    nautobot:
+      enabled: false
+      pollingInterval: 30
+      cooldownPeriod: 900
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      triggers:
+        - type: cpu
+          metricType: Utilization
+          metadata:
+            value: "70"
     rapid7:
       enabled: false
       pollingInterval: 30
-      cooldownPeriod: 300
-      minReplicaCount: 0
-      maxReplicaCount: 1
-      # Required when rapid7.enabled=true and this block is enabled.
-      # Example:
-      # triggers:
-      #   - type: prometheus
-      #     metadata:
-      #       serverAddress: http://prometheus-server.monitoring.svc.cluster.local:9090
-      #       metricName: rapid7_requests_per_sec
-      #       query: sum(rate(http_requests_total{app="rapid7"}[2m]))
-      #       threshold: "1"
-      triggers: []
+      cooldownPeriod: 900
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      triggers:
+        - type: cpu
+          metricType: Utilization
+          metadata:
+            value: "70"
     elkProxy:
       enabled: false
       pollingInterval: 30
-      cooldownPeriod: 300
-      minReplicaCount: 0
-      maxReplicaCount: 1
-      # Required when elk.enabled=true and this block is enabled.
-      triggers: []
+      cooldownPeriod: 900
+      minReplicaCount: 1
+      maxReplicaCount: 2
+      triggers:
+        - type: cpu
+          metricType: Utilization
+          metadata:
+            value: "70"
   yaadeUrl: "http://yaade"
   yaadeAdminUsername: "admin"
   yaade:

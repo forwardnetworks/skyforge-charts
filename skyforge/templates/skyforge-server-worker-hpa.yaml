@@ -1,4 +1,4 @@
-{{- if .Values.skyforge.worker.autoscaling.enabled }}
+{{- if and .Values.skyforge.worker.autoscaling.enabled (not (and .Values.skyforge.keda .Values.skyforge.keda.enabled .Values.skyforge.keda.worker.enabled)) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
