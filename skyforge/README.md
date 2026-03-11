@@ -40,7 +40,6 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `skyforge.domain`: Email/domain suffix used by default users.
 - `skyforge.gateway.addresses`: Optional explicit Cilium Gateway address list (recommended for node-IP ingress to avoid `AddressNotAssigned` status).
 - Dedicated worker deployment is always enabled as a singleton (`replicas: 1`) and processes queued runs from PubSub.
-- `skyforge.cloudflareTunnel`: Optional `cloudflared` tunnel to expose Skyforge externally (see `components/charts/skyforge/docs/cloudflare-tunnel.md`).
 - `skyforge.auth.mode`: Skyforge browser auth mode (`local` or `oidc`).
 - `skyforge.dex.authMode`: Dex connector profile (`google`, `local`, `oidc`).
 - `skyforge.redoc.enabled`: Enable the ReDoc API docs UI.

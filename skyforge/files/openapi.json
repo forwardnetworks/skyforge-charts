@@ -3700,6 +3700,9 @@
           "swaggerUIEnabled": {
             "type": "boolean"
           },
+          "teamsEnabled": {
+            "type": "boolean"
+          },
           "yaadeEnabled": {
             "type": "boolean"
           }
@@ -3710,6 +3713,7 @@
           "yaadeEnabled",
           "swaggerUIEnabled",
           "forwardEnabled",
+          "teamsEnabled",
           "netboxEnabled",
           "nautobotEnabled",
           "infobloxEnabled",
@@ -3810,6 +3814,29 @@
         "additionalProperties": {
           "type": "object"
         },
+        "type": "object"
+      },
+      "teams.ForwardCredentials": {
+        "properties": {
+          "baseUrl": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "skipTlsVerify": {
+            "type": "boolean"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "baseUrl",
+          "skipTlsVerify",
+          "username",
+          "password"
+        ],
         "type": "object"
       },
       "variablegroups.UserVariableGroup": {
@@ -4679,6 +4706,193 @@
           }
         },
         "summary": "PushAdminServiceNowForwardConfig performs admin-driven app/bootstrap push (admin\nonly).\n"
+      }
+    },
+    "/api/admin/integrations/teams/global-config": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminTeamsGlobalConfig",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "callbackUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "hasInboundSharedSecret": {
+                      "type": "boolean"
+                    },
+                    "publicBaseUrl": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "enabled",
+                    "displayName",
+                    "publicBaseUrl",
+                    "callbackUrl",
+                    "hasInboundSharedSecret",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminTeamsGlobalConfig returns global Teams bridge settings (admin only).\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.PutAdminTeamsGlobalConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "inboundSharedSecret": {
+                    "type": "string"
+                  },
+                  "publicBaseUrl": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "displayName",
+                  "publicBaseUrl",
+                  "inboundSharedSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "callbackUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "hasInboundSharedSecret": {
+                      "type": "boolean"
+                    },
+                    "publicBaseUrl": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "enabled",
+                    "displayName",
+                    "publicBaseUrl",
+                    "callbackUrl",
+                    "hasInboundSharedSecret",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutAdminTeamsGlobalConfig updates global Teams bridge settings (admin only).\n"
+      }
+    },
+    "/api/admin/integrations/teams/test/outgoing": {
+      "post": {
+        "operationId": "POST:skyforge.TestAdminTeamsOutgoing",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "webhookUrl": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "webhookUrl",
+                  "text"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "sent": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "sent",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "TestAdminTeamsOutgoing verifies outbound Teams bridge delivery using a provided\nwebhook URL.\n"
       }
     },
     "/api/admin/node-metrics": {
@@ -11767,6 +11981,232 @@
         "summary": "WakeServiceNowPDI attempts to wake the user's ServiceNow PDI and waits briefly\nfor it to become responsive.\n"
       }
     },
+    "/api/integrations/teams": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserTeamsConfig",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "callbackUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "defaultNetworkId": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "forwardCredentialSetId": {
+                      "type": "string"
+                    },
+                    "globalConfigured": {
+                      "type": "boolean"
+                    },
+                    "hasOutboundWebhook": {
+                      "type": "boolean"
+                    },
+                    "teamsUserRef": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "globalConfigured",
+                    "enabled",
+                    "displayName",
+                    "callbackUrl",
+                    "teamsUserRef",
+                    "hasOutboundWebhook",
+                    "forwardCredentialSetId",
+                    "defaultNetworkId",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserTeamsConfig returns the current user's Teams bridge settings.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.PutUserTeamsConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "defaultNetworkId": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "forwardCredentialSetId": {
+                    "type": "string"
+                  },
+                  "outboundWebhookUrl": {
+                    "type": "string"
+                  },
+                  "teamsUserRef": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "teamsUserRef",
+                  "outboundWebhookUrl",
+                  "forwardCredentialSetId",
+                  "defaultNetworkId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "callbackUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "defaultNetworkId": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "forwardCredentialSetId": {
+                      "type": "string"
+                    },
+                    "globalConfigured": {
+                      "type": "boolean"
+                    },
+                    "hasOutboundWebhook": {
+                      "type": "boolean"
+                    },
+                    "teamsUserRef": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "globalConfigured",
+                    "enabled",
+                    "displayName",
+                    "callbackUrl",
+                    "teamsUserRef",
+                    "hasOutboundWebhook",
+                    "forwardCredentialSetId",
+                    "defaultNetworkId",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutUserTeamsConfig stores the current user's Teams bridge settings.\n"
+      }
+    },
+    "/api/integrations/teams/events": {
+      "post": {
+        "description": "back to the user's configured outbound webhook.\n",
+        "operationId": "POST:skyforge.HandleTeamsBridgeEvent",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "HandleTeamsBridgeEvent executes a Teams-like bridge command and optionally posts\nthe result\n"
+      }
+    },
+    "/api/integrations/teams/test/outgoing": {
+      "post": {
+        "operationId": "POST:skyforge.TestUserTeamsOutgoing",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "sent": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "sent",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "TestUserTeamsOutgoing sends a test message using the current user's configured\nwebhook.\n"
+      }
+    },
     "/api/netlab/runs": {
       "get": {
         "operationId": "GET:skyforge.GetNetlabRuns",
@@ -13150,9 +13590,6 @@
                     "elkBaseUrl": {
                       "type": "string"
                     },
-                    "externalUrl": {
-                      "type": "string"
-                    },
                     "features": {
                       "$ref": "#/components/schemas/skyforgecore.FeaturesConfig"
                     },
@@ -13205,7 +13642,6 @@
                     "supportText",
                     "supportUrl",
                     "themeDefault",
-                    "externalUrl",
                     "authMode",
                     "auth",
                     "oidcEnabled",
@@ -14885,6 +15321,93 @@
           }
         },
         "summary": "GetUserScopeContainerlabTemplates lists Containerlab templates for a user scope.\n"
+      }
+    },
+    "/api/users/{id}/containerlab/topologies/validate": {
+      "post": {
+        "operationId": "POST:skyforge.ValidateContainerlabTopologyYAML",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "title": "Name drives normalization defaults and preview metadata only.\n",
+                    "type": "string"
+                  },
+                  "topologyYAML": {
+                    "title": "TopologyYAML is the raw containerlab topology YAML.\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "topologyYAML"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "errors": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "normalizedYAML": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "valid": {
+                      "type": "boolean"
+                    },
+                    "warnings": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "normalizedYAML",
+                    "warnings",
+                    "errors",
+                    "valid"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ValidateContainerlabTopologyYAML validates and normalizes containerlab topology\nYAML for the lab designer.\n"
       }
     },
     "/api/users/{id}/deployment-templates/resource-estimate": {
@@ -25178,6 +25701,19 @@
         }
       }
     },
+    "/internal/cron/servicenow/pdi/keepalive": {
+      "post": {
+        "operationId": "POST:skyforge.CronServiceNowPDIKeepalive",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
     "/internal/cron/tasks/metrics": {
       "post": {
         "operationId": "POST:skyforge.CronRefreshTaskQueueMetrics",
@@ -28385,6 +28921,704 @@
           }
         },
         "summary": "TaskQueueDiag returns queue diagnostics from task storage.\n"
+      }
+    },
+    "/teams.GetConfig": {
+      "post": {
+        "operationId": "POST:teams.GetConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sessionSecret": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "sessionSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "callbackUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "defaultNetworkId": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "forwardCredentialSetId": {
+                      "type": "string"
+                    },
+                    "globalConfigured": {
+                      "type": "boolean"
+                    },
+                    "hasOutboundWebhook": {
+                      "type": "boolean"
+                    },
+                    "teamsUserRef": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "globalConfigured",
+                    "enabled",
+                    "displayName",
+                    "callbackUrl",
+                    "teamsUserRef",
+                    "hasOutboundWebhook",
+                    "forwardCredentialSetId",
+                    "defaultNetworkId",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/teams.GetConfigRecord": {
+      "post": {
+        "operationId": "POST:teams.GetConfigRecord",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sessionSecret": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "sessionSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "callbackUrl": {
+                      "type": "string"
+                    },
+                    "decryptionFailed": {
+                      "type": "boolean"
+                    },
+                    "defaultNetworkId": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "forwardCredentialSetId": {
+                      "type": "string"
+                    },
+                    "inboundSharedSecret": {
+                      "type": "string"
+                    },
+                    "outboundWebhookUrl": {
+                      "type": "string"
+                    },
+                    "publicBaseUrl": {
+                      "type": "string"
+                    },
+                    "teamsUserRef": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "enabled",
+                    "displayName",
+                    "publicBaseUrl",
+                    "callbackUrl",
+                    "inboundSharedSecret",
+                    "teamsUserRef",
+                    "outboundWebhookUrl",
+                    "forwardCredentialSetId",
+                    "defaultNetworkId",
+                    "updatedAt",
+                    "decryptionFailed"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/teams.GetGlobalConfig": {
+      "post": {
+        "operationId": "POST:teams.GetGlobalConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sessionSecret": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sessionSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "callbackUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "hasInboundSharedSecret": {
+                      "type": "boolean"
+                    },
+                    "publicBaseUrl": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "enabled",
+                    "displayName",
+                    "publicBaseUrl",
+                    "callbackUrl",
+                    "hasInboundSharedSecret",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/teams.GetGlobalConfigRecord": {
+      "post": {
+        "operationId": "POST:teams.GetGlobalConfigRecord",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sessionSecret": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sessionSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "inboundSharedSecret": {
+                      "type": "string"
+                    },
+                    "publicBaseUrl": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "displayName",
+                    "publicBaseUrl",
+                    "inboundSharedSecret"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/teams.PutConfig": {
+      "post": {
+        "operationId": "POST:teams.PutConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "defaultNetworkId": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "forwardCredentialSetId": {
+                    "type": "string"
+                  },
+                  "outboundWebhookUrl": {
+                    "type": "string"
+                  },
+                  "sessionSecret": {
+                    "type": "string"
+                  },
+                  "teamsUserRef": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "sessionSecret",
+                  "teamsUserRef",
+                  "outboundWebhookUrl",
+                  "forwardCredentialSetId",
+                  "defaultNetworkId",
+                  "enabled"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "callbackUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "defaultNetworkId": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "forwardCredentialSetId": {
+                      "type": "string"
+                    },
+                    "globalConfigured": {
+                      "type": "boolean"
+                    },
+                    "hasOutboundWebhook": {
+                      "type": "boolean"
+                    },
+                    "teamsUserRef": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "globalConfigured",
+                    "enabled",
+                    "displayName",
+                    "callbackUrl",
+                    "teamsUserRef",
+                    "hasOutboundWebhook",
+                    "forwardCredentialSetId",
+                    "defaultNetworkId",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/teams.PutGlobalConfig": {
+      "post": {
+        "operationId": "POST:teams.PutGlobalConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "inboundSharedSecret": {
+                    "type": "string"
+                  },
+                  "publicBaseUrl": {
+                    "type": "string"
+                  },
+                  "sessionSecret": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sessionSecret",
+                  "enabled",
+                  "displayName",
+                  "publicBaseUrl",
+                  "inboundSharedSecret"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "callbackUrl": {
+                      "type": "string"
+                    },
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "hasInboundSharedSecret": {
+                      "type": "boolean"
+                    },
+                    "publicBaseUrl": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "enabled",
+                    "displayName",
+                    "publicBaseUrl",
+                    "callbackUrl",
+                    "hasInboundSharedSecret",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/teams.ResolveForwardCredentials": {
+      "post": {
+        "operationId": "POST:teams.ResolveForwardCredentials",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "forwardCredentialSetId": {
+                    "type": "string"
+                  },
+                  "sessionSecret": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "sessionSecret",
+                  "forwardCredentialSetId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseUrl": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "skipTlsVerify": {
+                      "type": "boolean"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "baseUrl",
+                    "skipTlsVerify",
+                    "username",
+                    "password"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/teams.RunPathCommand": {
+      "post": {
+        "operationId": "POST:teams.RunPathCommand",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "credentials": {
+                    "$ref": "#/components/schemas/teams.ForwardCredentials"
+                  },
+                  "dstIp": {
+                    "type": "string"
+                  },
+                  "dstPort": {
+                    "type": "string"
+                  },
+                  "from": {
+                    "type": "string"
+                  },
+                  "intent": {
+                    "type": "string"
+                  },
+                  "ipProto": {
+                    "type": "string"
+                  },
+                  "networkId": {
+                    "type": "string"
+                  },
+                  "srcIp": {
+                    "type": "string"
+                  },
+                  "srcPort": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "credentials",
+                  "networkId",
+                  "from",
+                  "srcIp",
+                  "dstIp",
+                  "ipProto",
+                  "srcPort",
+                  "dstPort",
+                  "intent"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "forwardingOutcome": {
+                      "type": "string"
+                    },
+                    "queryUrl": {
+                      "type": "string"
+                    },
+                    "securityOutcome": {
+                      "type": "string"
+                    },
+                    "summaryLines": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "totalHits": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "queryUrl",
+                    "forwardingOutcome",
+                    "securityOutcome",
+                    "totalHits",
+                    "summaryLines"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/teams.SendWebhookMessage": {
+      "post": {
+        "operationId": "POST:teams.SendWebhookMessage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "lines": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "webhookUrl": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "webhookUrl",
+                  "text",
+                  "lines"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
       }
     },
     "/users/assignable": {
