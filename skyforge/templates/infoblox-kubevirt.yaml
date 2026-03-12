@@ -7,7 +7,8 @@
 {{- $pullPolicy := default "IfNotPresent" .Values.skyforge.infoblox.pullPolicy -}}
 {{- $cpuCores := default 4 .Values.skyforge.infoblox.vm.cpuCores -}}
 {{- $memory := default "32Gi" .Values.skyforge.infoblox.vm.memory -}}
-{{- $interfaceModel := default "e1000" .Values.skyforge.infoblox.vm.interfaceModel -}}
+{{- $managementInterfaceModel := default "virtio" .Values.skyforge.infoblox.vm.managementInterfaceModel -}}
+{{- $auxiliaryInterfaceModel := default $managementInterfaceModel .Values.skyforge.infoblox.vm.auxiliaryInterfaceModel -}}
 {{- $podBinding := lower (default "masquerade" .Values.skyforge.infoblox.vm.podNetworkBinding) -}}
 {{- if and (ne $podBinding "masquerade") (ne $podBinding "bridge") -}}
 {{- fail "skyforge.infoblox.vm.podNetworkBinding must be one of: masquerade, bridge" -}}
@@ -61,7 +62,7 @@ spec:
               {{- else }}
               masquerade: {}
               {{- end }}
-              model: {{ $interfaceModel | quote }}
+              model: {{ $managementInterfaceModel | quote }}
               {{- if eq $podBinding "masquerade" }}
               ports:
                 - name: https
@@ -72,13 +73,13 @@ spec:
             {{- if $multusEnabled }}
             - name: lan1
               bridge: {}
-              model: {{ $interfaceModel | quote }}
+              model: {{ $auxiliaryInterfaceModel | quote }}
             - name: ha
               bridge: {}
-              model: {{ $interfaceModel | quote }}
+              model: {{ $auxiliaryInterfaceModel | quote }}
             - name: lan2
               bridge: {}
-              model: {{ $interfaceModel | quote }}
+              model: {{ $auxiliaryInterfaceModel | quote }}
             {{- end }}
       networks:
         - name: default

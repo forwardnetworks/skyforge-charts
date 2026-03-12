@@ -17,6 +17,13 @@ spec:
         app.kubernetes.io/name: redis
     spec:
       automountServiceAccountToken: false
+{{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.coreStatefulPlacement) }}
+      affinity:
+{{ . | indent 8 }}
+{{- end }}
+{{- with include "skyforge.workloadPlacementSpec" (list .Values.skyforge.coreStatefulPlacement) }}
+{{ . | indent 6 }}
+{{- end }}
       containers:
       - args:
         - redis-server

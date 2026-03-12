@@ -171,6 +171,10 @@ spec:
                   if ! echo "${last_access}" | grep -Eq '^[0-9]+$'; then
                     last_access="0"
                   fi
+                  pending="$(get_state_value "license_pending")"
+                  if [ "${pending}" = "true" ]; then
+                    exit 0
+                  fi
                   if [ "${last_access}" -le 0 ]; then
                     last_access="${start_epoch}"
                     set_state_value "last_access_epoch" "${last_access}"

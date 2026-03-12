@@ -23,6 +23,9 @@ spec:
                 matchLabels:
                   app.kubernetes.io/name: gitea
               topologyKey: kubernetes.io/hostname
+{{- with include "skyforge.workloadPlacementSpec" (list .Values.skyforge.coreStatefulPlacement) }}
+{{ . | indent 6 }}
+{{- end }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000

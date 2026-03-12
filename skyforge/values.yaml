@@ -205,7 +205,8 @@ skyforge:
     vm:
       cpuCores: 4
       memory: "32Gi"
-      interfaceModel: "virtio"
+      managementInterfaceModel: "virtio"
+      auxiliaryInterfaceModel: "virtio"
       # Pod network binding for the management NIC.
       # Supported values: masquerade, bridge.
       podNetworkBinding: "masquerade"
@@ -576,6 +577,16 @@ skyforge:
     persistence:
       enabled: true
       size: "5Gi"
+  # Placement for core PVC-backed platform services that must stay on a stable
+  # node in local-path or other node-local storage environments.
+  #
+  # This is intentionally separate from the API/worker placement knobs because
+  # DB/Redis/Gitea/object storage have different scheduling constraints.
+  coreStatefulPlacement:
+    requiredPoolClass: ""
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
   db:
     host: "db"
     port: "5432"
