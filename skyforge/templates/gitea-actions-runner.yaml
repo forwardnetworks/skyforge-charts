@@ -31,11 +31,23 @@ spec:
             - |
               set -eu
               if [ ! -f /tmp/.runner ]; then
-                act_runner register --no-interactive \
-                  --instance "${GITEA_INSTANCE_URL}" \
-                  --token "${GITEA_RUNNER_REGISTRATION_TOKEN}" \
-                  --name "${GITEA_RUNNER_NAME}" \
-                  --labels "${GITEA_RUNNER_LABELS}"
+                registered=0
+                for i in $(seq 1 60); do
+                  if act_runner register --no-interactive \
+                    --instance "${GITEA_INSTANCE_URL}" \
+                    --token "${GITEA_RUNNER_REGISTRATION_TOKEN}" \
+                    --name "${GITEA_RUNNER_NAME}" \
+                    --labels "${GITEA_RUNNER_LABELS}"; then
+                    registered=1
+                    break
+                  fi
+                  echo "gitea-actions-runner: registration attempt ${i} failed; waiting for Gitea Actions backend..."
+                  sleep 5
+                done
+                if [ "${registered}" -ne 1 ]; then
+                  echo "gitea-actions-runner: failed to register after retries" >&2
+                  exit 1
+                fi
               fi
               exec act_runner daemon --config /tmp/.runner
           env:

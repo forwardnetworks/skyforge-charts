@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:uq3sWJv9y3RWRjG9OpQe9qA4pJostGbeVvPmmWfsRBM=
+    h1:48broOWc4jDDyqUnjQvoH8rr4y0gx6FgEGRZg9bAZdw=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
@@ -45,6 +45,11 @@ data:
     20260309190000_remove_ldap_password_cache.up.sql h1:HitXVc0AbyANKkvd85iDI//CHwgAeZqJFwYZhPL3qo0=
     20260311103000_servicenow_global_tenant_model.up.sql h1:8aLh8U3FMpru850ULwQqWuqJ8BQc7fac5E788k4Silw=
     20260311170000_teams_bridge.up.sql h1:rG4QmTw0i455OON2edqj2ZXh0vy4Nlo8O74dhU5fnLI=
+    20260311193000_platform_governance_contracts.up.sql h1:66cKnLhVwzFJde/IrKLhYPFdomTr5R+GvW7PhnaEUoY=
+    20260311194500_forward_tenant_reset_baseline.up.sql h1:n2uZYqKnxA0RB/DdhFJSSzh8s/apQJvX+kAewS5aRkg=
+    20260311200500_reservation_priority_and_override.up.sql h1:CM7eZh0HU13oHO61Nm++6vB8L6MOgiMzOmM0/3QYoKk=
+    20260311203000_reservation_lifecycle_events.up.sql h1:GK/5N2ypUcXRxbmo3+sePf7zqZNfgJOI6wWEiswW2Os=
+    20260311204500_deployment_usage_snapshots.up.sql h1:X5giN8MTx2LZreF3cXzKH5YbVv0TDOMRl1zTXiENp2M=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -3892,3 +3897,209 @@ data:
     
     CREATE INDEX IF NOT EXISTS idx_sf_user_teams_configs_forward_credential_set_id
       ON public.sf_user_teams_configs (forward_credential_set_id);
+
+  20260311193000_platform_governance_contracts.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_user_role_profiles (
+        username text NOT NULL,
+        profile text NOT NULL,
+        assigned_by text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_user_role_profiles_pkey PRIMARY KEY (username, profile),
+        CONSTRAINT sf_user_role_profiles_profile_check CHECK (profile = ANY (ARRAY[
+            'viewer'::text,
+            'demo-user'::text,
+            'sandbox-user'::text,
+            'trainer'::text,
+            'integration-user'::text,
+            'admin'::text
+        ])),
+        CONSTRAINT sf_user_role_profiles_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE,
+        CONSTRAINT sf_user_role_profiles_assigned_by_fkey FOREIGN KEY (assigned_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_role_profiles_profile_idx ON public.sf_user_role_profiles(profile);
+    CREATE INDEX IF NOT EXISTS sf_user_role_profiles_assigned_by_idx ON public.sf_user_role_profiles(assigned_by);
+    
+    INSERT INTO public.sf_user_role_profiles (username, profile, assigned_by, created_at)
+    SELECT username, 'demo-user', NULL, now()
+    FROM public.sf_users
+    ON CONFLICT (username, profile) DO NOTHING;
+    
+    INSERT INTO public.sf_user_role_profiles (username, profile, assigned_by, created_at)
+    SELECT username, 'admin', granted_by, created_at
+    FROM public.sf_user_roles
+    WHERE role = 'ADMIN'
+    ON CONFLICT (username, profile) DO NOTHING;
+    
+    CREATE TABLE IF NOT EXISTS public.sf_user_quota_overrides (
+        username text NOT NULL PRIMARY KEY,
+        max_concurrent_labs integer NOT NULL DEFAULT 0,
+        max_persistent_labs integer NOT NULL DEFAULT 0,
+        max_persistent_hours integer NOT NULL DEFAULT 0,
+        max_resource_class text,
+        assigned_by text,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_user_quota_overrides_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE,
+        CONSTRAINT sf_user_quota_overrides_assigned_by_fkey FOREIGN KEY (assigned_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL,
+        CONSTRAINT sf_user_quota_overrides_class_check CHECK (
+            max_resource_class IS NULL OR max_resource_class = ANY (ARRAY[
+                'small'::text,
+                'standard'::text,
+                'heavy'::text,
+                'demo-foundry'::text
+            ])
+        )
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_quota_overrides_assigned_by_idx ON public.sf_user_quota_overrides(assigned_by);
+    
+    CREATE TABLE IF NOT EXISTS public.sf_reservations (
+        id uuid NOT NULL PRIMARY KEY,
+        username text NOT NULL,
+        resource_class text NOT NULL,
+        type text NOT NULL,
+        status text NOT NULL,
+        template_ref text,
+        user_scope_id text,
+        start_at timestamp with time zone NOT NULL,
+        end_at timestamp with time zone NOT NULL,
+        requested_by text NOT NULL,
+        approved_by text,
+        notes text,
+        metadata_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_reservations_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE,
+        CONSTRAINT sf_reservations_requested_by_fkey FOREIGN KEY (requested_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE RESTRICT,
+        CONSTRAINT sf_reservations_approved_by_fkey FOREIGN KEY (approved_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL,
+        CONSTRAINT sf_reservations_resource_class_check CHECK (resource_class = ANY (ARRAY[
+            'small'::text,
+            'standard'::text,
+            'heavy'::text,
+            'demo-foundry'::text
+        ])),
+        CONSTRAINT sf_reservations_type_check CHECK (type = ANY (ARRAY[
+            'immediate-interactive'::text,
+            'scheduled-future'::text,
+            'persistent-sandbox'::text,
+            'admin-reserved-block'::text
+        ])),
+        CONSTRAINT sf_reservations_status_check CHECK (status = ANY (ARRAY[
+            'requested'::text,
+            'approved'::text,
+            'rejected'::text,
+            'cancelled'::text
+        ])),
+        CONSTRAINT sf_reservations_window_check CHECK (end_at > start_at)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_reservations_username_idx ON public.sf_reservations(username);
+    CREATE INDEX IF NOT EXISTS sf_reservations_requested_by_idx ON public.sf_reservations(requested_by);
+    CREATE INDEX IF NOT EXISTS sf_reservations_start_at_idx ON public.sf_reservations(start_at);
+    CREATE INDEX IF NOT EXISTS sf_reservations_status_idx ON public.sf_reservations(status);
+    
+    CREATE TABLE IF NOT EXISTS public.sf_forward_tenant_reset_runs (
+        id uuid NOT NULL PRIMARY KEY,
+        username text NOT NULL,
+        mode text NOT NULL,
+        status text NOT NULL,
+        requested_by text NOT NULL,
+        reason text,
+        baseline_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        metadata_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_forward_tenant_reset_runs_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE,
+        CONSTRAINT sf_forward_tenant_reset_runs_requested_by_fkey FOREIGN KEY (requested_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE RESTRICT,
+        CONSTRAINT sf_forward_tenant_reset_runs_mode_check CHECK (mode = ANY (ARRAY[
+            'soft-reset'::text,
+            'hard-reset'::text,
+            'curated-reset'::text
+        ])),
+        CONSTRAINT sf_forward_tenant_reset_runs_status_check CHECK (status = ANY (ARRAY[
+            'requested'::text,
+            'draining'::text,
+            'deleting'::text,
+            'reprovisioning'::text,
+            'validating'::text,
+            'ready'::text,
+            'failed'::text
+        ]))
+    );
+    
+    ALTER TABLE public.sf_forward_tenant_reset_runs
+        ADD COLUMN IF NOT EXISTS baseline_json jsonb NOT NULL DEFAULT '{}'::jsonb;
+    
+    CREATE INDEX IF NOT EXISTS sf_forward_tenant_reset_runs_username_idx ON public.sf_forward_tenant_reset_runs(username);
+    CREATE INDEX IF NOT EXISTS sf_forward_tenant_reset_runs_requested_by_idx ON public.sf_forward_tenant_reset_runs(requested_by);
+    CREATE INDEX IF NOT EXISTS sf_forward_tenant_reset_runs_status_idx ON public.sf_forward_tenant_reset_runs(status);
+
+  20260311194500_forward_tenant_reset_baseline.up.sql: |
+    ALTER TABLE public.sf_forward_tenant_reset_runs
+    ADD COLUMN IF NOT EXISTS baseline_json jsonb NOT NULL DEFAULT '{}'::jsonb;
+
+  20260311200500_reservation_priority_and_override.up.sql: |
+    ALTER TABLE public.sf_reservations
+        ADD COLUMN IF NOT EXISTS priority_tier text NOT NULL DEFAULT 'standard',
+        ADD COLUMN IF NOT EXISTS admin_override boolean NOT NULL DEFAULT false;
+    
+    UPDATE public.sf_reservations
+    SET priority_tier = CASE
+        WHEN type = 'admin-reserved-block' THEN 'admin-critical'
+        WHEN COALESCE(template_ref, '') LIKE 'quick-deploy:%' THEN 'curated-demo'
+        ELSE 'standard'
+    END
+    WHERE COALESCE(priority_tier, '') = '';
+    
+    ALTER TABLE public.sf_reservations
+        DROP CONSTRAINT IF EXISTS sf_reservations_priority_tier_check;
+    
+    ALTER TABLE public.sf_reservations
+        ADD CONSTRAINT sf_reservations_priority_tier_check CHECK (priority_tier = ANY (ARRAY[
+            'standard'::text,
+            'training'::text,
+            'curated-demo'::text,
+            'admin-critical'::text
+        ]));
+    
+    CREATE INDEX IF NOT EXISTS sf_reservations_priority_tier_idx ON public.sf_reservations(priority_tier);
+    CREATE INDEX IF NOT EXISTS sf_reservations_admin_override_idx ON public.sf_reservations(admin_override);
+
+  20260311203000_reservation_lifecycle_events.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_reservation_events (
+        id uuid NOT NULL PRIMARY KEY,
+        reservation_id uuid NOT NULL,
+        event_type text NOT NULL,
+        actor text NOT NULL,
+        summary text,
+        metadata_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_reservation_events_reservation_fkey FOREIGN KEY (reservation_id) REFERENCES public.sf_reservations(id) ON DELETE CASCADE,
+        CONSTRAINT sf_reservation_events_actor_fkey FOREIGN KEY (actor) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE RESTRICT,
+        CONSTRAINT sf_reservation_events_type_check CHECK (event_type = ANY (ARRAY[
+            'requested'::text,
+            'approved'::text,
+            'rejected'::text,
+            'cancelled'::text
+        ]))
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_reservation_events_reservation_idx ON public.sf_reservation_events(reservation_id, created_at);
+    CREATE INDEX IF NOT EXISTS sf_reservation_events_actor_idx ON public.sf_reservation_events(actor);
+
+  20260311204500_deployment_usage_snapshots.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_deployment_usage_snapshots (
+        user_scope_id TEXT NOT NULL,
+        deployment_id TEXT NOT NULL,
+        resource_class TEXT NOT NULL DEFAULT 'standard',
+        deployment_type TEXT NOT NULL DEFAULT '',
+        namespace TEXT NOT NULL DEFAULT '',
+        topology_name TEXT NOT NULL DEFAULT '',
+        requested_milli_cpu BIGINT NOT NULL DEFAULT 0,
+        requested_memory_bytes BIGINT NOT NULL DEFAULT 0,
+        measured_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        PRIMARY KEY (user_scope_id, deployment_id)
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_deployment_usage_snapshots_measured_at
+        ON sf_deployment_usage_snapshots (measured_at DESC);
