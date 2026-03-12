@@ -43,6 +43,12 @@ spec:
                   matchLabels:
                     app.kubernetes.io/name: skyforge
                     app.kubernetes.io/component: worker
+{{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.worker.placement) }}
+{{ . | nindent 8 }}
+{{- end }}
+{{- with include "skyforge.workloadPlacementSpec" (list .Values.skyforge.worker.placement) }}
+{{ . | nindent 6 }}
+{{- end }}
       containers:
         - name: skyforge-server-worker
           image: {{ .Values.images.skyforgeServerWorker | default .Values.images.skyforgeServer | quote }}

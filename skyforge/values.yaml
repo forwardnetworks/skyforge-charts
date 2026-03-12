@@ -12,6 +12,20 @@ skyforge:
 
   worker:
     replicas: 1
+    placement:
+      # Preferred hybrid placement for the worker deployment. Pool classes help
+      # align workloads to node pools like control/app/lab/burst/onprem-lab.
+      # These preferences are soft so unlabeled clusters continue to schedule.
+      poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
+      pools:
+        - app
+        - lab
+      poolWeight: 100
+      # Optional hard requirement for clusters that explicitly label node pool class.
+      requiredPoolClass: ""
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
     resources:
       requests:
         cpu: "250m"
@@ -55,6 +69,17 @@ skyforge:
     json: "{}"
     workerJson: "{}"
   hostname: "skyforge.local.forwardnetworks.com"
+  server:
+    placement:
+      # Control-plane workloads prefer the control/elevated pool by default.
+      poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
+      pools:
+        - control
+      poolWeight: 100
+      requiredPoolClass: ""
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
   domain: "forwardnetworks.com"
   gateway:
     # Optional explicit Gateway addresses.
@@ -174,11 +199,13 @@ skyforge:
     serviceName: "infoblox"
     serviceNamespace: ""
     servicePort: 443
+    routeServiceName: ""
+    routeServicePort: 0
     rewritePrefixToRoot: true
     vm:
       cpuCores: 4
       memory: "32Gi"
-      interfaceModel: "e1000"
+      interfaceModel: "virtio"
       # Pod network binding for the management NIC.
       # Supported values: masquerade, bridge.
       podNetworkBinding: "masquerade"
@@ -256,6 +283,7 @@ skyforge:
     # Used only when proxyEnabled=true.
     upstreamHost: "192.168.1.2"
     upstreamPort: 443
+    upstreamScheme: "https"
     lanNetworkName: "infoblox-lan1"
     nodeSelector: {}
   jira:

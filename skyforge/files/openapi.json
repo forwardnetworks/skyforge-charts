@@ -490,6 +490,729 @@
         ],
         "type": "object"
       },
+      "platform.ForwardTenantResetBaseline": {
+        "properties": {
+          "capturedAt": {
+            "type": "string"
+          },
+          "deployments": {
+            "items": {
+              "$ref": "#/components/schemas/platform.ForwardTenantResetBaselineDeployment"
+            },
+            "type": "array"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "capturedAt",
+          "deployments"
+        ],
+        "type": "object"
+      },
+      "platform.ForwardTenantResetBaselineDeployment": {
+        "properties": {
+          "deploymentId": {
+            "type": "string"
+          },
+          "deploymentName": {
+            "type": "string"
+          },
+          "userScopeId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userScopeId",
+          "deploymentId",
+          "deploymentName"
+        ],
+        "type": "object"
+      },
+      "platform.ForwardTenantResetRun": {
+        "properties": {
+          "baseline": {
+            "$ref": "#/components/schemas/platform.ForwardTenantResetBaseline"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "requestedBy": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "mode",
+          "status",
+          "requestedBy",
+          "reason",
+          "baseline",
+          "createdAt",
+          "updatedAt",
+          "metadata"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformAvailabilityByClass": {
+        "properties": {
+          "approvedReservations": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "estimatedCapacityUnits": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "immediateAvailability": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requestedReservations": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "reservedBlocks": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resourceClass": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "resourceClass",
+          "estimatedCapacityUnits",
+          "requestedReservations",
+          "approvedReservations",
+          "reservedBlocks",
+          "immediateAvailability"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformCapacityPool": {
+        "properties": {
+          "allocatableMemoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "allocatableMilliCpu": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "availableMemoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "availableMilliCpu": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nodeCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "poolClass": {
+            "type": "string"
+          },
+          "readyNodeCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requestedMemoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requestedMilliCpu": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "poolClass",
+          "nodeCount",
+          "readyNodeCount",
+          "allocatableMilliCpu",
+          "allocatableMemoryBytes",
+          "requestedMilliCpu",
+          "requestedMemoryBytes",
+          "availableMilliCpu",
+          "availableMemoryBytes"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformDemandByClass": {
+        "properties": {
+          "activeDeployments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "approvedReservations": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "persistentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "queuedTasks": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requestedReservations": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resourceClass": {
+            "type": "string"
+          },
+          "runningTasks": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "resourceClass",
+          "queuedTasks",
+          "runningTasks",
+          "activeDeployments",
+          "requestedReservations",
+          "approvedReservations",
+          "persistentLabs"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformEstimateActualByClass": {
+        "properties": {
+          "activeDeployments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "actualRequestedMemoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "actualRequestedMilliCpu": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "driftMemoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "driftMilliCpu": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "estimatedMemoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "estimatedMilliCpu": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "measuredDeployments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resourceClass": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "resourceClass",
+          "activeDeployments",
+          "measuredDeployments",
+          "estimatedMilliCpu",
+          "actualRequestedMilliCpu",
+          "driftMilliCpu",
+          "estimatedMemoryBytes",
+          "actualRequestedMemoryBytes",
+          "driftMemoryBytes"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformInfraComparison": {
+        "properties": {
+          "cloud": {
+            "$ref": "#/components/schemas/platform.PlatformInfraSlice"
+          },
+          "onPrem": {
+            "$ref": "#/components/schemas/platform.PlatformInfraSlice"
+          },
+          "recommended": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "total": {
+            "$ref": "#/components/schemas/platform.PlatformInfraSlice"
+          }
+        },
+        "required": [
+          "cloud",
+          "onPrem",
+          "total",
+          "recommended",
+          "summary"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformInfraSlice": {
+        "properties": {
+          "allocatableMemoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "allocatableMilliCpu": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "availableMemoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "availableMilliCpu": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "estimatedMonthlyCostCents": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "nodeCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "providerCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "readyNodeCount": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nodeCount",
+          "readyNodeCount",
+          "allocatableMilliCpu",
+          "allocatableMemoryBytes",
+          "availableMilliCpu",
+          "availableMemoryBytes",
+          "estimatedMonthlyCostCents",
+          "providerCount",
+          "mode"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformMarginalCostByClass": {
+        "properties": {
+          "blendedCapacityUnits": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "blendedMonthlyCostCents": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "blendedUnitCostCents": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cloudCapacityUnits": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cloudMonthlyCostCents": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cloudUnitCostCents": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resourceClass": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "resourceClass",
+          "cloudCapacityUnits",
+          "blendedCapacityUnits",
+          "cloudMonthlyCostCents",
+          "blendedMonthlyCostCents",
+          "cloudUnitCostCents",
+          "blendedUnitCostCents"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformPoolCostInput": {
+        "properties": {
+          "estimatedMonthlyCostCents": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "instanceTypes": {
+            "additionalProperties": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "monthlyNodeCostCents": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nodeCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "poolClass": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "readyNodeCount": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "poolClass",
+          "provider",
+          "nodeCount",
+          "readyNodeCount",
+          "instanceTypes",
+          "monthlyNodeCostCents",
+          "estimatedMonthlyCostCents"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformReservationGuidance": {
+        "properties": {
+          "immediateAvailable": {
+            "type": "boolean"
+          },
+          "quotaAllowed": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "recommendedAction": {
+            "type": "string"
+          },
+          "requiresReservation": {
+            "type": "boolean"
+          },
+          "resourceClass": {
+            "type": "string"
+          },
+          "suggestedPriority": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "resourceClass",
+          "quotaAllowed",
+          "immediateAvailable",
+          "recommendedAction",
+          "reason",
+          "suggestedPriority",
+          "requiresReservation"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformUserUsage": {
+        "properties": {
+          "activeDeployments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "approvedReservations": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "persistentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "remainingConcurrentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "remainingPersistentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requestedReservations": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "activeDeployments",
+          "requestedReservations",
+          "approvedReservations",
+          "persistentLabs",
+          "remainingConcurrentLabs",
+          "remainingPersistentLabs"
+        ],
+        "type": "object"
+      },
+      "platform.PlatformWarning": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "recommendedAction": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "severity",
+          "summary",
+          "recommendedAction"
+        ],
+        "type": "object"
+      },
+      "platform.ReservationEventRecord": {
+        "properties": {
+          "actor": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventType",
+          "actor",
+          "summary",
+          "metadata",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "platform.ReservationRecord": {
+        "properties": {
+          "adminOverride": {
+            "type": "boolean"
+          },
+          "approvedBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "endAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "priorityTier": {
+            "type": "string"
+          },
+          "requestedBy": {
+            "type": "string"
+          },
+          "resourceClass": {
+            "type": "string"
+          },
+          "startAt": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "templateRef": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "userScopeId": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "resourceClass",
+          "type",
+          "status",
+          "priorityTier",
+          "adminOverride",
+          "templateRef",
+          "userScopeId",
+          "startAt",
+          "endAt",
+          "requestedBy",
+          "approvedBy",
+          "notes",
+          "createdAt",
+          "updatedAt",
+          "metadata"
+        ],
+        "type": "object"
+      },
+      "platform.ResourceClass": {
+        "type": "string"
+      },
+      "platform.UserPolicy": {
+        "properties": {
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "directRoles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "operatingModes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "primaryOperatingMode": {
+            "type": "string"
+          },
+          "profiles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "quota": {
+            "$ref": "#/components/schemas/platform.UserQuota"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "profiles",
+          "operatingModes",
+          "primaryOperatingMode",
+          "capabilities",
+          "directRoles",
+          "quota"
+        ],
+        "type": "object"
+      },
+      "platform.UserQuota": {
+        "properties": {
+          "maxConcurrentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPersistentHours": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPersistentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxResourceClass": {
+            "$ref": "#/components/schemas/platform.ResourceClass"
+          }
+        },
+        "required": [
+          "maxConcurrentLabs",
+          "maxPersistentLabs",
+          "maxPersistentHours",
+          "maxResourceClass"
+        ],
+        "type": "object"
+      },
       "servicenow.ForwardCredentials": {
         "properties": {
           "baseUrl": {
@@ -1289,11 +2012,20 @@
           "namespace": {
             "type": "string"
           },
+          "placementSummary": {
+            "$ref": "#/components/schemas/skyforge.DeploymentPlacementInfoSummary"
+          },
           "ready": {
             "type": "boolean"
           },
           "topologyName": {
             "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -1301,7 +2033,9 @@
           "topologyName",
           "labName",
           "ready",
-          "configMaps"
+          "configMaps",
+          "placementSummary",
+          "warnings"
         ],
         "type": "object"
       },
@@ -1490,6 +2224,101 @@
         ],
         "type": "object"
       },
+      "skyforge.DeploymentPlacementInfoSummary": {
+        "properties": {
+          "actualNodeCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "actualNodes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "actualPoolClasses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "availablePoolClasses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "candidateNodeCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "degraded": {
+            "type": "boolean"
+          },
+          "generatedAt": {
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "placementHints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "placementOk": {
+            "type": "boolean"
+          },
+          "preferredPoolClasses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "readyPodCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resourceClass": {
+            "type": "string"
+          },
+          "schedulingMode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "generatedAt",
+          "resourceClass",
+          "schedulingMode",
+          "placementHints",
+          "preferredPoolClasses",
+          "availablePoolClasses",
+          "actualPoolClasses",
+          "actualNodes",
+          "actualNodeCount",
+          "readyPodCount",
+          "candidateNodeCount",
+          "placementOk",
+          "status",
+          "degraded",
+          "warnings",
+          "metadata"
+        ],
+        "type": "object"
+      },
       "skyforge.DeploymentPresenceState": {
         "type": "string"
       },
@@ -1602,6 +2431,51 @@
           "name",
           "repo",
           "defaultBranch"
+        ],
+        "type": "object"
+      },
+      "skyforge.ForwardAnalyticsNetwork": {
+        "properties": {
+          "collectorConfigId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "forwardNetwork": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userScopeId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userScopeId",
+          "forwardNetwork",
+          "name",
+          "description",
+          "collectorConfigId",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
         ],
         "type": "object"
       },
@@ -2159,48 +3033,113 @@
         ],
         "type": "object"
       },
-      "skyforge.PolicyReportForwardNetwork": {
+      "skyforge.PlatformPolicyResponse": {
         "properties": {
-          "collectorConfigId": {
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "directRoles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "operatingModes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "primaryOperatingMode": {
             "type": "string"
           },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
+          "profiles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
-          "createdBy": {
-            "type": "string"
+          "quota": {
+            "$ref": "#/components/schemas/skyforge.PlatformQuotaPolicy"
           },
-          "description": {
-            "type": "string"
-          },
-          "forwardNetworkId": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "userId": {
+          "username": {
             "type": "string"
           }
         },
         "required": [
-          "id",
-          "userId",
-          "forwardNetworkId",
-          "name",
-          "description",
-          "collectorConfigId",
-          "createdBy",
-          "createdAt",
-          "updatedAt"
+          "username",
+          "profiles",
+          "operatingModes",
+          "primaryOperatingMode",
+          "capabilities",
+          "directRoles",
+          "quota"
+        ],
+        "type": "object"
+      },
+      "skyforge.PlatformQuotaPolicy": {
+        "properties": {
+          "maxConcurrentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPersistentHours": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPersistentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxResourceClass": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "maxConcurrentLabs",
+          "maxPersistentLabs",
+          "maxPersistentHours",
+          "maxResourceClass"
+        ],
+        "type": "object"
+      },
+      "skyforge.PlatformUserUsageResponse": {
+        "properties": {
+          "activeDeployments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "approvedReservations": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "persistentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "remainingConcurrentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "remainingPersistentLabs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requestedReservations": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "activeDeployments",
+          "requestedReservations",
+          "approvedReservations",
+          "persistentLabs",
+          "remainingConcurrentLabs",
+          "remainingPersistentLabs"
         ],
         "type": "object"
       },
@@ -2228,6 +3167,13 @@
           "reason": {
             "type": "string"
           },
+          "storageBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "storageGiB": {
+            "type": "number"
+          },
           "supported": {
             "type": "boolean"
           },
@@ -2241,6 +3187,8 @@
           "ramGiB",
           "milliCpu",
           "memoryBytes",
+          "storageGiB",
+          "storageBytes",
           "nodeCount",
           "profiledNodeCount",
           "reason"
@@ -3530,6 +4478,12 @@
       },
       "skyforge.quickDeployTemplate": {
         "properties": {
+          "allowedProfiles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "description": {
             "type": "string"
           },
@@ -3539,7 +4493,34 @@
           "id": {
             "type": "string"
           },
+          "integrationDependencies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "name": {
+            "type": "string"
+          },
+          "operatingModes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "placementHints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "resetBaselineMode": {
+            "type": "string"
+          },
+          "resourceClass": {
             "type": "string"
           },
           "template": {
@@ -3551,6 +4532,13 @@
           "name",
           "description",
           "template",
+          "owner",
+          "operatingModes",
+          "resourceClass",
+          "resetBaselineMode",
+          "integrationDependencies",
+          "placementHints",
+          "allowedProfiles",
           "estimate"
         ],
         "type": "object"
@@ -4412,6 +5400,160 @@
         "summary": "GetAdminEffectiveConfig returns the effective (non-secret) typed Encore config\n(admin only).\n"
       }
     },
+    "/api/admin/forward/tenants/{username}/rebuild": {
+      "post": {
+        "operationId": "POST:skyforge.RequestAdminForwardTenantRebuild",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "mode": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "reason",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseline": {
+                      "$ref": "#/components/schemas/platform.ForwardTenantResetBaseline"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "mode",
+                    "status",
+                    "requestedBy",
+                    "reason",
+                    "baseline",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RequestAdminForwardTenantRebuild requests a platform-managed Forward tenant\nrebuild for another user.\n"
+      }
+    },
+    "/api/admin/forward/tenants/{username}/rebuild/runs": {
+      "get": {
+        "operationId": "GET:skyforge.ListAdminForwardTenantRebuildRuns",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "runs": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ForwardTenantResetRun"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "runs"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListAdminForwardTenantRebuildRuns returns reset runs for another user.\n"
+      }
+    },
     "/api/admin/impersonate/start": {
       "post": {
         "operationId": "POST:authn.AdminImpersonateStart",
@@ -5129,6 +6271,810 @@
           }
         },
         "summary": "GetObservabilitySummary returns lightweight native observability signals (admin\nonly).\n"
+      }
+    },
+    "/api/admin/platform/overview": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminPlatformOverview",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "availabilityByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformAvailabilityByClass"
+                      },
+                      "type": "array"
+                    },
+                    "baselineMonthlyCostCents": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "capacityPools": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformCapacityPool"
+                      },
+                      "type": "array"
+                    },
+                    "demandByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformDemandByClass"
+                      },
+                      "type": "array"
+                    },
+                    "estimateActualByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformEstimateActualByClass"
+                      },
+                      "type": "array"
+                    },
+                    "forwardResetRunCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "forwardResetRunsByStatus": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "infraComparison": {
+                      "$ref": "#/components/schemas/platform.PlatformInfraComparison"
+                    },
+                    "marginalCostByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformMarginalCostByClass"
+                      },
+                      "type": "array"
+                    },
+                    "poolCostInputs": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformPoolCostInput"
+                      },
+                      "type": "array"
+                    },
+                    "quotaOverrideCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "reservationCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "reservationsByClass": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "reservationsByPriority": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "reservationsByStatus": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "reservedBlocksByClass": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "userProfilesByName": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "warnings": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformWarning"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "userProfilesByName",
+                    "quotaOverrideCount",
+                    "reservationCount",
+                    "reservationsByStatus",
+                    "reservationsByClass",
+                    "reservationsByPriority",
+                    "reservedBlocksByClass",
+                    "capacityPools",
+                    "demandByClass",
+                    "availabilityByClass",
+                    "estimateActualByClass",
+                    "poolCostInputs",
+                    "marginalCostByClass",
+                    "infraComparison",
+                    "warnings",
+                    "baselineMonthlyCostCents",
+                    "forwardResetRunCount",
+                    "forwardResetRunsByStatus"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminPlatformOverview returns reservation/reset/profile counts for platform\nplanning.\n"
+      }
+    },
+    "/api/admin/platform/reservations": {
+      "get": {
+        "operationId": "GET:skyforge.ListAdminPlatformReservations",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "reservations": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ReservationRecord"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "reservations"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListAdminPlatformReservations returns reservation requests across the platform.\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.CreateAdminPlatformReservation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "adminOverride": {
+                    "type": "boolean"
+                  },
+                  "endAt": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "priorityTier": {
+                    "type": "string"
+                  },
+                  "resourceClass": {
+                    "type": "string"
+                  },
+                  "startAt": {
+                    "type": "string"
+                  },
+                  "templateRef": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "userScopeId": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "resourceClass",
+                  "type",
+                  "priorityTier",
+                  "adminOverride",
+                  "templateRef",
+                  "userScopeId",
+                  "startAt",
+                  "endAt",
+                  "notes",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminOverride": {
+                      "type": "boolean"
+                    },
+                    "approvedBy": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "endAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "priorityTier": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "startAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "templateRef": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "resourceClass",
+                    "type",
+                    "status",
+                    "priorityTier",
+                    "adminOverride",
+                    "templateRef",
+                    "userScopeId",
+                    "startAt",
+                    "endAt",
+                    "requestedBy",
+                    "approvedBy",
+                    "notes",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateAdminPlatformReservation creates an override or reserved-block reservation\nfor platform operations.\n"
+      }
+    },
+    "/api/admin/platform/reservations/{id}/lifecycle": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminPlatformReservationLifecycle",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "allowedActions": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "events": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ReservationEventRecord"
+                      },
+                      "type": "array"
+                    },
+                    "reservation": {
+                      "$ref": "#/components/schemas/platform.ReservationRecord"
+                    }
+                  },
+                  "required": [
+                    "reservation",
+                    "events",
+                    "allowedActions"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminPlatformReservationLifecycle returns lifecycle details for any\nreservation.\n"
+      }
+    },
+    "/api/admin/platform/reservations/{id}/status": {
+      "post": {
+        "operationId": "POST:skyforge.UpdateAdminPlatformReservationStatus",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminOverride": {
+                      "type": "boolean"
+                    },
+                    "approvedBy": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "endAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "priorityTier": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "startAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "templateRef": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "resourceClass",
+                    "type",
+                    "status",
+                    "priorityTier",
+                    "adminOverride",
+                    "templateRef",
+                    "userScopeId",
+                    "startAt",
+                    "endAt",
+                    "requestedBy",
+                    "approvedBy",
+                    "notes",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpdateAdminPlatformReservationStatus approves, rejects, or cancels a\nreservation.\n"
+      }
+    },
+    "/api/admin/platform/users/{username}/policy": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminPlatformUserPolicy",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capabilities": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "directRoles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "operatingModes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "primaryOperatingMode": {
+                      "type": "string"
+                    },
+                    "profiles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/skyforge.PlatformQuotaPolicy"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "profiles",
+                    "operatingModes",
+                    "primaryOperatingMode",
+                    "capabilities",
+                    "directRoles",
+                    "quota"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminPlatformUserPolicy returns the effective platform policy for a user.\n"
+      }
+    },
+    "/api/admin/platform/users/{username}/profiles": {
+      "put": {
+        "operationId": "PUT:skyforge.PutAdminPlatformUserProfiles",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "profiles": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "profiles"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capabilities": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "directRoles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "operatingModes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "primaryOperatingMode": {
+                      "type": "string"
+                    },
+                    "profiles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/skyforge.PlatformQuotaPolicy"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "profiles",
+                    "operatingModes",
+                    "primaryOperatingMode",
+                    "capabilities",
+                    "directRoles",
+                    "quota"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutAdminPlatformUserProfiles replaces the role profile set for a user.\n"
+      }
+    },
+    "/api/admin/platform/users/{username}/quota": {
+      "put": {
+        "operationId": "PUT:skyforge.PutAdminPlatformUserQuota",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "maxConcurrentLabs": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "maxPersistentHours": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "maxPersistentLabs": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "maxResourceClass": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "maxConcurrentLabs",
+                  "maxPersistentLabs",
+                  "maxPersistentHours",
+                  "maxResourceClass"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capabilities": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "directRoles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "operatingModes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "primaryOperatingMode": {
+                      "type": "string"
+                    },
+                    "profiles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/skyforge.PlatformQuotaPolicy"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "profiles",
+                    "operatingModes",
+                    "primaryOperatingMode",
+                    "capabilities",
+                    "directRoles",
+                    "quota"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutAdminPlatformUserQuota replaces the quota override for a user.\n"
       }
     },
     "/api/admin/quick-deploy/catalog": {
@@ -10099,7 +12045,7 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "allowNoExpiry": {
+                    "allowDisable": {
                       "type": "boolean"
                     },
                     "allowedHours": {
@@ -10125,7 +12071,7 @@
                       },
                       "type": "array"
                     },
-                    "maxHoursNonAdmin": {
+                    "maxHours": {
                       "format": "int64",
                       "type": "integer"
                     }
@@ -10134,8 +12080,8 @@
                     "managedFamilies",
                     "allowedHours",
                     "defaultHours",
-                    "maxHoursNonAdmin",
-                    "allowNoExpiry",
+                    "maxHours",
+                    "allowDisable",
                     "expiryActions"
                   ],
                   "type": "object"
@@ -11019,6 +12965,134 @@
           }
         },
         "summary": "ResetCurrentUserForwardTenantPassword rotates the current user's Forward tenant\npassword.\n"
+      }
+    },
+    "/api/forward/tenant/rebuild": {
+      "post": {
+        "operationId": "POST:skyforge.RequestCurrentUserForwardTenantRebuild",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "mode": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "reason",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseline": {
+                      "$ref": "#/components/schemas/platform.ForwardTenantResetBaseline"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "mode",
+                    "status",
+                    "requestedBy",
+                    "reason",
+                    "baseline",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RequestCurrentUserForwardTenantRebuild requests a platform-managed Forward\ntenant rebuild for the current user.\n"
+      }
+    },
+    "/api/forward/tenant/rebuild/runs": {
+      "get": {
+        "operationId": "GET:skyforge.ListCurrentUserForwardTenantRebuildRuns",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "runs": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ForwardTenantResetRun"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "runs"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListCurrentUserForwardTenantRebuildRuns returns reset runs for the current user.\n"
       }
     },
     "/api/gcp/console": {
@@ -12390,7 +14464,616 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetUserObservabilitySummary returns role-scoped observability signals for all\nauthenticated users.\n"
+        "summary": "GetUserObservabilitySummary returns role-scoped observability summaries for all\nauthenticated users.\n"
+      }
+    },
+    "/api/platform/availability": {
+      "get": {
+        "operationId": "GET:skyforge.GetCurrentPlatformAvailability",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "availabilityByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformAvailabilityByClass"
+                      },
+                      "type": "array"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "infraComparison": {
+                      "$ref": "#/components/schemas/platform.PlatformInfraComparison"
+                    },
+                    "policy": {
+                      "$ref": "#/components/schemas/skyforge.PlatformPolicyResponse"
+                    },
+                    "reservationGuidance": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformReservationGuidance"
+                      },
+                      "type": "array"
+                    },
+                    "usage": {
+                      "$ref": "#/components/schemas/skyforge.PlatformUserUsageResponse"
+                    },
+                    "warnings": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformWarning"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "policy",
+                    "usage",
+                    "availabilityByClass",
+                    "reservationGuidance",
+                    "infraComparison",
+                    "warnings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetCurrentPlatformAvailability returns the current user's effective platform\npolicy, quota usage, and class availability.\n"
+      }
+    },
+    "/api/platform/policy": {
+      "get": {
+        "operationId": "GET:skyforge.GetCurrentPlatformPolicy",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capabilities": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "directRoles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "operatingModes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "primaryOperatingMode": {
+                      "type": "string"
+                    },
+                    "profiles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/skyforge.PlatformQuotaPolicy"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "profiles",
+                    "operatingModes",
+                    "primaryOperatingMode",
+                    "capabilities",
+                    "directRoles",
+                    "quota"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetCurrentPlatformPolicy returns the current user's effective platform policy.\n"
+      }
+    },
+    "/api/platform/reservation-preflight": {
+      "post": {
+        "operationId": "POST:skyforge.PreflightCurrentPlatformReservation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "endAt": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "priorityTier": {
+                    "type": "string"
+                  },
+                  "resourceClass": {
+                    "type": "string"
+                  },
+                  "startAt": {
+                    "type": "string"
+                  },
+                  "templateRef": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "userScopeId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "resourceClass",
+                  "type",
+                  "priorityTier",
+                  "templateRef",
+                  "userScopeId",
+                  "startAt",
+                  "endAt",
+                  "notes",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminOverride": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "endAt": {
+                      "type": "string"
+                    },
+                    "overlappingReservations": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "persistentReservations": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "priorityTier": {
+                      "type": "string"
+                    },
+                    "protectedCuratedBlocks": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/platform.UserQuota"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "startAt": {
+                      "type": "string"
+                    },
+                    "templateRef": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "warnings": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "allowed",
+                    "reason",
+                    "resourceClass",
+                    "type",
+                    "priorityTier",
+                    "adminOverride",
+                    "templateRef",
+                    "startAt",
+                    "endAt",
+                    "overlappingReservations",
+                    "persistentReservations",
+                    "protectedCuratedBlocks",
+                    "quota",
+                    "warnings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PreflightCurrentPlatformReservation evaluates reservation admission for the\ncurrent user without creating a reservation.\n"
+      }
+    },
+    "/api/platform/reservations": {
+      "get": {
+        "operationId": "GET:skyforge.ListCurrentPlatformReservations",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "reservations": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ReservationRecord"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "reservations"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListCurrentPlatformReservations returns reservation requests for the current\nuser.\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.CreateCurrentPlatformReservation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "endAt": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "priorityTier": {
+                    "type": "string"
+                  },
+                  "resourceClass": {
+                    "type": "string"
+                  },
+                  "startAt": {
+                    "type": "string"
+                  },
+                  "templateRef": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "userScopeId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "resourceClass",
+                  "type",
+                  "priorityTier",
+                  "templateRef",
+                  "userScopeId",
+                  "startAt",
+                  "endAt",
+                  "notes",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminOverride": {
+                      "type": "boolean"
+                    },
+                    "approvedBy": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "endAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "priorityTier": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "startAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "templateRef": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "resourceClass",
+                    "type",
+                    "status",
+                    "priorityTier",
+                    "adminOverride",
+                    "templateRef",
+                    "userScopeId",
+                    "startAt",
+                    "endAt",
+                    "requestedBy",
+                    "approvedBy",
+                    "notes",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateCurrentPlatformReservation creates a reservation request for the current\nuser.\n"
+      }
+    },
+    "/api/platform/reservations/{id}/cancel": {
+      "post": {
+        "operationId": "POST:skyforge.CancelCurrentPlatformReservation",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminOverride": {
+                      "type": "boolean"
+                    },
+                    "approvedBy": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "endAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "priorityTier": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "startAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "templateRef": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "resourceClass",
+                    "type",
+                    "status",
+                    "priorityTier",
+                    "adminOverride",
+                    "templateRef",
+                    "userScopeId",
+                    "startAt",
+                    "endAt",
+                    "requestedBy",
+                    "approvedBy",
+                    "notes",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CancelCurrentPlatformReservation cancels a reservation owned by the current\nuser.\n"
+      }
+    },
+    "/api/platform/reservations/{id}/lifecycle": {
+      "get": {
+        "operationId": "GET:skyforge.GetCurrentPlatformReservationLifecycle",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "allowedActions": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "events": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ReservationEventRecord"
+                      },
+                      "type": "array"
+                    },
+                    "reservation": {
+                      "$ref": "#/components/schemas/platform.ReservationRecord"
+                    }
+                  },
+                  "required": [
+                    "reservation",
+                    "events",
+                    "allowedActions"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetCurrentPlatformReservationLifecycle returns lifecycle details for a\nreservation owned by the current user.\n"
       }
     },
     "/api/public/config": {
@@ -19162,7 +21845,7 @@
                   "properties": {
                     "networks": {
                       "items": {
-                        "$ref": "#/components/schemas/skyforge.PolicyReportForwardNetwork"
+                        "$ref": "#/components/schemas/skyforge.ForwardAnalyticsNetwork"
                       },
                       "type": "array"
                     }
@@ -19208,7 +21891,7 @@
                   "description": {
                     "type": "string"
                   },
-                  "forwardNetworkId": {
+                  "forwardNetwork": {
                     "type": "string"
                   },
                   "name": {
@@ -19216,7 +21899,7 @@
                   }
                 },
                 "required": [
-                  "forwardNetworkId",
+                  "forwardNetwork",
                   "name",
                   "description",
                   "collectorConfigId"
@@ -19245,7 +21928,7 @@
                     "description": {
                       "type": "string"
                     },
-                    "forwardNetworkId": {
+                    "forwardNetwork": {
                       "type": "string"
                     },
                     "id": {
@@ -19258,14 +21941,14 @@
                       "format": "date-time",
                       "type": "string"
                     },
-                    "userId": {
+                    "userScopeId": {
                       "type": "string"
                     }
                   },
                   "required": [
                     "id",
-                    "userId",
-                    "forwardNetworkId",
+                    "userScopeId",
+                    "forwardNetwork",
                     "name",
                     "description",
                     "collectorConfigId",
@@ -20283,7 +22966,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "DeleteUserScopeForwardConfig removes Forward Networks credentials for a user\nscope.\n"
+        "summary": "DeleteUserScopeForwardConfig removes Forward integration credentials for a user\nscope.\n"
       },
       "get": {
         "operationId": "GET:skyforge.GetUserScopeForwardConfig",
@@ -20351,7 +23034,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetUserScopeForwardConfig returns Forward Networks credentials for a user scope.\n"
+        "summary": "GetUserScopeForwardConfig returns Forward integration credentials for a user\nscope.\n"
       },
       "put": {
         "operationId": "PUT:skyforge.PutUserScopeForwardConfig",
@@ -20460,7 +23143,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PutUserScopeForwardConfig stores Forward Networks credentials for a user scope.\n"
+        "summary": "PutUserScopeForwardConfig stores Forward integration credentials for a user\nscope.\n"
       }
     },
     "/api/users/{id}/integrations/forward/collectors": {
@@ -24802,6 +27485,66 @@
         }
       }
     },
+    "/forwardtenant.DeleteTenant": {
+      "post": {
+        "description": "modes, deletes the backing Forward org so a subsequent bootstrap recreates it from scratch.\n",
+        "operationId": "POST:forwardtenant.DeleteTenant",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "baseUrl": {
+                    "type": "string"
+                  },
+                  "forwardEnabled": {
+                    "type": "boolean"
+                  },
+                  "mode": {
+                    "type": "string"
+                  },
+                  "sessionSecret": {
+                    "type": "string"
+                  },
+                  "skipTlsVerify": {
+                    "type": "boolean"
+                  },
+                  "supportPassword": {
+                    "type": "string"
+                  },
+                  "supportUsername": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "mode",
+                  "forwardEnabled",
+                  "sessionSecret",
+                  "supportUsername",
+                  "supportPassword",
+                  "baseUrl",
+                  "skipTlsVerify"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteTenant tears down the stored Forward tenant and, for hard/curated\n"
+      }
+    },
     "/forwardtenant.EnsureTenantCredential": {
       "post": {
         "operationId": "POST:forwardtenant.EnsureTenantCredential",
@@ -25755,6 +28498,21 @@
         "summary": "CronWorkerHeartbeat upserts a task worker heartbeat for this worker instance.\n"
       }
     },
+    "/internal/worker/platform/usage-snapshots": {
+      "post": {
+        "description": "into the platform snapshot store for estimate-vs-actual reporting.\n",
+        "operationId": "POST:worker.CronRefreshDeploymentUsageSnapshots",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CronRefreshDeploymentUsageSnapshots records current deployment resource requests\n"
+      }
+    },
     "/internal/worker/tasks/reconcile": {
       "post": {
         "operationId": "POST:worker.CronReconcileQueuedTasks",
@@ -26195,6 +28953,1864 @@
           }
         },
         "summary": "MarkNotificationAsRead marks a notification as read.\n"
+      }
+    },
+    "/platform.CreateReservation": {
+      "post": {
+        "operationId": "POST:platform.CreateReservation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "adminOverride": {
+                    "type": "boolean"
+                  },
+                  "approvedBy": {
+                    "type": "string"
+                  },
+                  "endAt": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "priorityTier": {
+                    "type": "string"
+                  },
+                  "requestedBy": {
+                    "type": "string"
+                  },
+                  "resourceClass": {
+                    "type": "string"
+                  },
+                  "startAt": {
+                    "type": "string"
+                  },
+                  "templateRef": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "userScopeId": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "resourceClass",
+                  "type",
+                  "priorityTier",
+                  "adminOverride",
+                  "templateRef",
+                  "userScopeId",
+                  "startAt",
+                  "endAt",
+                  "requestedBy",
+                  "approvedBy",
+                  "notes",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminOverride": {
+                      "type": "boolean"
+                    },
+                    "approvedBy": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "endAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "priorityTier": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "startAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "templateRef": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "resourceClass",
+                    "type",
+                    "status",
+                    "priorityTier",
+                    "adminOverride",
+                    "templateRef",
+                    "userScopeId",
+                    "startAt",
+                    "endAt",
+                    "requestedBy",
+                    "approvedBy",
+                    "notes",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.GetDeploymentPlacementSummary": {
+      "post": {
+        "operationId": "POST:platform.GetDeploymentPlacementSummary",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "deploymentId": {
+                    "type": "string"
+                  },
+                  "userScopeId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "userScopeId",
+                  "deploymentId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "actualNodeCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "actualNodes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "actualPoolClasses": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "availablePoolClasses": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "candidateNodeCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "degraded": {
+                      "type": "boolean"
+                    },
+                    "deploymentId": {
+                      "type": "string"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "namespace": {
+                      "type": "string"
+                    },
+                    "placementHints": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "placementOk": {
+                      "type": "boolean"
+                    },
+                    "preferredPoolClasses": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "readyPodCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "schedulingMode": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "topologyName": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    },
+                    "warnings": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "userScopeId",
+                    "deploymentId",
+                    "resourceClass",
+                    "namespace",
+                    "topologyName",
+                    "schedulingMode",
+                    "placementHints",
+                    "preferredPoolClasses",
+                    "availablePoolClasses",
+                    "actualPoolClasses",
+                    "actualNodes",
+                    "actualNodeCount",
+                    "readyPodCount",
+                    "candidateNodeCount",
+                    "placementOk",
+                    "status",
+                    "degraded",
+                    "warnings",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.GetForwardTenantResetRun": {
+      "post": {
+        "operationId": "POST:platform.GetForwardTenantResetRun",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "runId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "runId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseline": {
+                      "$ref": "#/components/schemas/platform.ForwardTenantResetBaseline"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "mode",
+                    "status",
+                    "requestedBy",
+                    "reason",
+                    "baseline",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.GetOverview": {
+      "get": {
+        "operationId": "GET:platform.GetOverview",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "availabilityByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformAvailabilityByClass"
+                      },
+                      "type": "array"
+                    },
+                    "baselineMonthlyCostCents": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "capacityPools": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformCapacityPool"
+                      },
+                      "type": "array"
+                    },
+                    "demandByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformDemandByClass"
+                      },
+                      "type": "array"
+                    },
+                    "estimateActualByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformEstimateActualByClass"
+                      },
+                      "type": "array"
+                    },
+                    "forwardResetRunCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "forwardResetRunsByStatus": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "infraComparison": {
+                      "$ref": "#/components/schemas/platform.PlatformInfraComparison"
+                    },
+                    "marginalCostByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformMarginalCostByClass"
+                      },
+                      "type": "array"
+                    },
+                    "poolCostInputs": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformPoolCostInput"
+                      },
+                      "type": "array"
+                    },
+                    "quotaOverrideCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "reservationCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "reservationsByClass": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "reservationsByPriority": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "reservationsByStatus": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "reservedBlocksByClass": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "userProfilesByName": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "warnings": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformWarning"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "userProfilesByName",
+                    "quotaOverrideCount",
+                    "reservationCount",
+                    "reservationsByStatus",
+                    "reservationsByClass",
+                    "reservationsByPriority",
+                    "reservedBlocksByClass",
+                    "capacityPools",
+                    "demandByClass",
+                    "availabilityByClass",
+                    "estimateActualByClass",
+                    "poolCostInputs",
+                    "marginalCostByClass",
+                    "infraComparison",
+                    "warnings",
+                    "baselineMonthlyCostCents",
+                    "forwardResetRunCount",
+                    "forwardResetRunsByStatus"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "post": {
+        "operationId": "POST:platform.GetOverview",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "availabilityByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformAvailabilityByClass"
+                      },
+                      "type": "array"
+                    },
+                    "baselineMonthlyCostCents": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "capacityPools": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformCapacityPool"
+                      },
+                      "type": "array"
+                    },
+                    "demandByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformDemandByClass"
+                      },
+                      "type": "array"
+                    },
+                    "estimateActualByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformEstimateActualByClass"
+                      },
+                      "type": "array"
+                    },
+                    "forwardResetRunCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "forwardResetRunsByStatus": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "infraComparison": {
+                      "$ref": "#/components/schemas/platform.PlatformInfraComparison"
+                    },
+                    "marginalCostByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformMarginalCostByClass"
+                      },
+                      "type": "array"
+                    },
+                    "poolCostInputs": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformPoolCostInput"
+                      },
+                      "type": "array"
+                    },
+                    "quotaOverrideCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "reservationCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "reservationsByClass": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "reservationsByPriority": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "reservationsByStatus": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "reservedBlocksByClass": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "userProfilesByName": {
+                      "additionalProperties": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "type": "object"
+                    },
+                    "warnings": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformWarning"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "userProfilesByName",
+                    "quotaOverrideCount",
+                    "reservationCount",
+                    "reservationsByStatus",
+                    "reservationsByClass",
+                    "reservationsByPriority",
+                    "reservedBlocksByClass",
+                    "capacityPools",
+                    "demandByClass",
+                    "availabilityByClass",
+                    "estimateActualByClass",
+                    "poolCostInputs",
+                    "marginalCostByClass",
+                    "infraComparison",
+                    "warnings",
+                    "baselineMonthlyCostCents",
+                    "forwardResetRunCount",
+                    "forwardResetRunsByStatus"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.GetReservation": {
+      "post": {
+        "operationId": "POST:platform.GetReservation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminOverride": {
+                      "type": "boolean"
+                    },
+                    "approvedBy": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "endAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "priorityTier": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "startAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "templateRef": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "resourceClass",
+                    "type",
+                    "status",
+                    "priorityTier",
+                    "adminOverride",
+                    "templateRef",
+                    "userScopeId",
+                    "startAt",
+                    "endAt",
+                    "requestedBy",
+                    "approvedBy",
+                    "notes",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.GetReservationLifecycle": {
+      "post": {
+        "operationId": "POST:platform.GetReservationLifecycle",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "allowedActions": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "events": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ReservationEventRecord"
+                      },
+                      "type": "array"
+                    },
+                    "reservation": {
+                      "$ref": "#/components/schemas/platform.ReservationRecord"
+                    }
+                  },
+                  "required": [
+                    "reservation",
+                    "events",
+                    "allowedActions"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.GetUserOverview": {
+      "post": {
+        "operationId": "POST:platform.GetUserOverview",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "availabilityByClass": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformAvailabilityByClass"
+                      },
+                      "type": "array"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "infraComparison": {
+                      "$ref": "#/components/schemas/platform.PlatformInfraComparison"
+                    },
+                    "policy": {
+                      "$ref": "#/components/schemas/platform.UserPolicy"
+                    },
+                    "reservationGuidance": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformReservationGuidance"
+                      },
+                      "type": "array"
+                    },
+                    "usage": {
+                      "$ref": "#/components/schemas/platform.PlatformUserUsage"
+                    },
+                    "warnings": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.PlatformWarning"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "generatedAt",
+                    "policy",
+                    "usage",
+                    "availabilityByClass",
+                    "reservationGuidance",
+                    "infraComparison",
+                    "warnings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.GetUserPolicy": {
+      "post": {
+        "operationId": "POST:platform.GetUserPolicy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capabilities": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "directRoles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "operatingModes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "primaryOperatingMode": {
+                      "type": "string"
+                    },
+                    "profiles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/platform.UserQuota"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "profiles",
+                    "operatingModes",
+                    "primaryOperatingMode",
+                    "capabilities",
+                    "directRoles",
+                    "quota"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.ListForwardTenantResetRuns": {
+      "post": {
+        "operationId": "POST:platform.ListForwardTenantResetRuns",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "includeAll": {
+                    "type": "boolean"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "includeAll"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "runs": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ForwardTenantResetRun"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "runs"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.ListReservations": {
+      "post": {
+        "operationId": "POST:platform.ListReservations",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "includeAll": {
+                    "type": "boolean"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "includeAll"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "reservations": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ReservationRecord"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "reservations"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.PreflightReservation": {
+      "post": {
+        "operationId": "POST:platform.PreflightReservation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "adminOverride": {
+                    "type": "boolean"
+                  },
+                  "endAt": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "priorityTier": {
+                    "type": "string"
+                  },
+                  "requestedBy": {
+                    "type": "string"
+                  },
+                  "resourceClass": {
+                    "type": "string"
+                  },
+                  "startAt": {
+                    "type": "string"
+                  },
+                  "templateRef": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "userScopeId": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "resourceClass",
+                  "type",
+                  "priorityTier",
+                  "adminOverride",
+                  "templateRef",
+                  "userScopeId",
+                  "startAt",
+                  "endAt",
+                  "requestedBy",
+                  "notes",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminOverride": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "endAt": {
+                      "type": "string"
+                    },
+                    "overlappingReservations": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "persistentReservations": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "priorityTier": {
+                      "type": "string"
+                    },
+                    "protectedCuratedBlocks": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/platform.UserQuota"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "startAt": {
+                      "type": "string"
+                    },
+                    "templateRef": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "warnings": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "allowed",
+                    "reason",
+                    "resourceClass",
+                    "type",
+                    "priorityTier",
+                    "adminOverride",
+                    "templateRef",
+                    "startAt",
+                    "endAt",
+                    "overlappingReservations",
+                    "persistentReservations",
+                    "protectedCuratedBlocks",
+                    "quota",
+                    "warnings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.PutUserProfiles": {
+      "post": {
+        "operationId": "POST:platform.PutUserProfiles",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "assignedBy": {
+                    "type": "string"
+                  },
+                  "profiles": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "profiles",
+                  "assignedBy"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capabilities": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "directRoles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "operatingModes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "primaryOperatingMode": {
+                      "type": "string"
+                    },
+                    "profiles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/platform.UserQuota"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "profiles",
+                    "operatingModes",
+                    "primaryOperatingMode",
+                    "capabilities",
+                    "directRoles",
+                    "quota"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.PutUserQuotaOverride": {
+      "post": {
+        "operationId": "POST:platform.PutUserQuotaOverride",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "assignedBy": {
+                    "type": "string"
+                  },
+                  "maxConcurrentLabs": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "maxPersistentHours": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "maxPersistentLabs": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "maxResourceClass": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "assignedBy",
+                  "maxConcurrentLabs",
+                  "maxPersistentLabs",
+                  "maxPersistentHours",
+                  "maxResourceClass"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capabilities": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "directRoles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "operatingModes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "primaryOperatingMode": {
+                      "type": "string"
+                    },
+                    "profiles": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/platform.UserQuota"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "username",
+                    "profiles",
+                    "operatingModes",
+                    "primaryOperatingMode",
+                    "capabilities",
+                    "directRoles",
+                    "quota"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.RefreshDeploymentUsageSnapshots": {
+      "get": {
+        "operationId": "GET:platform.RefreshDeploymentUsageSnapshots",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "recordedAt": {
+                      "type": "string"
+                    },
+                    "snapshots": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "recordedAt",
+                    "snapshots"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "post": {
+        "operationId": "POST:platform.RefreshDeploymentUsageSnapshots",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "recordedAt": {
+                      "type": "string"
+                    },
+                    "snapshots": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "recordedAt",
+                    "snapshots"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.RequestForwardTenantResetRun": {
+      "post": {
+        "operationId": "POST:platform.RequestForwardTenantResetRun",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "baseline": {
+                    "$ref": "#/components/schemas/platform.ForwardTenantResetBaseline"
+                  },
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "mode": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "requestedBy": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "mode",
+                  "requestedBy",
+                  "reason",
+                  "baseline",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseline": {
+                      "$ref": "#/components/schemas/platform.ForwardTenantResetBaseline"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "mode",
+                    "status",
+                    "requestedBy",
+                    "reason",
+                    "baseline",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.UpdateForwardTenantResetRun": {
+      "post": {
+        "operationId": "POST:platform.UpdateForwardTenantResetRun",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "runId": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "runId",
+                  "status",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseline": {
+                      "$ref": "#/components/schemas/platform.ForwardTenantResetBaseline"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "mode",
+                    "status",
+                    "requestedBy",
+                    "reason",
+                    "baseline",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.UpdateReservationStatus": {
+      "post": {
+        "operationId": "POST:platform.UpdateReservationStatus",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "approvedBy": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "status",
+                  "approvedBy"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adminOverride": {
+                      "type": "boolean"
+                    },
+                    "approvedBy": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "endAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "priorityTier": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "resourceClass": {
+                      "type": "string"
+                    },
+                    "startAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "templateRef": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "resourceClass",
+                    "type",
+                    "status",
+                    "priorityTier",
+                    "adminOverride",
+                    "templateRef",
+                    "userScopeId",
+                    "startAt",
+                    "endAt",
+                    "requestedBy",
+                    "approvedBy",
+                    "notes",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
       }
     },
     "/robots.txt": {
@@ -27866,6 +32482,50 @@
           }
         },
         "summary": "EnsureManagedCollectorDeployment is a worker-facing private API for queued\n"
+      }
+    },
+    "/skyforge.ExecuteForwardTenantResetRun": {
+      "post": {
+        "description": "Forward tenant reset orchestration.\n",
+        "operationId": "POST:skyforge.ExecuteForwardTenantResetRun",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "mode": {
+                    "type": "string"
+                  },
+                  "requestedBy": {
+                    "type": "string"
+                  },
+                  "runId": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "runId",
+                  "username",
+                  "mode",
+                  "requestedBy"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ExecuteForwardTenantResetRun is a worker-facing private API for queued\n"
       }
     },
     "/snmp/{path}": {

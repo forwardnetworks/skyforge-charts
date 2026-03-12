@@ -1,6 +1,7 @@
-{{- if and .Values.skyforge.infoblox.enabled .Values.skyforge.infoblox.proxyEnabled (not .Values.skyforge.infoblox.managed) }}
+{{- if and .Values.skyforge.infoblox.enabled .Values.skyforge.infoblox.proxyEnabled }}
 {{- $upstreamHost := required "skyforge.infoblox.upstreamHost is required when infoblox is enabled" .Values.skyforge.infoblox.upstreamHost -}}
 {{- $upstreamPort := default 443 .Values.skyforge.infoblox.upstreamPort -}}
+{{- $upstreamScheme := lower (default "https" .Values.skyforge.infoblox.upstreamScheme) -}}
 {{- $lanNetwork := default "infoblox-lan1" .Values.skyforge.infoblox.lanNetworkName -}}
 {{- $externalPrefix := default "/infoblox" .Values.skyforge.infoblox.externalPrefix -}}
 apiVersion: v1
@@ -110,6 +111,7 @@ data:
                         socket_address:
                           address: {{ $upstreamHost | quote }}
                           port_value: {{ $upstreamPort }}
+          {{- if eq $upstreamScheme "https" }}
           transport_socket:
             name: envoy.transport_sockets.tls
             typed_config:
@@ -120,6 +122,7 @@ data:
 {{- if regexMatch "^[A-Za-z0-9.-]+$" $upstreamHost }}
               sni: {{ $upstreamHost | quote }}
 {{- end }}
+          {{- end }}
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -107,6 +107,7 @@ spec:
       tolerations:
 {{ toYaml . | nindent 8 }}
       {{- end }}
+{{- if not .Values.skyforge.infoblox.proxyEnabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -129,4 +130,5 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 80
+{{- end }}
 {{- end }}

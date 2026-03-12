@@ -348,6 +348,10 @@ spec:
                   value: {{ default 45 $license.postBootstrapWaitSeconds | quote }}
                 - name: INITIAL_WAIT_SECONDS
                   value: {{ default 8 $license.initialWaitSeconds | quote }}
+                - name: CONSOLE_USERNAME
+                  value: {{ default "admin" $license.consoleUsername | quote }}
+                - name: CONSOLE_PASSWORD
+                  value: {{ default "infoblox" $license.consolePassword | quote }}
               command:
                 - /bin/sh
                 - -ec
@@ -468,12 +472,36 @@ spec:
                     ${timeout_cmd} expect <<'EOF'
                   set timeout $env(PROMPT_WAIT_SECONDS)
                   log_user 1
+                  proc wait_for_cli_prompt {} {
+                    expect {
+                      -re {(\r|\n|^)\s*login: ?$} {
+                        send -- $env(CONSOLE_USERNAME)
+                        send -- "\r"
+                        exp_continue
+                      }
+                      -re {(\r|\n|^)\s*(Local )?[Pp]assword: ?$} {
+                        send -- $env(CONSOLE_PASSWORD)
+                        send -- "\r"
+                        exp_continue
+                      }
+                      -re {(\r|\n|^).*[>#] ?$} {
+                        return 0
+                      }
+                      timeout {
+                        exit 1
+                      }
+                      eof {
+                        exit 1
+                      }
+                    }
+                  }
                   spawn virtctl --namespace $env(POD_NAMESPACE) console $env(VM_NAME)
                   after [expr {$env(INITIAL_WAIT_SECONDS) * 1000}]
                   for {set i 0} {$i < 4} {incr i} {
                     send -- "\r"
                     after 250
                   }
+                  wait_for_cli_prompt
 
                   send -- "set network\r"
                   after 1500
@@ -482,6 +510,7 @@ spec:
                     send -- "y\r"
                     after 250
                   }
+                  wait_for_cli_prompt
 
                   send -- "set temp_license\r"
                   after 1500
@@ -490,9 +519,15 @@ spec:
                     send -- "y\r"
                     after 250
                   }
+                  wait_for_cli_prompt
 
                   send -- "save config\r"
                   after 1200
+                  for {set i 0} {$i < 8} {incr i} {
+                    send -- "\r"
+                    send -- "y\r"
+                    after 250
+                  }
                   send -- "exit\r"
                   after 500
                   send "\035"

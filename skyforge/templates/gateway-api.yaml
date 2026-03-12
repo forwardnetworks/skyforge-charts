@@ -453,8 +453,8 @@ spec:
   rules:
 {{- if .Values.skyforge.infoblox.enabled }}
     {{- $infobloxPrefix := default "/infoblox" .Values.skyforge.infoblox.externalPrefix }}
-    {{- $infobloxServiceName := default "infoblox" .Values.skyforge.infoblox.serviceName }}
-    {{- $infobloxServicePort := default 443 .Values.skyforge.infoblox.servicePort }}
+    {{- $infobloxServiceName := default (default "infoblox" .Values.skyforge.infoblox.serviceName) .Values.skyforge.infoblox.routeServiceName }}
+    {{- $infobloxServicePort := default (default 443 .Values.skyforge.infoblox.servicePort) .Values.skyforge.infoblox.routeServicePort }}
     {{- $infobloxRewrite := true }}
     {{- if hasKey .Values.skyforge.infoblox "rewritePrefixToRoot" }}
     {{- $infobloxRewrite = .Values.skyforge.infoblox.rewritePrefixToRoot }}

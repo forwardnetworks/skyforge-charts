@@ -46,3 +46,53 @@ Args:
 {{- $fallback -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Render native nodeSelector/tolerations primitives for a workload.
+Args:
+  0: placement values object
+*/}}
+{{- define "skyforge.workloadPlacementSpec" -}}
+{{- $placement := index . 0 -}}
+{{- if $placement -}}
+{{- $nodeSelector := dict -}}
+{{- if $placement.nodeSelector -}}
+{{- range $k, $v := $placement.nodeSelector }}
+{{- $_ := set $nodeSelector $k $v -}}
+{{- end }}
+{{- end }}
+{{- if $placement.requiredPoolClass }}
+{{- $_ := set $nodeSelector "skyforge.forwardnetworks.com/pool-class" $placement.requiredPoolClass -}}
+{{- end }}
+{{- if gt (len $nodeSelector) 0 }}
+nodeSelector:
+{{ toYaml $nodeSelector | indent 2 }}
+{{- end }}
+{{- if $placement.tolerations }}
+tolerations:
+{{ toYaml $placement.tolerations | indent 2 }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render a nodeAffinity block fragment for a workload.
+Args:
+  0: placement values object
+*/}}
+{{- define "skyforge.workloadNodeAffinity" -}}
+{{- $placement := index . 0 -}}
+{{- if and $placement $placement.affinity }}
+{{ toYaml $placement.affinity }}
+{{- else if and $placement $placement.preferredPoolClass }}
+nodeAffinity:
+  preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      preference:
+        matchExpressions:
+          - key: skyforge.forwardnetworks.com/pool-class
+            operator: In
+            values:
+              - {{ $placement.preferredPoolClass | quote }}
+{{- end -}}
+{{- end -}}
