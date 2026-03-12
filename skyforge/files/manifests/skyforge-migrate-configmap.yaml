@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:48broOWc4jDDyqUnjQvoH8rr4y0gx6FgEGRZg9bAZdw=
+    h1:5DWeBjEF/umgAoVnT3AYADxXNZjJwO+JIlC6jravQ6k=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
@@ -50,6 +50,9 @@ data:
     20260311200500_reservation_priority_and_override.up.sql h1:CM7eZh0HU13oHO61Nm++6vB8L6MOgiMzOmM0/3QYoKk=
     20260311203000_reservation_lifecycle_events.up.sql h1:GK/5N2ypUcXRxbmo3+sePf7zqZNfgJOI6wWEiswW2Os=
     20260311204500_deployment_usage_snapshots.up.sql h1:X5giN8MTx2LZreF3cXzKH5YbVv0TDOMRl1zTXiENp2M=
+    20260312063000_config_change_runs.up.sql h1:ulmnupPSOTxThmayKL96FfY9qfa/oJ8I7pu4LdBoRaA=
+    20260312101500_config_change_reviews.up.sql h1:hlhFrYWnaWsbRqZ0FarmacgKx7iKtVRQpADNr07zPLk=
+    20260312113000_config_change_execution_summaries.up.sql h1:dprQ/ggsv3VkQNTkWs/l4etowsKsS9m6wXMFwyZ6tHc=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -4103,3 +4106,113 @@ data:
     
     CREATE INDEX IF NOT EXISTS idx_sf_deployment_usage_snapshots_measured_at
         ON sf_deployment_usage_snapshots (measured_at DESC);
+
+  20260312063000_config_change_runs.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_config_change_runs (
+        id uuid NOT NULL PRIMARY KEY,
+        username text NOT NULL,
+        target_type text NOT NULL,
+        target_ref text NOT NULL,
+        target_name text NOT NULL DEFAULT '',
+        source_kind text NOT NULL,
+        execution_mode text NOT NULL,
+        status text NOT NULL,
+        approval_state text NOT NULL,
+        summary text NOT NULL DEFAULT '',
+        ticket_ref text NOT NULL DEFAULT '',
+        requested_by text NOT NULL,
+        approved_by text,
+        spec_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        metadata_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_config_change_runs_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE,
+        CONSTRAINT sf_config_change_runs_requested_by_fkey FOREIGN KEY (requested_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE RESTRICT,
+        CONSTRAINT sf_config_change_runs_approved_by_fkey FOREIGN KEY (approved_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL,
+        CONSTRAINT sf_config_change_runs_target_type_check CHECK (target_type = ANY (ARRAY[
+            'snapshot'::text,
+            'deployment'::text,
+            'environment'::text
+        ])),
+        CONSTRAINT sf_config_change_runs_source_kind_check CHECK (source_kind = ANY (ARRAY[
+            'netlab-model'::text,
+            'config-snippet'::text,
+            'structured-patch'::text,
+            'ansible-playbook'::text,
+            'shell-script'::text
+        ])),
+        CONSTRAINT sf_config_change_runs_execution_mode_check CHECK (execution_mode = ANY (ARRAY[
+            'dry-run'::text,
+            'staged'::text,
+            'apply'::text
+        ])),
+        CONSTRAINT sf_config_change_runs_status_check CHECK (status = ANY (ARRAY[
+            'requested'::text,
+            'validating'::text,
+            'rendered'::text,
+            'awaiting-approval'::text,
+            'approved'::text,
+            'queued'::text,
+            'applying'::text,
+            'verifying'::text,
+            'succeeded'::text,
+            'failed'::text,
+            'cancelled'::text,
+            'rolled-back'::text
+        ])),
+        CONSTRAINT sf_config_change_runs_approval_state_check CHECK (approval_state = ANY (ARRAY[
+            'not-required'::text,
+            'pending'::text,
+            'approved'::text,
+            'rejected'::text
+        ]))
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_config_change_runs_username_idx ON public.sf_config_change_runs(username);
+    CREATE INDEX IF NOT EXISTS sf_config_change_runs_target_idx ON public.sf_config_change_runs(target_type, target_ref);
+    CREATE INDEX IF NOT EXISTS sf_config_change_runs_status_idx ON public.sf_config_change_runs(status);
+    CREATE INDEX IF NOT EXISTS sf_config_change_runs_ticket_ref_idx ON public.sf_config_change_runs(ticket_ref);
+    
+    CREATE TABLE IF NOT EXISTS public.sf_config_change_events (
+        id uuid NOT NULL PRIMARY KEY,
+        run_id uuid NOT NULL,
+        status text,
+        event_type text NOT NULL,
+        message text NOT NULL DEFAULT '',
+        details_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_by text,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_config_change_events_run_id_fkey FOREIGN KEY (run_id) REFERENCES public.sf_config_change_runs(id) ON DELETE CASCADE,
+        CONSTRAINT sf_config_change_events_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_config_change_events_run_id_idx ON public.sf_config_change_events(run_id, created_at);
+
+  20260312101500_config_change_reviews.up.sql: |
+    ALTER TABLE public.sf_config_change_runs
+        ADD COLUMN IF NOT EXISTS normalized_spec_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        ADD COLUMN IF NOT EXISTS review_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        ADD COLUMN IF NOT EXISTS execution_task_id bigint,
+        ADD COLUMN IF NOT EXISTS rendered_at timestamp with time zone,
+        ADD COLUMN IF NOT EXISTS queued_at timestamp with time zone;
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_config_change_runs_execution_task_id_fkey'
+        ) THEN
+            ALTER TABLE public.sf_config_change_runs
+                ADD CONSTRAINT sf_config_change_runs_execution_task_id_fkey
+                FOREIGN KEY (execution_task_id) REFERENCES public.sf_tasks(id) ON DELETE SET NULL;
+        END IF;
+    END $$;
+    
+    CREATE INDEX IF NOT EXISTS sf_config_change_runs_execution_task_id_idx
+        ON public.sf_config_change_runs(execution_task_id);
+
+  20260312113000_config_change_execution_summaries.up.sql: |
+    ALTER TABLE sf_config_change_runs
+        ADD COLUMN IF NOT EXISTS rollback_summary_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        ADD COLUMN IF NOT EXISTS execution_summary_json jsonb NOT NULL DEFAULT '{}'::jsonb;

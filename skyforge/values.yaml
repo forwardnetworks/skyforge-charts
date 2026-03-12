@@ -440,7 +440,9 @@ skyforge:
       pollingInterval: 30
       cooldownPeriod: 900
       minReplicaCount: 1
-      maxReplicaCount: 2
+      # The bundled ELK image is a single-node stack sharing one RWO
+      # Elasticsearch data volume, so it cannot scale horizontally.
+      maxReplicaCount: 1
       triggers:
         - type: cpu
           metricType: Utilization

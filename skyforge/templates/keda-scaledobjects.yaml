@@ -138,6 +138,9 @@ spec:
 {{- end }}
 
 {{- if and .Values.skyforge.elk.enabled .Values.skyforge.keda.elkProxy.enabled }}
+{{- if gt (int (default 1 .Values.skyforge.keda.elkProxy.maxReplicaCount)) 1 -}}
+{{- fail "skyforge.keda.elkProxy.maxReplicaCount must be <= 1 because the bundled ELK stack is single-node and uses one RWO Elasticsearch data volume" -}}
+{{- end -}}
 {{- $triggers := default (list) .Values.skyforge.keda.elkProxy.triggers -}}
 {{- if eq (len $triggers) 0 -}}
 {{- fail "skyforge.keda.elkProxy.enabled=true requires skyforge.keda.elkProxy.triggers" -}}
