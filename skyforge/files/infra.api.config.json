@@ -29,6 +29,9 @@
     "platform": {
       "base_url": "http://skyforge-server:8085"
     },
+    "configchanges": {
+      "base_url": "http://skyforge-server:8085"
+    },
     "teams": {
       "base_url": "http://skyforge-server:8085"
     },
