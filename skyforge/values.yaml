@@ -98,6 +98,25 @@ skyforge:
       serviceName: cilium-gateway-skyforge
       http: 30080
       https: 30443
+  publicTunnel:
+    ngrok:
+      enabled: false
+      image: "docker.io/ngrok/ngrok:3.26.0"
+      imagePullPolicy: "IfNotPresent"
+      authtokenSecretName: "skyforge-ngrok"
+      authtokenSecretKey: "authtoken"
+      targetServiceName: "cilium-gateway-skyforge"
+      targetServiceNamespace: "kube-system"
+      targetServicePort: 80
+      extraArgs: []
+      env: {}
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "64Mi"
+        limits:
+          cpu: "500m"
+          memory: "256Mi"
   # Skyforge uses Cilium Gateway API for ingress (no Traefik).
   # Optional cookie Domain attribute. Leave empty for host-only cookies.
   # If you enable any Skyforge tools on a subdomain (e.g. Hoppscotch at
@@ -487,7 +506,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260305-netlab-upstreamdev-r21"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260313-netlab-kubevirt-r23"
     pullPolicy: "IfNotPresent"
   dns:
     enabled: false

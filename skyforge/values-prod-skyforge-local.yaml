@@ -94,7 +94,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260305-netlab-upstreamdev-r21"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260313-netlab-kubevirt-r23"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys Containerlab topologies to Kubernetes via Clabernetes.
@@ -138,9 +138,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260312-nos-matrix-r6"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260313-forward-tenant-r2"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260312-nos-matrix-r6-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260313-forward-tenant-r2-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

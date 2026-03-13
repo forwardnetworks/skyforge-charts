@@ -842,6 +842,210 @@
         ],
         "type": "object"
       },
+      "fixia.ConnectionInput": {
+        "properties": {
+          "baseUrl": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "skipTlsVerify": {
+            "type": "boolean"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "baseUrl",
+          "username",
+          "password",
+          "skipTlsVerify"
+        ],
+        "type": "object"
+      },
+      "fixia.Device": {
+        "properties": {
+          "device": {
+            "type": "string"
+          },
+          "ports": {
+            "items": {
+              "$ref": "#/components/schemas/fixia.DevicePort"
+            },
+            "type": "array"
+          },
+          "reservation": {
+            "$ref": "#/components/schemas/fixia.Reservation"
+          }
+        },
+        "required": [
+          "device",
+          "ports",
+          "reservation"
+        ],
+        "type": "object"
+      },
+      "fixia.DevicePort": {
+        "properties": {
+          "device": {
+            "type": "string"
+          },
+          "port": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "device",
+          "port"
+        ],
+        "type": "object"
+      },
+      "fixia.Link": {
+        "properties": {
+          "devicePorts": {
+            "items": {
+              "$ref": "#/components/schemas/fixia.DevicePort"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "devicePorts"
+        ],
+        "type": "object"
+      },
+      "fixia.LinkReservationResult": {
+        "properties": {
+          "failedLinks": {
+            "items": {
+              "$ref": "#/components/schemas/fixia.Link"
+            },
+            "type": "array"
+          },
+          "linkResult": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "linkResult",
+          "failedLinks"
+        ],
+        "type": "object"
+      },
+      "fixia.Reservation": {
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "devices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "endTimeMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/fixia.Link"
+            },
+            "type": "array"
+          },
+          "reservationId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "startTimeMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "user": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reservationId",
+          "devices",
+          "user",
+          "comment",
+          "startTimeMs",
+          "endTimeMs",
+          "links"
+        ],
+        "type": "object"
+      },
+      "fixia.ReservationError": {
+        "properties": {
+          "conflicts": {
+            "items": {
+              "$ref": "#/components/schemas/fixia.Reservation"
+            },
+            "type": "array"
+          },
+          "linkReservationResult": {
+            "$ref": "#/components/schemas/fixia.LinkReservationResult"
+          },
+          "linkResult": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "unknownDevices": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "reason",
+          "unknownDevices",
+          "conflicts",
+          "linkResult",
+          "linkReservationResult"
+        ],
+        "type": "object"
+      },
+      "fixia.ReservationLogEntry": {
+        "properties": {
+          "previous": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "reservation": {
+            "$ref": "#/components/schemas/fixia.Reservation"
+          }
+        },
+        "required": [
+          "reason",
+          "reservation",
+          "previous"
+        ],
+        "type": "object"
+      },
+      "fixia.ReservationResult": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/fixia.ReservationError"
+          },
+          "reservation": {
+            "$ref": "#/components/schemas/fixia.Reservation"
+          }
+        },
+        "required": [
+          "reservation",
+          "error"
+        ],
+        "type": "object"
+      },
       "forwardregistry.CreateRequest": {
         "properties": {
           "collectorConfigId": {
@@ -2459,6 +2663,151 @@
         ],
         "type": "object"
       },
+      "skyforge.CompositePlanPreviewBinding": {
+        "properties": {
+          "as": {
+            "type": "string"
+          },
+          "fromOutput": {
+            "type": "string"
+          },
+          "fromStageId": {
+            "type": "string"
+          },
+          "sensitive": {
+            "type": "boolean"
+          },
+          "toInput": {
+            "type": "string"
+          },
+          "toStageId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fromStageId",
+          "fromOutput",
+          "toStageId",
+          "toInput",
+          "as",
+          "sensitive"
+        ],
+        "type": "object"
+      },
+      "skyforge.CompositePlanPreviewOutputRef": {
+        "properties": {
+          "output": {
+            "type": "string"
+          },
+          "stageId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "stageId",
+          "output"
+        ],
+        "type": "object"
+      },
+      "skyforge.CompositePlanPreviewStage": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "dependsOn": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "inputs": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "outputs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "provider": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "provider",
+          "action",
+          "dependsOn",
+          "inputs",
+          "outputs"
+        ],
+        "type": "object"
+      },
+      "skyforge.CompositePlanRecord": {
+        "properties": {
+          "bindings": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.CompositePlanPreviewBinding"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "inputs": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "name": {
+            "type": "string"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.CompositePlanPreviewOutputRef"
+            },
+            "type": "array"
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.CompositePlanPreviewStage"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "name",
+          "inputs",
+          "stages",
+          "bindings",
+          "outputs",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "skyforge.ContainerlabInfo": {
         "properties": {
           "apiUrl": {
@@ -2790,62 +3139,6 @@
           "eventType",
           "payload",
           "deploymentId"
-        ],
-        "type": "object"
-      },
-      "skyforge.EveFolderInfo": {
-        "properties": {
-          "mtime": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "path",
-          "mtime"
-        ],
-        "type": "object"
-      },
-      "skyforge.EveLabSummary": {
-        "properties": {
-          "folder": {
-            "type": "string"
-          },
-          "lock": {
-            "type": "boolean"
-          },
-          "mtime": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          },
-          "shared": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "umtime": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "name",
-          "path",
-          "folder",
-          "mtime",
-          "umtime",
-          "shared",
-          "lock"
         ],
         "type": "object"
       },
@@ -4069,61 +4362,6 @@
         ],
         "type": "object"
       },
-      "skyforge.UserEveServerConfig": {
-        "properties": {
-          "apiPassword": {
-            "type": "string"
-          },
-          "apiUrl": {
-            "type": "string"
-          },
-          "apiUser": {
-            "type": "string"
-          },
-          "hasPassword": {
-            "type": "boolean"
-          },
-          "hasSshKey": {
-            "type": "boolean"
-          },
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "skipTlsVerify": {
-            "type": "boolean"
-          },
-          "sshHost": {
-            "type": "string"
-          },
-          "sshKey": {
-            "type": "string"
-          },
-          "sshUser": {
-            "type": "string"
-          },
-          "webUrl": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "apiUrl",
-          "webUrl",
-          "skipTlsVerify",
-          "apiUser",
-          "apiPassword",
-          "hasPassword",
-          "sshHost",
-          "sshUser",
-          "sshKey",
-          "hasSshKey"
-        ],
-        "type": "object"
-      },
       "skyforge.UserForwardCollectorConfigSummary": {
         "properties": {
           "baseUrl": {
@@ -4224,10 +4462,6 @@
           "allowCustomContainerlabServers": {
             "type": "boolean"
           },
-          "allowCustomEveServers": {
-            "title": "EVE-NG deployments require an endpoint. This flag enables configuring a\nper-user-scope EVE server.\n",
-            "type": "boolean"
-          },
           "allowCustomNetlabServers": {
             "type": "boolean"
           },
@@ -4284,13 +4518,6 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "eveNgRunTemplateId": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "eveServer": {
-            "type": "string"
           },
           "externalTemplateRepos": {
             "items": {
@@ -4380,7 +4607,6 @@
           "blueprint",
           "defaultBranch",
           "allowExternalTemplateRepos",
-          "allowCustomEveServers",
           "allowCustomNetlabServers",
           "allowCustomContainerlabServers",
           "externalTemplateRepos",
@@ -4390,14 +4616,12 @@
           "terraformApplyTemplateId",
           "ansibleRunTemplateId",
           "netlabRunTemplateId",
-          "eveNgRunTemplateId",
           "containerlabRunTemplateId",
           "awsAccountId",
           "awsRoleName",
           "awsRegion",
           "awsAuthMethod",
           "artifactsBucket",
-          "eveServer",
           "netlabServer",
           "giteaOwner",
           "giteaRepo"
@@ -6942,7 +7166,7 @@
         "summary": "UpdateAdminConfigChangeRunStatus updates status or approval state for a config\nchange run.\n"
       }
     },
-    "/api/admin/forward/tenants/{username}/rebuild": {
+    "/api/admin/forward/orgs/{username}/rebuild": {
       "post": {
         "operationId": "POST:skyforge.RequestAdminForwardTenantRebuild",
         "parameters": [
@@ -7048,10 +7272,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RequestAdminForwardTenantRebuild requests a platform-managed Forward tenant\nrebuild for another user.\n"
+        "summary": "RequestAdminForwardTenantRebuild requests a platform-managed Forward org rebuild\nfor another user.\n"
       }
     },
-    "/api/admin/forward/tenants/{username}/rebuild/runs": {
+    "/api/admin/forward/orgs/{username}/rebuild/runs": {
       "get": {
         "operationId": "GET:skyforge.ListAdminForwardTenantRebuildRuns",
         "parameters": [
@@ -10845,197 +11069,6 @@
         "summary": "DeleteUserContainerlabServer deletes a user-scoped Containerlab server.\n"
       }
     },
-    "/api/byos/me/eve/servers": {
-      "get": {
-        "operationId": "GET:skyforge.ListUserEveServers",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "servers": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.UserEveServerConfig"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "servers"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ListUserEveServers returns the current user's configured EVE-NG API endpoints.\n"
-      },
-      "put": {
-        "operationId": "PUT:skyforge.UpsertUserEveServer",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "apiPassword": {
-                    "type": "string"
-                  },
-                  "apiUrl": {
-                    "type": "string"
-                  },
-                  "apiUser": {
-                    "type": "string"
-                  },
-                  "hasPassword": {
-                    "type": "boolean"
-                  },
-                  "hasSshKey": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "skipTlsVerify": {
-                    "type": "boolean"
-                  },
-                  "sshHost": {
-                    "type": "string"
-                  },
-                  "sshKey": {
-                    "type": "string"
-                  },
-                  "sshUser": {
-                    "type": "string"
-                  },
-                  "webUrl": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "id",
-                  "name",
-                  "apiUrl",
-                  "webUrl",
-                  "skipTlsVerify",
-                  "apiUser",
-                  "apiPassword",
-                  "hasPassword",
-                  "sshHost",
-                  "sshUser",
-                  "sshKey",
-                  "hasSshKey"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "apiPassword": {
-                      "type": "string"
-                    },
-                    "apiUrl": {
-                      "type": "string"
-                    },
-                    "apiUser": {
-                      "type": "string"
-                    },
-                    "hasPassword": {
-                      "type": "boolean"
-                    },
-                    "hasSshKey": {
-                      "type": "boolean"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "skipTlsVerify": {
-                      "type": "boolean"
-                    },
-                    "sshHost": {
-                      "type": "string"
-                    },
-                    "sshKey": {
-                      "type": "string"
-                    },
-                    "sshUser": {
-                      "type": "string"
-                    },
-                    "webUrl": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "name",
-                    "apiUrl",
-                    "webUrl",
-                    "skipTlsVerify",
-                    "apiUser",
-                    "apiPassword",
-                    "hasPassword",
-                    "sshHost",
-                    "sshUser",
-                    "sshKey",
-                    "hasSshKey"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "UpsertUserEveServer creates or updates a user-scoped EVE-NG server.\n"
-      }
-    },
-    "/api/byos/me/eve/servers/{serverID}": {
-      "delete": {
-        "operationId": "DELETE:skyforge.DeleteUserEveServer",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "serverID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "DeleteUserEveServer deletes a user-scoped EVE server.\n"
-      }
-    },
     "/api/byos/me/netlab/servers": {
       "get": {
         "operationId": "GET:skyforge.ListUserNetlabServers",
@@ -11604,357 +11637,6 @@
         "summary": "NetlabConnect executes `netlab connect` on the Netlab runner host and returns\nits output.\n"
       }
     },
-    "/api/byos/users/{id}/eve/convert": {
-      "post": {
-        "operationId": "POST:skyforge.ConvertUserScopeEveLab",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "containerlabServer": {
-                    "type": "string"
-                  },
-                  "createDeployment": {
-                    "type": "boolean"
-                  },
-                  "labPath": {
-                    "type": "string"
-                  },
-                  "outputDir": {
-                    "type": "string"
-                  },
-                  "outputFile": {
-                    "type": "string"
-                  },
-                  "server": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "server",
-                  "labPath",
-                  "outputDir",
-                  "outputFile",
-                  "createDeployment",
-                  "containerlabServer"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "deployment": {
-                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
-                    },
-                    "path": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    },
-                    "warnings": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "path",
-                    "deployment",
-                    "warnings"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ConvertUserScopeEveLab exports an EVE-NG lab into a Containerlab template.\n"
-      }
-    },
-    "/api/byos/users/{id}/eve/import": {
-      "post": {
-        "operationId": "POST:skyforge.ImportUserScopeEveLab",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "deploymentName": {
-                    "type": "string"
-                  },
-                  "labPath": {
-                    "type": "string"
-                  },
-                  "server": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "server",
-                  "labPath",
-                  "deploymentName"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "actionReason": {
-                      "type": "string"
-                    },
-                    "activeTaskId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "activeTaskStatus": {
-                      "type": "string"
-                    },
-                    "autoSyncOnBringUp": {
-                      "type": "boolean"
-                    },
-                    "config": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "createdAt": {
-                      "type": "string"
-                    },
-                    "createdBy": {
-                      "type": "string"
-                    },
-                    "engine": {
-                      "type": "string"
-                    },
-                    "family": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "lastFinishedAt": {
-                      "type": "string"
-                    },
-                    "lastStartedAt": {
-                      "type": "string"
-                    },
-                    "lastStatus": {
-                      "type": "string"
-                    },
-                    "lastSyncAt": {
-                      "type": "string"
-                    },
-                    "lastSyncError": {
-                      "type": "string"
-                    },
-                    "lastSyncStatus": {
-                      "type": "string"
-                    },
-                    "lastTaskId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "lastTaskUserScopeId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "lifecycleState": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "primaryAction": {
-                      "type": "string"
-                    },
-                    "queueDepth": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "syncState": {
-                      "type": "string"
-                    },
-                    "updatedAt": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "userId",
-                    "name",
-                    "family",
-                    "engine",
-                    "config",
-                    "lifecycleState",
-                    "primaryAction",
-                    "actionReason",
-                    "syncState",
-                    "lastSyncAt",
-                    "lastSyncStatus",
-                    "lastSyncError",
-                    "autoSyncOnBringUp",
-                    "createdBy",
-                    "createdAt",
-                    "updatedAt",
-                    "lastTaskUserScopeId",
-                    "lastTaskId",
-                    "lastStatus",
-                    "lastStartedAt",
-                    "lastFinishedAt",
-                    "activeTaskId",
-                    "activeTaskStatus",
-                    "queueDepth"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ImportUserScopeEveLab registers an existing EVE-NG lab as a deployment.\n"
-      }
-    },
-    "/api/byos/users/{id}/eve/labs": {
-      "get": {
-        "operationId": "GET:skyforge.ListUserScopeEveLabs",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "server",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "path",
-            "schema": {
-              "type": "string"
-            },
-            "style": "form"
-          },
-          {
-            "allowEmptyValue": true,
-            "explode": true,
-            "in": "query",
-            "name": "recursive",
-            "schema": {
-              "type": "boolean"
-            },
-            "style": "form"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "folders": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.EveFolderInfo"
-                      },
-                      "type": "array"
-                    },
-                    "labs": {
-                      "items": {
-                        "$ref": "#/components/schemas/skyforge.EveLabSummary"
-                      },
-                      "type": "array"
-                    },
-                    "server": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "server",
-                    "labs",
-                    "folders"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ListUserScopeEveLabs returns EVE-NG labs for import.\n"
-      }
-    },
     "/api/byos/users/{id}/netlab": {
       "get": {
         "operationId": "GET:skyforge.GetUserScopeNetlab",
@@ -12048,10 +11730,6 @@
                     "allowCustomContainerlabServers": {
                       "type": "boolean"
                     },
-                    "allowCustomEveServers": {
-                      "title": "EVE-NG deployments require an endpoint. This flag enables configuring a\nper-user-scope EVE server.\n",
-                      "type": "boolean"
-                    },
                     "allowCustomNetlabServers": {
                       "type": "boolean"
                     },
@@ -12108,13 +11786,6 @@
                         "type": "string"
                       },
                       "type": "array"
-                    },
-                    "eveNgRunTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "eveServer": {
-                      "type": "string"
                     },
                     "externalTemplateRepos": {
                       "items": {
@@ -12204,7 +11875,6 @@
                     "blueprint",
                     "defaultBranch",
                     "allowExternalTemplateRepos",
-                    "allowCustomEveServers",
                     "allowCustomNetlabServers",
                     "allowCustomContainerlabServers",
                     "externalTemplateRepos",
@@ -12214,14 +11884,12 @@
                     "terraformApplyTemplateId",
                     "ansibleRunTemplateId",
                     "netlabRunTemplateId",
-                    "eveNgRunTemplateId",
                     "containerlabRunTemplateId",
                     "awsAccountId",
                     "awsRoleName",
                     "awsRegion",
                     "awsAuthMethod",
                     "artifactsBucket",
-                    "eveServer",
                     "netlabServer",
                     "giteaOwner",
                     "giteaRepo"
@@ -12358,119 +12026,6 @@
           }
         },
         "summary": "RunUserScopeContainerlab triggers a Containerlab run for a user scope.\n"
-      }
-    },
-    "/api/byos/users/{id}/runs/eve-ng-run": {
-      "post": {
-        "operationId": "POST:skyforge.RunUserScopeEveNg",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "action": {
-                    "title": "create, start, stop, destroy\n",
-                    "type": "string"
-                  },
-                  "autoForwardSyncOnBringUp": {
-                    "type": "boolean"
-                  },
-                  "deployment": {
-                    "title": "deployment name for lab naming\n",
-                    "type": "string"
-                  },
-                  "deploymentId": {
-                    "type": "string"
-                  },
-                  "eveServer": {
-                    "type": "string"
-                  },
-                  "labPath": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "template": {
-                    "title": "directory name under templates dir\n",
-                    "type": "string"
-                  },
-                  "templateRepo": {
-                    "title": "owner/repo or URL (custom only)\n",
-                    "type": "string"
-                  },
-                  "templateSource": {
-                    "title": "user (default), blueprints, or custom\n",
-                    "type": "string"
-                  },
-                  "templatesDir": {
-                    "title": "repo-relative directory (default: blueprints/eve-ng)\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "message",
-                  "action",
-                  "eveServer",
-                  "templateSource",
-                  "templateRepo",
-                  "templatesDir",
-                  "template",
-                  "deployment",
-                  "deploymentId",
-                  "labPath",
-                  "autoForwardSyncOnBringUp"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "task": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "user": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "task",
-                    "user"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "RunUserScopeEveNg triggers an EVE-NG lab run for a user scope.\n"
       }
     },
     "/api/byos/users/{id}/runs/netlab-run": {
@@ -14973,7 +14528,7 @@
         "summary": "ListForwardCollectors lists collectors visible to the authenticated user's\nForward org.\n"
       }
     },
-    "/api/forward/tenant-credential": {
+    "/api/forward/org-credential": {
       "get": {
         "operationId": "GET:skyforge.GetCurrentUserForwardTenantCredential",
         "responses": {
@@ -15031,10 +14586,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetCurrentUserForwardTenantCredential returns the current user's Forward tenant\ncredential.\n"
+        "summary": "GetCurrentUserForwardTenantCredential returns the current user's Forward org\ncredential.\n"
       }
     },
-    "/api/forward/tenant-credential/reset": {
+    "/api/forward/org-credential/reset": {
       "post": {
         "operationId": "POST:skyforge.ResetCurrentUserForwardTenantPassword",
         "responses": {
@@ -15092,10 +14647,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "ResetCurrentUserForwardTenantPassword rotates the current user's Forward tenant\npassword.\n"
+        "summary": "ResetCurrentUserForwardTenantPassword rotates the current user's Forward org\npassword.\n"
       }
     },
-    "/api/forward/tenant/rebuild": {
+    "/api/forward/org/rebuild": {
       "post": {
         "operationId": "POST:skyforge.RequestCurrentUserForwardTenantRebuild",
         "requestBody": {
@@ -15188,10 +14743,10 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RequestCurrentUserForwardTenantRebuild requests a platform-managed Forward\ntenant rebuild for the current user.\n"
+        "summary": "RequestCurrentUserForwardTenantRebuild requests a platform-managed Forward org\nrebuild for the current user.\n"
       }
     },
-    "/api/forward/tenant/rebuild/runs": {
+    "/api/forward/org/rebuild/runs": {
       "get": {
         "operationId": "GET:skyforge.ListCurrentUserForwardTenantRebuildRuns",
         "responses": {
@@ -18609,10 +18164,6 @@
                     "allowCustomContainerlabServers": {
                       "type": "boolean"
                     },
-                    "allowCustomEveServers": {
-                      "title": "EVE-NG deployments require an endpoint. This flag enables configuring a\nper-user-scope EVE server.\n",
-                      "type": "boolean"
-                    },
                     "allowCustomNetlabServers": {
                       "type": "boolean"
                     },
@@ -18669,13 +18220,6 @@
                         "type": "string"
                       },
                       "type": "array"
-                    },
-                    "eveNgRunTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "eveServer": {
-                      "type": "string"
                     },
                     "externalTemplateRepos": {
                       "items": {
@@ -18765,7 +18309,6 @@
                     "blueprint",
                     "defaultBranch",
                     "allowExternalTemplateRepos",
-                    "allowCustomEveServers",
                     "allowCustomNetlabServers",
                     "allowCustomContainerlabServers",
                     "externalTemplateRepos",
@@ -18775,14 +18318,12 @@
                     "terraformApplyTemplateId",
                     "ansibleRunTemplateId",
                     "netlabRunTemplateId",
-                    "eveNgRunTemplateId",
                     "containerlabRunTemplateId",
                     "awsAccountId",
                     "awsRoleName",
                     "awsRegion",
                     "awsAuthMethod",
                     "artifactsBucket",
-                    "eveServer",
                     "netlabServer",
                     "giteaOwner",
                     "giteaRepo"
@@ -19925,6 +19466,606 @@
           }
         },
         "summary": "PutUserScopeGCPCredentials stores GCP service identity JSON.\n"
+      }
+    },
+    "/api/users/{id}/composite/plan/preview": {
+      "post": {
+        "operationId": "POST:skyforge.PreviewUserScopeCompositePlan",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "bindings": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CompositePlanPreviewBinding"
+                    },
+                    "type": "array"
+                  },
+                  "inputs": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "outputs": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CompositePlanPreviewOutputRef"
+                    },
+                    "type": "array"
+                  },
+                  "stages": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CompositePlanPreviewStage"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "name",
+                  "inputs",
+                  "stages",
+                  "bindings",
+                  "outputs"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "bindings": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewBinding"
+                      },
+                      "type": "array"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "outputs": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewOutputRef"
+                      },
+                      "type": "array"
+                    },
+                    "stages": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewStage"
+                      },
+                      "type": "array"
+                    },
+                    "warnings": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "stages",
+                    "bindings",
+                    "outputs",
+                    "warnings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PreviewUserScopeCompositePlan validates and normalizes a composite deployment\nplan.\n"
+      }
+    },
+    "/api/users/{id}/composite/plans": {
+      "get": {
+        "operationId": "GET:skyforge.ListUserScopeCompositePlans",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "plans": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanRecord"
+                      },
+                      "type": "array"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "plans"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListUserScopeCompositePlans lists persisted composite plans for a user scope.\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.CreateUserScopeCompositePlan",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "bindings": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CompositePlanPreviewBinding"
+                    },
+                    "type": "array"
+                  },
+                  "inputs": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "outputs": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CompositePlanPreviewOutputRef"
+                    },
+                    "type": "array"
+                  },
+                  "stages": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CompositePlanPreviewStage"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "name",
+                  "inputs",
+                  "stages",
+                  "bindings",
+                  "outputs"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "bindings": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewBinding"
+                      },
+                      "type": "array"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "createdBy": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "inputs": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "outputs": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewOutputRef"
+                      },
+                      "type": "array"
+                    },
+                    "stages": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewStage"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "userId",
+                    "name",
+                    "inputs",
+                    "stages",
+                    "bindings",
+                    "outputs",
+                    "createdBy",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateUserScopeCompositePlan validates and stores a composite plan for a user\nscope.\n"
+      }
+    },
+    "/api/users/{id}/composite/plans/{planID}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteUserScopeCompositePlan",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "planID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "plans": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanRecord"
+                      },
+                      "type": "array"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "plans"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteUserScopeCompositePlan deletes a persisted composite plan.\n"
+      },
+      "get": {
+        "operationId": "GET:skyforge.GetUserScopeCompositePlan",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "planID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "bindings": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewBinding"
+                      },
+                      "type": "array"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "createdBy": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "inputs": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "outputs": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewOutputRef"
+                      },
+                      "type": "array"
+                    },
+                    "stages": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewStage"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "userId",
+                    "name",
+                    "inputs",
+                    "stages",
+                    "bindings",
+                    "outputs",
+                    "createdBy",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserScopeCompositePlan returns one persisted composite plan by id.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.UpdateUserScopeCompositePlan",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "planID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "bindings": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CompositePlanPreviewBinding"
+                    },
+                    "type": "array"
+                  },
+                  "inputs": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "outputs": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CompositePlanPreviewOutputRef"
+                    },
+                    "type": "array"
+                  },
+                  "stages": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.CompositePlanPreviewStage"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "name",
+                  "inputs",
+                  "stages",
+                  "bindings",
+                  "outputs"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "bindings": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewBinding"
+                      },
+                      "type": "array"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "createdBy": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "inputs": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "outputs": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewOutputRef"
+                      },
+                      "type": "array"
+                    },
+                    "stages": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CompositePlanPreviewStage"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "userId",
+                    "name",
+                    "inputs",
+                    "stages",
+                    "bindings",
+                    "outputs",
+                    "createdBy",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpdateUserScopeCompositePlan validates and updates a persisted composite plan.\n"
       }
     },
     "/api/users/{id}/containerlab/template": {
@@ -25459,10 +25600,6 @@
                     "allowCustomContainerlabServers": {
                       "type": "boolean"
                     },
-                    "allowCustomEveServers": {
-                      "title": "EVE-NG deployments require an endpoint. This flag enables configuring a\nper-user-scope EVE server.\n",
-                      "type": "boolean"
-                    },
                     "allowCustomNetlabServers": {
                       "type": "boolean"
                     },
@@ -25519,13 +25656,6 @@
                         "type": "string"
                       },
                       "type": "array"
-                    },
-                    "eveNgRunTemplateId": {
-                      "format": "int64",
-                      "type": "integer"
-                    },
-                    "eveServer": {
-                      "type": "string"
                     },
                     "externalTemplateRepos": {
                       "items": {
@@ -25615,7 +25745,6 @@
                     "blueprint",
                     "defaultBranch",
                     "allowExternalTemplateRepos",
-                    "allowCustomEveServers",
                     "allowCustomNetlabServers",
                     "allowCustomContainerlabServers",
                     "externalTemplateRepos",
@@ -25625,14 +25754,12 @@
                     "terraformApplyTemplateId",
                     "ansibleRunTemplateId",
                     "netlabRunTemplateId",
-                    "eveNgRunTemplateId",
                     "containerlabRunTemplateId",
                     "awsAccountId",
                     "awsRoleName",
                     "awsRegion",
                     "awsAuthMethod",
                     "artifactsBucket",
-                    "eveServer",
                     "netlabServer",
                     "giteaOwner",
                     "giteaRepo"
@@ -26804,9 +26931,6 @@
                   "allowCustomContainerlabServers": {
                     "type": "boolean"
                   },
-                  "allowCustomEveServers": {
-                    "type": "boolean"
-                  },
                   "allowCustomNetlabServers": {
                     "type": "boolean"
                   },
@@ -26822,7 +26946,6 @@
                 },
                 "required": [
                   "allowExternalTemplateRepos",
-                  "allowCustomEveServers",
                   "allowCustomNetlabServers",
                   "allowCustomContainerlabServers",
                   "externalTemplateRepos"
@@ -30590,6 +30713,410 @@
         "summary": "FrontendFavicon serves the SPA favicon (including alternate icon paths).\n"
       }
     },
+    "/fixia.ExtendReservation": {
+      "post": {
+        "operationId": "POST:fixia.ExtendReservation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "comment": {
+                    "type": "string"
+                  },
+                  "connection": {
+                    "$ref": "#/components/schemas/fixia.ConnectionInput"
+                  },
+                  "durationSeconds": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "reservationId": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "user": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "connection",
+                  "reservationId",
+                  "user",
+                  "comment",
+                  "durationSeconds"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "normalizedBaseUrl": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "$ref": "#/components/schemas/fixia.ReservationResult"
+                    }
+                  },
+                  "required": [
+                    "normalizedBaseUrl",
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/fixia.ListDevices": {
+      "post": {
+        "operationId": "POST:fixia.ListDevices",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "connection": {
+                    "$ref": "#/components/schemas/fixia.ConnectionInput"
+                  }
+                },
+                "required": [
+                  "connection"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "devices": {
+                      "items": {
+                        "$ref": "#/components/schemas/fixia.Device"
+                      },
+                      "type": "array"
+                    },
+                    "normalizedBaseUrl": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "normalizedBaseUrl",
+                    "devices"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/fixia.ListReservationLog": {
+      "post": {
+        "operationId": "POST:fixia.ListReservationLog",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "connection": {
+                    "$ref": "#/components/schemas/fixia.ConnectionInput"
+                  }
+                },
+                "required": [
+                  "connection"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "entries": {
+                      "items": {
+                        "$ref": "#/components/schemas/fixia.ReservationLogEntry"
+                      },
+                      "type": "array"
+                    },
+                    "normalizedBaseUrl": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "normalizedBaseUrl",
+                    "entries"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/fixia.ProbeConnection": {
+      "post": {
+        "operationId": "POST:fixia.ProbeConnection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "connection": {
+                    "$ref": "#/components/schemas/fixia.ConnectionInput"
+                  }
+                },
+                "required": [
+                  "connection"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deviceCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "normalizedBaseUrl": {
+                      "type": "string"
+                    },
+                    "reachable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "normalizedBaseUrl",
+                    "reachable",
+                    "deviceCount"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/fixia.ReleaseAllReservations": {
+      "post": {
+        "operationId": "POST:fixia.ReleaseAllReservations",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "connection": {
+                    "$ref": "#/components/schemas/fixia.ConnectionInput"
+                  }
+                },
+                "required": [
+                  "connection"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "normalizedBaseUrl": {
+                      "type": "string"
+                    },
+                    "released": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "normalizedBaseUrl",
+                    "released"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/fixia.ReleaseReservation": {
+      "post": {
+        "operationId": "POST:fixia.ReleaseReservation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "connection": {
+                    "$ref": "#/components/schemas/fixia.ConnectionInput"
+                  },
+                  "reservationId": {
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "connection",
+                  "reservationId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "normalizedBaseUrl": {
+                      "type": "string"
+                    },
+                    "released": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "normalizedBaseUrl",
+                    "released"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/fixia.ReserveDevices": {
+      "post": {
+        "operationId": "POST:fixia.ReserveDevices",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "comment": {
+                    "type": "string"
+                  },
+                  "connection": {
+                    "$ref": "#/components/schemas/fixia.ConnectionInput"
+                  },
+                  "devices": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "durationSeconds": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "links": {
+                    "items": {
+                      "$ref": "#/components/schemas/fixia.Link"
+                    },
+                    "type": "array"
+                  },
+                  "user": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "connection",
+                  "devices",
+                  "links",
+                  "user",
+                  "comment",
+                  "durationSeconds"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "normalizedBaseUrl": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "$ref": "#/components/schemas/fixia.ReservationResult"
+                    }
+                  },
+                  "required": [
+                    "normalizedBaseUrl",
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
     "/forwardregistry.CreateNetwork": {
       "post": {
         "operationId": "POST:forwardregistry.CreateNetwork",
@@ -30835,7 +31362,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "DeleteTenant tears down the stored Forward tenant and, for hard/curated\n"
+        "summary": "DeleteTenant tears down the stored Forward org and, for hard/curated\n"
       }
     },
     "/forwardtenant.EnsureTenantCredential": {
@@ -31035,7 +31562,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "ResetTenantPassword rotates the user's Forward tenant password.\n"
+        "summary": "ResetTenantPassword rotates the user's Forward org password.\n"
       }
     },
     "/gitcredentials.EnsureDeployKey": {
@@ -35777,7 +36304,7 @@
     },
     "/skyforge.ExecuteForwardTenantResetRun": {
       "post": {
-        "description": "Forward tenant reset orchestration.\n",
+        "description": "Forward org reset orchestration.\n",
         "operationId": "POST:skyforge.ExecuteForwardTenantResetRun",
         "requestBody": {
           "content": {

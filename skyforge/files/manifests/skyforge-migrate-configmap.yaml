@@ -4216,3 +4216,30 @@ data:
     ALTER TABLE sf_config_change_runs
         ADD COLUMN IF NOT EXISTS rollback_summary_json jsonb NOT NULL DEFAULT '{}'::jsonb,
         ADD COLUMN IF NOT EXISTS execution_summary_json jsonb NOT NULL DEFAULT '{}'::jsonb;
+
+  20260313103000_composite_plans.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_composite_plans (
+        id uuid NOT NULL PRIMARY KEY,
+        user_id text NOT NULL,
+        name text NOT NULL,
+        inputs_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        stages_json jsonb NOT NULL DEFAULT '[]'::jsonb,
+        bindings_json jsonb NOT NULL DEFAULT '[]'::jsonb,
+        outputs_json jsonb NOT NULL DEFAULT '[]'::jsonb,
+        created_by text NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        CONSTRAINT sf_composite_plans_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE,
+        CONSTRAINT sf_composite_plans_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE RESTRICT
+    );
+    
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_composite_plans_user_name_key
+        ON public.sf_composite_plans(user_id, lower(name));
+    
+    CREATE INDEX IF NOT EXISTS sf_composite_plans_user_id_idx
+        ON public.sf_composite_plans(user_id, updated_at DESC);
+
+  20260313113000_task_runtime_contracts_terraform_outputs.up.sql: |
+    ALTER TABLE IF EXISTS sf_task_runtime_contracts
+        ADD COLUMN IF NOT EXISTS terraform_outputs jsonb;
+    
