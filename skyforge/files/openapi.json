@@ -9736,7 +9736,7 @@
         "summary": "ReconcileRunningTasks marks tasks that appear stuck in \"running\" as failed.\n"
       }
     },
-    "/api/admin/tasks/workspace-pods/cleanup": {
+    "/api/admin/tasks/tenant-pods/cleanup": {
       "post": {
         "description": "This is a manual safety valve when deployment delete flows leave topology pods behind.\n",
         "operationId": "POST:skyforge.CleanupWorkspacePods",
