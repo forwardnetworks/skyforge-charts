@@ -12037,7 +12037,7 @@
                     "type": "string"
                   },
                   "templatesDir": {
-                    "title": "repo-relative directory (default: blueprints/netlab)\n",
+                    "title": "repo-relative directory (default: blueprints/kne)\n",
                     "type": "string"
                   },
                   "topologyPath": {
