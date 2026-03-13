@@ -140,6 +140,24 @@ spec:
         properties:
           spec:
             properties:
+              deployment:
+                properties:
+                  filesFromConfigMap:
+                    items:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    type: array
+                  resources:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  runtimeBackend:
+                    type: string
+                required:
+                - filesFromConfigMap
+                - resources
+                - runtimeBackend
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               links:
                 items:
                   description: A complete definition of a p2p link
