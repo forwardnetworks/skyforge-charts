@@ -90,6 +90,7 @@ skyforge:
     #   - type: IPAddress
     #     value: "10.128.16.60"
     addresses: []
+    additionalHostnames: []
     # Local k3d can pin the generated cilium-gateway-* Service nodePorts to
     # stable values so host port bindings stay deterministic without adding a
     # separate ingress implementation.
@@ -101,13 +102,16 @@ skyforge:
   publicTunnel:
     ngrok:
       enabled: false
-      image: "docker.io/ngrok/ngrok:3.26.0"
+      image: "docker.io/ngrok/ngrok:3"
       imagePullPolicy: "IfNotPresent"
       authtokenSecretName: "skyforge-ngrok"
       authtokenSecretKey: "authtoken"
+      hostNetwork: false
+      dnsPolicy: ""
       targetServiceName: "cilium-gateway-skyforge"
       targetServiceNamespace: "kube-system"
       targetServicePort: 80
+      targetAddress: ""
       extraArgs: []
       env: {}
       resources:

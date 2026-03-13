@@ -6,6 +6,7 @@
 {{- $coderEnabled := .Values.skyforge.coder.enabled -}}
 {{- $filesBucket := .Values.skyforge.objectStorage.filesBucket | default "skyforge-files" -}}
 {{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
+{{- $gatewayAdditionalHostnames := .Values.skyforge.gateway.additionalHostnames | default (list) -}}
 {{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}
 {{- $forwardSvcName := default "fwd-appserver" .Values.skyforge.forwardCluster.serviceName -}}
@@ -72,6 +73,9 @@ spec:
     - name: skyforge
   hostnames:
     - {{ $host | quote }}
+    {{- range $name := $gatewayAdditionalHostnames }}
+    - {{ $name | quote }}
+    {{- end }}
   rules:
     # Core Skyforge endpoints
     - matches:
@@ -181,6 +185,9 @@ spec:
       namespace: {{ .Release.Namespace }}
   hostnames:
     - {{ $host | quote }}
+    {{- range $name := $gatewayAdditionalHostnames }}
+    - {{ $name | quote }}
+    {{- end }}
   rules:
     - matches:
         - path:
@@ -239,6 +246,9 @@ spec:
     - name: skyforge
   hostnames:
     - {{ $host | quote }}
+    {{- range $name := $gatewayAdditionalHostnames }}
+    - {{ $name | quote }}
+    {{- end }}
   rules:
 {{- if .Values.skyforge.s3gw.enabled }}
     # /files/* -> s3gw /<files-bucket>/*

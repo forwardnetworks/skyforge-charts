@@ -1,5 +1,6 @@
 {{- $ngrok := .Values.skyforge.publicTunnel.ngrok -}}
 {{- if $ngrok.enabled }}
+{{- $targetAddress := trim (default "" $ngrok.targetAddress) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,9 +21,18 @@ spec:
         app.kubernetes.io/component: edge-tunnel
     spec:
       automountServiceAccountToken: false
-      {{- with .Values.kubernetes.imagePullSecrets }}
+      {{- if $ngrok.hostNetwork }}
+      hostNetwork: true
+      {{- end }}
+      {{- if $ngrok.dnsPolicy }}
+      dnsPolicy: {{ $ngrok.dnsPolicy | quote }}
+      {{- end }}
+      {{- $pullSecrets := .Values.kubernetes.imagePullSecrets -}}
+      {{- if $pullSecrets }}
       imagePullSecrets:
-{{ toYaml . | nindent 8 }}
+      {{- range $name := $pullSecrets }}
+        - name: {{ $name | quote }}
+      {{- end }}
       {{- end }}
       containers:
         - name: ngrok
@@ -40,7 +50,11 @@ spec:
           {{- end }}
           args:
             - "http"
+            {{- if $targetAddress }}
+            - "{{ $targetAddress }}"
+            {{- else }}
             - "{{ required "skyforge.publicTunnel.ngrok.targetServiceName is required" $ngrok.targetServiceName }}.{{ default "kube-system" $ngrok.targetServiceNamespace }}.svc.cluster.local:{{ default 80 $ngrok.targetServicePort }}"
+            {{- end }}
             - "--log=stdout"
           {{- range $arg := (default (list) $ngrok.extraArgs) }}
             - {{ $arg | quote }}
