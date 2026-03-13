@@ -2624,45 +2624,6 @@
         ],
         "type": "object"
       },
-      "skyforge.ClabernetesInfo": {
-        "properties": {
-          "configMaps": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "labName": {
-            "type": "string"
-          },
-          "namespace": {
-            "type": "string"
-          },
-          "placementSummary": {
-            "$ref": "#/components/schemas/skyforge.DeploymentPlacementInfoSummary"
-          },
-          "ready": {
-            "type": "boolean"
-          },
-          "topologyName": {
-            "type": "string"
-          },
-          "warnings": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "namespace",
-          "topologyName",
-          "labName",
-          "ready",
-          "configMaps",
-          "placementSummary",
-          "warnings"
-        ],
-        "type": "object"
-      },
       "skyforge.CompositePlanPreviewBinding": {
         "properties": {
           "as": {
@@ -3340,6 +3301,45 @@
         "additionalProperties": {
           "type": "object"
         },
+        "type": "object"
+      },
+      "skyforge.KneInfo": {
+        "properties": {
+          "configMaps": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "labName": {
+            "type": "string"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "placementSummary": {
+            "$ref": "#/components/schemas/skyforge.DeploymentPlacementInfoSummary"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "topologyName": {
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "namespace",
+          "topologyName",
+          "labName",
+          "ready",
+          "configMaps",
+          "placementSummary",
+          "warnings"
+        ],
         "type": "object"
       },
       "skyforge.LinkEdgeStats": {
@@ -4324,6 +4324,45 @@
         "type": "object"
       },
       "skyforge.UserContainerlabServerConfig": {
+        "properties": {
+          "apiInsecure": {
+            "type": "boolean"
+          },
+          "apiPassword": {
+            "type": "string"
+          },
+          "apiToken": {
+            "type": "string"
+          },
+          "apiUrl": {
+            "type": "string"
+          },
+          "apiUser": {
+            "type": "string"
+          },
+          "hasPassword": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "apiUrl",
+          "apiInsecure",
+          "apiUser",
+          "apiPassword",
+          "apiToken",
+          "hasPassword"
+        ],
+        "type": "object"
+      },
+      "skyforge.UserFixiaServerConfig": {
         "properties": {
           "apiInsecure": {
             "type": "boolean"
@@ -9803,7 +9842,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "CleanupWorkspacePods force-cleans clabernetes topology pods/resources from\nworkspace namespaces (admin only).\n"
+        "summary": "CleanupWorkspacePods force-cleans kne topology pods/resources from workspace\nnamespaces (admin only).\n"
       }
     },
     "/api/admin/users": {
@@ -11069,6 +11108,165 @@
         "summary": "DeleteUserContainerlabServer deletes a user-scoped Containerlab server.\n"
       }
     },
+    "/api/byos/me/fixia/servers": {
+      "get": {
+        "operationId": "GET:skyforge.ListUserFixiaServers",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "servers": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.UserFixiaServerConfig"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "servers"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListUserFixiaServers returns the current user's configured Fixia API endpoints.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.UpsertUserFixiaServer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "apiInsecure": {
+                    "type": "boolean"
+                  },
+                  "apiPassword": {
+                    "type": "string"
+                  },
+                  "apiToken": {
+                    "type": "string"
+                  },
+                  "apiUrl": {
+                    "type": "string"
+                  },
+                  "apiUser": {
+                    "type": "string"
+                  },
+                  "hasPassword": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "apiUrl",
+                  "apiInsecure",
+                  "apiUser",
+                  "apiPassword",
+                  "apiToken",
+                  "hasPassword"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "apiInsecure": {
+                      "type": "boolean"
+                    },
+                    "apiPassword": {
+                      "type": "string"
+                    },
+                    "apiToken": {
+                      "type": "string"
+                    },
+                    "apiUrl": {
+                      "type": "string"
+                    },
+                    "apiUser": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "apiUrl",
+                    "apiInsecure",
+                    "apiUser",
+                    "apiPassword",
+                    "apiToken",
+                    "hasPassword"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpsertUserFixiaServer creates or updates a user-scoped Fixia endpoint.\n"
+      }
+    },
+    "/api/byos/me/fixia/servers/{serverID}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteUserFixiaServer",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "serverID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteUserFixiaServer deletes a user-scoped Fixia server.\n"
+      }
+    },
     "/api/byos/me/netlab/servers": {
       "get": {
         "operationId": "GET:skyforge.ListUserNetlabServers",
@@ -11226,276 +11424,6 @@
           }
         },
         "summary": "DeleteUserNetlabServer deletes a user-scoped Netlab server.\n"
-      }
-    },
-    "/api/byos/users/{id}/containerlab/topologies": {
-      "post": {
-        "description": "deployed later (e.g. by creating a deployment referencing the file).\n",
-        "operationId": "POST:skyforge.SaveContainerlabTopologyYAML",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "name": {
-                    "title": "Name drives the default filename.\n",
-                    "type": "string"
-                  },
-                  "template": {
-                    "description": "Default: \"\\\u003cnormalized-name\u003e.clab.yml\".\n",
-                    "title": "Template is the filename to write under TemplatesDir.\n",
-                    "type": "string"
-                  },
-                  "templatesDir": {
-                    "description": "Default: \"containerlab/designer\".\n\nFor this endpoint, TemplatesDir must be under \"containerlab/\".\n",
-                    "title": "TemplatesDir is where we store the YAML inside the user-scope repo.\n",
-                    "type": "string"
-                  },
-                  "topologyYAML": {
-                    "title": "TopologyYAML is the raw containerlab topology YAML.\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name",
-                  "topologyYAML",
-                  "templatesDir",
-                  "template"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "branch": {
-                      "type": "string"
-                    },
-                    "filePath": {
-                      "type": "string"
-                    },
-                    "template": {
-                      "type": "string"
-                    },
-                    "templatesDir": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "branch",
-                    "templatesDir",
-                    "template",
-                    "filePath"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "SaveContainerlabTopologyYAML writes a containerlab topology YAML into the user's\nuser-scope repo so it can be\n"
-      }
-    },
-    "/api/byos/users/{id}/deployments-designer/containerlab/from-template": {
-      "post": {
-        "description": "(no YAML commit step).\n",
-        "operationId": "POST:skyforge.CreateContainerlabDeploymentFromTemplate",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "netlabServer": {
-                    "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "netlabServer"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "deployment": {
-                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
-                    },
-                    "note": {
-                      "type": "string"
-                    },
-                    "run": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "deployment",
-                    "run",
-                    "note"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "CreateContainerlabDeploymentFromTemplate creates a containerlab (BYOS)\ndeployment pointing at an existing user-scope template YAML\n"
-      }
-    },
-    "/api/byos/users/{id}/deployments-designer/containerlab/from-yaml": {
-      "post": {
-        "description": "creates a \"containerlab\" deployment referencing that template, and (optionally) queues an initial deploy.\n\nNOTE: containerlab is BYOS mode (requires a user-scope netlabServer selection).\n",
-        "operationId": "POST:skyforge.CreateContainerlabDeploymentFromYAML",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "autoDeploy": {
-                    "description": "Default: true.\n",
-                    "title": "AutoDeploy queues an initial \"create\" action after creating the deployment.\n",
-                    "type": "boolean"
-                  },
-                  "name": {
-                    "title": "Name becomes the Skyforge deployment name (and drives the containerlab lab\nname).\n",
-                    "type": "string"
-                  },
-                  "netlabServer": {
-                    "description": "If omitted, we fall back to the user-scope default.\n",
-                    "title": "NetlabServer is a user netlab server ref (e.g. \"user:\u003cid\u003e\").\n",
-                    "type": "string"
-                  },
-                  "template": {
-                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
-                    "title": "Template is the filename to write under TemplatesDir.\n",
-                    "type": "string"
-                  },
-                  "templatesDir": {
-                    "description": "Default: \"containerlab/designer\".\n",
-                    "title": "TemplatesDir is where we store the YAML inside the user-scope repo.\n",
-                    "type": "string"
-                  },
-                  "topologyYAML": {
-                    "title": "TopologyYAML is the raw containerlab topology YAML.\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name",
-                  "netlabServer",
-                  "topologyYAML",
-                  "templatesDir",
-                  "template",
-                  "autoDeploy"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "deployment": {
-                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
-                    },
-                    "note": {
-                      "type": "string"
-                    },
-                    "run": {
-                      "$ref": "#/components/schemas/skyforge.JSONMap"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "deployment",
-                    "run",
-                    "note"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "CreateContainerlabDeploymentFromYAML persists a containerlab topology YAML into\nthe user-scope repo,\n"
       }
     },
     "/api/byos/users/{id}/deployments/{deploymentID}/netlab-graph": {
@@ -16886,7 +16814,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RunQuickDeploy provisions a curated c9s deployment with managed in-cluster\nForward sync.\n"
+        "summary": "RunQuickDeploy provisions a curated kne deployment with managed in-cluster\nForward sync.\n"
       }
     },
     "/api/registry/repos": {
@@ -20068,6 +19996,95 @@
         "summary": "UpdateUserScopeCompositePlan validates and updates a persisted composite plan.\n"
       }
     },
+    "/api/users/{id}/composite/plans/{planID}/runs": {
+      "post": {
+        "operationId": "POST:skyforge.RunUserScopeCompositePlan",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "planID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "deploymentId": {
+                    "type": "string"
+                  },
+                  "inputs": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "message",
+                  "deploymentId",
+                  "inputs"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "user": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "task",
+                    "user"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RunUserScopeCompositePlan enqueues execution for a persisted composite plan.\n"
+      }
+    },
     "/api/users/{id}/containerlab/template": {
       "get": {
         "description": "This is used by the Lab Designer \"Import from templates\" feature.\n",
@@ -20273,93 +20290,6 @@
           }
         },
         "summary": "GetUserScopeContainerlabTemplates lists Containerlab templates for a user scope.\n"
-      }
-    },
-    "/api/users/{id}/containerlab/topologies/validate": {
-      "post": {
-        "operationId": "POST:skyforge.ValidateContainerlabTopologyYAML",
-        "parameters": [
-          {
-            "allowEmptyValue": true,
-            "explode": false,
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "style": "simple"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "name": {
-                    "title": "Name drives normalization defaults and preview metadata only.\n",
-                    "type": "string"
-                  },
-                  "topologyYAML": {
-                    "title": "TopologyYAML is the raw containerlab topology YAML.\n",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name",
-                  "topologyYAML"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "errors": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "normalizedYAML": {
-                      "type": "string"
-                    },
-                    "userId": {
-                      "type": "string"
-                    },
-                    "valid": {
-                      "type": "boolean"
-                    },
-                    "warnings": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "normalizedYAML",
-                    "warnings",
-                    "errors",
-                    "valid"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "ValidateContainerlabTopologyYAML validates and normalizes containerlab topology\nYAML for the lab designer.\n"
       }
     },
     "/api/users/{id}/deployment-templates/resource-estimate": {
@@ -20676,10 +20606,10 @@
         "summary": "CreateUserScopeDeployment creates a deployment definition for a user scope.\n"
       }
     },
-    "/api/users/{id}/deployments-designer/clabernetes/from-template": {
+    "/api/users/{id}/deployments-designer/kne/from-template": {
       "post": {
         "description": "(no YAML commit step).\n",
-        "operationId": "POST:skyforge.CreateClabernetesDeploymentFromTemplate",
+        "operationId": "POST:skyforge.CreateKneDeploymentFromTemplate",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -20717,7 +20647,7 @@
                     "type": "string"
                   },
                   "templatesDir": {
-                    "description": "Default: \"containerlab/designer\".\n",
+                    "description": "Default: \"kne/designer\".\n",
                     "title": "TemplatesDir is the repo-relative directory containing the YAML.\n",
                     "type": "string"
                   }
@@ -20769,13 +20699,13 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "CreateClabernetesDeploymentFromTemplate creates a clabernetes deployment\npointing at an existing user-scope template YAML\n"
+        "summary": "CreateKneDeploymentFromTemplate creates a kne deployment pointing at an existing\nuser-scope template YAML\n"
       }
     },
-    "/api/users/{id}/deployments-designer/clabernetes/from-yaml": {
+    "/api/users/{id}/deployments-designer/kne/from-yaml": {
       "post": {
-        "description": "creates a \"clabernetes\" deployment referencing that template, and (optionally) queues an initial deploy.\n\nThis is the first-class in-cluster mode (no netlab server required).\n",
-        "operationId": "POST:skyforge.CreateClabernetesDeploymentFromYAML",
+        "description": "creates a \"kne\" deployment referencing that template, and (optionally) queues an initial deploy.\n\nThis is the first-class in-cluster mode (no netlab server required).\n",
+        "operationId": "POST:skyforge.CreateKneDeploymentFromYAML",
         "parameters": [
           {
             "allowEmptyValue": true,
@@ -20800,21 +20730,21 @@
                     "type": "boolean"
                   },
                   "name": {
-                    "title": "Name becomes the Skyforge deployment name (and drives the clabernetes lab name).\n",
+                    "title": "Name becomes the Skyforge deployment name (and drives the kne lab name).\n",
                     "type": "string"
                   },
                   "template": {
-                    "description": "Default: \"\\\u003cdeployment-name\u003e.clab.yml\".\n",
+                    "description": "Default: \"\\\u003cdeployment-name\u003e.kne.yml\".\n",
                     "title": "Template is the filename to write under TemplatesDir.\n",
                     "type": "string"
                   },
                   "templatesDir": {
-                    "description": "Default: \"containerlab/designer\".\n",
+                    "description": "Default: \"kne/designer\".\n",
                     "title": "TemplatesDir is where we store the YAML inside the user-scope repo.\n",
                     "type": "string"
                   },
                   "topologyYAML": {
-                    "title": "TopologyYAML is the raw containerlab topology YAML.\n",
+                    "title": "TopologyYAML is the raw netlab/KNE topology YAML.\n",
                     "type": "string"
                   }
                 },
@@ -20865,7 +20795,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "CreateClabernetesDeploymentFromYAML persists a containerlab topology YAML into\nthe user-scope repo,\n"
+        "summary": "CreateKneDeploymentFromYAML persists a netlab/KNE topology YAML into the\nuser-scope repo,\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}": {
@@ -22332,9 +22262,6 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "clabernetes": {
-                      "$ref": "#/components/schemas/skyforge.ClabernetesInfo"
-                    },
                     "containerlab": {
                       "$ref": "#/components/schemas/skyforge.ContainerlabInfo"
                     },
@@ -22346,6 +22273,9 @@
                     },
                     "forwardSnapshotUrl": {
                       "type": "string"
+                    },
+                    "kne": {
+                      "$ref": "#/components/schemas/skyforge.KneInfo"
                     },
                     "log": {
                       "type": "string"
@@ -22381,7 +22311,7 @@
                     "forwardSnapshotUrl",
                     "netlab",
                     "containerlab",
-                    "clabernetes"
+                    "kne"
                   ],
                   "type": "object"
                 }
@@ -22890,7 +22820,7 @@
     },
     "/api/users/{id}/deployments/{deploymentID}/links/impair": {
       "post": {
-        "description": "The impairment is applied \"outside\" of the network OS by executing \\`tc\\` in the clabernetes launcher container (or another non-NOS container in the same pod netns).\n",
+        "description": "The impairment is applied \"outside\" of the network OS by executing \\`tc\\` in the kne launcher container (or another non-NOS container in the same pod netns).\n",
         "operationId": "POST:skyforge.SetUserScopeDeploymentLinkImpairment",
         "parameters": [
           {
@@ -23008,7 +22938,7 @@
     },
     "/api/users/{id}/deployments/{deploymentID}/links/stats": {
       "get": {
-        "description": "This is used to render live link utilization on the topology graph (similar to c9s VSCode extension).\n",
+        "description": "This is used to render live link utilization on the topology graph (similar to kne VSCode extension).\n",
         "operationId": "GET:skyforge.GetUserScopeDeploymentLinkStats",
         "parameters": [
           {
@@ -23297,7 +23227,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetUserScopeDeploymentNodeDescribe returns a lightweight summary of the\nclabernetes node pod.\n"
+        "summary": "GetUserScopeDeploymentNodeDescribe returns a lightweight summary of the kne node\npod.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/nodes/{node}/interfaces": {
@@ -23380,12 +23310,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetUserScopeDeploymentNodeInterfaces returns interface stats (launcher\ncontainer) for a clabernetes node.\n"
+        "summary": "GetUserScopeDeploymentNodeInterfaces returns interface stats (launcher\ncontainer) for a kne node.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/nodes/{node}/logs": {
       "get": {
-        "description": "This powers the \"View logs\" action in the topology UI (similar to the c9s VSCode extension).\n",
+        "description": "This powers the \"View logs\" action in the topology UI (similar to the kne VSCode extension).\n",
         "operationId": "GET:skyforge.GetUserScopeDeploymentNodeLogs",
         "parameters": [
           {
@@ -23483,7 +23413,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetUserScopeDeploymentNodeLogs returns recent log lines for a clabernetes node\npod.\n"
+        "summary": "GetUserScopeDeploymentNodeLogs returns recent log lines for a kne node pod.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/nodes/{node}/running-config": {
@@ -23855,7 +23785,7 @@
     },
     "/api/users/{id}/deployments/{deploymentID}/terminal/ws": {
       "get": {
-        "description": "using Kubernetes \\`pods/exec\\` (SPDY) and a WebSocket transport to the browser.\n\nQuery params: - node: required (clabernetes/topologyNode) - container: optional - command: optional (defaults to \"sh\"; for EOS nodes use \"Cli\")\n",
+        "description": "using Kubernetes \\`pods/exec\\` (SPDY) and a WebSocket transport to the browser.\n\nQuery params: - node: required (kne/topologyNode) - container: optional - command: optional (defaults to \"sh\"; for EOS nodes use \"Cli\")\n",
         "operationId": "GET:skyforge.TerminalExecWS",
         "parameters": [
           {
@@ -23889,7 +23819,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "TerminalExecWS provides an interactive in-browser terminal into\nclabernetes-backed nodes\n"
+        "summary": "TerminalExecWS provides an interactive in-browser terminal into kne-backed nodes\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/topology": {
@@ -25514,6 +25444,187 @@
           }
         },
         "summary": "CreateUserScopeForwardCollector creates a Forward collector for the user scope.\n"
+      }
+    },
+    "/api/users/{id}/kne/topologies": {
+      "post": {
+        "description": "deployed later (e.g. by creating a deployment referencing the file).\n",
+        "operationId": "POST:skyforge.SaveKneTopologyYAML",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "title": "Name drives the default filename.\n",
+                    "type": "string"
+                  },
+                  "template": {
+                    "description": "Default: \"\\\u003cnormalized-name\u003e.kne.yml\".\n",
+                    "title": "Template is the filename to write under TemplatesDir.\n",
+                    "type": "string"
+                  },
+                  "templatesDir": {
+                    "description": "Default: \"kne/designer\".\n\nFor this endpoint, TemplatesDir must be under \"kne/\".\n",
+                    "title": "TemplatesDir is where we store the YAML inside the user-scope repo.\n",
+                    "type": "string"
+                  },
+                  "topologyYAML": {
+                    "title": "TopologyYAML is the raw netlab/KNE topology YAML.\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "topologyYAML",
+                  "templatesDir",
+                  "template"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "branch": {
+                      "type": "string"
+                    },
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "template": {
+                      "type": "string"
+                    },
+                    "templatesDir": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "branch",
+                    "templatesDir",
+                    "template",
+                    "filePath"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "SaveKneTopologyYAML writes a netlab/KNE topology YAML into the user's user-scope\nrepo so it can be\n"
+      }
+    },
+    "/api/users/{id}/kne/topologies/validate": {
+      "post": {
+        "operationId": "POST:skyforge.ValidateKneTopologyYAML",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "title": "Name drives normalization defaults and preview metadata only.\n",
+                    "type": "string"
+                  },
+                  "topologyYAML": {
+                    "title": "TopologyYAML is the raw netlab/KNE topology YAML.\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "topologyYAML"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "errors": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "normalizedYAML": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "valid": {
+                      "type": "boolean"
+                    },
+                    "warnings": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "normalizedYAML",
+                    "warnings",
+                    "errors",
+                    "valid"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ValidateKneTopologyYAML validates netlab/KNE topology YAML for the lab designer.\n"
       }
     },
     "/api/users/{id}/members": {

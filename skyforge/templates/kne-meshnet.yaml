@@ -1,0 +1,8 @@
+{{- if .Values.skyforge.kne.enabled -}}
+{{- $mode := default "grpc" .Values.skyforge.kne.meshnetMode -}}
+{{- if eq $mode "grpc" -}}
+{{ .Files.Get "files/manifests/kne-meshnet-grpc.yaml" }}
+{{- else if eq $mode "vxlan" -}}
+{{ .Files.Get "files/manifests/kne-meshnet-vxlan.yaml" }}
+{{- end -}}
+{{- end -}}

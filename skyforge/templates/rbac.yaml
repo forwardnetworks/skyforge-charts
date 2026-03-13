@@ -63,13 +63,11 @@ rules:
   - apiGroups: ["cilium.io"]
     resources: ["ciliumnodes"]
     verbs: ["get", "list", "watch"]
-  # Skyforge manages clabernetes Topology CRs in per-user namespaces.
-  # Grant these permissions even if the chart doesn't install the clabernetes
-  # controller (it may be deployed separately).
-  - apiGroups: ["clabernetes.containerlab.dev"]
+  # Skyforge manages KNE Topology CRs in per-user namespaces.
+  - apiGroups: ["networkop.co.uk"]
     resources: ["topologies"]
     verbs: ["get", "list", "create", "update", "patch", "delete", "deletecollection", "watch"]
-  - apiGroups: ["clabernetes.containerlab.dev"]
+  - apiGroups: ["networkop.co.uk"]
     resources: ["topologies/status", "topologies/finalizers"]
     verbs: ["get", "update", "patch"]
   - apiGroups: ["kubevirt.io"]
@@ -78,10 +76,10 @@ rules:
   - apiGroups: ["kubevirt.io"]
     resources: ["virtualmachines/status"]
     verbs: ["get", "watch"]
-  # Preflight checks verify the clabernetes CRD exists before queueing runs.
+  # Preflight checks verify KNE CRDs exist before queueing runs.
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
-    resourceNames: ["topologies.clabernetes.containerlab.dev"]
+    resourceNames: ["topologies.networkop.co.uk"]
     verbs: ["get"]
   - apiGroups: ["batch"]
     resources: ["jobs"]

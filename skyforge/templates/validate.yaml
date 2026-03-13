@@ -7,28 +7,10 @@ early when required configuration is missing.
 
 {{- if .Values.skyforge.encoreCfg.create -}}
   {{- if not (trim (default "" .Values.skyforge.netlab.image)) -}}
-    {{- fail "skyforge.netlab.image must be set (required for netlab c9s mode)" -}}
+    {{- fail "skyforge.netlab.image must be set (required for in-cluster netlab/kne mode)" -}}
   {{- end -}}
   {{- if hasKey .Values.skyforge "netlabC9s" -}}
     {{- fail "skyforge.netlabC9s is removed; use skyforge.netlab.image and skyforge.netlab.pullPolicy" -}}
-  {{- end -}}
-{{- end -}}
-
-{{- if .Values.skyforge.clabernetes.enabled -}}
-  {{- $managerImage := trim (default "" .Values.skyforge.clabernetes.managerImage) -}}
-  {{- if eq $managerImage "" -}}
-    {{- fail "skyforge.clabernetes.managerImage must be set when clabernetes is enabled" -}}
-  {{- end -}}
-  {{- if hasSuffix ":latest" (lower $managerImage) -}}
-    {{- fail "skyforge.clabernetes.managerImage must be pinned (':latest' is not allowed)" -}}
-  {{- end -}}
-
-  {{- $launcherImage := trim (default "" .Values.skyforge.clabernetes.launcherImage) -}}
-  {{- if eq $launcherImage "" -}}
-    {{- fail "skyforge.clabernetes.launcherImage must be set when clabernetes is enabled" -}}
-  {{- end -}}
-  {{- if hasSuffix ":latest" (lower $launcherImage) -}}
-    {{- fail "skyforge.clabernetes.launcherImage must be pinned (':latest' is not allowed)" -}}
   {{- end -}}
 {{- end -}}
 
@@ -59,6 +41,13 @@ early when required configuration is missing.
 {{- end -}}
 {{- if and (eq $uiAuthMode "oidc") (not .Values.skyforge.dex.enabled) -}}
   {{- fail "skyforge.auth.mode=oidc requires skyforge.dex.enabled=true; supported browser OIDC topology is Skyforge -> Dex -> IdP" -}}
+{{- end -}}
+
+{{- if .Values.skyforge.kne.enabled -}}
+  {{- $meshnetMode := lower (trim (default "grpc" .Values.skyforge.kne.meshnetMode)) -}}
+  {{- if and (ne $meshnetMode "grpc") (ne $meshnetMode "vxlan") -}}
+    {{- fail "skyforge.kne.meshnetMode must be one of: grpc, vxlan" -}}
+  {{- end -}}
 {{- end -}}
 
 {{- if and (not .Values.secrets.create) .Values.secrets.validatePrecreated (not (.Capabilities.APIVersions.Has "helm.sh/lint")) -}}

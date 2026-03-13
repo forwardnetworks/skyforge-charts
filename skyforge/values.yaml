@@ -118,6 +118,15 @@ skyforge:
           cpu: "500m"
           memory: "256Mi"
   # Skyforge uses Cilium Gateway API for ingress (no Traefik).
+  kne:
+    # Enable Kubernetes Network Emulation (KNE) meshnet components.
+    # This installs the upstream meshnet CRDs + daemonset.
+    enabled: false
+    # meshnet mode: grpc or vxlan
+    meshnetMode: grpc
+    # Upstream source used for the vendored manifest files:
+    # https://github.com/openconfig/kne/tree/main/manifests/meshnet
+    upstreamRef: "openconfig/kne@main"
   # Optional cookie Domain attribute. Leave empty for host-only cookies.
   # If you enable any Skyforge tools on a subdomain (e.g. Hoppscotch at
   # `tool.<skyforge.hostname>`), set this to a common parent domain like
@@ -474,7 +483,7 @@ skyforge:
     internalUrl: ""
 
   # Optional Kubernetes admission policies that harden the cluster against
-  # accidental non-native clabernetes deployments (Docker-in-Docker / docker.sock).
+  # non-native runtime patterns (Docker-in-Docker / docker.sock).
   #
   # Requires Kubernetes v1.30+ (ValidatingAdmissionPolicy).
   admissionPolicies:
@@ -707,31 +716,6 @@ skyforge:
         - groups
   redoc:
     enabled: true
-  clabernetes:
-    # Experimental: deploy containerlab topologies to k8s via clabernetes.
-    enabled: false
-    # Pin clabernetes images so IOL native runtime behavior is deterministic across rollouts.
-    managerImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-manager:20260305-iol-native-r21"
-    launcherImage: "ghcr.io/forwardnetworks/skyforge-clabernetes-launcher:20260305-iol-native-r21"
-    # Clabernetes connectivity default.
-    #
-    # Skyforge uses clabernetes' built-in VXLAN connectivity manager for cross-node L2
-    # adjacency (LLDP, CDP, etc) without requiring additional CNIs.
-    connectivity: "vxlan"
-    # Optional node-level sysctl tuning for NOS images that require higher host defaults.
-    # This is managed by a privileged DaemonSet.
-    nodeSysctl:
-      enabled: false
-      fsInotifyMaxUserInstances: 64000
-      fsInotifyMaxUserWatches: 64000
-      netCoreNetdevMaxBacklog: 300000
-      netCoreOptmemMax: 67108864
-      netCoreRmemDefault: 67108864
-      netCoreRmemMax: 67108864
-      netCoreWmemDefault: 67108864
-      netCoreWmemMax: 67108864
-      reconcileIntervalSeconds: 300
-
 images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
   alpine: "public.ecr.aws/docker/library/alpine:3.20"
