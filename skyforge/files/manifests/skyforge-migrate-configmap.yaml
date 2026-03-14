@@ -4261,3 +4261,40 @@ data:
     
     CREATE INDEX IF NOT EXISTS sf_user_fixia_servers_username_idx
         ON public.sf_user_fixia_servers USING btree (username);
+
+  20260313210000_deployment_family_engine_pair_kne.up.sql: |
+    -- Align DB deployment family/engine constraint with hard-cut runtime model:
+    --   family(type): terraform | kne | byos
+    --   engine(config.engine):
+    --     terraform -> terraform
+    --     kne       -> netlab
+    --     byos      -> netlab | containerlab
+    
+    ALTER TABLE sf_deployments
+      DROP CONSTRAINT IF EXISTS sf_deployments_family_engine_pair_check;
+    
+    ALTER TABLE sf_deployments
+      ADD CONSTRAINT sf_deployments_family_engine_pair_check
+      CHECK (
+        (type = 'terraform' AND config->>'engine' = 'terraform') OR
+        (type = 'kne' AND config->>'engine' = 'netlab') OR
+        (type = 'byos' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'containerlab'::text]))
+      );
+
+  20260313211000_deployment_type_kne.up.sql: |
+    -- Align stored deployment family type with hard-cut API/runtime naming:
+    --   c9s -> kne
+    --   valid families: terraform | kne | byos
+    
+    UPDATE sf_deployments
+    SET type = 'kne'
+    WHERE type = 'c9s';
+    
+    ALTER TABLE sf_deployments
+      DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
+    
+    ALTER TABLE sf_deployments
+      ADD CONSTRAINT sf_deployments_type_check
+      CHECK (
+        type = ANY (ARRAY['terraform'::text, 'kne'::text, 'byos'::text])
+      );
