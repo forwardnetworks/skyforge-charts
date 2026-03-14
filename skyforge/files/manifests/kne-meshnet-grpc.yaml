@@ -240,6 +240,14 @@ metadata:
   name: meshnet-clusterrole
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - networkop.co.uk
   resources:
   - topologies

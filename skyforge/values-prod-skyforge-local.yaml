@@ -74,7 +74,7 @@ skyforge:
   forward:
     enabled: true
   forwardCollector:
-    image: ghcr.io/forwardnetworks/forward/fwd_collector:26.2.2-01
+    image: ghcr.io/forwardnetworks/forward/fwd_collector:26.2.4-02
     imagePullSecretName: ghcr-pull
     imagePullSecretNamespace: skyforge
   forwardCluster:
@@ -94,13 +94,15 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260313-netlab-kne-plugin-r33"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260314-kne-vendored-r5"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys in-cluster topologies through KNE.
   kne:
     enabled: true
     meshnetMode: grpc
+    controllers:
+      enabled: true
 
   worker:
     replicas: 1
@@ -125,9 +127,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260314-kne-netlab-dir-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260314-authn-forward-login-r1"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260314-kne-netlab-dir-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260314-authn-forward-login-r1-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

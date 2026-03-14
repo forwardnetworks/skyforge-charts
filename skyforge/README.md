@@ -40,7 +40,8 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `skyforge.domain`: Email/domain suffix used by default users.
 - `skyforge.gateway.addresses`: Optional explicit Cilium Gateway address list (recommended for node-IP ingress to avoid `AddressNotAssigned` status).
 - `skyforge.publicTunnel.ngrok.*`: Optional ngrok relay deployment that tunnels to the in-cluster Cilium Gateway Service (`cilium-gateway-skyforge` by default). Keep auth token in a Kubernetes Secret; do not set it in values files.
-- `skyforge.kne.*`: Optional KNE meshnet dependency install (`enabled`, `meshnetMode=grpc|vxlan`) from vendored upstream manifests.
+- `skyforge.kne.*`: Optional KNE install from vendored manifests (tracked from `forwardnetworks/kne`).
+- `skyforge.kne.controllers.*`: Installs KNE vendor controller stacks (ceoslab/cdnos/srlinux/lemming) required for CRD-backed device provisioning.
 - Dedicated worker deployment is always enabled as a singleton (`replicas: 1`) and processes queued runs from PubSub.
 - `skyforge.auth.mode`: Skyforge browser auth mode (`local` or `oidc`).
 - `skyforge.dex.authMode`: Dex connector profile (`google`, `local`, `oidc`).
