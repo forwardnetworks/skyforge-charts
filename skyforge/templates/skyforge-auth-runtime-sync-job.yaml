@@ -1,0 +1,145 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: skyforge-auth-runtime-sync
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+    app.kubernetes.io/name: skyforge-auth-runtime-sync
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "-9"
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+{{ include "skyforge.labels" . | indent 8 }}
+        app.kubernetes.io/name: skyforge-auth-runtime-sync
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: sync-auth-runtime
+          image: {{ .Values.images.postgres | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              set -eu
+
+              db_url="postgres://${SKYFORGE_DB_USER}:${SKYFORGE_DB_PASSWORD}@${SKYFORGE_DB_HOST}:${SKYFORGE_DB_PORT}/${SKYFORGE_DB_NAME}?sslmode=${SKYFORGE_DB_SSLMODE}"
+              auth_mode="$(printf "%s" "${SKYFORGE_UI_AUTH_MODE:-local}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+
+              for i in $(seq 1 120); do
+                if psql "${db_url}" -v ON_ERROR_STOP=1 -tAc "SELECT 1" >/dev/null 2>&1; then
+                  break
+                fi
+                if [ "${i}" -eq 120 ]; then
+                  echo "database not ready for auth runtime sync" >&2
+                  exit 1
+                fi
+                sleep 2
+              done
+
+              upsert_setting() {
+                key="$1"
+                value="$2"
+                psql "${db_url}" -v ON_ERROR_STOP=1 -v k="${key}" -v v="${value}" \
+                  -c "INSERT INTO sf_settings (key, value) VALUES (:'k', :'v') ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value, updated_at=now();"
+              }
+
+              case "${auth_mode}" in
+                oidc)
+                  if [ -z "${SKYFORGE_OIDC_DISCOVERY_URL:-}" ] || [ -z "${SKYFORGE_OIDC_CLIENT_ID:-}" ] || [ -z "${SKYFORGE_OIDC_CLIENT_SECRET:-}" ]; then
+                    echo "oidc mode requires discovery url + client id + client secret" >&2
+                    exit 1
+                  fi
+                  upsert_setting "ui_auth_primary_provider" "okta"
+                  upsert_setting "ui_oidc_enabled" "true"
+                  upsert_setting "oidc_discovery_url" "${SKYFORGE_OIDC_DISCOVERY_URL}"
+                  upsert_setting "oidc_issuer_url" "${SKYFORGE_OIDC_ISSUER_URL:-}"
+                  upsert_setting "oidc_redirect_url" "${SKYFORGE_OIDC_REDIRECT_URL:-}"
+                  upsert_setting "oidc_client_id" "${SKYFORGE_OIDC_CLIENT_ID}"
+                  upsert_setting "oidc_client_secret" "${SKYFORGE_OIDC_CLIENT_SECRET}"
+                  ;;
+                local)
+                  upsert_setting "ui_auth_primary_provider" "local"
+                  upsert_setting "ui_oidc_enabled" "false"
+                  upsert_setting "oidc_discovery_url" ""
+                  upsert_setting "oidc_issuer_url" ""
+                  upsert_setting "oidc_redirect_url" ""
+                  upsert_setting "oidc_client_id" ""
+                  upsert_setting "oidc_client_secret" ""
+                  ;;
+                *)
+                  echo "unsupported auth mode: ${auth_mode}" >&2
+                  exit 1
+                  ;;
+              esac
+          env:
+            - name: SKYFORGE_UI_AUTH_MODE
+              value: {{ default "local" .Values.skyforge.auth.mode | quote }}
+            - name: SKYFORGE_OIDC_DISCOVERY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_OIDC_DISCOVERY_URL
+            - name: SKYFORGE_OIDC_ISSUER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_OIDC_ISSUER_URL
+            - name: SKYFORGE_OIDC_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_OIDC_REDIRECT_URL
+            - name: SKYFORGE_OIDC_CLIENT_ID
+{{- if .Values.skyforge.dex.oidc.clientID }}
+              value: {{ .Values.skyforge.dex.oidc.clientID | quote }}
+{{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-oidc-client-id
+                  key: skyforge-oidc-client-id
+                  optional: true
+{{- end }}
+            - name: SKYFORGE_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default "skyforge-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretName | quote }}
+                  key: {{ default "skyforge-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretKey | quote }}
+                  optional: true
+            - name: SKYFORGE_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_HOST
+            - name: SKYFORGE_DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_PORT
+            - name: SKYFORGE_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_NAME
+            - name: SKYFORGE_DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_USER
+            - name: SKYFORGE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-skyforge-server-password
+                  key: db-skyforge-server-password
+            - name: SKYFORGE_DB_SSLMODE
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_DB_SSLMODE
