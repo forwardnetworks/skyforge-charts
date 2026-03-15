@@ -44,12 +44,14 @@ spec:
                 sleep 2
               done
 
-              upsert_setting() {
-                key="$1"
-                value="$2"
-                psql "${db_url}" -v ON_ERROR_STOP=1 -v k="${key}" -v v="${value}" \
-                  -c "INSERT INTO sf_settings (key, value) VALUES (:'k', :'v') ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value, updated_at=now();"
-              }
+                  upsert_setting() {
+                    key="$1"
+                    value="$2"
+                    esc_key="$(printf "%s" "${key}" | sed "s/'/''/g")"
+                    esc_value="$(printf "%s" "${value}" | sed "s/'/''/g")"
+                    psql "${db_url}" -v ON_ERROR_STOP=1 \
+                      -c "INSERT INTO sf_settings (key, value) VALUES ('${esc_key}', '${esc_value}') ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value, updated_at=now();"
+                  }
 
               case "${auth_mode}" in
                 oidc)
