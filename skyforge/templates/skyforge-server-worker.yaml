@@ -96,6 +96,12 @@ spec:
                   name: skyforge-encore-cfg-worker
                   key: ENCORE_CFG_WORKER
                   optional: true
+            - name: ENCORE_CFG_SKYFORGE
+              valueFrom:
+                secretKeyRef:
+                  name: skyforge-encore-cfg
+                  key: ENCORE_CFG_SKYFORGE
+                  optional: true
             - name: SKYFORGE_SESSION_SECRET
               valueFrom:
                 secretKeyRef:

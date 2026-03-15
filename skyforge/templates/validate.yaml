@@ -4,10 +4,17 @@ Chart validation guardrails.
 This file intentionally renders no Kubernetes objects; it only fails Helm installs
 early when required configuration is missing.
 */ -}}
+{{- $host := .Values.skyforge.hostname -}}
+{{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
+{{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}
+{{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
 
 {{- if .Values.skyforge.encoreCfg.create -}}
   {{- if not (trim (default "" .Values.skyforge.netlab.image)) -}}
     {{- fail "skyforge.netlab.image must be set (required for in-cluster netlab/kne mode)" -}}
+  {{- end -}}
+  {{- if and .Values.skyforge.forward.enabled (not (trim (default "" .Values.skyforge.forwardCollector.image))) -}}
+    {{- fail "skyforge.forward.enabled=true requires skyforge.forwardCollector.image to be set" -}}
   {{- end -}}
   {{- if hasKey .Values.skyforge "netlabC9s" -}}
     {{- fail "skyforge.netlabC9s is removed; use skyforge.netlab.image and skyforge.netlab.pullPolicy" -}}
@@ -85,8 +92,11 @@ early when required configuration is missing.
   {{- if .Values.skyforge.nautobot.enabled -}}
     {{- $requiredSecrets = concat $requiredSecrets (list "db-nautobot-password" "nautobot-superuser-api-token" "nautobot-secret-key") -}}
   {{- end -}}
-  {{- if .Values.skyforge.forwardCluster.enabled -}}
+  {{- if $forwardClusterEnabled -}}
     {{- $requiredSecrets = concat $requiredSecrets (list "db-forward-app-password" "db-forward-fdb-password") -}}
+    {{- if and (ne $forwardHost $host) (ne $forwardTlsSecretName "proxy-tls") -}}
+      {{- $requiredSecrets = append $requiredSecrets $forwardTlsSecretName -}}
+    {{- end -}}
   {{- end -}}
   {{- range $name := $requiredSecrets -}}
     {{- $existing := lookup "v1" "Secret" $.Release.Namespace $name -}}
