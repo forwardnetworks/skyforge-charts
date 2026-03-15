@@ -1,6 +1,6 @@
 skyforge:
   auth:
-    mode: oidc
+    mode: local
   hostname: skyforge.local.forwardnetworks.com
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
@@ -128,9 +128,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260315-auth-gate-fix"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260315-auth-runtime-sot"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260315-auth-gate-fix-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260315-auth-runtime-sot-worker"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

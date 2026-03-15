@@ -102,6 +102,12 @@ spec:
               name: skyforge-encore-cfg
               key: ENCORE_CFG_SKYFORGE
               optional: true
+        - name: ENCORE_CFG_AUTHN
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-encore-cfg
+              key: ENCORE_CFG_SKYFORGE
+              optional: true
         - name: SKYFORGE_GITEA_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -306,16 +312,12 @@ spec:
               name: skyforge-config
               key: SKYFORGE_OIDC_REDIRECT_URL
         - name: SKYFORGE_OIDC_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: skyforge-oidc-client-id
-              key: skyforge-oidc-client-id
-              optional: true
+          value: {{ .Values.skyforge.dex.oidc.clientID | quote }}
         - name: SKYFORGE_OIDC_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: skyforge-oidc-client-secret
-              key: skyforge-oidc-client-secret
+              name: {{ default "dex-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretName | quote }}
+              key: {{ default "dex-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretKey | quote }}
               optional: true
         - name: SKYFORGE_INTERNAL_TOKEN
           valueFrom:

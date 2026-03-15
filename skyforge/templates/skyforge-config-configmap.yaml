@@ -63,8 +63,8 @@ data:
   SKYFORGE_SESSION_COOKIE: {{ .Values.skyforge.sessionCookie | quote }}
 {{- if eq (default "local" .Values.skyforge.auth.mode) "oidc" }}
   SKYFORGE_OIDC_DISCOVERY_URL: {{ .Values.skyforge.oidc.discoveryUrl | quote }}
-  SKYFORGE_OIDC_ISSUER_URL: {{ default "" .Values.skyforge.oidc.issuerUrl | quote }}
-  SKYFORGE_OIDC_REDIRECT_URL: {{ default "" .Values.skyforge.oidc.redirectUrl | quote }}
+  SKYFORGE_OIDC_ISSUER_URL: {{ default (printf "https://%s/dex" .Values.skyforge.hostname) .Values.skyforge.oidc.issuerUrl | quote }}
+  SKYFORGE_OIDC_REDIRECT_URL: {{ default (printf "https://%s/api/auth/oidc/callback" .Values.skyforge.hostname) .Values.skyforge.oidc.redirectUrl | quote }}
 {{- else }}
   SKYFORGE_OIDC_DISCOVERY_URL: ""
   SKYFORGE_OIDC_ISSUER_URL: ""

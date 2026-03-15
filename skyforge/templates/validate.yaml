@@ -80,9 +80,6 @@ early when required configuration is missing.
   {{- if and .Values.skyforge.dex.enabled .Values.skyforge.dex.manageConfig -}}
     {{- $requiredSecrets = append $requiredSecrets "skyforge-oidc-client-secret" -}}
   {{- end -}}
-  {{- if eq $uiAuthMode "oidc" -}}
-    {{- $requiredSecrets = append $requiredSecrets "skyforge-oidc-client-id" -}}
-  {{- end -}}
   {{- if not .Values.skyforge.dex.manageConfig -}}
     {{- $requiredSecrets = append $requiredSecrets "dex-config" -}}
   {{- end -}}

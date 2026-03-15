@@ -44,19 +44,31 @@ spec:
                 sleep 2
               done
 
-                  upsert_setting() {
-                    key="$1"
-                    value="$2"
-                    esc_key="$(printf "%s" "${key}" | sed "s/'/''/g")"
-                    esc_value="$(printf "%s" "${value}" | sed "s/'/''/g")"
-                    psql "${db_url}" -v ON_ERROR_STOP=1 \
-                      -c "INSERT INTO sf_settings (key, value) VALUES ('${esc_key}', '${esc_value}') ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value, updated_at=now();"
-                  }
+              setting_exists() {
+                key="$1"
+                esc_key="$(printf "%s" "${key}" | sed "s/'/''/g")"
+                exists="$(psql "${db_url}" -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM sf_settings WHERE key='${esc_key}' LIMIT 1;")"
+                [ "$(printf "%s" "${exists}" | tr -d '[:space:]')" = "1" ]
+              }
+
+              upsert_setting() {
+                key="$1"
+                value="$2"
+                esc_key="$(printf "%s" "${key}" | sed "s/'/''/g")"
+                esc_value="$(printf "%s" "${value}" | sed "s/'/''/g")"
+                psql "${db_url}" -v ON_ERROR_STOP=1 \
+                  -c "INSERT INTO sf_settings (key, value) VALUES ('${esc_key}', '${esc_value}') ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value, updated_at=now();"
+              }
+
+              if setting_exists "ui_auth_primary_provider"; then
+                echo "runtime auth settings already present; skipping seed" >&2
+                exit 0
+              fi
 
               case "${auth_mode}" in
                 oidc)
-                  if [ -z "${SKYFORGE_OIDC_DISCOVERY_URL:-}" ] || [ -z "${SKYFORGE_OIDC_CLIENT_ID:-}" ] || [ -z "${SKYFORGE_OIDC_CLIENT_SECRET:-}" ]; then
-                    echo "oidc mode requires discovery url + client id + client secret" >&2
+                  if [ -z "${SKYFORGE_OIDC_DISCOVERY_URL:-}" ] || [ -z "${SKYFORGE_OIDC_ISSUER_URL:-}" ] || [ -z "${SKYFORGE_OIDC_REDIRECT_URL:-}" ] || [ -z "${SKYFORGE_OIDC_CLIENT_ID:-}" ] || [ -z "${SKYFORGE_OIDC_CLIENT_SECRET:-}" ]; then
+                    echo "oidc mode requires discovery url + issuer url + redirect url + client id + client secret" >&2
                     exit 1
                   fi
                   upsert_setting "ui_auth_primary_provider" "okta"
@@ -70,11 +82,6 @@ spec:
                 local)
                   upsert_setting "ui_auth_primary_provider" "local"
                   upsert_setting "ui_oidc_enabled" "false"
-                  upsert_setting "oidc_discovery_url" ""
-                  upsert_setting "oidc_issuer_url" ""
-                  upsert_setting "oidc_redirect_url" ""
-                  upsert_setting "oidc_client_id" ""
-                  upsert_setting "oidc_client_secret" ""
                   ;;
                 *)
                   echo "unsupported auth mode: ${auth_mode}" >&2
@@ -100,20 +107,12 @@ spec:
                   name: skyforge-config
                   key: SKYFORGE_OIDC_REDIRECT_URL
             - name: SKYFORGE_OIDC_CLIENT_ID
-{{- if .Values.skyforge.dex.oidc.clientID }}
               value: {{ .Values.skyforge.dex.oidc.clientID | quote }}
-{{- else }}
-              valueFrom:
-                secretKeyRef:
-                  name: skyforge-oidc-client-id
-                  key: skyforge-oidc-client-id
-                  optional: true
-{{- end }}
             - name: SKYFORGE_OIDC_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ default "skyforge-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretName | quote }}
-                  key: {{ default "skyforge-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretKey | quote }}
+                  name: {{ default "dex-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretName | quote }}
+                  key: {{ default "dex-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretKey | quote }}
                   optional: true
             - name: SKYFORGE_DB_HOST
               valueFrom:
