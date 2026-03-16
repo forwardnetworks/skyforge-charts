@@ -345,9 +345,6 @@ spec:
         beta.kubernetes.io/arch: amd64
       serviceAccountName: meshnet
       terminationGracePeriodSeconds: 30
-      tolerations:
-      - effect: NoSchedule
-        operator: Exists
       volumes:
       - hostPath:
           path: /opt/cni/bin

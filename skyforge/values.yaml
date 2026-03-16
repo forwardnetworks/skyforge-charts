@@ -194,7 +194,7 @@ skyforge:
   auth:
     # Browser authentication mode used by the Skyforge UI.
     # - local: local Skyforge/Dex username-password login
-    # - oidc: browser login via /api/oidc/login, with Dex acting as the OIDC broker
+    # - oidc: browser login via /api/auth/oidc/login, with Dex acting as the OIDC broker
     mode: "local"
   debug:
     # Optional access logging for Envoy SSO proxies. Useful when debugging
@@ -261,6 +261,8 @@ skyforge:
         networkName: "infoblox-lan1"
         bridgeName: "br-ibx-l1"
         subnet: "169.254.101.0/24"
+        isGateway: false
+        ipMasq: false
       ha:
         nadName: "infoblox-ha"
         networkName: "infoblox-ha"
@@ -530,7 +532,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260314-kne-vendored-r5"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260315-kne-cisco-bootstrap-r4"
     pullPolicy: "IfNotPresent"
   dns:
     enabled: false
@@ -556,6 +558,9 @@ skyforge:
     # Optional dedicated hostname for Forward Cluster wildcard routing.
     # Example: skyforge-fwd.local.forwardnetworks.com
     hostname: ""
+    # TLS secret used for the dedicated Forward hostname listener when
+    # forwardCluster.hostname differs from skyforge.hostname.
+    tlsSecretName: "proxy-tls-fwd"
     # In-cluster Forward app Service routed by Cilium Gateway.
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
@@ -734,7 +739,7 @@ skyforge:
 images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
   alpine: "public.ecr.aws/docker/library/alpine:3.20"
-  kubectl: "bitnami/kubectl:latest"
+  kubectl: "public.ecr.aws/bitnami/kubectl:latest"
   envoy: "envoyproxy/envoy:v1.31.2"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
   # Vector publishes official images under `timberio/vector` (Docker Hub).
@@ -756,10 +761,10 @@ images:
   atlas: "arigaio/atlas:1.1.6-alpine"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260314-forward-org-kne-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260315-forward-tenant-lockfix1"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260314-forward-org-kne-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260315-forward-tenant-lockfix1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true

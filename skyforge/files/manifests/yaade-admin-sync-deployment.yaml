@@ -131,7 +131,7 @@ spec:
             - name: run-secrets
               mountPath: /run/secrets
               readOnly: true
-            - name: yaade-data
+            - name: yaade-sync-state
               mountPath: /var/lib/yaade-sync
       restartPolicy: Always
       volumes:
@@ -143,6 +143,5 @@ spec:
                   items:
                     - key: yaade-admin-password
                       path: yaade-admin-password
-        - name: yaade-data
-          persistentVolumeClaim:
-            claimName: yaade-data
+        - name: yaade-sync-state
+          emptyDir: {}

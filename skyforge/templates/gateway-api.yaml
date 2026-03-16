@@ -9,6 +9,7 @@
 {{- $gatewayAdditionalHostnames := .Values.skyforge.gateway.additionalHostnames | default (list) -}}
 {{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}
+{{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
 {{- $forwardSvcName := default "fwd-appserver" .Values.skyforge.forwardCluster.serviceName -}}
 {{- $forwardSvcNamespace := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
 {{- $forwardSvcPort := default 8080 .Values.skyforge.forwardCluster.servicePort -}}
@@ -46,6 +47,58 @@ spec:
           {{- else }}
           from: Same
           {{- end }}
+    {{- if and $forwardClusterEnabled (ne $forwardHost $host) }}
+    - name: https-main
+      hostname: {{ $host | quote }}
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: proxy-tls
+      allowedRoutes:
+        namespaces:
+          {{- if $forwardCrossNamespace }}
+          from: All
+          {{- else }}
+          from: Same
+          {{- end }}
+    {{- range $index, $name := $gatewayAdditionalHostnames }}
+    - name: https-alt-{{ $index }}
+      hostname: {{ $name | quote }}
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: proxy-tls
+      allowedRoutes:
+        namespaces:
+          {{- if $forwardCrossNamespace }}
+          from: All
+          {{- else }}
+          from: Same
+          {{- end }}
+    {{- end }}
+    - name: https-forward
+      hostname: {{ $forwardHost | quote }}
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: {{ $forwardTlsSecretName }}
+      allowedRoutes:
+        namespaces:
+          {{- if $forwardCrossNamespace }}
+          from: All
+          {{- else }}
+          from: Same
+          {{- end }}
+    {{- else }}
     - name: https
       protocol: HTTPS
       port: 443
@@ -61,6 +114,7 @@ spec:
           {{- else }}
           from: Same
           {{- end }}
+    {{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

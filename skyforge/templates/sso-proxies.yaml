@@ -11,7 +11,7 @@ Approach:
   1) call Skyforge auth endpoint via `envoy.filters.http.ext_authz`
   2) inject returned identity headers into the upstream request
   3) redirect unauthenticated users to the auth-mode-specific Skyforge login entry
-     (`/status?signin=1...` for password mode, `/api/oidc/login?...` for oidc mode)
+     (`/status?signin=1...` for password mode, `/api/auth/oidc/login?...` for oidc mode)
 
 We keep these proxies per-tool so redirects preserve each tool's external prefix
 (/git, /nautobot, etc.) even when the Gateway URL-rewrites the prefix away.

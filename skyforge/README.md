@@ -39,6 +39,8 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `skyforge.hostname`: Public hostname for ingress routes.
 - `skyforge.domain`: Email/domain suffix used by default users.
 - `skyforge.gateway.addresses`: Optional explicit Cilium Gateway address list (recommended for node-IP ingress to avoid `AddressNotAssigned` status).
+- `skyforge.forwardCluster.hostname`: Optional dedicated Forward UI hostname (for example `skyforge-fwd.local.forwardnetworks.com`).
+- `skyforge.forwardCluster.tlsSecretName`: TLS Secret used for the dedicated Forward hostname listener when `forwardCluster.hostname` differs from `skyforge.hostname` (default `proxy-tls-fwd`).
 - `skyforge.publicTunnel.ngrok.*`: Optional ngrok relay deployment that tunnels to the in-cluster Cilium Gateway Service (`cilium-gateway-skyforge` by default). Keep auth token in a Kubernetes Secret; do not set it in values files.
 - `skyforge.kne.*`: Optional KNE install from vendored manifests (tracked from `forwardnetworks/kne`).
 - `skyforge.kne.controllers.*`: Installs KNE vendor controller stacks (ceoslab/cdnos/srlinux/lemming) required for CRD-backed device provisioning.

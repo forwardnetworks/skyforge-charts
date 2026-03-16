@@ -9,6 +9,8 @@
 {{- $lan1NADName := default "infoblox-lan1" (get $lan1 "nadName") -}}
 {{- $lan1Bridge := default "br-ibx-l1" (get $lan1 "bridgeName") -}}
 {{- $lan1Subnet := default "169.254.101.0/24" (get $lan1 "subnet") -}}
+{{- $lan1IsGateway := default false (get $lan1 "isGateway") -}}
+{{- $lan1IpMasq := default false (get $lan1 "ipMasq") -}}
 {{- $haNADName := default "infoblox-ha" (get $ha "nadName") -}}
 {{- $haBridge := default "br-ibx-ha" (get $ha "bridgeName") -}}
 {{- $haSubnet := default "169.254.102.0/24" (get $ha "subnet") -}}
@@ -31,7 +33,8 @@ spec:
       "bridge" $lan1Bridge
       "promiscMode" false
       "hairpinMode" false
-      "ipMasq" false
+      "ipMasq" $lan1IpMasq
+      "isGateway" $lan1IsGateway
       "ipam" (dict "type" "host-local" "ranges" (list (list (dict "subnet" $lan1Subnet))))
       | toJson }}
 ---

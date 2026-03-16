@@ -24,6 +24,10 @@
 {{- $lan1NetworkName := default "infoblox-lan1" (get $lan1 "networkName") -}}
 {{- $haNetworkName := default "infoblox-ha" (get $ha "networkName") -}}
 {{- $lan2NetworkName := default "infoblox-lan2" (get $lan2 "networkName") -}}
+{{- $defaultMac := default "" .Values.skyforge.infoblox.vm.managementMacAddress -}}
+{{- $lan1Mac := default "" (get $lan1 "macAddress") -}}
+{{- $haMac := default "" (get $ha "macAddress") -}}
+{{- $lan2Mac := default "" (get $lan2 "macAddress") -}}
 ---
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
@@ -63,6 +67,9 @@ spec:
               masquerade: {}
               {{- end }}
               model: {{ $managementInterfaceModel | quote }}
+              {{- if $defaultMac }}
+              macAddress: {{ $defaultMac | quote }}
+              {{- end }}
               {{- if eq $podBinding "masquerade" }}
               ports:
                 - name: https
@@ -74,12 +81,21 @@ spec:
             - name: lan1
               bridge: {}
               model: {{ $auxiliaryInterfaceModel | quote }}
+              {{- if $lan1Mac }}
+              macAddress: {{ $lan1Mac | quote }}
+              {{- end }}
             - name: ha
               bridge: {}
               model: {{ $auxiliaryInterfaceModel | quote }}
+              {{- if $haMac }}
+              macAddress: {{ $haMac | quote }}
+              {{- end }}
             - name: lan2
               bridge: {}
               model: {{ $auxiliaryInterfaceModel | quote }}
+              {{- if $lan2Mac }}
+              macAddress: {{ $lan2Mac | quote }}
+              {{- end }}
             {{- end }}
       networks:
         - name: default

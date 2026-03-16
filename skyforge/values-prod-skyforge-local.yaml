@@ -1,6 +1,6 @@
 skyforge:
   auth:
-    mode: local
+    mode: oidc
   hostname: skyforge.local.forwardnetworks.com
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
@@ -20,6 +20,10 @@ skyforge:
       # Secret remains pre-created in-cluster.
       clientSecretSecretName: "dex-oidc-client-secret"
       clientSecretSecretKey: "dex-oidc-client-secret"
+  oidc:
+    discoveryUrl: "http://dex:5556/dex"
+    issuerUrl: "https://skyforge.local.forwardnetworks.com/dex"
+    redirectUrl: "https://skyforge.local.forwardnetworks.com/api/auth/oidc/callback"
 
   # Comma-separated usernames/emails that should see admin-only UI + APIs.
   # NOTE: Server-side admin checks are exact-match (no wildcards).
@@ -61,7 +65,26 @@ skyforge:
   # Staged integrations must be explicit in prod-shaped values.
   # They remain disabled until promoted.
   infoblox:
-    enabled: false
+    enabled: true
+    managed: true
+    image: ghcr.io/forwardnetworks/kubevirt/infoblox-vnios:9.0.3-50212
+    internalUrl: https://infoblox:443
+    vm:
+      managementInterfaceModel: virtio
+      managementMacAddress: "52:54:00:10:00:01"
+      auxiliaryInterfaceModel: e1000
+      multus:
+        enabled: true
+        createNADs: true
+        lan1:
+          macAddress: "52:54:00:10:01:01"
+          isGateway: true
+          ipMasq: true
+          subnet: "192.168.1.0/24"
+        ha:
+          macAddress: "52:54:00:10:02:01"
+        lan2:
+          macAddress: "52:54:00:10:03:01"
   jira:
     enabled: false
   rapid7:
@@ -95,7 +118,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260314-kne-vendored-r5"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260315-kne-cisco-bootstrap-r4"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys in-cluster topologies through KNE.

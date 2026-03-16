@@ -1,0 +1,337 @@
+skyforge:
+  auth:
+    mode: oidc
+  hostname: skyforge.local.forwardnetworks.com
+  domain: forwardnetworks.com
+  publicUrl: https://skyforge.local.forwardnetworks.com
+  gateway:
+    addresses:
+    - type: IPAddress
+      value: 10.128.16.73
+    localNodePorts:
+      enabled: false
+  dex:
+    manageConfig: true
+    authMode: oidc
+    oidc:
+      issuer: https://fn-prod.okta.com
+      clientID: 0oa108ytsjzRXoJw3698
+      insecureSkipEmailVerified: true
+      clientSecretSecretName: dex-oidc-client-secret
+      clientSecretSecretKey: dex-oidc-client-secret
+  adminUsers: skyforge,craigjohnson,craigjohnson@forwardnetworks.com
+  encoreCfg:
+    create: true
+  encoreRuntimeConfig:
+    create: false
+    workerCreate: false
+  netbox:
+    enabled: true
+  netboxUrl: https://skyforge.local.forwardnetworks.com/netbox
+  netboxSsoUrl: https://skyforge.local.forwardnetworks.com/netbox
+  nautobot:
+    enabled: true
+  nautobotUrl: https://skyforge.local.forwardnetworks.com/nautobot
+  nautobotSsoUrl: https://skyforge.local.forwardnetworks.com/nautobot
+  redoc:
+    enabled: true
+  registry:
+    url: https://ghcr.io
+  infoblox:
+    enabled: false
+  jira:
+    enabled: false
+  rapid7:
+    enabled: false
+  elk:
+    enabled: false
+  forward:
+    enabled: true
+  forwardCollector:
+    image: ghcr.io/forwardnetworks/forward/fwd_collector:26.2.4-02
+    imagePullSecretName: ghcr-pull
+    imagePullSecretNamespace: skyforge
+  forwardCluster:
+    enabled: true
+    hostname: skyforge-fwd.local.forwardnetworks.com
+    tlsSecretName: proxy-tls-fwd
+    serviceName: fwd-appserver
+    serviceNamespace: forward
+    servicePort: 8080
+    observabilityUI:
+      enabled: true
+  gitea:
+    apiUrl: http://gitea:3000/api/v1
+    url: https://skyforge.local.forwardnetworks.com/git
+    actionsRunner:
+      enabled: false
+  netlab:
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260315-kne-cisco-bootstrap-r4
+    pullPolicy: IfNotPresent
+  kne:
+    enabled: true
+    meshnetMode: grpc
+    controllers:
+      enabled: true
+  worker:
+    replicas: 1
+    autoscaling:
+      enabled: false
+    pdb:
+      enabled: true
+      minAvailable: 1
+    tuning:
+      interactiveConcurrency: 8
+      interactiveQueueSize: 64
+      backgroundConcurrency: 2
+      backgroundQueueSize: 16
+      heartbeatIntervalSeconds: 30
+      reconcileQueuedIntervalSeconds: 30
+      reconcileRunningIntervalSeconds: 300
+      activationIntervalSeconds: 20
+      activationMinQueuedAgeSeconds: 20
+      activationBatchSize: 200
+      diagStaleHeartbeatSeconds: 120
+      diagOldestQueuedSeconds: 300
+images:
+  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260314-prod-authfix1
+  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260314-prod-authfix1-worker
+  atlas: ghcr.io/forwardnetworks/atlas:1.1.6-alpine
+kubernetes:
+  imagePullSecrets:
+  - ghcr-pull
+secrets:
+  create: true
+  validatePrecreated: true
+  items:
+    proxy-tls:
+      _type: kubernetes.io/tls
+      tls.crt: '-----BEGIN CERTIFICATE-----
+
+        MIIDbDCCAlSgAwIBAgIUIuUz2Aou8JvjKJLLgoWvLYo0oa0wDQYJKoZIhvcNAQEL
+
+        BQAwLTErMCkGA1UEAwwic2t5Zm9yZ2UubG9jYWwuZm9yd2FyZG5ldHdvcmtzLmNv
+
+        bTAeFw0yNjAzMTQyMTI1MjFaFw0yNzAzMTQyMTI1MjFaMC0xKzApBgNVBAMMInNr
+
+        eWZvcmdlLmxvY2FsLmZvcndhcmRuZXR3b3Jrcy5jb20wggEiMA0GCSqGSIb3DQEB
+
+        AQUAA4IBDwAwggEKAoIBAQCVoW0BxLdYYvjh+WMKgkng1HJF/AkamyzkPHg+4AdX
+
+        WBrNAmQnuiD5///RSIyGv02cbe5JaDBnkmWAkdE+qpmqhbzrLCSFrKxOxHccFNs7
+
+        ar3l7644ocIuSN0gpGzEFBdzzZn/XUUN9EdLldLH7lunlTW+0U0ef7toxr3CCgJA
+
+        rdTZB1kqTx0v8BXRv3EGXFO9JJHXv4WsMLkxwRVIQwX8t+6iz2oO/KndUQXE1zKI
+
+        97Pl/GdF5jSo1e3nhEes1x653+Q1DgUX9G7bL8txYmTfB0b3tmQMWUiUJaSTDl2+
+
+        MYNaDfyODxzgz7XVBWcUXxwnItJ7dUJqygc2oKnvjRRjAgMBAAGjgYMwgYAwHQYD
+
+        VR0OBBYEFFBYWPZP3LITx9p1ahOiOW57KIGmMB8GA1UdIwQYMBaAFFBYWPZP3LIT
+
+        x9p1ahOiOW57KIGmMA8GA1UdEwEB/wQFMAMBAf8wLQYDVR0RBCYwJIIic2t5Zm9y
+
+        Z2UubG9jYWwuZm9yd2FyZG5ldHdvcmtzLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEA
+
+        VcPpdu6R8YHQFGQRLiAI1MYVa6qEme8wrZZvSF1zrM7taxENMKFXM/hyYaFq6g2A
+
+        Ti1Oz/derll1te4IrygFEY04QpmQYxcmIBBfpe/yPu6p+fBsGje9ShUgtUPIy10Q
+
+        0Wq6qzaPlLhiFQC6JyxgZowlQnBHTQLZ0HPssTXwS9cKdzMsZPRcT+dmDfyxkxid
+
+        8HP9+9rYKjaT5i53uFVSBLgFSI0qNKtwOmKl8KbBXIMiZibm2paLil/Mi4VCWooB
+
+        lK7NxOBNWxdi/Ap7yYuSnXDyiL5TS+LMgJVA4nDZkebb+o0vGsqGM3jZXzehvJXm
+
+        bwgL2MW6Hox1dABni1zWYg==
+
+        -----END CERTIFICATE-----
+
+        '
+      tls.key: '-----BEGIN PRIVATE KEY-----
+
+        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCVoW0BxLdYYvjh
+
+        +WMKgkng1HJF/AkamyzkPHg+4AdXWBrNAmQnuiD5///RSIyGv02cbe5JaDBnkmWA
+
+        kdE+qpmqhbzrLCSFrKxOxHccFNs7ar3l7644ocIuSN0gpGzEFBdzzZn/XUUN9EdL
+
+        ldLH7lunlTW+0U0ef7toxr3CCgJArdTZB1kqTx0v8BXRv3EGXFO9JJHXv4WsMLkx
+
+        wRVIQwX8t+6iz2oO/KndUQXE1zKI97Pl/GdF5jSo1e3nhEes1x653+Q1DgUX9G7b
+
+        L8txYmTfB0b3tmQMWUiUJaSTDl2+MYNaDfyODxzgz7XVBWcUXxwnItJ7dUJqygc2
+
+        oKnvjRRjAgMBAAECggEAB/U5ZG4vaBp/bRlD3LO4NSZnW3R/kXQuS4cxx/pHOax8
+
+        ZGnbpMc/6LvmQZ2vp5z2BjtMgIfzhxagolle/Qu6t3h8Zy+GU7uuwFOvmAU98aeI
+
+        KPn51JY5yxdh91H3XOhKpQSKy6uMuCTFQ+5Ycvyo0D1dyeO8y8H0WCq1veOlYgYn
+
+        3a7lmR1vYjzMGuZ2cuah+goe9fO30FIh/mG+jz0FhJfr4O6XjsAbr56WaXmnnpjr
+
+        pg35GD6CY92H/gMcdR5OohDpNjKZZUqLLpgwF3nEmoM0aFCIjionwwBm45vlGTEd
+
+        Sv+AnrcT20k+FFPWOU1u2XCbxZ2wyjETiyMDH8Jj/QKBgQDRYtOn8BctpQR/gM/z
+
+        Itn3firaq67/PiKEEg6WT4+s+b0N73Nun1qKc7adJBxWmlQCQobjg+II/JtCcbCf
+
+        G9tBWVyiypEny24/PTpTwEM9UBSH0txdQ7ZYh5QsEPGe9Sq/LOtN/DZ68AJAxR1N
+
+        Mtf0lARwbDUEGddijmIav1YjTwKBgQC28Q9HUNZ4sUh4/wl3Zg42cd39PD8bmSLc
+
+        GtUOoqa7kbqdEQsUtqT952XkRYDwZ8mcfNEhB2qLyZ0i2GwG2wktS/sjOKGLYG7L
+
+        iP/PVsrCCKoKNJxEWsfjEvucIRq/ODWzPQ1DbltTlSIdbz9HcdcNzde/gSuTMWmA
+
+        BzUaKsdIrQKBgAPhwCjJ47Qd7hJrEe/hAod7GFJLgogK39rw9sJEoVZEnwOmH866
+
+        N5R/hrAtHjVg0RPlpdiL9mHSRRKbRvn8Kzlv7a668Kv7MoULnow08UoutOK7vwgf
+
+        nD7R7KZQfhpDU1KOA6LDfUMUNgZ7YQqwWZ6YK+jlqKn1zK9wElOKno8zAoGAS4Ch
+
+        9aT/X0CL0KQxm/2a0A2euO0sfo9tO7o3RJsMhU1X34sxL5NR9RiTjOrClHXBV7yL
+
+        8z3EU30aRU9dBldQKkm5lIfC5GsgTxBzw3bmp747r4qXE/8DkEw9W+qtx03Dm/4O
+
+        g04AkzZxpgRL8YiiYSgbawY8nbs+94ACApK1POECgYEAmYX1NRp14ACtHisZSxXa
+
+        NEPtacJcDO3wCYHZvX5LF5jZhO/Qp+bYNQBDro9Muv84Rguu5lPQOrjPExb3LRXS
+
+        B3ni7K4NhcbXnRDQRgJLsfJlxw9LZ6ZGRrGZb6iXPJcf2IiQmPmdccgSJpo9EBrG
+
+        8he5sXEh6/0pvQl2JMa3uAs=
+
+        -----END PRIVATE KEY-----
+
+        '
+    skyforge-admin-shared:
+      password: gV0P3WGXspm7PiFv2h
+    skyforge-session-secret:
+      skyforge-session-secret: db9f829c15abe5a7bef97a91cb4ed12e801e12c90b3e8f52261c2f3b825f0c03
+    skyforge-internal-token:
+      skyforge-internal-token: 24bb91ac86b31f9dcacdb4d68d4e1a3fbe34000f762ee47cfdf5836a40ba5455
+    postgres-skyforge-password:
+      postgres-skyforge-password: c48c76646bcfbde5cb7114933d9c613d19ff5dacd26bed6e
+    db-skyforge-server-password:
+      db-skyforge-server-password: 2c6a2cd526429cfb30a15838b9d4abc17f3dbb358a0a9c3e
+    db-gitea-password:
+      db-gitea-password: 0e8d27ccd73c8e29a8a29b8cbcdc6a62be8b3a4f1f769fde
+    db-coder-password:
+      db-coder-password: 4c429034123b1a84dca16481d269b88518f05d3e0b2cb8aa
+    db-dex-password:
+      db-dex-password: 79c1ca8ed1449151b2feb925cb14628ae9fa83626c130b5e
+    db-netbox-password:
+      db-netbox-password: 13794d358108453a5b151c83f205e49bdb59858314207e44
+    db-nautobot-password:
+      db-nautobot-password: ee243c322b272f245b78732e11c57eba4a14c3263788906b
+    db-forward-app-password:
+      db-forward-app-password: 71ccd5f4076acc06665ebed8c79ff45c9e8e8268092aa789
+    db-forward-fdb-password:
+      db-forward-fdb-password: aa72e6a1c46a84dae5aea5e2bcfcef7548d21e1c3ddfe4e9
+    gitea-secret-key:
+      gitea-secret-key: 85b7148b1d7fae8274dc2774267f54e544c5b58549933b85ade99aa89b3cc419
+    gitea-actions-runner-token:
+      token: bb7275a47f03f56185ee86ab8229546033d1fe9e16d2e065
+    dex-config:
+      config.yaml: "issuer: https://skyforge.local.forwardnetworks.com/dex\nstorage:\n\
+        \  type: sqlite3\n  config:\n    file: /var/dex/dex.db\nweb:\n  http: 0.0.0.0:5556\n\
+        oauth2:\n  skipApprovalScreen: true\nstaticClients:\n  - id: skyforge\n  \
+        \  name: Skyforge\n    secret: 27d1ddba0f4b34b8d70857f3b24d8616b61539ca60e9c684\n\
+        \    redirectURIs:\n      - https://skyforge.local.forwardnetworks.com/api/auth/oidc/callback\n\
+        \  - id: coder\n    name: Coder\n    secret: e103a3b16deed60087f22ea319afe9eee49c4fad8062a8f8\n\
+        \    redirectURIs:\n      - https://skyforge.local.forwardnetworks.com/coder/oauth2/callback\n\
+        \  - id: netbox\n    name: NetBox\n    secret: 43d366f2e0f8275d52649af9d2edaedbed3042b4d427f43e\n\
+        \    redirectURIs:\n      - https://skyforge.local.forwardnetworks.com/netbox/oauth/complete/oidc/\n\
+        \  - id: nautobot\n    name: Nautobot\n    secret: 7feb19209db2daa56c623c97f33f7c611e6f9bfaddf7f8c4\n\
+        \    redirectURIs:\n      - https://skyforge.local.forwardnetworks.com/nautobot/oauth/complete/oidc/\n\
+        \      - https://skyforge.local.forwardnetworks.com/nautobot/complete/oidc/\n\
+        enablePasswordDB: true\nstaticPasswords:\n  - email: skyforge@skyforge.local.forwardnetworks.com\n\
+        \    # Username shown in the Dex login form.\n    username: skyforge\n   \
+        \ userID: \"skyforge\"\n    hash: \"$2a$10$2N6CnWkUKdPXPfnCamQTeOIgTfMoP7tcp70mn9/37mOUL5cVCbCdu\"\
+        \n"
+    dex-client-coder-secret:
+      dex-client-coder-secret: e103a3b16deed60087f22ea319afe9eee49c4fad8062a8f8
+    dex-client-netbox-secret:
+      dex-client-netbox-secret: 43d366f2e0f8275d52649af9d2edaedbed3042b4d427f43e
+    dex-client-nautobot-secret:
+      dex-client-nautobot-secret: 7feb19209db2daa56c623c97f33f7c611e6f9bfaddf7f8c4
+    skyforge-oidc-client-id:
+      skyforge-oidc-client-id: skyforge
+    skyforge-oidc-client-secret:
+      skyforge-oidc-client-secret: 27d1ddba0f4b34b8d70857f3b24d8616b61539ca60e9c684
+    skyforge-ldap-url:
+      skyforge-ldap-url: ''
+    skyforge-ldap-bind-template:
+      skyforge-ldap-bind-template: ''
+    skyforge-ldap-searchdn:
+      skyforge-ldap-searchdn: ''
+    skyforge-ldap-searchfilter:
+      skyforge-ldap-searchfilter: ''
+    skyforge-ldap-binddn:
+      skyforge-ldap-binddn: ''
+    skyforge-ldap-bindpassword:
+      skyforge-ldap-bindpassword: ''
+    skyforge-ca-cert:
+      skyforge-ca-cert: '-----BEGIN CERTIFICATE-----
+
+        MIIDbDCCAlSgAwIBAgIUIuUz2Aou8JvjKJLLgoWvLYo0oa0wDQYJKoZIhvcNAQEL
+
+        BQAwLTErMCkGA1UEAwwic2t5Zm9yZ2UubG9jYWwuZm9yd2FyZG5ldHdvcmtzLmNv
+
+        bTAeFw0yNjAzMTQyMTI1MjFaFw0yNzAzMTQyMTI1MjFaMC0xKzApBgNVBAMMInNr
+
+        eWZvcmdlLmxvY2FsLmZvcndhcmRuZXR3b3Jrcy5jb20wggEiMA0GCSqGSIb3DQEB
+
+        AQUAA4IBDwAwggEKAoIBAQCVoW0BxLdYYvjh+WMKgkng1HJF/AkamyzkPHg+4AdX
+
+        WBrNAmQnuiD5///RSIyGv02cbe5JaDBnkmWAkdE+qpmqhbzrLCSFrKxOxHccFNs7
+
+        ar3l7644ocIuSN0gpGzEFBdzzZn/XUUN9EdLldLH7lunlTW+0U0ef7toxr3CCgJA
+
+        rdTZB1kqTx0v8BXRv3EGXFO9JJHXv4WsMLkxwRVIQwX8t+6iz2oO/KndUQXE1zKI
+
+        97Pl/GdF5jSo1e3nhEes1x653+Q1DgUX9G7bL8txYmTfB0b3tmQMWUiUJaSTDl2+
+
+        MYNaDfyODxzgz7XVBWcUXxwnItJ7dUJqygc2oKnvjRRjAgMBAAGjgYMwgYAwHQYD
+
+        VR0OBBYEFFBYWPZP3LITx9p1ahOiOW57KIGmMB8GA1UdIwQYMBaAFFBYWPZP3LIT
+
+        x9p1ahOiOW57KIGmMA8GA1UdEwEB/wQFMAMBAf8wLQYDVR0RBCYwJIIic2t5Zm9y
+
+        Z2UubG9jYWwuZm9yd2FyZG5ldHdvcmtzLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEA
+
+        VcPpdu6R8YHQFGQRLiAI1MYVa6qEme8wrZZvSF1zrM7taxENMKFXM/hyYaFq6g2A
+
+        Ti1Oz/derll1te4IrygFEY04QpmQYxcmIBBfpe/yPu6p+fBsGje9ShUgtUPIy10Q
+
+        0Wq6qzaPlLhiFQC6JyxgZowlQnBHTQLZ0HPssTXwS9cKdzMsZPRcT+dmDfyxkxid
+
+        8HP9+9rYKjaT5i53uFVSBLgFSI0qNKtwOmKl8KbBXIMiZibm2paLil/Mi4VCWooB
+
+        lK7NxOBNWxdi/Ap7yYuSnXDyiL5TS+LMgJVA4nDZkebb+o0vGsqGM3jZXzehvJXm
+
+        bwgL2MW6Hox1dABni1zWYg==
+
+        -----END CERTIFICATE-----
+
+        '
+    netbox-secret-key:
+      netbox-secret-key: 5d0033858ea0eb8da24474e816e0e667be47abeb34ecef06614ecb47ed159e78
+    nautobot-secret-key:
+      nautobot-secret-key: b80fe8599e734442babb1145057228d676e00b2cf9c4b0f1f248c131922ae240
+    netbox-superuser-api-token:
+      netbox-superuser-api-token: 4c96d57704ce2364f2badc69153c8057280c6d27bbfd58ed
+    nautobot-superuser-api-token:
+      nautobot-superuser-api-token: 7963a1c7ed40682714fece4dfecfb6dd4536ac2499f5d728
+    netbox-api-token-peppers:
+      netbox-api-token-peppers: 44b15a439c7948d68236211fc78e3a3a1842c9a1a328a91c63247d1053e55ae8
+    skyforge-quick-deploy-forward-username:
+      skyforge-quick-deploy-forward-username: skyforge-local
+    skyforge-quick-deploy-forward-password:
+      skyforge-quick-deploy-forward-password: 26905a1e35ad6e79522797903ec2370ae281
+    yaade-admin-password:
+      yaade-admin-password: 46f1304128a4fd1d811097bbd932369b48f0
+    dex-oidc-client-secret:
+      dex-oidc-client-secret: ''

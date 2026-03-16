@@ -331,6 +331,9 @@ spec:
             - name: license
               image: {{ $image | quote }}
               imagePullPolicy: {{ $pullPolicy | quote }}
+              securityContext:
+                runAsUser: 0
+                runAsGroup: 0
               env:
                 - name: POD_NAMESPACE
                   valueFrom:
@@ -417,14 +420,6 @@ spec:
                     return 1
                   }
 
-                  ensure_expect() {
-                    if command -v expect >/dev/null 2>&1; then
-                      return 0
-                    fi
-                    install_pkgs expect || return 1
-                    command -v expect >/dev/null 2>&1
-                  }
-
                   ensure_curl() {
                     if command -v curl >/dev/null 2>&1; then
                       return 0
@@ -467,79 +462,43 @@ spec:
                   }
 
                   run_bootstrap_once() {
-                    timeout_cmd=""
+                    input_file="/tmp/ibx-console.input"
+                    output_file="/tmp/ibx-console.output"
+
+                    {
+                      i=0
+                      while [ "${i}" -lt "${INITIAL_WAIT_SECONDS}" ]; do
+                        printf '\n'
+                        i="$((i + 1))"
+                      done
+                      printf '%s\n' "${CONSOLE_USERNAME}"
+                      printf '%s\n' "${CONSOLE_PASSWORD}"
+                      printf 'set network\n'
+                      i=0
+                      while [ "${i}" -lt 12 ]; do
+                        printf 'y\n'
+                        i="$((i + 1))"
+                      done
+                      printf 'set temp_license\n'
+                      i=0
+                      while [ "${i}" -lt 24 ]; do
+                        printf 'y\n'
+                        i="$((i + 1))"
+                      done
+                      printf 'save config\n'
+                      i=0
+                      while [ "${i}" -lt 10 ]; do
+                        printf 'y\n'
+                        i="$((i + 1))"
+                      done
+                      printf 'exit\n'
+                    } >"${input_file}"
+
                     if command -v timeout >/dev/null 2>&1; then
-                      timeout_cmd="timeout ${CONSOLE_TIMEOUT_SECONDS}s"
+                      timeout "${CONSOLE_TIMEOUT_SECONDS}"s sh -c "cat \"${input_file}\" | virtctl --namespace \"${POD_NAMESPACE}\" console \"${VM_NAME}\" >\"${output_file}\" 2>&1"
+                    else
+                      cat "${input_file}" | virtctl --namespace "${POD_NAMESPACE}" console "${VM_NAME}" >"${output_file}" 2>&1
                     fi
-
-                    # shellcheck disable=SC2086
-                    ${timeout_cmd} expect <<'EOF'
-                  set timeout $env(PROMPT_WAIT_SECONDS)
-                  log_user 1
-                  proc wait_for_cli_prompt {} {
-                    expect {
-                      -re {(\r|\n|^)\s*login: ?$} {
-                        send -- $env(CONSOLE_USERNAME)
-                        send -- "\r"
-                        exp_continue
-                      }
-                      -re {(\r|\n|^)\s*(Local )?[Pp]assword: ?$} {
-                        send -- $env(CONSOLE_PASSWORD)
-                        send -- "\r"
-                        exp_continue
-                      }
-                      -re {(\r|\n|^).*[>#] ?$} {
-                        return 0
-                      }
-                      timeout {
-                        exit 1
-                      }
-                      eof {
-                        exit 1
-                      }
-                    }
-                  }
-                  spawn virtctl --namespace $env(POD_NAMESPACE) console $env(VM_NAME)
-                  after [expr {$env(INITIAL_WAIT_SECONDS) * 1000}]
-                  for {set i 0} {$i < 4} {incr i} {
-                    send -- "\r"
-                    after 250
-                  }
-                  wait_for_cli_prompt
-
-                  send -- "set network\r"
-                  after 1500
-                  for {set i 0} {$i < 10} {incr i} {
-                    send -- "\r"
-                    send -- "y\r"
-                    after 250
-                  }
-                  wait_for_cli_prompt
-
-                  send -- "set temp_license\r"
-                  after 1500
-                  for {set i 0} {$i < 24} {incr i} {
-                    send -- "\r"
-                    send -- "y\r"
-                    after 250
-                  }
-                  wait_for_cli_prompt
-
-                  send -- "save config\r"
-                  after 1200
-                  for {set i 0} {$i < 8} {incr i} {
-                    send -- "\r"
-                    send -- "y\r"
-                    after 250
-                  }
-                  send -- "exit\r"
-                  after 500
-                  send "\035"
-                  expect {
-                    eof {}
-                    timeout {}
-                  }
-                  EOF
                   }
 
                   ensure_state_configmap
@@ -557,7 +516,7 @@ spec:
                     exit 0
                   fi
 
-                  if ! ensure_expect || ! ensure_virtctl; then
+                  if ! ensure_virtctl; then
                     set_state_value "license_pending" "true"
                     exit 0
                   fi

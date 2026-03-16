@@ -81,12 +81,20 @@ spec:
           args:
             - |
               set -eu
+              KUBECTL_BIN="/opt/bitnami/kubectl/bin/kubectl"
+              if [ ! -x "${KUBECTL_BIN}" ]; then
+                KUBECTL_BIN="$(command -v kubectl || true)"
+              fi
+              if [ -z "${KUBECTL_BIN}" ]; then
+                echo "kubectl binary not found in hook image" >&2
+                exit 1
+              fi
               ns="{{ .Release.Namespace }}"
               token_secret="{{ .Values.skyforge.gitea.actionsRunner.tokenSecretName }}"
               token_key="{{ .Values.skyforge.gitea.actionsRunner.tokenSecretKey }}"
 
               for i in $(seq 1 120); do
-                if kubectl -n "${ns}" rollout status deploy/gitea --timeout=5s >/dev/null 2>&1; then
+                if "${KUBECTL_BIN}" -n "${ns}" rollout status deploy/gitea --timeout=5s >/dev/null 2>&1; then
                   break
                 fi
                 if [ "${i}" -eq 120 ]; then
@@ -97,23 +105,19 @@ spec:
               done
 
               token="$(
-                kubectl -n "${ns}" exec deploy/gitea -- /usr/local/bin/gitea actions generate-runner-token | \
+                "${KUBECTL_BIN}" -n "${ns}" exec deploy/gitea -- /usr/local/bin/gitea actions generate-runner-token | \
                   tail -n 1 | tr -d '\r'
               )"
               if [ -z "${token}" ]; then
                 echo "empty runner token from gitea CLI" >&2
                 exit 1
               fi
-              if ! printf '%s' "${token}" | grep -Eq '^[A-Za-z0-9]+$'; then
-                echo "runner token has unexpected format" >&2
-                exit 1
-              fi
 
-              kubectl -n "${ns}" create secret generic "${token_secret}" \
+              "${KUBECTL_BIN}" -n "${ns}" create secret generic "${token_secret}" \
                 --from-literal="${token_key}=${token}" \
-                --dry-run=client -o yaml | kubectl -n "${ns}" apply -f -
+                --dry-run=client -o yaml | "${KUBECTL_BIN}" -n "${ns}" apply -f -
 
-              if kubectl -n "${ns}" get deploy gitea-actions-runner >/dev/null 2>&1; then
-                kubectl -n "${ns}" rollout restart deploy/gitea-actions-runner >/dev/null 2>&1 || true
+              if "${KUBECTL_BIN}" -n "${ns}" get deploy gitea-actions-runner >/dev/null 2>&1; then
+                "${KUBECTL_BIN}" -n "${ns}" rollout restart deploy/gitea-actions-runner >/dev/null 2>&1 || true
               fi
 {{- end }}
