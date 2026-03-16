@@ -9,14 +9,26 @@
 {{- $lan1NADName := default "infoblox-lan1" (get $lan1 "nadName") -}}
 {{- $lan1Bridge := default "br-ibx-l1" (get $lan1 "bridgeName") -}}
 {{- $lan1Subnet := default "169.254.101.0/24" (get $lan1 "subnet") -}}
+{{- $lan1IPAMType := lower (default "host-local" (get $lan1 "ipamType")) -}}
 {{- $lan1IsGateway := default false (get $lan1 "isGateway") -}}
 {{- $lan1IpMasq := default false (get $lan1 "ipMasq") -}}
 {{- $haNADName := default "infoblox-ha" (get $ha "nadName") -}}
 {{- $haBridge := default "br-ibx-ha" (get $ha "bridgeName") -}}
 {{- $haSubnet := default "169.254.102.0/24" (get $ha "subnet") -}}
+{{- $haIPAMType := lower (default "host-local" (get $ha "ipamType")) -}}
 {{- $lan2NADName := default "infoblox-lan2" (get $lan2 "nadName") -}}
 {{- $lan2Bridge := default "br-ibx-l2" (get $lan2 "bridgeName") -}}
 {{- $lan2Subnet := default "169.254.103.0/24" (get $lan2 "subnet") -}}
+{{- $lan2IPAMType := lower (default "host-local" (get $lan2 "ipamType")) -}}
+{{- if and (ne $lan1IPAMType "host-local") (ne $lan1IPAMType "dhcp") -}}
+{{- fail "skyforge.infoblox.vm.multus.lan1.ipamType must be one of: host-local, dhcp" -}}
+{{- end -}}
+{{- if and (ne $haIPAMType "host-local") (ne $haIPAMType "dhcp") -}}
+{{- fail "skyforge.infoblox.vm.multus.ha.ipamType must be one of: host-local, dhcp" -}}
+{{- end -}}
+{{- if and (ne $lan2IPAMType "host-local") (ne $lan2IPAMType "dhcp") -}}
+{{- fail "skyforge.infoblox.vm.multus.lan2.ipamType must be one of: host-local, dhcp" -}}
+{{- end -}}
 ---
 apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
@@ -33,9 +45,9 @@ spec:
       "bridge" $lan1Bridge
       "promiscMode" false
       "hairpinMode" false
-      "ipMasq" $lan1IpMasq
-      "isGateway" $lan1IsGateway
-      "ipam" (dict "type" "host-local" "ranges" (list (list (dict "subnet" $lan1Subnet))))
+      "ipMasq" (ternary $lan1IpMasq false (eq $lan1IPAMType "host-local"))
+      "isGateway" (ternary $lan1IsGateway false (eq $lan1IPAMType "host-local"))
+      "ipam" (ternary (dict "type" "host-local" "ranges" (list (list (dict "subnet" $lan1Subnet)))) (dict "type" "dhcp") (eq $lan1IPAMType "host-local"))
       | toJson }}
 ---
 apiVersion: k8s.cni.cncf.io/v1
@@ -54,7 +66,7 @@ spec:
       "promiscMode" false
       "hairpinMode" false
       "ipMasq" false
-      "ipam" (dict "type" "host-local" "ranges" (list (list (dict "subnet" $haSubnet))))
+      "ipam" (ternary (dict "type" "host-local" "ranges" (list (list (dict "subnet" $haSubnet)))) (dict "type" "dhcp") (eq $haIPAMType "host-local"))
       | toJson }}
 ---
 apiVersion: k8s.cni.cncf.io/v1
@@ -73,6 +85,6 @@ spec:
       "promiscMode" false
       "hairpinMode" false
       "ipMasq" false
-      "ipam" (dict "type" "host-local" "ranges" (list (list (dict "subnet" $lan2Subnet))))
+      "ipam" (ternary (dict "type" "host-local" "ranges" (list (list (dict "subnet" $lan2Subnet)))) (dict "type" "dhcp") (eq $lan2IPAMType "host-local"))
       | toJson }}
 {{- end }}

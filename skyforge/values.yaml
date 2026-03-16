@@ -24,6 +24,7 @@ skyforge:
       # Optional hard requirement for clusters that explicitly label node pool class.
       requiredPoolClass: ""
       nodeSelector: {}
+      affinity: {}
       tolerations: []
       affinity: {}
     resources:
@@ -260,6 +261,8 @@ skyforge:
         nadName: "infoblox-lan1"
         networkName: "infoblox-lan1"
         bridgeName: "br-ibx-l1"
+        # Per-NAD IPAM type: host-local (default) or dhcp.
+        ipamType: "host-local"
         subnet: "169.254.101.0/24"
         isGateway: false
         ipMasq: false
@@ -267,11 +270,13 @@ skyforge:
         nadName: "infoblox-ha"
         networkName: "infoblox-ha"
         bridgeName: "br-ibx-ha"
+        ipamType: "host-local"
         subnet: "169.254.102.0/24"
       lan2:
         nadName: "infoblox-lan2"
         networkName: "infoblox-lan2"
         bridgeName: "br-ibx-l2"
+        ipamType: "host-local"
         subnet: "169.254.103.0/24"
       nodeSelector: {}
       tolerations: []
@@ -290,6 +295,8 @@ skyforge:
         enabled: true
         # Cron expression for checking VM runtime.
         schedule: "*/15 * * * *"
+        # Set true only for temporary operator pause; default is always active.
+        suspend: false
         # Halt VM after this many minutes without observed Skyforge access.
         # Access timestamps are updated from Infoblox status/wake/console flows.
         maxIdleMinutes: 45
@@ -300,6 +307,8 @@ skyforge:
         enabled: true
         # Cron expression for checking reseed age.
         schedule: "17 */6 * * *"
+        # Set true only for temporary operator pause; default is always active.
+        suspend: false
         # Restart VM from stock containerDisk after this many days.
         resetAfterDays: 60
         haltWaitSeconds: 30
@@ -309,6 +318,8 @@ skyforge:
         # or when reseed marks license_pending=true.
         enabled: true
         schedule: "*/20 * * * *"
+        # Set true only for temporary operator pause; default is always active.
+        suspend: false
         maxAttempts: 3
         attemptSleepSeconds: 20
         promptWaitSeconds: 180
@@ -591,7 +602,7 @@ skyforge:
     # When empty, Skyforge will not deploy a collector Pod (Collector page will
     # show "not configured").
     # Example:
-    # image: "ghcr.io/forwardnetworks/forward/fwd_collector:26.2.4-02"
+    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-09"
     image: ""
     pullPolicy: "IfNotPresent"
     heapSizeGB: 0

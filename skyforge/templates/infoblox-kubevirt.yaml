@@ -120,6 +120,10 @@ spec:
       nodeSelector:
 {{ toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.skyforge.infoblox.vm.affinity }}
+      affinity:
+{{ toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.skyforge.infoblox.vm.tolerations }}
       tolerations:
 {{ toYaml . | nindent 8 }}

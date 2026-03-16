@@ -69,15 +69,29 @@ skyforge:
     managed: true
     image: ghcr.io/forwardnetworks/kubevirt/infoblox-vnios:9.0.3-50212
     internalUrl: https://infoblox:443
+    lifecycle:
+      # Pin lifecycle controller tooling image in prod for deterministic reconcile behavior.
+      image: public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1
     vm:
       managementInterfaceModel: virtio
       managementMacAddress: "52:54:00:10:00:01"
       auxiliaryInterfaceModel: e1000
+      # Avoid co-locating Infoblox VM with Forward worker pool by preference.
+      # This keeps Forward cold-start/reboots from contending with a 32Gi VM.
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: forwardnetworks.com/role
+                    operator: DoesNotExist
       multus:
         enabled: true
         createNADs: true
         lan1:
           macAddress: "52:54:00:10:01:01"
+          ipamType: "dhcp"
           isGateway: true
           ipMasq: true
           subnet: "192.168.1.0/24"
@@ -97,9 +111,9 @@ skyforge:
   forward:
     enabled: true
   forwardCollector:
-    image: ghcr.io/forwardnetworks/forward/fwd_collector:26.2.4-02
-    imagePullSecretName: ghcr-pull
-    imagePullSecretNamespace: skyforge
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-09
+    imagePullSecretName: ""
+    imagePullSecretNamespace: ""
   forwardCluster:
     enabled: true
     hostname: "skyforge-fwd.local.forwardnetworks.com"
@@ -154,6 +168,8 @@ images:
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260315-ui-oidc-active"
   # Worker can run from the same image tag as the API container.
   skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260315-ui-oidc-active-worker"
+  # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
+  kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"
 
 kubernetes:
   # Ensure private GHCR images can be pulled in the release namespace.

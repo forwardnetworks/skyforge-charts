@@ -48,9 +48,9 @@ skyforge:
   forward:
     enabled: true
   forwardCollector:
-    image: ghcr.io/forwardnetworks/forward/fwd_collector:26.2.4-02
-    imagePullSecretName: ghcr-pull
-    imagePullSecretNamespace: skyforge
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-09
+    imagePullSecretName: ""
+    imagePullSecretNamespace: ""
   forwardCluster:
     enabled: true
     hostname: skyforge-fwd.local.forwardnetworks.com
