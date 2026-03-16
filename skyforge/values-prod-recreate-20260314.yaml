@@ -94,8 +94,8 @@ skyforge:
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300
 images:
-  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260314-prod-authfix1
-  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260314-prod-authfix1-worker
+  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260316-composite-infoblox-r1
+  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260316-composite-infoblox-r1-worker
   atlas: ghcr.io/forwardnetworks/atlas:1.1.6-alpine
 kubernetes:
   imagePullSecrets:
