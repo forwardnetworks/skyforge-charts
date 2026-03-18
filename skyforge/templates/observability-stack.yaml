@@ -207,8 +207,8 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: skyforge-node-exporter
         {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: skyforge-node-exporter
     spec:
       hostNetwork: true
       hostPID: true
