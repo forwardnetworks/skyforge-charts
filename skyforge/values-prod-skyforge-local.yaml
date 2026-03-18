@@ -111,7 +111,7 @@ skyforge:
     pullPolicy: "IfNotPresent"
     progressDeadlineSeconds: 3600
     backendTLS:
-      enabled: true
+      enabled: false
       hostname: "rapid7"
       caConfigMapName: "rapid7-ca"
   elk:
