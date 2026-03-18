@@ -143,6 +143,10 @@ spec:
         app.kubernetes.io/name: skyforge-prometheus
     spec:
       serviceAccountName: skyforge-prometheus
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
       containers:
         - name: prometheus
           image: {{ $promImage | quote }}
