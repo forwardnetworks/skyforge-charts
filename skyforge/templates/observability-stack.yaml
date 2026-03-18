@@ -139,8 +139,8 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: skyforge-prometheus
         {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: skyforge-prometheus
     spec:
       serviceAccountName: skyforge-prometheus
       containers:
@@ -314,8 +314,8 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: skyforge-grafana
         {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: skyforge-grafana
     spec:
       containers:
         - name: grafana
