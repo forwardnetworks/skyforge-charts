@@ -45,13 +45,13 @@ skyforge:
 
   netbox:
     enabled: true
-  netboxUrl: https://skyforge.local.forwardnetworks.com/netbox
-  netboxSsoUrl: https://skyforge.local.forwardnetworks.com/netbox
+  netboxUrl: /netbox
+  netboxSsoUrl: /netbox
 
   nautobot:
     enabled: true
-  nautobotUrl: https://skyforge.local.forwardnetworks.com/nautobot
-  nautobotSsoUrl: https://skyforge.local.forwardnetworks.com/nautobot
+  nautobotUrl: /nautobot
+  nautobotSsoUrl: /nautobot
 
   # ReDoc image pulls can be rate-limited; keep this disabled
   # in production unless you pin a mirrored image.
@@ -91,27 +91,44 @@ skyforge:
         createNADs: true
         lan1:
           macAddress: "52:54:00:10:01:01"
-          ipamType: "dhcp"
-          isGateway: true
-          ipMasq: true
-          subnet: "192.168.1.0/24"
+          # DHCP plugin is not present on prod worker nodes yet; keep LAN1
+          # host-local so VM networking converges reliably.
+          ipamType: "host-local"
+          isGateway: false
+          ipMasq: false
+          subnet: "169.254.101.0/24"
         ha:
           macAddress: "52:54:00:10:02:01"
         lan2:
           macAddress: "52:54:00:10:03:01"
   jira:
-    enabled: false
+    enabled: true
+    managed: true
   rapid7:
-    enabled: false
+    enabled: true
+    managed: true
+    image: "ghcr.io/forwardnetworks/rapid7:20260317-r11"
+    pullPolicy: "IfNotPresent"
+    progressDeadlineSeconds: 3600
   elk:
-    enabled: false
+    enabled: true
+    managed: true
+    env:
+      ELASTICSEARCH_START: "1"
+      LOGSTASH_START: "1"
+      KIBANA_START: "1"
+      SERVER_BASEPATH: "/elk"
+      SERVER_REWRITEBASEPATH: "true"
+      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m"
+      LS_JAVA_OPTS: "-Xms256m -Xmx256m"
+      NODE_OPTIONS: "--max-old-space-size=512"
 
   # Forward in-cluster collector image + pull credentials.
   # Pin to a concrete tag to avoid drifting when `latest` is retagged.
   forward:
     enabled: true
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-09
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-17
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -123,16 +140,24 @@ skyforge:
     servicePort: 8080
     observabilityUI:
       enabled: true
+      grafana:
+        serviceName: "fwd-appserver"
+        servicePort: 8080
+        rewritePrefixMatch: "/grafana"
+      prometheus:
+        serviceName: "fwd-appserver"
+        servicePort: 8080
+        rewritePrefixMatch: "/prometheus"
 
   # Enable Gitea provisioning for blueprint-backed workflows.
   # API URL is in-cluster; UI URL is the SSO-proxied external path.
   gitea:
     apiUrl: http://gitea:3000/api/v1
-    url: https://skyforge.local.forwardnetworks.com/git
+    url: /git
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260315-kne-cisco-bootstrap-r4"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260317-kne-contract-hardcut-r1"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys in-cluster topologies through KNE.
@@ -165,9 +190,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260316-composite-infoblox-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260317-terminal-fix-r3"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260316-composite-infoblox-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260317-terminal-fix-r3-worker"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"
 

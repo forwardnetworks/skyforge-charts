@@ -230,7 +230,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: skyforge-forward-observability
-  namespace: {{ $forwardSvcNamespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
 spec:
@@ -263,8 +263,8 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: {{ $forwardGrafanaRewriteTarget | quote }}
       backendRefs:
-        - name: {{ $forwardGrafanaSvcName }}
-          port: {{ int $forwardGrafanaSvcPort }}
+        - name: forward-grafana-sso-proxy
+          port: 8080
     - matches:
         - path:
             type: PathPrefix
@@ -285,8 +285,8 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: {{ $forwardPromRewriteTarget | quote }}
       backendRefs:
-        - name: {{ $forwardPromSvcName }}
-          port: {{ int $forwardPromSvcPort }}
+        - name: forward-prometheus-sso-proxy
+          port: 8080
 {{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -581,11 +581,8 @@ spec:
               replacePrefixMatch: /
         {{- end }}
       backendRefs:
-        - name: {{ $jiraServiceName }}
-          port: {{ $jiraServicePort }}
-          {{- with .Values.skyforge.jira.serviceNamespace }}
-          namespace: {{ . }}
-          {{- end }}
+        - name: jira-sso-proxy
+          port: 8080
 {{- end }}
 {{- if .Values.skyforge.rapid7.enabled }}
     {{- $rapid7Prefix := default "/rapid7" .Values.skyforge.rapid7.externalPrefix }}
@@ -625,8 +622,6 @@ spec:
 {{- end }}
 {{- if .Values.skyforge.elk.enabled }}
     {{- $elkPrefix := default "/elk" .Values.skyforge.elk.externalPrefix }}
-    {{- $elkServiceName := default "kibana" .Values.skyforge.elk.serviceName }}
-    {{- $elkServicePort := default 5601 .Values.skyforge.elk.servicePort }}
     {{- $elkRewrite := true }}
     {{- if hasKey .Values.skyforge.elk "rewritePrefixToRoot" }}
     {{- $elkRewrite = .Values.skyforge.elk.rewritePrefixToRoot }}
@@ -653,10 +648,7 @@ spec:
               replacePrefixMatch: /
         {{- end }}
       backendRefs:
-        - name: {{ $elkServiceName }}
-          port: {{ $elkServicePort }}
-          {{- with .Values.skyforge.elk.serviceNamespace }}
-          namespace: {{ . }}
-          {{- end }}
+        - name: elk-sso-proxy
+          port: 8080
 {{- end }}
 {{- end }}

@@ -228,6 +228,8 @@ spec:
         app.kubernetes.io/name: {{ $name }}
         app.kubernetes.io/instance: {{ $root.Release.Name }}
         app.kubernetes.io/component: sso-proxy
+      annotations:
+        checksum/envoy-template: {{ printf "%s|%s|%s|%v|%s|%s|%s" $name (default "" $upstreamServiceEnv) (default "" $upstreamHost) $upstreamPort (default "" $externalPrefix) (default "" $responsePrefixRewrite) (default "skyforge.local.forwardnetworks.com" $root.Values.skyforge.hostname) | sha256sum }}
     spec:
       automountServiceAccountToken: false
       initContainers:
@@ -318,11 +320,32 @@ spec:
 {{ end }}
 
 {{ if .Values.skyforge.nautobot.enabled }}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "nautobot-sso-proxy" "upstreamServiceEnv" "NAUTOBOT_SERVICE_HOST" "upstreamPort" 8080 "responsePrefixRewrite" "/nautobot") }}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "nautobot-sso-proxy" "upstreamServiceEnv" "NAUTOBOT_SERVICE_HOST" "upstreamPort" 8080 "externalPrefix" "/nautobot") }}
 {{ end }}
 
 {{ if .Values.skyforge.gitea.enabled }}
 {{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "gitea-sso-proxy" "upstreamServiceEnv" "GITEA_SERVICE_HOST" "upstreamPort" 3000 "externalPrefix" "/git") }}
+{{ end }}
+
+{{ if .Values.skyforge.jira.enabled }}
+{{- $jiraSvcName := default "jira" .Values.skyforge.jira.serviceName -}}
+{{- $jiraSvcNs := default .Release.Namespace .Values.skyforge.jira.serviceNamespace -}}
+{{- $jiraSvcPort := default 8080 .Values.skyforge.jira.servicePort -}}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "jira-sso-proxy" "upstreamHost" (printf "%s.%s.svc.cluster.local" $jiraSvcName $jiraSvcNs) "upstreamPort" $jiraSvcPort "externalPrefix" "/jira") }}
+{{ end }}
+
+{{ if .Values.skyforge.elk.enabled }}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "elk-sso-proxy" "upstreamHost" (default "kibana" .Values.skyforge.elk.serviceName) "upstreamPort" (default 5601 .Values.skyforge.elk.servicePort) "externalPrefix" "/elk" "responsePrefixRewrite" "/elk") }}
+{{ end }}
+
+{{ if and .Values.skyforge.forwardCluster.enabled (default false .Values.skyforge.forwardCluster.observabilityUI.enabled) }}
+{{- $forwardObsNs := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
+{{- $forwardGrafanaSvc := default "fwd-grafana-service" .Values.skyforge.forwardCluster.observabilityUI.grafana.serviceName -}}
+{{- $forwardGrafanaPort := default 3000 .Values.skyforge.forwardCluster.observabilityUI.grafana.servicePort -}}
+{{- $forwardPromSvc := default "fwd-prometheus" .Values.skyforge.forwardCluster.observabilityUI.prometheus.serviceName -}}
+{{- $forwardPromPort := default 9090 .Values.skyforge.forwardCluster.observabilityUI.prometheus.servicePort -}}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "forward-grafana-sso-proxy" "upstreamHost" (printf "%s.%s.svc.cluster.local" $forwardGrafanaSvc $forwardObsNs) "upstreamPort" $forwardGrafanaPort "externalPrefix" "/grafana") }}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "forward-prometheus-sso-proxy" "upstreamHost" (printf "%s.%s.svc.cluster.local" $forwardPromSvc $forwardObsNs) "upstreamPort" $forwardPromPort "externalPrefix" "/prometheus") }}
 {{ end }}
 
 {{ if .Values.skyforge.redoc.enabled }}
