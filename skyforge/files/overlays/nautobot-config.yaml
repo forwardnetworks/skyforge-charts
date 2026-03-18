@@ -59,6 +59,9 @@ data:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    # Nautobot is rendered inside Skyforge's same-origin iframe view.
+    # DENY breaks embedded access completely.
+    X_FRAME_OPTIONS = "SAMEORIGIN"
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = False
     SECURE_HSTS_PRELOAD = False
@@ -74,18 +77,30 @@ data:
     # proxies /nautobot/static/* and strips the /nautobot prefix.
     WHITENOISE_STATIC_PREFIX = "/static/"
 
-    # Skyforge SSO (via Ingress auth subrequest + Remote-User headers).
-    #
-    # Nautobot has built-in support for remote header auth. It is enabled when
-    # `nautobot.core.authentication.RemoteUserBackend` is present in
-    # `AUTHENTICATION_BACKENDS`.
-    if _env_bool("SKYFORGE_SSO_ENABLED", True):
-        REMOTE_AUTH_ENABLED = True
-        REMOTE_AUTH_AUTO_CREATE_USER = True
-        REMOTE_AUTH_HEADER = "HTTP_REMOTE_USER"
+    oidc_discovery_url = _read_secret("SKYFORGE_OIDC_DISCOVERY_URL")
+    oidc_client_id = _read_secret("SKYFORGE_OIDC_CLIENT_ID")
+    oidc_client_secret = _read_secret("SKYFORGE_OIDC_CLIENT_SECRET")
+    oidc_enabled = bool(oidc_discovery_url and oidc_client_id and oidc_client_secret)
 
+    # Skyforge OIDC (Dex-backed).
+    if oidc_enabled:
+        oidc_endpoint = oidc_discovery_url
+        suffix = "/.well-known/openid-configuration"
+        if oidc_endpoint.endswith(suffix):
+            oidc_endpoint = oidc_endpoint[: -len(suffix)]
+
+        SOCIAL_AUTH_ENABLED = True
+        SOCIAL_AUTH_BACKEND_PREFIX = "social_core.backends"
+        SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = oidc_endpoint
+        SOCIAL_AUTH_OIDC_KEY = oidc_client_id
+        SOCIAL_AUTH_OIDC_SECRET = oidc_client_secret
+        SOCIAL_AUTH_OIDC_SCOPE = ["openid", "profile", "email", "groups"]
+        SOCIAL_AUTH_OIDC_USERNAME_KEY = "preferred_username"
+        SOCIAL_AUTH_OIDC_EMAIL_KEY = "email"
+        SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+        SOCIAL_AUTH_OIDC_VERIFY_SSL = False
         AUTHENTICATION_BACKENDS = (
-            "nautobot.core.authentication.RemoteUserBackend",
+            "social_core.backends.open_id_connect.OpenIdConnectAuth",
             "nautobot.core.authentication.ObjectPermissionBackend",
             "django.contrib.auth.backends.ModelBackend",
         )

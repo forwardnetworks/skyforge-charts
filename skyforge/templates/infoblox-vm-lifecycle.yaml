@@ -379,6 +379,10 @@ spec:
                 - |
                   set -eu
 
+                  log() {
+                    printf '[infoblox-license] %s\n' "$*" >&2
+                  }
+
                   ensure_state_configmap() {
                     if kubectl -n "${POD_NAMESPACE}" get configmap "${STATE_CM}" >/dev/null 2>&1; then
                       return 0

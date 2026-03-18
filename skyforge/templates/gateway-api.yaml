@@ -14,15 +14,16 @@
 {{- $forwardSvcNamespace := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
 {{- $forwardSvcPort := default 8080 .Values.skyforge.forwardCluster.servicePort -}}
 {{- $forwardCrossNamespace := and $forwardClusterEnabled (ne $forwardSvcNamespace .Release.Namespace) -}}
-{{- $forwardObservabilityUIEnabled := and $forwardClusterEnabled (default false .Values.skyforge.forwardCluster.observabilityUI.enabled) -}}
-{{- $forwardGrafanaPrefix := default "/grafana" .Values.skyforge.forwardCluster.observabilityUI.grafana.externalPrefix -}}
-{{- $forwardGrafanaSvcName := default "fwd-grafana-service" .Values.skyforge.forwardCluster.observabilityUI.grafana.serviceName -}}
-{{- $forwardGrafanaSvcPort := default 3000 .Values.skyforge.forwardCluster.observabilityUI.grafana.servicePort -}}
-{{- $forwardGrafanaRewriteTarget := default "/" .Values.skyforge.forwardCluster.observabilityUI.grafana.rewritePrefixMatch -}}
-{{- $forwardPromPrefix := default "/prometheus" .Values.skyforge.forwardCluster.observabilityUI.prometheus.externalPrefix -}}
-{{- $forwardPromSvcName := default "fwd-prometheus" .Values.skyforge.forwardCluster.observabilityUI.prometheus.serviceName -}}
-{{- $forwardPromSvcPort := default 9090 .Values.skyforge.forwardCluster.observabilityUI.prometheus.servicePort -}}
-{{- $forwardPromRewriteTarget := default "/" .Values.skyforge.forwardCluster.observabilityUI.prometheus.rewritePrefixMatch -}}
+{{- $obsEnabled := default false .Values.skyforge.observability.enabled -}}
+{{- $obsNamespace := default .Release.Namespace .Values.skyforge.observability.namespace -}}
+{{- $obsGrafanaPrefix := default "/grafana" .Values.skyforge.observability.grafana.externalPrefix -}}
+{{- $obsGrafanaSvcName := default "skyforge-grafana" .Values.skyforge.observability.grafana.serviceName -}}
+{{- $obsGrafanaSvcPort := default 3000 .Values.skyforge.observability.grafana.servicePort -}}
+{{- $obsGrafanaRewriteTarget := default "/" .Values.skyforge.observability.grafana.rewritePrefixMatch -}}
+{{- $obsPromPrefix := default "/prometheus" .Values.skyforge.observability.prometheus.externalPrefix -}}
+{{- $obsPromSvcName := default "skyforge-prometheus" .Values.skyforge.observability.prometheus.serviceName -}}
+{{- $obsPromSvcPort := default 9090 .Values.skyforge.observability.prometheus.servicePort -}}
+{{- $obsPromRewriteTarget := default "/" .Values.skyforge.observability.prometheus.rewritePrefixMatch -}}
 
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -219,17 +220,25 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /__skyforge/forward/session
+      backendRefs:
+        - name: skyforge-server
+          namespace: {{ .Release.Namespace }}
+          port: 8085
+    - matches:
+        - path:
+            type: PathPrefix
             value: /
       backendRefs:
         - name: {{ $forwardSvcName }}
           port: {{ int $forwardSvcPort }}
 {{- end }}
-{{- if $forwardObservabilityUIEnabled }}
+{{- if $obsEnabled }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: skyforge-forward-observability
+  name: skyforge-observability
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
@@ -246,7 +255,7 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: {{ $forwardGrafanaPrefix | quote }}
+            value: {{ $obsGrafanaPrefix | quote }}
       filters:
         - type: RequestHeaderModifier
           requestHeaderModifier:
@@ -254,21 +263,24 @@ spec:
               - name: X-Forwarded-Proto
                 value: https
               - name: X-Forwarded-Prefix
-                value: {{ $forwardGrafanaPrefix | quote }}
+                value: {{ $obsGrafanaPrefix | quote }}
               - name: X-Skyforge-External-Prefix
-                value: {{ $forwardGrafanaPrefix | quote }}
+                value: {{ $obsGrafanaPrefix | quote }}
         - type: URLRewrite
           urlRewrite:
             path:
               type: ReplacePrefixMatch
-              replacePrefixMatch: {{ $forwardGrafanaRewriteTarget | quote }}
+              replacePrefixMatch: {{ $obsGrafanaRewriteTarget | quote }}
       backendRefs:
-        - name: forward-grafana-sso-proxy
-          port: 8080
+        - name: {{ $obsGrafanaSvcName }}
+          {{- if ne $obsNamespace .Release.Namespace }}
+          namespace: {{ $obsNamespace }}
+          {{- end }}
+          port: {{ int $obsGrafanaSvcPort }}
     - matches:
         - path:
             type: PathPrefix
-            value: {{ $forwardPromPrefix | quote }}
+            value: {{ $obsPromPrefix | quote }}
       filters:
         - type: RequestHeaderModifier
           requestHeaderModifier:
@@ -276,16 +288,16 @@ spec:
               - name: X-Forwarded-Proto
                 value: https
               - name: X-Forwarded-Prefix
-                value: {{ $forwardPromPrefix | quote }}
+                value: {{ $obsPromPrefix | quote }}
               - name: X-Skyforge-External-Prefix
-                value: {{ $forwardPromPrefix | quote }}
+                value: {{ $obsPromPrefix | quote }}
         - type: URLRewrite
           urlRewrite:
             path:
               type: ReplacePrefixMatch
-              replacePrefixMatch: {{ $forwardPromRewriteTarget | quote }}
+              replacePrefixMatch: {{ $obsPromRewriteTarget | quote }}
       backendRefs:
-        - name: forward-prometheus-sso-proxy
+        - name: prometheus-sso-proxy
           port: 8080
 {{- end }}
 ---
@@ -363,7 +375,7 @@ spec:
             type: PathPrefix
             value: /netbox
       backendRefs:
-        - name: netbox-sso-proxy
+        - name: netbox
           port: 8080
 {{- end }}
 
@@ -384,7 +396,7 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: nautobot-sso-proxy
+        - name: nautobot
           port: 8080
 {{- end }}
 
@@ -397,16 +409,18 @@ spec:
         - type: RequestHeaderModifier
           requestHeaderModifier:
             set:
-              - name: X-Skyforge-External-Prefix
+              - name: X-Forwarded-Prefix
                 value: /git
+              - name: X-Forwarded-Proto
+                value: https
         - type: URLRewrite
           urlRewrite:
             path:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: gitea-sso-proxy
-          port: 8080
+        - name: gitea
+          port: 3000
 {{- end }}
 
 {{- if $redocEnabled }}
@@ -426,8 +440,8 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: redoc-sso-proxy
-          port: 8080
+        - name: redoc
+          port: 80
 {{- end }}
 
 {{- if $coderEnabled }}
@@ -517,6 +531,11 @@ spec:
   rules:
 {{- if .Values.skyforge.infoblox.enabled }}
     {{- $infobloxPrefix := default "/infoblox" .Values.skyforge.infoblox.externalPrefix }}
+    {{- $infobloxOIDC := default (dict) .Values.skyforge.infoblox.oidc }}
+    {{- $infobloxOIDCEnabled := true }}
+    {{- if hasKey $infobloxOIDC "enabled" }}
+    {{- $infobloxOIDCEnabled = (index $infobloxOIDC "enabled") }}
+    {{- end }}
     {{- $infobloxServiceName := default (default "infoblox" .Values.skyforge.infoblox.serviceName) .Values.skyforge.infoblox.routeServiceName }}
     {{- $infobloxServicePort := default (default 443 .Values.skyforge.infoblox.servicePort) .Values.skyforge.infoblox.routeServicePort }}
     {{- $infobloxRewrite := true }}
@@ -545,14 +564,24 @@ spec:
               replacePrefixMatch: /
         {{- end }}
       backendRefs:
+        {{- if $infobloxOIDCEnabled }}
+        - name: infoblox-sso-proxy
+          port: 8080
+        {{- else }}
         - name: {{ $infobloxServiceName }}
           port: {{ $infobloxServicePort }}
           {{- with .Values.skyforge.infoblox.serviceNamespace }}
           namespace: {{ . }}
           {{- end }}
+        {{- end }}
 {{- end }}
 {{- if .Values.skyforge.jira.enabled }}
     {{- $jiraPrefix := default "/jira" .Values.skyforge.jira.externalPrefix }}
+    {{- $jiraOIDC := default (dict) .Values.skyforge.jira.oidc }}
+    {{- $jiraOIDCEnabled := true }}
+    {{- if hasKey $jiraOIDC "enabled" }}
+    {{- $jiraOIDCEnabled = (index $jiraOIDC "enabled") }}
+    {{- end }}
     {{- $jiraServiceName := default "jira" .Values.skyforge.jira.serviceName }}
     {{- $jiraServicePort := default 8080 .Values.skyforge.jira.servicePort }}
     {{- $jiraRewrite := true }}
@@ -581,13 +610,24 @@ spec:
               replacePrefixMatch: /
         {{- end }}
       backendRefs:
+        {{- if $jiraOIDCEnabled }}
         - name: jira-sso-proxy
           port: 8080
+        {{- else }}
+        - name: {{ $jiraServiceName }}
+          port: {{ $jiraServicePort }}
+          {{- with .Values.skyforge.jira.serviceNamespace }}
+          namespace: {{ . }}
+          {{- end }}
+        {{- end }}
 {{- end }}
 {{- if .Values.skyforge.rapid7.enabled }}
     {{- $rapid7Prefix := default "/rapid7" .Values.skyforge.rapid7.externalPrefix }}
-    {{- $rapid7ServiceName := default "rapid7" .Values.skyforge.rapid7.serviceName }}
-    {{- $rapid7ServicePort := default 3780 .Values.skyforge.rapid7.servicePort }}
+    {{- $rapid7OIDC := default (dict) .Values.skyforge.rapid7.oidc }}
+    {{- $rapid7OIDCEnabled := true }}
+    {{- if hasKey $rapid7OIDC "enabled" }}
+    {{- $rapid7OIDCEnabled = (index $rapid7OIDC "enabled") }}
+    {{- end }}
     {{- $rapid7Rewrite := true }}
     {{- if hasKey .Values.skyforge.rapid7 "rewritePrefixToRoot" }}
     {{- $rapid7Rewrite = .Values.skyforge.rapid7.rewritePrefixToRoot }}
@@ -614,14 +654,24 @@ spec:
               replacePrefixMatch: /
         {{- end }}
       backendRefs:
-        - name: {{ $rapid7ServiceName }}
-          port: {{ $rapid7ServicePort }}
+        {{- if $rapid7OIDCEnabled }}
+        - name: rapid7-sso-proxy
+          port: 8080
+        {{- else }}
+        - name: {{ default "rapid7" .Values.skyforge.rapid7.serviceName }}
+          port: {{ default 3780 .Values.skyforge.rapid7.servicePort }}
           {{- with .Values.skyforge.rapid7.serviceNamespace }}
           namespace: {{ . }}
           {{- end }}
+        {{- end }}
 {{- end }}
 {{- if .Values.skyforge.elk.enabled }}
     {{- $elkPrefix := default "/elk" .Values.skyforge.elk.externalPrefix }}
+    {{- $elkOIDC := default (dict) .Values.skyforge.elk.oidc }}
+    {{- $elkOIDCEnabled := true }}
+    {{- if hasKey $elkOIDC "enabled" }}
+    {{- $elkOIDCEnabled = (index $elkOIDC "enabled") }}
+    {{- end }}
     {{- $elkRewrite := true }}
     {{- if hasKey .Values.skyforge.elk "rewritePrefixToRoot" }}
     {{- $elkRewrite = .Values.skyforge.elk.rewritePrefixToRoot }}
@@ -648,7 +698,15 @@ spec:
               replacePrefixMatch: /
         {{- end }}
       backendRefs:
+        {{- if $elkOIDCEnabled }}
         - name: elk-sso-proxy
           port: 8080
+        {{- else }}
+        - name: {{ default "kibana" .Values.skyforge.elk.serviceName }}
+          port: {{ default 5601 .Values.skyforge.elk.servicePort }}
+          {{- with .Values.skyforge.elk.serviceNamespace }}
+          namespace: {{ . }}
+          {{- end }}
+        {{- end }}
 {{- end }}
 {{- end }}

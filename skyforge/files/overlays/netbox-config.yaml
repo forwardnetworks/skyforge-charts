@@ -60,7 +60,6 @@ data:
             API_TOKEN_PEPPERS = {1: str(parsed) if parsed is not None else ""}
 
 
-    remote_auth_enabled = truthy(os.getenv("SKYFORGE_SSO_ENABLED", "true"))
     oidc_discovery_url = read_file(os.getenv("SKYFORGE_OIDC_DISCOVERY_URL_FILE", "").strip()) or os.getenv(
         "SKYFORGE_OIDC_DISCOVERY_URL", ""
     ).strip()
@@ -72,16 +71,26 @@ data:
     ).strip()
     oidc_enabled = bool(oidc_discovery_url and oidc_client_id and oidc_client_secret)
 
-    if remote_auth_enabled:
-        REMOTE_AUTH_ENABLED = True
-        REMOTE_AUTH_AUTO_CREATE_USER = True
-        REMOTE_AUTH_HEADER = "HTTP_REMOTE_USER"
-        REMOTE_AUTH_DEFAULT_GROUPS = ["skyforge-users"]
-        REMOTE_AUTH_AUTO_CREATE_GROUPS = True
+    if oidc_enabled:
+        oidc_endpoint = oidc_discovery_url
+        suffix = "/.well-known/openid-configuration"
+        if oidc_endpoint.endswith(suffix):
+            oidc_endpoint = oidc_endpoint[: -len(suffix)]
+
         AUTHENTICATION_BACKENDS = [
-            "netbox.authentication.RemoteUserBackend",
+            "social_core.backends.open_id_connect.OpenIdConnectAuth",
             "django.contrib.auth.backends.ModelBackend",
         ]
+        SOCIAL_AUTH_ENABLED = True
+        SOCIAL_AUTH_BACKEND_PREFIX = "social_core.backends"
+        SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = oidc_endpoint
+        SOCIAL_AUTH_OIDC_KEY = oidc_client_id
+        SOCIAL_AUTH_OIDC_SECRET = oidc_client_secret
+        SOCIAL_AUTH_OIDC_SCOPE = ["openid", "profile", "email", "groups"]
+        SOCIAL_AUTH_OIDC_USERNAME_KEY = "preferred_username"
+        SOCIAL_AUTH_OIDC_EMAIL_KEY = "email"
+        SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+        SOCIAL_AUTH_OIDC_VERIFY_SSL = False
         try:
             from django.contrib.auth.signals import user_logged_in
             from django.dispatch import receiver
@@ -178,24 +187,3 @@ data:
                 user.groups.add(group)
         except Exception:
             pass
-
-    if oidc_enabled and not remote_auth_enabled:
-        oidc_endpoint = oidc_discovery_url
-        suffix = "/.well-known/openid-configuration"
-        if oidc_endpoint.endswith(suffix):
-            oidc_endpoint = oidc_endpoint[: -len(suffix)]
-
-        AUTHENTICATION_BACKENDS = [
-            "social_core.backends.open_id_connect.OpenIdConnectAuth",
-            "django.contrib.auth.backends.ModelBackend",
-        ]
-        SOCIAL_AUTH_ENABLED = True
-        SOCIAL_AUTH_BACKEND_PREFIX = "social_core.backends"
-        SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = oidc_endpoint
-        SOCIAL_AUTH_OIDC_KEY = oidc_client_id
-        SOCIAL_AUTH_OIDC_SECRET = oidc_client_secret
-        SOCIAL_AUTH_OIDC_SCOPE = ["openid", "profile", "email", "groups"]
-        SOCIAL_AUTH_OIDC_USERNAME_KEY = "preferred_username"
-        SOCIAL_AUTH_OIDC_EMAIL_KEY = "email"
-        SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
-        SOCIAL_AUTH_OIDC_VERIFY_SSL = False

@@ -14878,20 +14878,6 @@
         "summary": "RotateCurrentUserDeployKey rotates the user's SSH deploy key.\n"
       }
     },
-    "/api/gitea/public": {
-      "get": {
-        "operationId": "GET:skyforge.GiteaPublicSSO",
-        "responses": {
-          "200": {
-            "description": "Success response"
-          },
-          "default": {
-            "$ref": "#/components/responses/APIError"
-          }
-        },
-        "summary": "GiteaPublicSSO logs into Gitea with a read-only public user.\n"
-      }
-    },
     "/api/health": {
       "get": {
         "operationId": "GET:health.GetAPIHealth",

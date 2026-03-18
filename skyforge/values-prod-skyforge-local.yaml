@@ -110,6 +110,10 @@ skyforge:
     image: "ghcr.io/forwardnetworks/rapid7:20260317-r11"
     pullPolicy: "IfNotPresent"
     progressDeadlineSeconds: 3600
+    backendTLS:
+      enabled: true
+      hostname: "rapid7"
+      caConfigMapName: "rapid7-ca"
   elk:
     enabled: true
     managed: true
@@ -128,7 +132,7 @@ skyforge:
   forward:
     enabled: true
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-17
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-18
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -138,16 +142,12 @@ skyforge:
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
     servicePort: 8080
-    observabilityUI:
+  observability:
+    enabled: true
+    managed:
       enabled: true
-      grafana:
-        serviceName: "fwd-appserver"
-        servicePort: 8080
-        rewritePrefixMatch: "/grafana"
-      prometheus:
-        serviceName: "fwd-appserver"
-        servicePort: 8080
-        rewritePrefixMatch: "/prometheus"
+    dashboards:
+      enabled: true
 
   # Enable Gitea provisioning for blueprint-backed workflows.
   # API URL is in-cluster; UI URL is the SSO-proxied external path.

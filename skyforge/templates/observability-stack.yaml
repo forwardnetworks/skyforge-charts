@@ -1,0 +1,401 @@
+{{- $obs := default (dict) .Values.skyforge.observability -}}
+{{- $obsEnabled := default false (index $obs "enabled") -}}
+{{- $managed := default (dict) (index $obs "managed") -}}
+{{- $managedEnabled := default false (index $managed "enabled") -}}
+{{- if and $obsEnabled $managedEnabled -}}
+{{- $ns := default .Release.Namespace (index $obs "namespace") -}}
+{{- $hostname := default "skyforge.local.forwardnetworks.com" .Values.skyforge.hostname -}}
+{{- $grafana := default (dict) (index $obs "grafana") -}}
+{{- $grafanaSvc := default "skyforge-grafana" (index $grafana "serviceName") -}}
+{{- $grafanaPort := default 3000 (index $grafana "servicePort") -}}
+{{- $grafanaPrefix := default "/grafana" (index $grafana "externalPrefix") -}}
+{{- $grafanaOIDC := default (dict) (index $grafana "oidc") -}}
+{{- $grafanaOIDCEnabled := default true (index $grafanaOIDC "enabled") -}}
+{{- $grafanaOIDCClientID := default "grafana" (index $grafanaOIDC "clientID") -}}
+{{- $grafanaOIDCSecretName := default "dex-client-grafana-secret" (index $grafanaOIDC "clientSecretSecretName") -}}
+{{- $grafanaOIDCSecretKey := default "dex-client-grafana-secret" (index $grafanaOIDC "clientSecretSecretKey") -}}
+{{- $prom := default (dict) (index $obs "prometheus") -}}
+{{- $promSvc := default "skyforge-prometheus" (index $prom "serviceName") -}}
+{{- $promPort := default 9090 (index $prom "servicePort") -}}
+{{- $dashboards := default (dict) (index $obs "dashboards") -}}
+{{- $dashboardsFolder := default "Skyforge" (index $dashboards "folder") -}}
+{{- $scrapeInterval := default "30s" (index $managed "scrapeInterval") -}}
+{{- $promManaged := default (dict) (index $managed "prometheus") -}}
+{{- $promImage := default "prom/prometheus:v2.55.1" (index $promManaged "image") -}}
+{{- $promRetention := default "15d" (index $promManaged "retention") -}}
+{{- $promPersistence := default (dict) (index $promManaged "persistence") -}}
+{{- $promPersistenceEnabled := default true (index $promPersistence "enabled") -}}
+{{- $promPVCSize := default "20Gi" (index $promPersistence "size") -}}
+{{- $promPVCStorageClass := default "" (index $promPersistence "storageClassName") -}}
+{{- $grafanaManaged := default (dict) (index $managed "grafana") -}}
+{{- $grafanaImage := default "grafana/grafana:11.2.2" (index $grafanaManaged "image") -}}
+{{- $nodeExporter := default (dict) (index $managed "nodeExporter") -}}
+{{- $nodeExporterEnabled := default true (index $nodeExporter "enabled") -}}
+{{- $nodeExporterImage := default "prom/node-exporter:v1.8.2" (index $nodeExporter "image") -}}
+{{- $nodeExporterSvc := default "skyforge-node-exporter" (index $nodeExporter "serviceName") -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: skyforge-prometheus
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: skyforge-prometheus
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "nodes/metrics", "services", "endpoints", "pods", "namespaces"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: skyforge-prometheus
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: skyforge-prometheus
+subjects:
+  - kind: ServiceAccount
+    name: skyforge-prometheus
+    namespace: {{ $ns }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skyforge-prometheus-config
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ $scrapeInterval | quote }}
+      evaluation_interval: {{ $scrapeInterval | quote }}
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets: ["localhost:9090"]
+      - job_name: skyforge-server
+        static_configs:
+          - targets: ["skyforge-server.{{ .Release.Namespace }}.svc.cluster.local:8085"]
+      - job_name: skyforge-worker
+        static_configs:
+          - targets: ["skyforge-server-worker.{{ .Release.Namespace }}.svc.cluster.local:8085"]
+{{- if $nodeExporterEnabled }}
+      - job_name: node-exporter
+        kubernetes_sd_configs:
+          - role: endpoints
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: {{ $ns | quote }}
+            action: keep
+          - source_labels: [__meta_kubernetes_service_name]
+            regex: {{ $nodeExporterSvc | quote }}
+            action: keep
+          - source_labels: [__meta_kubernetes_endpoint_port_name]
+            regex: metrics
+            action: keep
+{{- end }}
+{{- if $promPersistenceEnabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: skyforge-prometheus-data
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ $promPVCSize | quote }}
+  {{- if $promPVCStorageClass }}
+  storageClassName: {{ $promPVCStorageClass | quote }}
+  {{- end }}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skyforge-prometheus
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge-prometheus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: skyforge-prometheus
+        {{- include "skyforge.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: skyforge-prometheus
+      containers:
+        - name: prometheus
+          image: {{ $promImage | quote }}
+          imagePullPolicy: IfNotPresent
+          args:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.path=/prometheus
+            - --storage.tsdb.retention.time={{ $promRetention }}
+            - --web.enable-lifecycle
+            - --web.route-prefix=/prometheus
+            - --web.external-url=https://{{ $hostname }}{{ default "/prometheus" (index $prom "externalPrefix") }}
+          ports:
+            - name: http
+              containerPort: 9090
+          resources:
+{{ toYaml (default (dict) (index $promManaged "resources")) | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+            - name: data
+              mountPath: /prometheus
+      volumes:
+        - name: config
+          configMap:
+            name: skyforge-prometheus-config
+        - name: data
+{{- if $promPersistenceEnabled }}
+          persistentVolumeClaim:
+            claimName: skyforge-prometheus-data
+{{- else }}
+          emptyDir: {}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $promSvc }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: skyforge-prometheus
+  ports:
+    - name: http
+      port: {{ int $promPort }}
+      targetPort: http
+{{- if $nodeExporterEnabled }}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: skyforge-node-exporter
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge-node-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: skyforge-node-exporter
+        {{- include "skyforge.labels" . | nindent 8 }}
+    spec:
+      hostNetwork: true
+      hostPID: true
+      containers:
+        - name: node-exporter
+          image: {{ $nodeExporterImage | quote }}
+          imagePullPolicy: IfNotPresent
+          args:
+            - --path.procfs=/host/proc
+            - --path.sysfs=/host/sys
+            - --path.rootfs=/host/root
+          ports:
+            - name: metrics
+              containerPort: 9100
+          volumeMounts:
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: sys
+              mountPath: /host/sys
+              readOnly: true
+            - name: root
+              mountPath: /host/root
+              readOnly: true
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: root
+          hostPath:
+            path: /
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $nodeExporterSvc }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: skyforge-node-exporter
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: metrics
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skyforge-grafana-datasources
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        uid: prometheus
+        type: prometheus
+        access: proxy
+        url: http://{{ $promSvc }}.{{ $ns }}.svc.cluster.local:{{ int $promPort }}
+        isDefault: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skyforge-grafana-dashboard-provider
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: skyforge
+        orgId: 1
+        folder: {{ $dashboardsFolder | quote }}
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/skyforge
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skyforge-grafana
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge-grafana
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: skyforge-grafana
+        {{- include "skyforge.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: grafana
+          image: {{ $grafanaImage | quote }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: GF_SERVER_ROOT_URL
+              value: {{ printf "https://%s%s" $hostname $grafanaPrefix | quote }}
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
+            - name: GF_SECURITY_ALLOW_EMBEDDING
+              value: "true"
+{{- if $grafanaOIDCEnabled }}
+            - name: GF_AUTH_DISABLE_LOGIN_FORM
+              value: "true"
+            - name: GF_AUTH_GENERIC_OAUTH_ENABLED
+              value: "true"
+            - name: GF_AUTH_GENERIC_OAUTH_NAME
+              value: "Skyforge SSO"
+            - name: GF_AUTH_GENERIC_OAUTH_CLIENT_ID
+              value: {{ $grafanaOIDCClientID | quote }}
+            - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $grafanaOIDCSecretName | quote }}
+                  key: {{ $grafanaOIDCSecretKey | quote }}
+            - name: GF_AUTH_GENERIC_OAUTH_SCOPES
+              value: "openid profile email groups"
+            - name: GF_AUTH_GENERIC_OAUTH_AUTH_URL
+              value: {{ printf "https://%s/dex/auth" $hostname | quote }}
+            - name: GF_AUTH_GENERIC_OAUTH_TOKEN_URL
+              value: {{ printf "https://%s/dex/token" $hostname | quote }}
+            - name: GF_AUTH_GENERIC_OAUTH_API_URL
+              value: {{ printf "https://%s/dex/userinfo" $hostname | quote }}
+            - name: GF_AUTH_GENERIC_OAUTH_AUTO_LOGIN
+              value: "true"
+{{- else }}
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: "Viewer"
+{{- end }}
+          ports:
+            - name: http
+              containerPort: 3000
+          resources:
+{{ toYaml (default (dict) (index $grafanaManaged "resources")) | nindent 12 }}
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards/skyforge
+              readOnly: true
+      volumes:
+        - name: datasources
+          configMap:
+            name: skyforge-grafana-datasources
+        - name: dashboard-provider
+          configMap:
+            name: skyforge-grafana-dashboard-provider
+        - name: dashboards
+          configMap:
+            name: skyforge-signals-dashboard
+            optional: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $grafanaSvc }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: skyforge-grafana
+  ports:
+    - name: http
+      port: {{ int $grafanaPort }}
+      targetPort: http
+{{- end }}

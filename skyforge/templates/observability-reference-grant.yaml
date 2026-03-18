@@ -1,0 +1,22 @@
+{{- if (default false .Values.skyforge.observability.enabled) }}
+{{- $obsNamespace := default .Release.Namespace .Values.skyforge.observability.namespace -}}
+{{- $grafanaSvcName := default "skyforge-grafana" .Values.skyforge.observability.grafana.serviceName -}}
+{{- if ne $obsNamespace .Release.Namespace }}
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: skyforge-observability-httproute
+  namespace: {{ $obsNamespace }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: {{ .Release.Namespace }}
+  to:
+    - group: ""
+      kind: Service
+      name: {{ $grafanaSvcName }}
+{{- end }}
+{{- end }}

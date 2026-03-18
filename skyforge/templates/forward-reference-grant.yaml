@@ -18,5 +18,22 @@ spec:
     - group: ""
       kind: Service
       name: {{ $forwardSvcName }}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: skyforge-forward-bridge-httproute
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: {{ $forwardSvcNamespace }}
+  to:
+    - group: ""
+      kind: Service
+      name: skyforge-server
 {{- end }}
 {{- end }}

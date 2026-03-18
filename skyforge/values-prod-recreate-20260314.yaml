@@ -42,13 +42,27 @@ skyforge:
   jira:
     enabled: false
   rapid7:
-    enabled: false
+    enabled: true
+    backendTLS:
+      enabled: true
+      hostname: rapid7
+      caConfigMapName: rapid7-ca
   elk:
-    enabled: false
+    enabled: true
+    managed: true
+    env:
+      ELASTICSEARCH_START: "1"
+      LOGSTASH_START: "1"
+      KIBANA_START: "1"
+      SERVER_BASEPATH: /elk
+      SERVER_REWRITEBASEPATH: "true"
+      ES_JAVA_OPTS: -Xms1024m -Xmx1024m
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+      NODE_OPTIONS: --max-old-space-size=512
   forward:
     enabled: true
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-09
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-18
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -58,7 +72,11 @@ skyforge:
     serviceName: fwd-appserver
     serviceNamespace: forward
     servicePort: 8080
-    observabilityUI:
+  observability:
+    enabled: true
+    managed:
+      enabled: true
+    dashboards:
       enabled: true
   gitea:
     apiUrl: http://gitea:3000/api/v1
@@ -66,7 +84,7 @@ skyforge:
     actionsRunner:
       enabled: false
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260315-kne-cisco-bootstrap-r4
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260317-kne-contract-hardcut-r1
     pullPolicy: IfNotPresent
   kne:
     enabled: true
@@ -94,8 +112,8 @@ skyforge:
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300
 images:
-  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260316-composite-infoblox-r1
-  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260316-composite-infoblox-r1-worker
+  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260317-kne-cleanup-r7
+  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260317-kne-cleanup-r7-worker
   atlas: ghcr.io/forwardnetworks/atlas:1.1.6-alpine
 kubernetes:
   imagePullSecrets:

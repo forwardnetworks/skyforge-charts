@@ -15,8 +15,16 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: redis
+        skyforge.forwardnetworks.com/spread-group: core-stateful
     spec:
       automountServiceAccountToken: false
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            skyforge.forwardnetworks.com/spread-group: core-stateful
 {{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.coreStatefulPlacement) }}
       affinity:
 {{ . | indent 8 }}

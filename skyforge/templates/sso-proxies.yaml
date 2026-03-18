@@ -13,8 +13,9 @@ Approach:
   3) redirect unauthenticated users to the auth-mode-specific Skyforge login entry
      (`/status?signin=1...` for password mode, `/api/auth/oidc/login?...` for oidc mode)
 
-We keep these proxies per-tool so redirects preserve each tool's external prefix
-(/git, /nautobot, etc.) even when the Gateway URL-rewrites the prefix away.
+We keep these proxies per-tool where native OIDC is unavailable (for example
+Prometheus, Jira, Rapid7, ELK, and Infoblox), so redirects preserve external
+prefixes even when the Gateway URL-rewrites the prefix away.
 */ -}}
 
 {{- define "skyforge.ssoProxyEnvoy" -}}
@@ -25,6 +26,14 @@ We keep these proxies per-tool so redirects preserve each tool's external prefix
 {{- $upstreamPort := .upstreamPort -}}
 {{- $externalPrefix := .externalPrefix -}}
 {{- $responsePrefixRewrite := .responsePrefixRewrite -}}
+{{- $upstreamUseTLS := default false .upstreamUseTLS -}}
+{{- $upstreamSNI := default "" .upstreamSNI -}}
+{{- $upstreamTLSSkipVerify := default false .upstreamTLSSkipVerify -}}
+{{- $upstreamTrustedCAConfigMap := default "" .upstreamTrustedCAConfigMap -}}
+{{- $upstreamTrustedCAFile := default "ca.crt" .upstreamTrustedCAFile -}}
+{{- if and $upstreamUseTLS (not $upstreamTLSSkipVerify) (eq $upstreamTrustedCAConfigMap "") -}}
+  {{- fail (printf "sso proxy %s requires upstreamTrustedCAConfigMap when upstreamUseTLS=true and upstreamTLSSkipVerify=false" $name) -}}
+{{- end -}}
 {{- $skyforgeHost := default "skyforge.local.forwardnetworks.com" $root.Values.skyforge.hostname -}}
 {{- $enableAccessLog := default false $root.Values.skyforge.debug.ssoProxyAccessLog -}}
 {{- $envoyImage := default "envoyproxy/envoy:v1.31.2" $root.Values.images.envoy -}}
@@ -153,6 +162,8 @@ data:
                               allowed_headers:
                                 patterns:
                                   - exact: cookie
+                                  - exact: authorization
+                                  - exact: x-skyforge-api-token
                                   - exact: x-forwarded-proto
                                   - exact: x-forwarded-host
                                   - exact: x-forwarded-for
@@ -199,6 +210,24 @@ data:
           type: STRICT_DNS
           dns_lookup_family: V4_ONLY
           connect_timeout: 5s
+          {{- if $upstreamUseTLS }}
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+              {{- if $upstreamSNI }}
+              sni: {{ $upstreamSNI | quote }}
+              {{- end }}
+              common_tls_context:
+                {{- if $upstreamTLSSkipVerify }}
+                validation_context:
+                  trust_chain_verification: ACCEPT_UNTRUSTED
+                {{- else }}
+                validation_context:
+                  trusted_ca:
+                    filename: {{ printf "/etc/envoy-upstream-ca/%s" $upstreamTrustedCAFile | quote }}
+                {{- end }}
+          {{- end }}
           load_assignment:
             cluster_name: upstream
             endpoints:
@@ -229,7 +258,7 @@ spec:
         app.kubernetes.io/instance: {{ $root.Release.Name }}
         app.kubernetes.io/component: sso-proxy
       annotations:
-        checksum/envoy-template: {{ printf "%s|%s|%s|%v|%s|%s|%s" $name (default "" $upstreamServiceEnv) (default "" $upstreamHost) $upstreamPort (default "" $externalPrefix) (default "" $responsePrefixRewrite) (default "skyforge.local.forwardnetworks.com" $root.Values.skyforge.hostname) | sha256sum }}
+        checksum/envoy-template: {{ printf "%s|%s|%s|%v|%s|%s|%s|%t|%t|%s|%s|%s" $name (default "" $upstreamServiceEnv) (default "" $upstreamHost) $upstreamPort (default "" $externalPrefix) (default "" $responsePrefixRewrite) (default "skyforge.local.forwardnetworks.com" $root.Values.skyforge.hostname) $upstreamUseTLS $upstreamTLSSkipVerify (default "" $upstreamSNI) (default "" $upstreamTrustedCAConfigMap) (default "ca.crt" $upstreamTrustedCAFile) | sha256sum }}
     spec:
       automountServiceAccountToken: false
       initContainers:
@@ -291,12 +320,22 @@ spec:
           volumeMounts:
             - name: envoy-rendered
               mountPath: /etc/envoy-rendered
+            {{- if and $upstreamUseTLS (not $upstreamTLSSkipVerify) $upstreamTrustedCAConfigMap }}
+            - name: upstream-ca
+              mountPath: /etc/envoy-upstream-ca
+              readOnly: true
+            {{- end }}
       volumes:
         - name: envoy-template
           configMap:
             name: {{ $name }}-envoy
         - name: envoy-rendered
           emptyDir: {}
+        {{- if and $upstreamUseTLS (not $upstreamTLSSkipVerify) $upstreamTrustedCAConfigMap }}
+        - name: upstream-ca
+          configMap:
+            name: {{ $upstreamTrustedCAConfigMap }}
+        {{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -315,39 +354,97 @@ spec:
       targetPort: 8080
 {{- end }}
 
-{{ if .Values.skyforge.netbox.enabled }}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "netbox-sso-proxy" "upstreamServiceEnv" "NETBOX_SERVICE_HOST" "upstreamPort" 8080 "externalPrefix" "") }}
+{{ if (default false .Values.skyforge.observability.enabled) }}
+{{- $obsNs := default $.Release.Namespace .Values.skyforge.observability.namespace -}}
+{{- $promSvc := default "skyforge-prometheus" .Values.skyforge.observability.prometheus.serviceName -}}
+{{- $promPort := default 9090 .Values.skyforge.observability.prometheus.servicePort -}}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "prometheus-sso-proxy" "upstreamHost" (printf "%s.%s.svc.cluster.local" $promSvc $obsNs) "upstreamPort" $promPort "externalPrefix" "/prometheus") }}
 {{ end }}
 
-{{ if .Values.skyforge.nautobot.enabled }}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "nautobot-sso-proxy" "upstreamServiceEnv" "NAUTOBOT_SERVICE_HOST" "upstreamPort" 8080 "externalPrefix" "/nautobot") }}
-{{ end }}
-
-{{ if .Values.skyforge.gitea.enabled }}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "gitea-sso-proxy" "upstreamServiceEnv" "GITEA_SERVICE_HOST" "upstreamPort" 3000 "externalPrefix" "/git") }}
-{{ end }}
-
-{{ if .Values.skyforge.jira.enabled }}
+{{- $jiraOIDC := default (dict) .Values.skyforge.jira.oidc -}}
+{{- $jiraOIDCEnabled := true -}}
+{{- if hasKey $jiraOIDC "enabled" -}}
+{{- $jiraOIDCEnabled = (index $jiraOIDC "enabled") -}}
+{{- end -}}
+{{- if and .Values.skyforge.jira.enabled $jiraOIDCEnabled }}
 {{- $jiraSvcName := default "jira" .Values.skyforge.jira.serviceName -}}
-{{- $jiraSvcNs := default .Release.Namespace .Values.skyforge.jira.serviceNamespace -}}
-{{- $jiraSvcPort := default 8080 .Values.skyforge.jira.servicePort -}}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "jira-sso-proxy" "upstreamHost" (printf "%s.%s.svc.cluster.local" $jiraSvcName $jiraSvcNs) "upstreamPort" $jiraSvcPort "externalPrefix" "/jira") }}
-{{ end }}
+{{- $jiraSvcNs := default $.Release.Namespace .Values.skyforge.jira.serviceNamespace -}}
+{{- $jiraPort := default 8080 .Values.skyforge.jira.servicePort -}}
+{{- $jiraPrefix := default "/jira" .Values.skyforge.jira.externalPrefix -}}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "jira-sso-proxy" "upstreamHost" (printf "%s.%s.svc.cluster.local" $jiraSvcName $jiraSvcNs) "upstreamPort" $jiraPort "externalPrefix" $jiraPrefix) }}
+{{- end }}
 
-{{ if .Values.skyforge.elk.enabled }}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "elk-sso-proxy" "upstreamHost" (default "kibana" .Values.skyforge.elk.serviceName) "upstreamPort" (default 5601 .Values.skyforge.elk.servicePort) "externalPrefix" "/elk" "responsePrefixRewrite" "/elk") }}
-{{ end }}
+{{- $rapid7OIDC := default (dict) .Values.skyforge.rapid7.oidc -}}
+{{- $rapid7OIDCEnabled := true -}}
+{{- if hasKey $rapid7OIDC "enabled" -}}
+{{- $rapid7OIDCEnabled = (index $rapid7OIDC "enabled") -}}
+{{- end -}}
+{{- if and .Values.skyforge.rapid7.enabled $rapid7OIDCEnabled }}
+{{- $rapid7SvcName := default "rapid7" .Values.skyforge.rapid7.serviceName -}}
+{{- $rapid7SvcNs := default $.Release.Namespace .Values.skyforge.rapid7.serviceNamespace -}}
+{{- $rapid7Port := default 3780 .Values.skyforge.rapid7.servicePort -}}
+{{- $rapid7Prefix := default "/rapid7" .Values.skyforge.rapid7.externalPrefix -}}
+{{- $rapid7UpstreamUseTLS := true -}}
+{{- if hasKey $rapid7OIDC "upstreamUseTLS" -}}
+{{- $rapid7UpstreamUseTLS = (index $rapid7OIDC "upstreamUseTLS") -}}
+{{- end -}}
+{{- $rapid7UpstreamTLSSkipVerify := true -}}
+{{- if hasKey $rapid7OIDC "upstreamTLSSkipVerify" -}}
+{{- $rapid7UpstreamTLSSkipVerify = (index $rapid7OIDC "upstreamTLSSkipVerify") -}}
+{{- end -}}
+{{ include "skyforge.ssoProxyEnvoy" (dict
+  "root" $ "name" "rapid7-sso-proxy"
+  "upstreamHost" (printf "%s.%s.svc.cluster.local" $rapid7SvcName $rapid7SvcNs)
+  "upstreamPort" $rapid7Port
+  "externalPrefix" $rapid7Prefix
+  "responsePrefixRewrite" $rapid7Prefix
+  "upstreamUseTLS" $rapid7UpstreamUseTLS
+  "upstreamTLSSkipVerify" $rapid7UpstreamTLSSkipVerify
+  "upstreamTrustedCAConfigMap" (default "" (index $rapid7OIDC "upstreamTrustedCAConfigMap"))
+  "upstreamTrustedCAFile" (default "ca.crt" (index $rapid7OIDC "upstreamTrustedCAFile"))
+) }}
+{{- end }}
 
-{{ if and .Values.skyforge.forwardCluster.enabled (default false .Values.skyforge.forwardCluster.observabilityUI.enabled) }}
-{{- $forwardObsNs := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
-{{- $forwardGrafanaSvc := default "fwd-grafana-service" .Values.skyforge.forwardCluster.observabilityUI.grafana.serviceName -}}
-{{- $forwardGrafanaPort := default 3000 .Values.skyforge.forwardCluster.observabilityUI.grafana.servicePort -}}
-{{- $forwardPromSvc := default "fwd-prometheus" .Values.skyforge.forwardCluster.observabilityUI.prometheus.serviceName -}}
-{{- $forwardPromPort := default 9090 .Values.skyforge.forwardCluster.observabilityUI.prometheus.servicePort -}}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "forward-grafana-sso-proxy" "upstreamHost" (printf "%s.%s.svc.cluster.local" $forwardGrafanaSvc $forwardObsNs) "upstreamPort" $forwardGrafanaPort "externalPrefix" "/grafana") }}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "forward-prometheus-sso-proxy" "upstreamHost" (printf "%s.%s.svc.cluster.local" $forwardPromSvc $forwardObsNs) "upstreamPort" $forwardPromPort "externalPrefix" "/prometheus") }}
-{{ end }}
+{{- $elkOIDC := default (dict) .Values.skyforge.elk.oidc -}}
+{{- $elkOIDCEnabled := true -}}
+{{- if hasKey $elkOIDC "enabled" -}}
+{{- $elkOIDCEnabled = (index $elkOIDC "enabled") -}}
+{{- end -}}
+{{- if and .Values.skyforge.elk.enabled $elkOIDCEnabled }}
+{{- $elkSvcName := default "kibana" .Values.skyforge.elk.serviceName -}}
+{{- $elkSvcNs := default $.Release.Namespace .Values.skyforge.elk.serviceNamespace -}}
+{{- $elkPort := default 5601 .Values.skyforge.elk.servicePort -}}
+{{- $elkPrefix := default "/elk" .Values.skyforge.elk.externalPrefix -}}
+{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "elk-sso-proxy" "upstreamHost" (printf "%s.%s.svc.cluster.local" $elkSvcName $elkSvcNs) "upstreamPort" $elkPort "externalPrefix" $elkPrefix) }}
+{{- end }}
 
-{{ if .Values.skyforge.redoc.enabled }}
-{{ include "skyforge.ssoProxyEnvoy" (dict "root" $ "name" "redoc-sso-proxy" "upstreamServiceEnv" "REDOC_SERVICE_HOST" "upstreamPort" 80 "externalPrefix" "/redoc") }}
-{{ end }}
+{{- $infobloxOIDC := default (dict) .Values.skyforge.infoblox.oidc -}}
+{{- $infobloxOIDCEnabled := true -}}
+{{- if hasKey $infobloxOIDC "enabled" -}}
+{{- $infobloxOIDCEnabled = (index $infobloxOIDC "enabled") -}}
+{{- end -}}
+{{- if and .Values.skyforge.infoblox.enabled $infobloxOIDCEnabled }}
+{{- $infobloxSvcName := default (default "infoblox" .Values.skyforge.infoblox.serviceName) .Values.skyforge.infoblox.routeServiceName -}}
+{{- $infobloxSvcNs := default $.Release.Namespace .Values.skyforge.infoblox.serviceNamespace -}}
+{{- $infobloxPort := default 80 (index $infobloxOIDC "upstreamPort") -}}
+{{- $infobloxPrefix := default "/infoblox" .Values.skyforge.infoblox.externalPrefix -}}
+{{- $infobloxUpstreamUseTLS := false -}}
+{{- if hasKey $infobloxOIDC "upstreamUseTLS" -}}
+{{- $infobloxUpstreamUseTLS = (index $infobloxOIDC "upstreamUseTLS") -}}
+{{- end -}}
+{{- $infobloxUpstreamTLSSkipVerify := false -}}
+{{- if hasKey $infobloxOIDC "upstreamTLSSkipVerify" -}}
+{{- $infobloxUpstreamTLSSkipVerify = (index $infobloxOIDC "upstreamTLSSkipVerify") -}}
+{{- end -}}
+{{ include "skyforge.ssoProxyEnvoy" (dict
+  "root" $ "name" "infoblox-sso-proxy"
+  "upstreamHost" (printf "%s.%s.svc.cluster.local" $infobloxSvcName $infobloxSvcNs)
+  "upstreamPort" $infobloxPort
+  "externalPrefix" $infobloxPrefix
+  "responsePrefixRewrite" $infobloxPrefix
+  "upstreamUseTLS" $infobloxUpstreamUseTLS
+  "upstreamTLSSkipVerify" $infobloxUpstreamTLSSkipVerify
+  "upstreamTrustedCAConfigMap" (default "" (index $infobloxOIDC "upstreamTrustedCAConfigMap"))
+  "upstreamTrustedCAFile" (default "ca.crt" (index $infobloxOIDC "upstreamTrustedCAFile"))
+) }}
+{{- end }}

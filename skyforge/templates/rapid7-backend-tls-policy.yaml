@@ -1,0 +1,26 @@
+{{- $rapid7Enabled := .Values.skyforge.rapid7.enabled -}}
+{{- $rapid7BackendTLS := default (dict) .Values.skyforge.rapid7.backendTLS -}}
+{{- if and $rapid7Enabled (default false (index $rapid7BackendTLS "enabled")) -}}
+{{- $rapid7ServiceName := default "rapid7" .Values.skyforge.rapid7.serviceName -}}
+{{- $policyName := default "rapid7-backend-tls" (index $rapid7BackendTLS "policyName") -}}
+{{- $hostname := required "skyforge.rapid7.backendTLS.hostname is required when backendTLS.enabled=true" (index $rapid7BackendTLS "hostname") -}}
+{{- $caConfigMapName := required "skyforge.rapid7.backendTLS.caConfigMapName is required when backendTLS.enabled=true" (index $rapid7BackendTLS "caConfigMapName") -}}
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: BackendTLSPolicy
+metadata:
+  name: {{ $policyName }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: {{ $rapid7ServiceName }}
+      sectionName: https
+  validation:
+    hostname: {{ $hostname | quote }}
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: {{ $caConfigMapName }}
+{{- end }}

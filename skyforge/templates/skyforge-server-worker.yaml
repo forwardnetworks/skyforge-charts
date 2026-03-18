@@ -16,6 +16,7 @@ spec:
       labels:
         {{- include "skyforge.labels" . | nindent 8 }}
         app.kubernetes.io/component: worker
+        skyforge.forwardnetworks.com/spread-group: skyforge-core
       annotations:
         checksum/values: {{ sha256sum (toJson .Values) | quote }}
         checksum/infra-worker: {{ sha256sum (.Files.Get "files/infra.config.json") | quote }}
@@ -31,8 +32,7 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app.kubernetes.io/name: skyforge
-              app.kubernetes.io/component: worker
+              skyforge.forwardnetworks.com/spread-group: skyforge-core
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -41,8 +41,7 @@ spec:
                 topologyKey: kubernetes.io/hostname
                 labelSelector:
                   matchLabels:
-                    app.kubernetes.io/name: skyforge
-                    app.kubernetes.io/component: worker
+                    skyforge.forwardnetworks.com/spread-group: skyforge-core
 {{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.worker.placement) }}
 {{ . | nindent 8 }}
 {{- end }}

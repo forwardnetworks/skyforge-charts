@@ -1,12 +1,13 @@
-{{- $forwardNamespace := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
-{{- $obsUI := .Values.skyforge.forwardCluster.observabilityUI -}}
-{{- $dashboards := default dict $obsUI.dashboards -}}
-{{- if and .Values.skyforge.forward.enabled .Values.skyforge.forwardCluster.enabled (default false $obsUI.enabled) (default false $dashboards.enabled) }}
+{{- $obsEnabled := default false .Values.skyforge.observability.enabled -}}
+{{- $obsManagedEnabled := default false .Values.skyforge.observability.managed.enabled -}}
+{{- $obsNamespace := default .Release.Namespace .Values.skyforge.observability.namespace -}}
+{{- $dashboards := default dict .Values.skyforge.observability.dashboards -}}
+{{- if and $obsEnabled $obsManagedEnabled (default false $dashboards.enabled) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: skyforge-signals-dashboard
-  namespace: {{ $forwardNamespace }}
+  namespace: {{ $obsNamespace }}
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
     {{ default "grafana_dashboard" $dashboards.labelKey | quote }}: {{ default "1" $dashboards.labelValue | quote }}

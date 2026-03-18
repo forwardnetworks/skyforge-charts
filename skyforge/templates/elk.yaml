@@ -43,7 +43,24 @@ spec:
         app.kubernetes.io/name: {{ $name }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: elk
+        skyforge.forwardnetworks.com/spread-group: elk-stack
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              skyforge.forwardnetworks.com/spread-group: elk-stack
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    skyforge.forwardnetworks.com/spread-group: elk-stack
       containers:
         - name: elk
           image: {{ required "skyforge.elk.image is required when elk.managed=true" .Values.skyforge.elk.image | quote }}

@@ -15,8 +15,16 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: gitea
+        skyforge.forwardnetworks.com/spread-group: core-stateful
     spec:
       automountServiceAccountToken: false
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            skyforge.forwardnetworks.com/spread-group: core-stateful
 {{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.coreStatefulPlacement) }}
       affinity:
 {{ . | indent 8 }}
@@ -85,38 +93,8 @@ spec:
           value: 'false'
         - name: GITEA__service__ALLOW_ONLY_EXTERNAL_REGISTRATION
           value: 'false'
-        - name: GITEA__service__REVERSE_PROXY_AUTHENTICATION
-          value: 'true'
-        - name: GITEA__service__ENABLE_REVERSE_PROXY_AUTHENTICATION
-          value: 'true'
-        - name: GITEA__service__ENABLE_REVERSE_PROXY_AUTHENTICATION_API
-          value: 'true'
-        - name: GITEA__service__REVERSE_PROXY_AUTHENTICATION_USER
-          value: 'Remote-User'
-        - name: GITEA__service__REVERSE_PROXY_AUTHENTICATION_EMAIL
-          value: 'Remote-User-Email'
-        - name: GITEA__service__REVERSE_PROXY_AUTO_REGISTRATION
-          value: 'true'
-        - name: GITEA__service__ENABLE_REVERSE_PROXY_AUTO_REGISTRATION
-          value: 'true'
         - name: GITEA__service__REQUIRE_SIGNIN_VIEW
           value: 'true'
-        - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION
-          value: 'true'
-        - name: GITEA__security__ENABLE_REVERSE_PROXY_AUTHENTICATION
-          value: 'true'
-        - name: GITEA__security__REVERSE_PROXY_AUTO_REGISTRATION
-          value: 'true'
-        - name: GITEA__security__ENABLE_REVERSE_PROXY_AUTO_REGISTRATION
-          value: 'true'
-        - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION_USER
-          value: 'Remote-User'
-        - name: GITEA__security__REVERSE_PROXY_AUTHENTICATION_EMAIL
-          value: 'Remote-User-Email'
-        - name: GITEA__security__REVERSE_PROXY_LIMIT
-          value: '1'
-        - name: GITEA__security__REVERSE_PROXY_TRUSTED_PROXIES
-          value: '0.0.0.0/0,::/0'
         - name: GITEA__service__RESERVED_USERNAMES
           value: ''
         - name: GITEA__user__RESERVED_USERNAMES

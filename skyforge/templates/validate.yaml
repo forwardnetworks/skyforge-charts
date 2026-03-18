@@ -8,6 +8,13 @@ early when required configuration is missing.
 {{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}
 {{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
+{{- $obsEnabled := default false .Values.skyforge.observability.enabled -}}
+{{- $obsManagedEnabled := default false .Values.skyforge.observability.managed.enabled -}}
+{{- $obsGrafanaOIDC := default (dict) .Values.skyforge.observability.grafana.oidc -}}
+{{- $obsGrafanaOIDCEnabled := true -}}
+{{- if hasKey $obsGrafanaOIDC "enabled" -}}
+  {{- $obsGrafanaOIDCEnabled = (index $obsGrafanaOIDC "enabled") -}}
+{{- end -}}
 
 {{- if .Values.skyforge.encoreCfg.create -}}
   {{- if not (trim (default "" .Values.skyforge.netlab.image)) -}}
@@ -49,11 +56,75 @@ early when required configuration is missing.
 {{- if and (eq $uiAuthMode "oidc") (not .Values.skyforge.dex.enabled) -}}
   {{- fail "skyforge.auth.mode=oidc requires skyforge.dex.enabled=true; supported browser OIDC topology is Skyforge -> Dex -> IdP" -}}
 {{- end -}}
+{{- if and .Values.skyforge.netbox.enabled (not .Values.skyforge.dex.enabled) -}}
+  {{- fail "skyforge.netbox.enabled=true requires skyforge.dex.enabled=true (native OIDC login path)" -}}
+{{- end -}}
+{{- if and .Values.skyforge.nautobot.enabled (not .Values.skyforge.dex.enabled) -}}
+  {{- fail "skyforge.nautobot.enabled=true requires skyforge.dex.enabled=true (native OIDC login path)" -}}
+{{- end -}}
+{{- if and .Values.skyforge.gitea.enabled (not .Values.skyforge.dex.enabled) -}}
+  {{- fail "skyforge.gitea.enabled=true requires skyforge.dex.enabled=true (native OIDC login path)" -}}
+{{- end -}}
+{{- $jiraOIDC := default (dict) .Values.skyforge.jira.oidc -}}
+{{- $jiraOIDCEnabled := true -}}
+{{- if hasKey $jiraOIDC "enabled" -}}
+  {{- $jiraOIDCEnabled = (index $jiraOIDC "enabled") -}}
+{{- end -}}
+{{- $jiraOIDCEnabled = and .Values.skyforge.jira.enabled $jiraOIDCEnabled -}}
+{{- $rapid7OIDC := default (dict) .Values.skyforge.rapid7.oidc -}}
+{{- $rapid7OIDCEnabled := true -}}
+{{- if hasKey $rapid7OIDC "enabled" -}}
+  {{- $rapid7OIDCEnabled = (index $rapid7OIDC "enabled") -}}
+{{- end -}}
+{{- $rapid7OIDCEnabled = and .Values.skyforge.rapid7.enabled $rapid7OIDCEnabled -}}
+{{- $elkOIDC := default (dict) .Values.skyforge.elk.oidc -}}
+{{- $elkOIDCEnabled := true -}}
+{{- if hasKey $elkOIDC "enabled" -}}
+  {{- $elkOIDCEnabled = (index $elkOIDC "enabled") -}}
+{{- end -}}
+{{- $elkOIDCEnabled = and .Values.skyforge.elk.enabled $elkOIDCEnabled -}}
+{{- $infobloxOIDC := default (dict) .Values.skyforge.infoblox.oidc -}}
+{{- $infobloxOIDCEnabled := true -}}
+{{- if hasKey $infobloxOIDC "enabled" -}}
+  {{- $infobloxOIDCEnabled = (index $infobloxOIDC "enabled") -}}
+{{- end -}}
+{{- $infobloxOIDCEnabled = and .Values.skyforge.infoblox.enabled $infobloxOIDCEnabled -}}
+{{- if and (or $jiraOIDCEnabled $rapid7OIDCEnabled $elkOIDCEnabled $infobloxOIDCEnabled) (not .Values.skyforge.dex.enabled) -}}
+  {{- fail "integration OIDC gate (jira/rapid7/elk/infoblox) requires skyforge.dex.enabled=true" -}}
+{{- end -}}
+{{- if and (or $jiraOIDCEnabled $rapid7OIDCEnabled $elkOIDCEnabled $infobloxOIDCEnabled) (ne $uiAuthMode "oidc") -}}
+  {{- fail "integration OIDC gate (jira/rapid7/elk/infoblox) requires skyforge.auth.mode=oidc" -}}
+{{- end -}}
+{{- if $obsEnabled -}}
+  {{- if not (trim (default "" .Values.skyforge.observability.grafana.serviceName)) -}}
+    {{- fail "skyforge.observability.enabled=true requires skyforge.observability.grafana.serviceName" -}}
+  {{- end -}}
+  {{- if not (trim (default "" .Values.skyforge.observability.prometheus.serviceName)) -}}
+    {{- fail "skyforge.observability.enabled=true requires skyforge.observability.prometheus.serviceName" -}}
+  {{- end -}}
+{{- end -}}
+{{- if and $obsEnabled $obsManagedEnabled $obsGrafanaOIDCEnabled (not .Values.skyforge.dex.enabled) -}}
+  {{- fail "skyforge.observability.managed.enabled=true with Grafana OIDC requires skyforge.dex.enabled=true" -}}
+{{- end -}}
 
 {{- if .Values.skyforge.kne.enabled -}}
   {{- $meshnetMode := lower (trim (default "grpc" .Values.skyforge.kne.meshnetMode)) -}}
   {{- if and (ne $meshnetMode "grpc") (ne $meshnetMode "vxlan") -}}
     {{- fail "skyforge.kne.meshnetMode must be one of: grpc, vxlan" -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $rapid7BackendTLS := default (dict) .Values.skyforge.rapid7.backendTLS -}}
+{{- if and .Values.skyforge.rapid7.enabled (default false (index $rapid7BackendTLS "enabled")) -}}
+  {{- if not (trim (default "" (index $rapid7BackendTLS "hostname"))) -}}
+    {{- fail "skyforge.rapid7.backendTLS.enabled=true requires skyforge.rapid7.backendTLS.hostname" -}}
+  {{- end -}}
+  {{- if not (trim (default "" (index $rapid7BackendTLS "caConfigMapName"))) -}}
+    {{- fail "skyforge.rapid7.backendTLS.enabled=true requires skyforge.rapid7.backendTLS.caConfigMapName" -}}
+  {{- end -}}
+  {{- $rapid7SvcNs := default .Release.Namespace .Values.skyforge.rapid7.serviceNamespace -}}
+  {{- if ne $rapid7SvcNs .Release.Namespace -}}
+    {{- fail "skyforge.rapid7.backendTLS.enabled=true requires skyforge.rapid7.serviceNamespace to match the release namespace (BackendTLSPolicy targetRef is namespace-local)" -}}
   {{- end -}}
 {{- end -}}
 
@@ -84,10 +155,16 @@ early when required configuration is missing.
     {{- $requiredSecrets = append $requiredSecrets "dex-config" -}}
   {{- end -}}
   {{- if .Values.skyforge.netbox.enabled -}}
-    {{- $requiredSecrets = concat $requiredSecrets (list "db-netbox-password" "netbox-superuser-api-token" "netbox-api-token-peppers" "netbox-secret-key") -}}
+    {{- $requiredSecrets = concat $requiredSecrets (list "db-netbox-password" "netbox-superuser-api-token" "netbox-api-token-peppers" "netbox-secret-key" "dex-client-netbox-secret") -}}
   {{- end -}}
   {{- if .Values.skyforge.nautobot.enabled -}}
-    {{- $requiredSecrets = concat $requiredSecrets (list "db-nautobot-password" "nautobot-superuser-api-token" "nautobot-secret-key") -}}
+    {{- $requiredSecrets = concat $requiredSecrets (list "db-nautobot-password" "nautobot-superuser-api-token" "nautobot-secret-key" "dex-client-nautobot-secret") -}}
+  {{- end -}}
+  {{- if .Values.skyforge.gitea.enabled -}}
+    {{- $requiredSecrets = append $requiredSecrets "dex-client-gitea-secret" -}}
+  {{- end -}}
+  {{- if and $obsEnabled $obsManagedEnabled $obsGrafanaOIDCEnabled -}}
+    {{- $requiredSecrets = append $requiredSecrets "dex-client-grafana-secret" -}}
   {{- end -}}
   {{- if $forwardClusterEnabled -}}
     {{- $requiredSecrets = concat $requiredSecrets (list "db-forward-app-password" "db-forward-fdb-password") -}}

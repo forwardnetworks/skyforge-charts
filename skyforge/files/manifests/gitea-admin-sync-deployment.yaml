@@ -51,7 +51,60 @@ spec:
           admin_username="${SKYFORGE_ADMIN_USERNAME:-}"
           admin_email="${SKYFORGE_ADMIN_EMAIL:-}"
           admin_password="$(cat /run/secrets/skyforge-admin-shared | tr -d '\n')"
+          oidc_discovery_url="${SKYFORGE_GITEA_OIDC_DISCOVERY_URL:-}"
+          oidc_client_id="${SKYFORGE_GITEA_OIDC_CLIENT_ID:-gitea}"
+          oidc_client_secret="$(cat /run/secrets/dex-client-gitea-secret | tr -d '\n')"
+          oidc_source_name="${SKYFORGE_GITEA_OIDC_SOURCE_NAME:-oidc}"
           config="/var/lib/gitea/custom/conf/app.ini"
+
+          ensure_oidc_auth_source() {
+            local source_id
+            local source_discovery_url
+
+            source_discovery_url="${oidc_discovery_url%/}"
+            case "${source_discovery_url}" in
+              */.well-known/openid-configuration) ;;
+              *) source_discovery_url="${source_discovery_url}/.well-known/openid-configuration" ;;
+            esac
+
+            source_id="$(
+              gitea admin auth list --config "${config}" --vertical-bars | \
+              awk -F'|' -v source="${oidc_source_name}" '
+                {
+                  for (i = 1; i <= NF; i++) {
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", $i)
+                  }
+                }
+                $1 ~ /^[0-9]+$/ && tolower($2) == tolower(source) {
+                  print $1
+                  exit
+                }
+              '
+            )"
+
+            if [ -n "${source_id}" ]; then
+              gitea admin auth update-oauth --config "${config}" \
+                --id "${source_id}" \
+                --name "${oidc_source_name}" \
+                --provider openidConnect \
+                --key "${oidc_client_id}" \
+                --secret "${oidc_client_secret}" \
+                --auto-discover-url "${source_discovery_url}" \
+                --scopes openid --scopes profile --scopes email --scopes groups \
+                --group-claim-name groups
+              echo "Gitea OIDC auth source updated: ${oidc_source_name} (id=${source_id})"
+            else
+              gitea admin auth add-oauth --config "${config}" \
+                --name "${oidc_source_name}" \
+                --provider openidConnect \
+                --key "${oidc_client_id}" \
+                --secret "${oidc_client_secret}" \
+                --auto-discover-url "${source_discovery_url}" \
+                --scopes openid --scopes profile --scopes email --scopes groups \
+                --group-claim-name groups
+              echo "Gitea OIDC auth source created: ${oidc_source_name}"
+            fi
+          }
 
           while true; do
             if [ -z "${admin_username}" ] || [ -z "${admin_password}" ]; then
@@ -90,6 +143,7 @@ spec:
             fi
 
             gitea admin user must-change-password --config "${config}" --all --unset || true
+            ensure_oidc_auth_source
             sleep "${interval}"
           done
         env:
@@ -105,6 +159,12 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_ADMIN_EMAIL
+        - name: SKYFORGE_GITEA_OIDC_DISCOVERY_URL
+          value: {{ .Values.skyforge.oidc.discoveryUrl | quote }}
+        - name: SKYFORGE_GITEA_OIDC_CLIENT_ID
+          value: "gitea"
+        - name: SKYFORGE_GITEA_OIDC_SOURCE_NAME
+          value: "oidc"
         image: ghcr.io/go-gitea/gitea:1.24.6-rootless
         name: gitea-admin-sync
         securityContext:
@@ -136,6 +196,11 @@ spec:
               - key: password
                 path: skyforge-admin-shared
               name: skyforge-admin-shared
+          - secret:
+              items:
+              - key: dex-client-gitea-secret
+                path: dex-client-gitea-secret
+              name: dex-client-gitea-secret
       - name: skyforge-ca-cert
         secret:
           secretName: skyforge-ca-cert

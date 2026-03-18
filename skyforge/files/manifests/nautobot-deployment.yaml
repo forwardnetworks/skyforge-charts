@@ -72,8 +72,18 @@ spec:
             configMapKeyRef:
               key: SKYFORGE_HOSTNAME
               name: skyforge-config
-        - name: SKYFORGE_SSO_ENABLED
-          value: 'true'
+        - name: SKYFORGE_OIDC_DISCOVERY_URL
+          valueFrom:
+            configMapKeyRef:
+              key: SKYFORGE_OIDC_DISCOVERY_URL
+              name: skyforge-config
+        - name: SKYFORGE_OIDC_CLIENT_ID
+          value: nautobot
+        - name: SKYFORGE_OIDC_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: dex-client-nautobot-secret
+              key: dex-client-nautobot-secret
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
         - name: REQUESTS_CA_BUNDLE

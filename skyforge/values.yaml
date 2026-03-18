@@ -164,7 +164,7 @@ skyforge:
       replicas: 1
       # Runner image for Gitea Actions. Keep host-mode labels to avoid
       # Docker-in-Docker dependency.
-      image: "docker.io/gitea/act_runner:latest"
+      image: "ghcr.io/forwardnetworks/act_runner:0.2.12"
       pullPolicy: "IfNotPresent"
       # Runner registration token secret consumed by the runner.
       # Managed automatically by a chart hook job on install/upgrade.
@@ -234,6 +234,16 @@ skyforge:
     enabled: false
     internalUrl: ""
     externalPrefix: "/infoblox"
+    oidc:
+      # OIDC-gated browser access through Skyforge SSO proxy.
+      enabled: true
+      # Managed Infoblox service usually exposes both 443 and 80. Default to
+      # HTTP upstream here to avoid appliance certificate trust bootstrap.
+      upstreamPort: 80
+      upstreamUseTLS: false
+      upstreamTLSSkipVerify: false
+      upstreamTrustedCAConfigMap: ""
+      upstreamTrustedCAFile: "ca.crt"
     # Managed KubeVirt runtime (VM + Service) for Infoblox.
     # When enabled, skyforge.infoblox.image must be set.
     managed: false
@@ -345,7 +355,7 @@ skyforge:
     nodeSelector: {}
   jira:
     enabled: false
-    # In-cluster Jira Service wiring (no extra proxy).
+    # In-cluster Jira Service wiring.
     managed: false
     image: "docker.io/atlassian/jira-software:latest"
     pullPolicy: "IfNotPresent"
@@ -355,6 +365,9 @@ skyforge:
     containerPort: 8080
     externalPrefix: "/jira"
     rewritePrefixToRoot: false
+    oidc:
+      # OIDC-gated browser access through Skyforge SSO proxy.
+      enabled: true
     contextPath: "/jira"
     storage:
       enabled: true
@@ -384,8 +397,17 @@ skyforge:
     serviceNamespace: ""
     servicePort: 3780
     containerPort: 3780
+    progressDeadlineSeconds: 3600
     externalPrefix: "/rapid7"
     rewritePrefixToRoot: true
+    oidc:
+      # OIDC-gated browser access through Skyforge SSO proxy.
+      enabled: true
+      upstreamUseTLS: true
+      # Rapid7 often presents a self-signed cert in lab installs.
+      upstreamTLSSkipVerify: true
+      upstreamTrustedCAConfigMap: ""
+      upstreamTrustedCAFile: "ca.crt"
     storage:
       enabled: true
       size: "50Gi"
@@ -398,6 +420,10 @@ skyforge:
         cpu: "4"
         memory: "16Gi"
     env: {}
+    # Gateway API backend TLS policy for direct /rapid7 routing.
+    # When enabled, chart renders a BackendTLSPolicy targeting the Rapid7
+    # Service (sectionName=https) and validates the backend certificate against
+    # the configured CA ConfigMap.
     backendTLS:
       enabled: false
       hostname: "rapid7"
@@ -408,13 +434,16 @@ skyforge:
     managed: false
     image: "sebp/elk:8.13.4"
     pullPolicy: "IfNotPresent"
-    # Route Kibana directly through Gateway API.
+    # Route Kibana through Gateway API.
     serviceName: "kibana"
     serviceNamespace: ""
     servicePort: 5601
     containerPort: 5601
     externalPrefix: "/elk"
     rewritePrefixToRoot: false
+    oidc:
+      # OIDC-gated browser access through Skyforge SSO proxy.
+      enabled: true
     storage:
       enabled: true
       size: "20Gi"
@@ -543,7 +572,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260315-kne-cisco-bootstrap-r4"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260317-kne-contract-hardcut-r1"
     pullPolicy: "IfNotPresent"
   dns:
     enabled: false
@@ -576,33 +605,72 @@ skyforge:
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
     servicePort: 8080
-    # Optional browser-facing observability UIs from the in-cluster Forward stack.
-    observabilityUI:
+  observability:
+    # Global browser-facing observability UIs used by Skyforge platform
+    # operations and capacity workflows.
+    enabled: true
+    # Namespace where Grafana/Prometheus services live. Leave empty to use the
+    # Skyforge release namespace.
+    namespace: ""
+    grafana:
+      externalPrefix: "/grafana"
+      serviceName: "skyforge-grafana"
+      servicePort: 3000
+      rewritePrefixMatch: "/grafana"
+      oidc:
+        enabled: true
+        clientID: "grafana"
+        clientSecretSecretName: "dex-client-grafana-secret"
+        clientSecretSecretKey: "dex-client-grafana-secret"
+    prometheus:
+      externalPrefix: "/prometheus"
+      serviceName: "skyforge-prometheus"
+      servicePort: 9090
+      rewritePrefixMatch: "/prometheus"
+      # Optional in-cluster Prometheus base URL used by Skyforge signals API.
+      # Defaults to http://<serviceName>.<namespace>.svc.cluster.local:<servicePort>
+      internalBaseURL: ""
+    dashboards:
+      # When true, create Grafana dashboard ConfigMaps in the observability
+      # namespace. This relies on Grafana sidecar dashboard discovery
+      # conventions.
       enabled: false
-      grafana:
-        externalPrefix: "/grafana"
-        serviceName: "fwd-grafana-service"
-        servicePort: 3000
+      labelKey: "grafana_dashboard"
+      labelValue: "1"
+      folder: "Skyforge"
+    managed:
+      # Deploy a built-in Prometheus + Grafana stack for platform observability.
+      enabled: false
+      scrapeInterval: "30s"
       prometheus:
-        externalPrefix: "/prometheus"
-        serviceName: "fwd-prometheus"
-        servicePort: 9090
-        # Optional in-cluster Prometheus base URL used by Skyforge signals API.
-        # Defaults to http://<serviceName>.<forwardNamespace>.svc.cluster.local:<servicePort>
-        internalBaseURL: ""
-      dashboards:
-        # When true, create Grafana dashboard ConfigMaps in the Forward namespace.
-        # This relies on Grafana sidecar dashboard discovery conventions.
-        enabled: false
-        labelKey: "grafana_dashboard"
-        labelValue: "1"
-        folder: "Skyforge"
+        image: "prom/prometheus:v2.55.1"
+        retention: "15d"
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits: {}
+        persistence:
+          enabled: true
+          size: "20Gi"
+          storageClassName: ""
+      grafana:
+        image: "grafana/grafana:11.2.2"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits: {}
+      nodeExporter:
+        enabled: true
+        serviceName: "skyforge-node-exporter"
+        image: "prom/node-exporter:v1.8.2"
   forwardCollector:
     # Optional: enable the in-cluster Forward collector by configuring the image.
     # When empty, Skyforge will not deploy a collector Pod (Collector page will
     # show "not configured").
     # Example:
-    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-09"
+    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-18"
     image: ""
     pullPolicy: "IfNotPresent"
     heapSizeGB: 0
@@ -760,7 +828,7 @@ images:
   freeradius: "ghcr.io/freeradius/freeradius-server:3.2.5"
   # Prefer GHCR (Docker Hub rate limits are painful in-cluster).
   gitea: "ghcr.io/go-gitea/gitea:1.24.6-rootless"
-  giteaActRunner: "docker.io/gitea/act_runner:latest"
+  giteaActRunner: "ghcr.io/forwardnetworks/act_runner:0.2.12"
   coder: "ghcr.io/coder/coder:latest"
   yaade: "ghcr.io/esperotech/yaade:latest"
   dex: "ghcr.io/dexidp/dex:v2.44.0"
@@ -772,10 +840,10 @@ images:
   atlas: "arigaio/atlas:1.1.6-alpine"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260315-forward-tenant-lockfix1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260317-terminal-fix-r3"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260315-forward-tenant-lockfix1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260317-terminal-fix-r3-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true
@@ -836,6 +904,14 @@ secrets:
       db-forward-fdb-password: ""
     dex-client-coder-secret:
       dex-client-coder-secret: ""
+    dex-client-grafana-secret:
+      dex-client-grafana-secret: ""
+    dex-client-gitea-secret:
+      dex-client-gitea-secret: ""
+    dex-client-netbox-secret:
+      dex-client-netbox-secret: ""
+    dex-client-nautobot-secret:
+      dex-client-nautobot-secret: ""
     dex-google-client-secret:
       dex-google-client-secret: ""
     dex-oidc-client-secret:

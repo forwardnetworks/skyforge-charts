@@ -72,6 +72,10 @@ nodeSelector:
 tolerations:
 {{ toYaml $placement.tolerations | indent 2 }}
 {{- end }}
+{{- if $placement.topologySpreadConstraints }}
+topologySpreadConstraints:
+{{ toYaml $placement.topologySpreadConstraints | indent 2 }}
+{{- end }}
 {{- end -}}
 {{- end -}}
 
