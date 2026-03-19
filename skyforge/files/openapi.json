@@ -4415,7 +4415,13 @@
           "description": {
             "type": "string"
           },
+          "detailTemplate": {
+            "type": "string"
+          },
           "eyebrow": {
+            "type": "string"
+          },
+          "fallbackValue": {
             "type": "string"
           },
           "icon": {
@@ -4446,6 +4452,8 @@
           "eyebrow",
           "title",
           "description",
+          "detailTemplate",
+          "fallbackValue",
           "icon",
           "order",
           "allowed"
