@@ -17,6 +17,9 @@ spec:
         app.kubernetes.io/name: netbox
     spec:
       automountServiceAccountToken: false
+{{- if .Values.skyforge.integrationsPriorityClassName }}
+      priorityClassName: {{ .Values.skyforge.integrationsPriorityClassName | quote }}
+{{- end }}
       containers:
       - args:
         - 'set -e

@@ -1,15 +1,20 @@
+{{- $hookEvents := list "post-install" -}}
+{{- if .Values.skyforge.hooks.dbProvision.runOnUpgrade -}}
+{{- $hookEvents = append $hookEvents "post-upgrade" -}}
+{{- end -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
   annotations:
-    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook: {{ join "," $hookEvents | quote }}
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
     helm.sh/hook-weight: "-20"
   labels:
     app.kubernetes.io/name: db-provision
   name: db-provision
 spec:
-  backoffLimit: 0
+  backoffLimit: {{ default 0 .Values.skyforge.hooks.dbProvision.backoffLimit }}
+  activeDeadlineSeconds: {{ default 900 .Values.skyforge.hooks.dbProvision.activeDeadlineSeconds }}
   ttlSecondsAfterFinished: 3600
   template:
     metadata:

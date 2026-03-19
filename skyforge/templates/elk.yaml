@@ -4,6 +4,7 @@
 {{- $containerPort := default 5601 .Values.skyforge.elk.containerPort -}}
 {{- $pullPolicy := default "IfNotPresent" .Values.skyforge.elk.pullPolicy -}}
 {{- $elkPrefix := default "/elk" .Values.skyforge.elk.externalPrefix -}}
+{{- $priorityClass := default .Values.skyforge.integrationsPriorityClassName .Values.skyforge.elk.priorityClassName -}}
 ---
 {{- if .Values.skyforge.elk.storage.enabled }}
 apiVersion: v1
@@ -45,6 +46,9 @@ spec:
         app.kubernetes.io/component: elk
         skyforge.forwardnetworks.com/spread-group: elk-stack
     spec:
+      {{- if $priorityClass }}
+      priorityClassName: {{ $priorityClass | quote }}
+      {{- end }}
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname

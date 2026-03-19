@@ -1,4 +1,8 @@
 {{- if and .Values.skyforge.gitea.enabled .Values.skyforge.gitea.actionsRunner.enabled }}
+{{- $hookEvents := list "post-install" -}}
+{{- if .Values.skyforge.hooks.giteaActionsRunnerTokenReconcile.runOnUpgrade -}}
+{{- $hookEvents = append $hookEvents "post-upgrade" -}}
+{{- end -}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -7,8 +11,8 @@ metadata:
 {{ include "skyforge.labels" . | indent 4 }}
     app.kubernetes.io/name: gitea-actions-runner-token-reconcile
   annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook: {{ join "," $hookEvents | quote }}
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
     helm.sh/hook-weight: "15"
 automountServiceAccountToken: true
 ---
@@ -20,8 +24,8 @@ metadata:
 {{ include "skyforge.labels" . | indent 4 }}
     app.kubernetes.io/name: gitea-actions-runner-token-reconcile
   annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook: {{ join "," $hookEvents | quote }}
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
     helm.sh/hook-weight: "15"
 rules:
   - apiGroups: [""]
@@ -39,8 +43,8 @@ metadata:
 {{ include "skyforge.labels" . | indent 4 }}
     app.kubernetes.io/name: gitea-actions-runner-token-reconcile
   annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook: {{ join "," $hookEvents | quote }}
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
     helm.sh/hook-weight: "15"
 subjects:
   - kind: ServiceAccount
@@ -58,11 +62,12 @@ metadata:
 {{ include "skyforge.labels" . | indent 4 }}
     app.kubernetes.io/name: gitea-actions-runner-token-reconcile
   annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook: {{ join "," $hookEvents | quote }}
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
     helm.sh/hook-weight: "16"
 spec:
-  backoffLimit: 3
+  backoffLimit: {{ default 1 .Values.skyforge.hooks.giteaActionsRunnerTokenReconcile.backoffLimit }}
+  activeDeadlineSeconds: {{ default 600 .Values.skyforge.hooks.giteaActionsRunnerTokenReconcile.activeDeadlineSeconds }}
   template:
     metadata:
       labels:

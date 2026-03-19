@@ -1,0 +1,13 @@
+{{- if .Values.skyforge.server.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: skyforge-server
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ default 1 .Values.skyforge.server.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge-server
+{{- end }}

@@ -17,6 +17,9 @@ spec:
         app.kubernetes.io/name: s3gw
     spec:
       automountServiceAccountToken: false
+{{- if .Values.skyforge.corePriorityClassName }}
+      priorityClassName: {{ .Values.skyforge.corePriorityClassName | quote }}
+{{- end }}
 {{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.coreStatefulPlacement) }}
       affinity:
 {{ . | indent 8 }}

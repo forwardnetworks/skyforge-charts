@@ -18,6 +18,9 @@ spec:
         skyforge.forwardnetworks.com/spread-group: core-stateful
     spec:
       automountServiceAccountToken: false
+{{- if .Values.skyforge.corePriorityClassName }}
+      priorityClassName: {{ .Values.skyforge.corePriorityClassName | quote }}
+{{- end }}
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname

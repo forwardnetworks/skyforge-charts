@@ -1,0 +1,26 @@
+{{- if .Values.skyforge.priorityClasses.create }}
+{{- $core := .Values.skyforge.priorityClasses.core -}}
+{{- $integrations := .Values.skyforge.priorityClasses.integrations -}}
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ default "skyforge-core" $core.name | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+value: {{ default 100000 $core.value }}
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: {{ default "Skyforge core/control-plane workloads." $core.description | quote }}
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ default "skyforge-integrations" $integrations.name | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+value: {{ default -100 $integrations.value }}
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: {{ default "Skyforge optional heavyweight integrations." $integrations.description | quote }}
+{{- end }}

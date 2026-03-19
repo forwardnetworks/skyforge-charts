@@ -3,6 +3,7 @@
 {{- $port := default 3780 .Values.skyforge.rapid7.servicePort -}}
 {{- $containerPort := default 3780 .Values.skyforge.rapid7.containerPort -}}
 {{- $pullPolicy := default "IfNotPresent" .Values.skyforge.rapid7.pullPolicy -}}
+{{- $priorityClass := default .Values.skyforge.integrationsPriorityClassName .Values.skyforge.rapid7.priorityClassName -}}
 ---
 {{- if .Values.skyforge.rapid7.storage.enabled }}
 apiVersion: v1
@@ -44,6 +45,9 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: rapid7
     spec:
+      {{- if $priorityClass }}
+      priorityClassName: {{ $priorityClass | quote }}
+      {{- end }}
       containers:
         - name: rapid7
           image: {{ required "skyforge.rapid7.image is required when rapid7.managed=true" .Values.skyforge.rapid7.image | quote }}

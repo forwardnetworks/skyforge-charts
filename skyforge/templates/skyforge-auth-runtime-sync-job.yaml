@@ -1,3 +1,7 @@
+{{- $hookEvents := list "post-install" -}}
+{{- if .Values.skyforge.hooks.authRuntimeSync.runOnUpgrade -}}
+{{- $hookEvents = append $hookEvents "post-upgrade" -}}
+{{- end -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -6,11 +10,12 @@ metadata:
 {{ include "skyforge.labels" . | indent 4 }}
     app.kubernetes.io/name: skyforge-auth-runtime-sync
   annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook: {{ join "," $hookEvents | quote }}
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
     helm.sh/hook-weight: "-9"
 spec:
-  backoffLimit: 3
+  backoffLimit: {{ default 1 .Values.skyforge.hooks.authRuntimeSync.backoffLimit }}
+  activeDeadlineSeconds: {{ default 600 .Values.skyforge.hooks.authRuntimeSync.activeDeadlineSeconds }}
   ttlSecondsAfterFinished: 600
   template:
     metadata:

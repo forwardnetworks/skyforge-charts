@@ -2,6 +2,45 @@
 # Override anything here with your local deployment details.
 
 skyforge:
+  hooks:
+    # Keep release upgrades deterministic: bootstrap/reconcile hooks run on
+    # install by default and opt-in to post-upgrade behavior only when needed.
+    authRuntimeSync:
+      runOnUpgrade: false
+      backoffLimit: 1
+      activeDeadlineSeconds: 600
+    gatewayNodePortsReconcile:
+      runOnUpgrade: false
+      backoffLimit: 1
+      activeDeadlineSeconds: 300
+    coderAdminBootstrap:
+      runOnUpgrade: false
+      backoffLimit: 1
+      activeDeadlineSeconds: 600
+    giteaActionsRunnerTokenReconcile:
+      runOnUpgrade: false
+      backoffLimit: 1
+      activeDeadlineSeconds: 600
+    dbProvision:
+      runOnUpgrade: false
+      backoffLimit: 0
+      activeDeadlineSeconds: 900
+
+  # Optional workload priority controls. Set class names in deployment values
+  # and enable class creation for clusters where Skyforge manages these classes.
+  priorityClasses:
+    create: false
+    core:
+      name: "skyforge-core"
+      value: 100000
+      description: "Skyforge core/control-plane workloads."
+    integrations:
+      name: "skyforge-integrations"
+      value: -100
+      description: "Skyforge optional heavyweight integrations."
+  corePriorityClassName: ""
+  integrationsPriorityClassName: ""
+
   # Optional: run a standalone Atlas migration Job as a Helm hook.
   #
   # This is normally unnecessary because `skyforge-server` already runs migrations
@@ -12,6 +51,7 @@ skyforge:
 
   worker:
     replicas: 1
+    priorityClassName: ""
     placement:
       # Preferred hybrid placement for the worker deployment. Pool classes help
       # align workloads to node pools like control/app/lab/burst/onprem-lab.
@@ -71,6 +111,15 @@ skyforge:
     workerJson: "{}"
   hostname: "skyforge.local.forwardnetworks.com"
   server:
+    priorityClassName: ""
+    pdb:
+      enabled: true
+      minAvailable: 1
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "1Gi"
+      limits: {}
     placement:
       # Control-plane workloads prefer the control/elevated pool by default.
       poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
@@ -434,6 +483,7 @@ skyforge:
       limits:
         cpu: "4"
         memory: "16Gi"
+    priorityClassName: ""
     env: {}
     # Gateway API backend TLS policy for direct /rapid7 routing.
     # When enabled, chart renders a BackendTLSPolicy targeting the Rapid7
@@ -470,6 +520,7 @@ skyforge:
       limits:
         cpu: "2"
         memory: "4Gi"
+    priorityClassName: ""
     env:
       ELASTICSEARCH_START: "1"
       LOGSTASH_START: "1"

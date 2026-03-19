@@ -1,3 +1,4 @@
+{{- $serverPriorityClass := default .Values.skyforge.corePriorityClassName .Values.skyforge.server.priorityClassName -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,6 +51,9 @@ spec:
 {{- end }}
       automountServiceAccountToken: true
       serviceAccountName: skyforge-server
+{{- if $serverPriorityClass }}
+      priorityClassName: {{ $serverPriorityClass | quote }}
+{{- end }}
       containers:
       - env:
         - name: SKYFORGE_ROLE
@@ -404,6 +408,8 @@ spec:
           failureThreshold: 3
           periodSeconds: 5
           timeoutSeconds: 10
+        resources:
+{{ toYaml .Values.skyforge.server.resources | nindent 10 }}
         name: skyforge-server
         ports:
         - containerPort: 8085

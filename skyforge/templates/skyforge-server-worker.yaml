@@ -1,3 +1,4 @@
+{{- $workerPriorityClass := default .Values.skyforge.corePriorityClassName .Values.skyforge.worker.priorityClassName -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,6 +25,9 @@ spec:
         checksum/encore-runtime-worker: {{ include (print $.Template.BasePath "/encore-runtime-config-worker-secret.yaml") . | sha256sum | quote }}
     spec:
       serviceAccountName: skyforge-server
+{{- if $workerPriorityClass }}
+      priorityClassName: {{ $workerPriorityClass | quote }}
+{{- end }}
       imagePullSecrets:
         - name: ghcr-pull
       topologySpreadConstraints:

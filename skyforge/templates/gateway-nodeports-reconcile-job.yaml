@@ -1,5 +1,9 @@
 {{- $nodePorts := .Values.skyforge.gateway.localNodePorts -}}
 {{- if (default false $nodePorts.enabled) }}
+{{- $hookEvents := list "post-install" -}}
+{{- if .Values.skyforge.hooks.gatewayNodePortsReconcile.runOnUpgrade -}}
+{{- $hookEvents = append $hookEvents "post-upgrade" -}}
+{{- end -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -7,11 +11,12 @@ metadata:
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
   annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook: {{ join "," $hookEvents | quote }}
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
     helm.sh/hook-weight: "-5"
 spec:
-  backoffLimit: 1
+  backoffLimit: {{ default 1 .Values.skyforge.hooks.gatewayNodePortsReconcile.backoffLimit }}
+  activeDeadlineSeconds: {{ default 300 .Values.skyforge.hooks.gatewayNodePortsReconcile.activeDeadlineSeconds }}
   ttlSecondsAfterFinished: 600
   template:
     metadata:

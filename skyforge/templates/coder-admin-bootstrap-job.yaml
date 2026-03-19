@@ -2,18 +2,23 @@
 {{- $email := default "" .Values.skyforge.coder.bootstrap.email -}}
 {{- $secretName := default "coder-admin-bootstrap" .Values.skyforge.coder.bootstrap.passwordSecretName -}}
 {{- $secretKey := default "password" .Values.skyforge.coder.bootstrap.passwordSecretKey -}}
+{{- $hookEvents := list "post-install" -}}
+{{- if .Values.skyforge.hooks.coderAdminBootstrap.runOnUpgrade -}}
+{{- $hookEvents = append $hookEvents "post-upgrade" -}}
+{{- end -}}
 {{- if and .Values.skyforge.coder.enabled (ne $username "") (ne $email "") }}
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: coder-admin-bootstrap
   annotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook": {{ join "," $hookEvents | quote }}
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
   labels:
 {{ include "skyforge.labels" . | indent 4 }}
 spec:
-  backoffLimit: 3
+  backoffLimit: {{ default 1 .Values.skyforge.hooks.coderAdminBootstrap.backoffLimit }}
+  activeDeadlineSeconds: {{ default 600 .Values.skyforge.hooks.coderAdminBootstrap.activeDeadlineSeconds }}
   ttlSecondsAfterFinished: 3600
   template:
     metadata:

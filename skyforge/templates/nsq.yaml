@@ -35,6 +35,9 @@ spec:
       labels:
         app.kubernetes.io/name: nsq
     spec:
+{{- if .Values.skyforge.corePriorityClassName }}
+      priorityClassName: {{ .Values.skyforge.corePriorityClassName | quote }}
+{{- end }}
       containers:
         - name: nsqd
           image: {{ .Values.images.nsq | quote }}
