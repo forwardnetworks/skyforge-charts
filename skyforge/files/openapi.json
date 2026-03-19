@@ -4381,6 +4381,16 @@
           "description": {
             "type": "string"
           },
+          "embedFallbackMode": {
+            "type": "string"
+          },
+          "embedLoadTimeoutSecs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "embedMode": {
+            "type": "string"
+          },
           "experience": {
             "type": "string"
           },
@@ -4437,6 +4447,9 @@
           "launchMode",
           "authMode",
           "contentUrl",
+          "embedMode",
+          "embedLoadTimeoutSecs",
+          "embedFallbackMode",
           "supportsWake",
           "requiredCapabilities",
           "allowed"
