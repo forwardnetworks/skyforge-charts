@@ -171,7 +171,36 @@ skyforge:
     enabled: true
     requireCRD: true
     # Keep heavyweight integrations subordinate and cap at one replica.
-    # Scale from zero based on real request activity seen at SSO proxy edges.
+    # Scale from zero based on activity signals. For services without native
+    # request metrics in this stack, we keep an explicit Wake control in UI/API.
+    netbox:
+      enabled: true
+      pollingInterval: 30
+      cooldownPeriod: 3600
+      minReplicaCount: 0
+      maxReplicaCount: 1
+      triggers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://skyforge-prometheus.skyforge.svc.cluster.local:9090/prometheus"
+            metricName: "netbox_manual_wake"
+            query: "vector(0)"
+            activationThreshold: "0.01"
+            threshold: "0.1"
+    nautobot:
+      enabled: true
+      pollingInterval: 30
+      cooldownPeriod: 3600
+      minReplicaCount: 0
+      maxReplicaCount: 1
+      triggers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://skyforge-prometheus.skyforge.svc.cluster.local:9090/prometheus"
+            metricName: "nautobot_manual_wake"
+            query: "vector(0)"
+            activationThreshold: "0.01"
+            threshold: "0.1"
     rapid7:
       enabled: true
       pollingInterval: 30
