@@ -390,6 +390,8 @@ spec:
             set:
               - name: X-Forwarded-Proto
                 value: https
+              - name: X-Forwarded-Prefix
+                value: /nautobot
         - type: URLRewrite
           urlRewrite:
             path:

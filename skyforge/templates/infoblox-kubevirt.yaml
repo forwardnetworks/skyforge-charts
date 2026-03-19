@@ -7,6 +7,14 @@
 {{- $pullPolicy := default "IfNotPresent" .Values.skyforge.infoblox.pullPolicy -}}
 {{- $cpuCores := default 4 .Values.skyforge.infoblox.vm.cpuCores -}}
 {{- $memory := default "32Gi" .Values.skyforge.infoblox.vm.memory -}}
+{{- $cpuModel := default "" .Values.skyforge.infoblox.vm.cpuModel -}}
+{{- $dedicatedCPUPlacement := default false .Values.skyforge.infoblox.vm.dedicatedCpuPlacement -}}
+{{- $isolateEmulatorThread := default false .Values.skyforge.infoblox.vm.isolateEmulatorThread -}}
+{{- $ioThreadsPolicy := default "" .Values.skyforge.infoblox.vm.ioThreadsPolicy -}}
+{{- $networkInterfaceMultiqueue := default false .Values.skyforge.infoblox.vm.networkInterfaceMultiqueue -}}
+{{- $hugepages := default dict .Values.skyforge.infoblox.vm.hugepages -}}
+{{- $hugepagesEnabled := default false (get $hugepages "enabled") -}}
+{{- $hugepagesPageSize := default "2Mi" (get $hugepages "pageSize") -}}
 {{- $managementInterfaceModel := default "virtio" .Values.skyforge.infoblox.vm.managementInterfaceModel -}}
 {{- $auxiliaryInterfaceModel := default $managementInterfaceModel .Values.skyforge.infoblox.vm.auxiliaryInterfaceModel -}}
 {{- $podBinding := lower (default "masquerade" .Values.skyforge.infoblox.vm.podNetworkBinding) -}}
@@ -50,11 +58,35 @@ spec:
       domain:
         cpu:
           cores: {{ $cpuCores }}
+          {{- if $cpuModel }}
+          model: {{ $cpuModel | quote }}
+          {{- end }}
+          {{- if $dedicatedCPUPlacement }}
+          dedicatedCpuPlacement: true
+          {{- end }}
+          {{- if $isolateEmulatorThread }}
+          isolateEmulatorThread: true
+          {{- end }}
+        {{- if $ioThreadsPolicy }}
+        ioThreadsPolicy: {{ $ioThreadsPolicy | quote }}
+        {{- end }}
+        {{- if $hugepagesEnabled }}
+        memory:
+          guest: {{ $memory | quote }}
+          hugepages:
+            pageSize: {{ $hugepagesPageSize | quote }}
+        {{- end }}
         resources:
           requests:
             memory: {{ $memory | quote }}
+            {{- if $dedicatedCPUPlacement }}
+            cpu: {{ $cpuCores | quote }}
+            {{- end }}
         devices:
           autoattachSerialConsole: true
+          {{- if $networkInterfaceMultiqueue }}
+          networkInterfaceMultiqueue: true
+          {{- end }}
           disks:
             - name: rootdisk
               disk:

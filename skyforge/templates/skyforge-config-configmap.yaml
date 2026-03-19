@@ -59,7 +59,7 @@ data:
   SKYFORGE_UI_SUPPORT_URL: {{ .Values.skyforge.ui.supportUrl | quote }}
   YAADE_BASE_PATH: "/api-testing"
   YAADE_ADMIN_USERNAME: "admin"
-  SKYFORGE_OPENAPI_URL: {{ default (printf "https://%s/openapi.json" .Values.skyforge.hostname) .Values.skyforge.openApiUrl | quote }}
+  SKYFORGE_OPENAPI_URL: {{ default (printf "https://%s/swagger/openapi.json" .Values.skyforge.hostname) .Values.skyforge.openApiUrl | quote }}
   SKYFORGE_SESSION_COOKIE: {{ .Values.skyforge.sessionCookie | quote }}
 {{- if eq (default "local" .Values.skyforge.auth.mode) "oidc" }}
   SKYFORGE_OIDC_DISCOVERY_URL: {{ .Values.skyforge.oidc.discoveryUrl | quote }}

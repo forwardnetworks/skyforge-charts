@@ -236,7 +236,8 @@ skyforge:
     externalPrefix: "/infoblox"
     oidc:
       # OIDC-gated browser access through Skyforge SSO proxy.
-      enabled: true
+      # Disabled by default for Infoblox to preserve native appliance session/login behavior.
+      enabled: false
       # Managed Infoblox service usually exposes both 443 and 80. Default to
       # HTTP upstream here to avoid appliance certificate trust bootstrap.
       upstreamPort: 80
@@ -259,6 +260,20 @@ skyforge:
     vm:
       cpuCores: 4
       memory: "32Gi"
+      # Host CPU passthrough improves appliance performance and reduces emulation overhead.
+      cpuModel: "host-passthrough"
+      # Pin vCPUs for lower jitter on heavier VM workloads.
+      dedicatedCpuPlacement: true
+      # Isolate emulator thread from guest vCPUs when dedicated CPU placement is enabled.
+      isolateEmulatorThread: true
+      # Enable IO thread scheduling for virtio block/network paths.
+      ioThreadsPolicy: "auto"
+      # Enable virtio-net multiqueue for higher packet throughput.
+      networkInterfaceMultiqueue: true
+      hugepages:
+        # Keep disabled until worker nodes expose hugepages resources.
+        enabled: false
+        pageSize: "2Mi"
       managementInterfaceModel: "virtio"
       auxiliaryInterfaceModel: "virtio"
       # Pod network binding for the management NIC.
@@ -572,7 +587,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260317-kne-contract-hardcut-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260319-kne-linux-transport-r1"
     pullPolicy: "IfNotPresent"
   dns:
     enabled: false
@@ -840,10 +855,10 @@ images:
   atlas: "arigaio/atlas:1.1.6-alpine"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260317-terminal-fix-r3"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260319-hardening-netlab-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260317-terminal-fix-r3-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260319-hardening-netlab-r1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true

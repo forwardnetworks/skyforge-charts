@@ -72,6 +72,8 @@ spec:
             configMapKeyRef:
               key: SKYFORGE_HOSTNAME
               name: skyforge-config
+        - name: SKYFORGE_NAUTOBOT_BASE_PATH
+          value: /nautobot
         - name: SKYFORGE_OIDC_DISCOVERY_URL
           valueFrom:
             configMapKeyRef:

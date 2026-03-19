@@ -69,10 +69,22 @@ skyforge:
     managed: true
     image: ghcr.io/forwardnetworks/kubevirt/infoblox-vnios:9.0.3-50212
     internalUrl: https://infoblox:443
+    oidc:
+      # Keep native appliance login/session flow. The OIDC sidecar path causes
+      # Infoblox "Session Expired" behavior behind this route.
+      enabled: false
     lifecycle:
       # Pin lifecycle controller tooling image in prod for deterministic reconcile behavior.
       image: public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1
     vm:
+      cpuModel: host-passthrough
+      dedicatedCpuPlacement: true
+      isolateEmulatorThread: true
+      ioThreadsPolicy: auto
+      networkInterfaceMultiqueue: true
+      hugepages:
+        enabled: false
+        pageSize: 2Mi
       managementInterfaceModel: virtio
       managementMacAddress: "52:54:00:10:00:01"
       auxiliaryInterfaceModel: e1000
@@ -132,7 +144,7 @@ skyforge:
   forward:
     enabled: true
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-18
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-19
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -157,7 +169,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260317-kne-contract-hardcut-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260319-kne-linux-transport-r1"
     pullPolicy: "IfNotPresent"
 
   # Skyforge deploys in-cluster topologies through KNE.
@@ -190,9 +202,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260317-terminal-fix-r3"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260319-hardening-netlab-r1"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260317-terminal-fix-r3-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260319-hardening-netlab-r1-worker"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"
 
