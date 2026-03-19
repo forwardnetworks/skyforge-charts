@@ -4298,3 +4298,7 @@ data:
       CHECK (
         type = ANY (ARRAY['terraform'::text, 'kne'::text, 'byos'::text])
       );
+
+  20260319193000_user_settings_ui_experience_mode.up.sql: |
+    ALTER TABLE public.sf_user_settings
+    	ADD COLUMN ui_experience_mode text DEFAULT 'simple'::text NOT NULL;
