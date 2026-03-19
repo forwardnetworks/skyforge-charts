@@ -66,13 +66,13 @@ spec:
     name: {{ default "jira" .Values.skyforge.jira.serviceName }}
   pollingInterval: {{ default 30 .Values.skyforge.keda.jira.pollingInterval }}
   cooldownPeriod: {{ default 900 .Values.skyforge.keda.jira.cooldownPeriod }}
-  minReplicaCount: {{ default 1 .Values.skyforge.keda.jira.minReplicaCount }}
-  maxReplicaCount: {{ default 2 .Values.skyforge.keda.jira.maxReplicaCount }}
+  minReplicaCount: {{- if hasKey .Values.skyforge.keda.jira "minReplicaCount" }} {{ .Values.skyforge.keda.jira.minReplicaCount }}{{- else }} 1{{- end }}
+  maxReplicaCount: {{- if hasKey .Values.skyforge.keda.jira "maxReplicaCount" }} {{ .Values.skyforge.keda.jira.maxReplicaCount }}{{- else }} 2{{- end }}
   triggers:
 {{ toYaml $triggers | indent 4 }}
-{{- end }}
+{{ end }}
 
-{{- if and .Values.skyforge.netbox.enabled .Values.skyforge.keda.netbox.enabled }}
+{{ if and .Values.skyforge.netbox.enabled .Values.skyforge.keda.netbox.enabled }}
 {{- $triggers := default (list) .Values.skyforge.keda.netbox.triggers -}}
 {{- if eq (len $triggers) 0 -}}
 {{- fail "skyforge.keda.netbox.enabled=true requires skyforge.keda.netbox.triggers" -}}
@@ -89,13 +89,13 @@ spec:
     name: netbox
   pollingInterval: {{ default 30 .Values.skyforge.keda.netbox.pollingInterval }}
   cooldownPeriod: {{ default 900 .Values.skyforge.keda.netbox.cooldownPeriod }}
-  minReplicaCount: {{ default 1 .Values.skyforge.keda.netbox.minReplicaCount }}
-  maxReplicaCount: {{ default 2 .Values.skyforge.keda.netbox.maxReplicaCount }}
+  minReplicaCount: {{- if hasKey .Values.skyforge.keda.netbox "minReplicaCount" }} {{ .Values.skyforge.keda.netbox.minReplicaCount }}{{- else }} 1{{- end }}
+  maxReplicaCount: {{- if hasKey .Values.skyforge.keda.netbox "maxReplicaCount" }} {{ .Values.skyforge.keda.netbox.maxReplicaCount }}{{- else }} 2{{- end }}
   triggers:
 {{ toYaml $triggers | indent 4 }}
-{{- end }}
+{{ end }}
 
-{{- if and .Values.skyforge.nautobot.enabled .Values.skyforge.keda.nautobot.enabled }}
+{{ if and .Values.skyforge.nautobot.enabled .Values.skyforge.keda.nautobot.enabled }}
 {{- $triggers := default (list) .Values.skyforge.keda.nautobot.triggers -}}
 {{- if eq (len $triggers) 0 -}}
 {{- fail "skyforge.keda.nautobot.enabled=true requires skyforge.keda.nautobot.triggers" -}}
@@ -112,11 +112,11 @@ spec:
     name: nautobot
   pollingInterval: {{ default 30 .Values.skyforge.keda.nautobot.pollingInterval }}
   cooldownPeriod: {{ default 900 .Values.skyforge.keda.nautobot.cooldownPeriod }}
-  minReplicaCount: {{ default 1 .Values.skyforge.keda.nautobot.minReplicaCount }}
-  maxReplicaCount: {{ default 2 .Values.skyforge.keda.nautobot.maxReplicaCount }}
+  minReplicaCount: {{- if hasKey .Values.skyforge.keda.nautobot "minReplicaCount" }} {{ .Values.skyforge.keda.nautobot.minReplicaCount }}{{- else }} 1{{- end }}
+  maxReplicaCount: {{- if hasKey .Values.skyforge.keda.nautobot "maxReplicaCount" }} {{ .Values.skyforge.keda.nautobot.maxReplicaCount }}{{- else }} 2{{- end }}
   triggers:
 {{ toYaml $triggers | indent 4 }}
-{{- end }}
+{{ end }}
 
 {{ if and .Values.skyforge.rapid7.enabled .Values.skyforge.rapid7.managed .Values.skyforge.keda.rapid7.enabled }}
 {{- $triggers := default (list) .Values.skyforge.keda.rapid7.triggers -}}

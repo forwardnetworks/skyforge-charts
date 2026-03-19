@@ -50,8 +50,17 @@ pulling images or waiting on hooks.
 {{- end }}
 
 {{- if .Values.skyforge.netbox.enabled }}
+  {{- $netboxBootstrapEnabled := true -}}
+  {{- if and (hasKey .Values.skyforge.netbox "bootstrap") (hasKey .Values.skyforge.netbox.bootstrap "enabled") -}}
+    {{- $netboxBootstrapEnabled = .Values.skyforge.netbox.bootstrap.enabled -}}
+  {{- end }}
+  {{- if $netboxBootstrapEnabled }}
+    {{- $files = concat $files (list
+      "netbox-admin-bootstrap-job.yaml"
+    ) -}}
+  {{- end }}
+
   {{- $files = concat $files (list
-    "netbox-admin-bootstrap-job.yaml"
     "netbox-admin-sync-deployment.yaml"
     "netbox-deployment.yaml"
     "netbox-service.yaml"

@@ -265,6 +265,11 @@ skyforge:
     # Redis database index for NetBox (shared Redis service).
     # Keep distinct from Skyforge (0) and Nautobot (1).
     redisDatabase: 2
+    bootstrap:
+      # NetBox bootstrap is a one-time operation. Disable when NetBox is
+      # intentionally scaled to zero (for example, KEDA subordinate mode), or
+      # Helm post-upgrade hooks will wait on a pod that is not expected to run.
+      enabled: true
   netboxUrl: ""
   netboxMgmtSubnet: "10.255.0.0/24"
   nautobot:

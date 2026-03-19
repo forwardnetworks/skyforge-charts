@@ -66,6 +66,8 @@ skyforge:
 
   netbox:
     enabled: true
+    bootstrap:
+      enabled: false
   netboxUrl: /netbox
   netboxSsoUrl: /netbox
 
