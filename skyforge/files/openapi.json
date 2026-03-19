@@ -15081,6 +15081,34 @@
         "summary": "ListForwardCollectors lists collectors visible to the authenticated user's\nForward org.\n"
       }
     },
+    "/api/forward/networks/{networkID}/session": {
+      "get": {
+        "description": "authenticated Skyforge host and redirects the browser to the Forward-host bridge path for a specific network search target.\n",
+        "operationId": "GET:skyforge.ForwardNetworkSessionStart",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ForwardNetworkSessionStart mints a short-lived bridge token on the\n"
+      }
+    },
     "/api/forward/org-credential": {
       "get": {
         "operationId": "GET:skyforge.GetCurrentUserForwardTenantCredential",
