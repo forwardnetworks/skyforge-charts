@@ -4381,6 +4381,9 @@
           "label": {
             "type": "string"
           },
+          "mode": {
+            "type": "string"
+          },
           "order": {
             "format": "int64",
             "type": "integer"
@@ -4391,6 +4394,7 @@
         },
         "required": [
           "id",
+          "mode",
           "label",
           "href",
           "icon",
@@ -18699,6 +18703,18 @@
                       },
                       "type": "array"
                     },
+                    "launchpadActions": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogActionEntry"
+                      },
+                      "type": "array"
+                    },
+                    "launchpadContent": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogContentEntry"
+                      },
+                      "type": "array"
+                    },
                     "routes": {
                       "items": {
                         "$ref": "#/components/schemas/skyforge.ToolCatalogRouteEntry"
@@ -18722,6 +18738,8 @@
                     "sections",
                     "entries",
                     "routes",
+                    "launchpadContent",
+                    "launchpadActions",
                     "launchpad",
                     "dashboardHeroActions",
                     "dashboardContent",
