@@ -437,6 +437,9 @@
             },
             "type": "array"
           },
+          "executionBackend": {
+            "type": "string"
+          },
           "executionPath": {
             "type": "string"
           },
@@ -455,6 +458,9 @@
             "type": "string"
           },
           "userScopeId": {
+            "type": "string"
+          },
+          "verificationBackend": {
             "type": "string"
           },
           "verificationWarnings": {
@@ -476,6 +482,8 @@
           "userScopeId",
           "deploymentId",
           "executionPath",
+          "executionBackend",
+          "verificationBackend",
           "plannedExecutionTaskType",
           "topologyArtifactKey",
           "nodeStatusCount",
@@ -629,10 +637,16 @@
             },
             "type": "array"
           },
+          "executionBackend": {
+            "type": "string"
+          },
           "executionPath": {
             "type": "string"
           },
           "plannedExecutionTaskType": {
+            "type": "string"
+          },
+          "verificationBackend": {
             "type": "string"
           },
           "warnings": {
@@ -646,6 +660,8 @@
           "controlPlaneTaskType",
           "plannedExecutionTaskType",
           "executionPath",
+          "executionBackend",
+          "verificationBackend",
           "changeCount",
           "deviceCount",
           "devices",
@@ -3484,6 +3500,82 @@
         ],
         "type": "object"
       },
+      "skyforge.ManagedIntegrationStatus": {
+        "properties": {
+          "authMode": {
+            "type": "string"
+          },
+          "availableReplicas": {
+            "format": "int32",
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer"
+          },
+          "desiredReplicas": {
+            "format": "int32",
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "launchMode": {
+            "type": "string"
+          },
+          "printableStatus": {
+            "type": "string"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "requiredCapabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "runStrategy": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "supportsWake": {
+            "type": "boolean"
+          },
+          "wakeAction": {
+            "$ref": "#/components/schemas/skyforge.ToolAction"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "kind",
+          "status",
+          "detail",
+          "launchMode",
+          "authMode",
+          "supportsWake",
+          "requiredCapabilities",
+          "wakeAction",
+          "desiredReplicas",
+          "availableReplicas",
+          "runStrategy",
+          "printableStatus",
+          "ready"
+        ],
+        "type": "object"
+      },
       "skyforge.NetlabInfo": {
         "properties": {
           "apiUrl": {
@@ -4231,8 +4323,234 @@
         ],
         "type": "object"
       },
+      "skyforge.ToolAction": {
+        "properties": {
+          "allowed": {
+            "type": "boolean"
+          },
+          "disabledReason": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "requiredCapabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "label",
+          "method",
+          "path",
+          "payload",
+          "requiredCapabilities",
+          "allowed",
+          "disabledReason"
+        ],
+        "type": "object"
+      },
+      "skyforge.ToolCatalogEntry": {
+        "properties": {
+          "allowed": {
+            "type": "boolean"
+          },
+          "authMode": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "contentUrl": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "experience": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "launchMode": {
+            "type": "string"
+          },
+          "navigationHref": {
+            "type": "string"
+          },
+          "navigationIcon": {
+            "type": "string"
+          },
+          "navigationLabel": {
+            "type": "string"
+          },
+          "navigationMode": {
+            "type": "string"
+          },
+          "navigationOrder": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "navigationSection": {
+            "type": "string"
+          },
+          "requiredCapabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "supportsWake": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "category",
+          "experience",
+          "navigationSection",
+          "navigationLabel",
+          "navigationOrder",
+          "navigationIcon",
+          "navigationHref",
+          "navigationMode",
+          "launchMode",
+          "authMode",
+          "contentUrl",
+          "supportsWake",
+          "requiredCapabilities",
+          "allowed"
+        ],
+        "type": "object"
+      },
+      "skyforge.ToolCatalogNavEntry": {
+        "properties": {
+          "adminOnly": {
+            "type": "boolean"
+          },
+          "allowed": {
+            "type": "boolean"
+          },
+          "displayMode": {
+            "type": "string"
+          },
+          "experience": {
+            "type": "string"
+          },
+          "featureFlag": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "navigationHref": {
+            "type": "string"
+          },
+          "navigationIcon": {
+            "type": "string"
+          },
+          "navigationOrder": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "navigationSection": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "navigationSection",
+          "navigationOrder",
+          "navigationIcon",
+          "navigationHref",
+          "experience",
+          "displayMode",
+          "featureFlag",
+          "adminOnly",
+          "allowed"
+        ],
+        "type": "object"
+      },
+      "skyforge.ToolCatalogRouteEntry": {
+        "properties": {
+          "adminOnly": {
+            "type": "boolean"
+          },
+          "allowed": {
+            "type": "boolean"
+          },
+          "experience": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "experience",
+          "adminOnly",
+          "allowed"
+        ],
+        "type": "object"
+      },
+      "skyforge.ToolCatalogSection": {
+        "properties": {
+          "defaultExpanded": {
+            "type": "boolean"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "order": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "icon",
+          "order",
+          "defaultExpanded"
+        ],
+        "type": "object"
+      },
       "skyforge.ToolServiceStatus": {
         "properties": {
+          "authMode": {
+            "type": "string"
+          },
           "availableReplicas": {
             "format": "int32",
             "maximum": 2147483647,
@@ -4248,18 +4566,42 @@
           "id": {
             "type": "string"
           },
+          "kind": {
+            "type": "string"
+          },
           "label": {
+            "type": "string"
+          },
+          "launchMode": {
             "type": "string"
           },
           "mode": {
             "title": "\"shared\" or \"personal\"\n",
             "type": "string"
+          },
+          "requiredCapabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "supportsWake": {
+            "type": "boolean"
+          },
+          "wakeAction": {
+            "$ref": "#/components/schemas/skyforge.ToolAction"
           }
         },
         "required": [
           "id",
           "label",
+          "kind",
           "mode",
+          "launchMode",
+          "authMode",
+          "supportsWake",
+          "requiredCapabilities",
+          "wakeAction",
           "desiredReplicas",
           "availableReplicas"
         ],
@@ -4310,6 +4652,9 @@
           "mgmtIp": {
             "type": "string"
           },
+          "podName": {
+            "type": "string"
+          },
           "status": {
             "type": "string"
           }
@@ -4317,6 +4662,7 @@
         "required": [
           "id",
           "label",
+          "podName",
           "kind",
           "mgmtIp",
           "status"
@@ -5584,6 +5930,21 @@
   },
   "openapi": "3.0.0",
   "paths": {
+    "/__skyforge/forward/session": {
+      "get": {
+        "description": "logs into Forward server-side with the user's managed credential, sets the resulting Forward session cookies, and redirects to the target page.\n",
+        "operationId": "GET:skyforge.ForwardSessionBridge",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ForwardSessionBridge consumes a short-lived bridge token on the Forward host,\n"
+      }
+    },
     "/admin/{path}": {
       "get": {
         "operationId": "GET:frontend.FrontendAdmin",
@@ -7493,6 +7854,98 @@
         }
       }
     },
+    "/api/admin/integrations/forward/support-credential": {
+      "get": {
+        "description": "credential status (admin only).\n",
+        "operationId": "GET:skyforge.GetAdminForwardSupportCredential",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "username",
+                    "hasPassword",
+                    "password",
+                    "source"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminForwardSupportCredential returns the platform Forward support\n"
+      }
+    },
+    "/api/admin/integrations/forward/support-credential/reveal": {
+      "post": {
+        "description": "support credential including password material (admin only).\n",
+        "operationId": "POST:skyforge.RevealAdminForwardSupportCredentialPassword",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "username",
+                    "hasPassword",
+                    "password",
+                    "source"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RevealAdminForwardSupportCredentialPassword returns the platform Forward\n"
+      }
+    },
     "/api/admin/integrations/servicenow/global-config": {
       "get": {
         "operationId": "GET:skyforge.GetAdminServiceNowGlobalConfig",
@@ -8594,6 +9047,129 @@
           }
         },
         "summary": "UpdateAdminPlatformReservationStatus approves, rejects, or cancels a\nreservation.\n"
+      }
+    },
+    "/api/admin/platform/runtime-policy": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminPlatformRuntimePolicy",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capacityReserveCpuPercent": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "capacityReserveMemoryPercent": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "compatibilityPreflight": {
+                      "type": "boolean"
+                    },
+                    "failOnInsufficientResources": {
+                      "type": "boolean"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "failOnInsufficientResources",
+                    "compatibilityPreflight",
+                    "capacityReserveCpuPercent",
+                    "capacityReserveMemoryPercent",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminPlatformRuntimePolicy returns the global deploy runtime policy used for\nKNE deploy admission.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.PutAdminPlatformRuntimePolicy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "capacityReserveCpuPercent": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "capacityReserveMemoryPercent": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "compatibilityPreflight": {
+                    "type": "boolean"
+                  },
+                  "failOnInsufficientResources": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "failOnInsufficientResources",
+                  "compatibilityPreflight",
+                  "capacityReserveCpuPercent",
+                  "capacityReserveMemoryPercent"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capacityReserveCpuPercent": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "capacityReserveMemoryPercent": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "compatibilityPreflight": {
+                      "type": "boolean"
+                    },
+                    "failOnInsufficientResources": {
+                      "type": "boolean"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "failOnInsufficientResources",
+                    "compatibilityPreflight",
+                    "capacityReserveCpuPercent",
+                    "capacityReserveMemoryPercent",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutAdminPlatformRuntimePolicy replaces the global deploy runtime policy for KNE\nadmission checks.\n"
       }
     },
     "/api/admin/platform/users/{username}/policy": {
@@ -14471,6 +15047,9 @@
                     "email": {
                       "type": "string"
                     },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
                     "lastRotatedAt": {
                       "type": "string"
                     },
@@ -14499,6 +15078,7 @@
                     "orgName",
                     "username",
                     "email",
+                    "hasPassword",
                     "password",
                     "updatedAt",
                     "lastRotatedAt",
@@ -14532,6 +15112,9 @@
                     "email": {
                       "type": "string"
                     },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
                     "lastRotatedAt": {
                       "type": "string"
                     },
@@ -14560,6 +15143,7 @@
                     "orgName",
                     "username",
                     "email",
+                    "hasPassword",
                     "password",
                     "updatedAt",
                     "lastRotatedAt",
@@ -14576,6 +15160,72 @@
           }
         },
         "summary": "ResetCurrentUserForwardTenantPassword rotates the current user's Forward org\npassword.\n"
+      }
+    },
+    "/api/forward/org-credential/reveal": {
+      "post": {
+        "description": "managed Forward credential with password material included.\n",
+        "operationId": "POST:skyforge.RevealCurrentUserForwardTenantCredentialPassword",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "lastRotatedAt": {
+                      "type": "string"
+                    },
+                    "orgId": {
+                      "type": "string"
+                    },
+                    "orgName": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "orgId",
+                    "orgName",
+                    "username",
+                    "email",
+                    "hasPassword",
+                    "password",
+                    "updatedAt",
+                    "lastRotatedAt",
+                    "source"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RevealCurrentUserForwardTenantCredentialPassword returns the current user's\n"
       }
     },
     "/api/forward/org/rebuild": {
@@ -14704,6 +15354,21 @@
           }
         },
         "summary": "ListCurrentUserForwardTenantRebuildRuns returns reset runs for the current user.\n"
+      }
+    },
+    "/api/forward/session": {
+      "get": {
+        "description": "Skyforge host and redirects the browser to the Forward-host bridge path.\n",
+        "operationId": "GET:skyforge.ForwardSessionStart",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ForwardSessionStart mints a short-lived bridge token on the authenticated\n"
       }
     },
     "/api/gcp/console": {
@@ -16126,6 +16791,43 @@
         "summary": "GetCurrentPlatformAvailability returns the current user's effective platform\npolicy, quota usage, and class availability.\n"
       }
     },
+    "/api/platform/integrations/status": {
+      "get": {
+        "description": "This intentionally excludes core platform services so scale-to-zero tools do not pollute the primary system status surface.\n",
+        "operationId": "GET:skyforge.GetManagedIntegrationsStatus",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "checkedAt": {
+                      "type": "string"
+                    },
+                    "integrations": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ManagedIntegrationStatus"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "checkedAt",
+                    "integrations"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetManagedIntegrationsStatus returns subordinate integration runtime state.\n"
+      }
+    },
     "/api/platform/policy": {
       "get": {
         "operationId": "GET:skyforge.GetCurrentPlatformPolicy",
@@ -17234,6 +17936,9 @@
                       },
                       "type": "array"
                     },
+                    "uiExperienceMode": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     }
@@ -17242,6 +17947,7 @@
                     "defaultForwardCollectorConfigId",
                     "defaultEnv",
                     "externalTemplateRepos",
+                    "uiExperienceMode",
                     "updatedAt"
                   ],
                   "type": "object"
@@ -17277,12 +17983,16 @@
                       "$ref": "#/components/schemas/skyforgecore.ExternalTemplateRepo"
                     },
                     "type": "array"
+                  },
+                  "uiExperienceMode": {
+                    "type": "string"
                   }
                 },
                 "required": [
                   "defaultForwardCollectorConfigId",
                   "defaultEnv",
-                  "externalTemplateRepos"
+                  "externalTemplateRepos",
+                  "uiExperienceMode"
                 ],
                 "type": "object"
               }
@@ -17310,6 +18020,9 @@
                       },
                       "type": "array"
                     },
+                    "uiExperienceMode": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     }
@@ -17318,6 +18031,7 @@
                     "defaultForwardCollectorConfigId",
                     "defaultEnv",
                     "externalTemplateRepos",
+                    "uiExperienceMode",
                     "updatedAt"
                   ],
                   "type": "object"
@@ -17761,6 +18475,59 @@
         "summary": "GetTemplates returns available templates for a user scope.\n"
       }
     },
+    "/api/tooling/catalog": {
+      "get": {
+        "operationId": "GET:skyforge.GetToolCatalog",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "entries": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogNavEntry"
+                      },
+                      "type": "array"
+                    },
+                    "routes": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogRouteEntry"
+                      },
+                      "type": "array"
+                    },
+                    "sections": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogSection"
+                      },
+                      "type": "array"
+                    },
+                    "tools": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogEntry"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "sections",
+                    "entries",
+                    "routes",
+                    "tools"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetToolCatalog returns the launch catalog for authenticated tools.\n"
+      }
+    },
     "/api/tooling/services": {
       "get": {
         "operationId": "GET:skyforge.GetToolServicesStatus",
@@ -17790,7 +18557,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetToolServicesStatus returns start/stop state for personal toolchain services.\n"
+        "summary": "GetToolServicesStatus returns start/stop state for shared subordinate\nintegrations.\n"
       }
     },
     "/api/tooling/services/{id}/replicas": {
@@ -17849,7 +18616,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SetToolServiceReplicas sets the replica count for a personal toolchain service.\n"
+        "summary": "SetToolServiceReplicas sets the replica count for a shared subordinate\nintegration.\n"
       }
     },
     "/api/ui/config": {
@@ -17888,6 +18655,12 @@
                     "logoUrl": {
                       "type": "string"
                     },
+                    "nautobotBaseUrl": {
+                      "type": "string"
+                    },
+                    "netboxBaseUrl": {
+                      "type": "string"
+                    },
                     "oidcEnabled": {
                       "type": "boolean"
                     },
@@ -17899,6 +18672,12 @@
                     },
                     "productSubtitle": {
                       "type": "string"
+                    },
+                    "protectedRoutePrefixes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
                     },
                     "rapid7BaseUrl": {
                       "type": "string"
@@ -17926,10 +18705,13 @@
                     "auth",
                     "oidcEnabled",
                     "oidcLoginUrl",
+                    "netboxBaseUrl",
+                    "nautobotBaseUrl",
                     "infobloxBaseUrl",
                     "jiraBaseUrl",
                     "rapid7BaseUrl",
                     "elkBaseUrl",
+                    "protectedRoutePrefixes",
                     "features"
                   ],
                   "type": "object"
@@ -25119,6 +25901,9 @@
                     "configured": {
                       "type": "boolean"
                     },
+                    "hasApiToken": {
+                      "type": "boolean"
+                    },
                     "hasJumpCert": {
                       "type": "boolean"
                     },
@@ -25141,6 +25926,7 @@
                     "username",
                     "collectorId",
                     "hasPassword",
+                    "hasApiToken",
                     "hasJumpPrivateKey",
                     "hasJumpCert",
                     "updatedAt"
@@ -25187,6 +25973,9 @@
                     "configured": {
                       "type": "boolean"
                     },
+                    "hasApiToken": {
+                      "type": "boolean"
+                    },
                     "hasJumpCert": {
                       "type": "boolean"
                     },
@@ -25209,6 +25998,7 @@
                     "username",
                     "collectorId",
                     "hasPassword",
+                    "hasApiToken",
                     "hasJumpPrivateKey",
                     "hasJumpCert",
                     "updatedAt"
@@ -25245,6 +26035,9 @@
             "application/json": {
               "schema": {
                 "properties": {
+                  "apiToken": {
+                    "type": "string"
+                  },
                   "baseUrl": {
                     "type": "string"
                   },
@@ -25271,6 +26064,7 @@
                   "baseUrl",
                   "username",
                   "password",
+                  "apiToken",
                   "collectorId",
                   "collectorUsername",
                   "jumpPrivateKey",
@@ -25296,6 +26090,9 @@
                     "configured": {
                       "type": "boolean"
                     },
+                    "hasApiToken": {
+                      "type": "boolean"
+                    },
                     "hasJumpCert": {
                       "type": "boolean"
                     },
@@ -25318,6 +26115,7 @@
                     "username",
                     "collectorId",
                     "hasPassword",
+                    "hasApiToken",
                     "hasJumpPrivateKey",
                     "hasJumpCert",
                     "updatedAt"
@@ -29460,10 +30258,16 @@
                       },
                       "type": "array"
                     },
+                    "executionBackend": {
+                      "type": "string"
+                    },
                     "executionPath": {
                       "type": "string"
                     },
                     "plannedExecutionTaskType": {
+                      "type": "string"
+                    },
+                    "verificationBackend": {
                       "type": "string"
                     },
                     "warnings": {
@@ -29477,6 +30281,8 @@
                     "controlPlaneTaskType",
                     "plannedExecutionTaskType",
                     "executionPath",
+                    "executionBackend",
+                    "verificationBackend",
                     "changeCount",
                     "deviceCount",
                     "devices",
@@ -32331,6 +33137,21 @@
             "$ref": "#/components/responses/APIError"
           }
         }
+      }
+    },
+    "/internal/cron/kne/orphans/cleanup": {
+      "post": {
+        "description": "Reaps leaked runtime namespaces when deployment records were deleted but runtime teardown did not complete.\n",
+        "operationId": "POST:skyforge.CronCleanupKneOrphanNamespaces",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "KNE orphan runtime namespace cleanup\n"
       }
     },
     "/internal/cron/observability/cleanup": {
@@ -36209,6 +37030,9 @@
                       },
                       "type": "array"
                     },
+                    "uiExperienceMode": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     }
@@ -36217,6 +37041,7 @@
                     "defaultForwardCollectorConfigId",
                     "defaultEnv",
                     "externalTemplateRepos",
+                    "uiExperienceMode",
                     "updatedAt"
                   ],
                   "type": "object"
@@ -36254,6 +37079,9 @@
                     },
                     "type": "array"
                   },
+                  "uiExperienceMode": {
+                    "type": "string"
+                  },
                   "username": {
                     "type": "string"
                   }
@@ -36262,7 +37090,8 @@
                   "username",
                   "defaultForwardCollectorConfigId",
                   "defaultEnv",
-                  "externalTemplateRepos"
+                  "externalTemplateRepos",
+                  "uiExperienceMode"
                 ],
                 "type": "object"
               }
@@ -36290,6 +37119,9 @@
                       },
                       "type": "array"
                     },
+                    "uiExperienceMode": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     }
@@ -36298,6 +37130,7 @@
                     "defaultForwardCollectorConfigId",
                     "defaultEnv",
                     "externalTemplateRepos",
+                    "uiExperienceMode",
                     "updatedAt"
                   ],
                   "type": "object"

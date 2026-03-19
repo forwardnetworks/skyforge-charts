@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:5DWeBjEF/umgAoVnT3AYADxXNZjJwO+JIlC6jravQ6k=
+    h1:Sjv1ZwOTbBcMiE1GcqoO02LNE2C+Xdnr/gRlVq624Ho=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
@@ -53,6 +53,12 @@ data:
     20260312063000_config_change_runs.up.sql h1:ulmnupPSOTxThmayKL96FfY9qfa/oJ8I7pu4LdBoRaA=
     20260312101500_config_change_reviews.up.sql h1:hlhFrYWnaWsbRqZ0FarmacgKx7iKtVRQpADNr07zPLk=
     20260312113000_config_change_execution_summaries.up.sql h1:dprQ/ggsv3VkQNTkWs/l4etowsKsS9m6wXMFwyZ6tHc=
+    20260313103000_composite_plans.up.sql h1:miV8EMpHXa6NPAgwv6q7dWigjosY/JxHfT7PusQmh/g=
+    20260313113000_task_runtime_contracts_terraform_outputs.up.sql h1:N4vnUxosCGE0vA6s+4ao/FjSW5Ql2qQfG0SAgiup8h4=
+    20260313131500_user_fixia_servers.up.sql h1:Lma74r7inkYPvia4R3ciZac2BJqnv0fuK0+3COpDcUs=
+    20260313210000_deployment_family_engine_pair_kne.up.sql h1:i8I2xhsNDNYtCbOPZD7Nb1WJ9zQmXhhUm9F0HGVC2Ys=
+    20260313211000_deployment_type_kne.up.sql h1:yvA9XIVxby8yMeSwZzY+0XfdrUDhC4rGtYoQAzn+T8c=
+    20260319193000_user_settings_ui_experience_mode.up.sql h1:yAe+suOY9okDf7gsfqgoClFO2xGEf/qIlA4BhTUt+M0=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
