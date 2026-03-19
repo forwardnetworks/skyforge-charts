@@ -90,6 +90,24 @@ data:
       - job_name: skyforge-worker
         static_configs:
           - targets: ["skyforge-server-worker.{{ .Release.Namespace }}.svc.cluster.local:8085"]
+      - job_name: sso-proxy-envoy
+        metrics_path: /stats/prometheus
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: {{ $ns | quote }}
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+            regex: sso-proxy
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_container_port_name]
+            regex: admin
+            action: keep
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
 {{- if $nodeExporterEnabled }}
       - job_name: node-exporter
         kubernetes_sd_configs:

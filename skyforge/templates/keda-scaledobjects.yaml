@@ -1,5 +1,9 @@
 {{- if and .Values.skyforge.keda .Values.skyforge.keda.enabled -}}
-{{- if and (default true .Values.skyforge.keda.requireCRD) (not (.Capabilities.APIVersions.Has "keda.sh/v1alpha1/ScaledObject")) -}}
+{{- $requireCRD := true -}}
+{{- if hasKey .Values.skyforge.keda "requireCRD" -}}
+{{- $requireCRD = .Values.skyforge.keda.requireCRD -}}
+{{- end -}}
+{{- if and $requireCRD (not (.Capabilities.APIVersions.Has "keda.sh/v1alpha1/ScaledObject")) -}}
 {{- fail "skyforge.keda.enabled=true requires KEDA CRDs (keda.sh/v1alpha1/ScaledObject)" -}}
 {{- end -}}
 
@@ -114,7 +118,7 @@ spec:
 {{ toYaml $triggers | indent 4 }}
 {{- end }}
 
-{{- if and .Values.skyforge.rapid7.enabled .Values.skyforge.rapid7.managed .Values.skyforge.keda.rapid7.enabled }}
+{{ if and .Values.skyforge.rapid7.enabled .Values.skyforge.rapid7.managed .Values.skyforge.keda.rapid7.enabled }}
 {{- $triggers := default (list) .Values.skyforge.keda.rapid7.triggers -}}
 {{- if eq (len $triggers) 0 -}}
 {{- fail "skyforge.keda.rapid7.enabled=true requires skyforge.keda.rapid7.triggers" -}}
@@ -131,13 +135,13 @@ spec:
     name: {{ default "rapid7" .Values.skyforge.rapid7.serviceName }}
   pollingInterval: {{ default 30 .Values.skyforge.keda.rapid7.pollingInterval }}
   cooldownPeriod: {{ default 900 .Values.skyforge.keda.rapid7.cooldownPeriod }}
-  minReplicaCount: {{ default 1 .Values.skyforge.keda.rapid7.minReplicaCount }}
-  maxReplicaCount: {{ default 2 .Values.skyforge.keda.rapid7.maxReplicaCount }}
+  minReplicaCount: {{- if hasKey .Values.skyforge.keda.rapid7 "minReplicaCount" }} {{ .Values.skyforge.keda.rapid7.minReplicaCount }}{{- else }} 1{{- end }}
+  maxReplicaCount: {{- if hasKey .Values.skyforge.keda.rapid7 "maxReplicaCount" }} {{ .Values.skyforge.keda.rapid7.maxReplicaCount }}{{- else }} 2{{- end }}
   triggers:
 {{ toYaml $triggers | indent 4 }}
-{{- end }}
+{{ end }}
 
-{{- if and .Values.skyforge.elk.enabled .Values.skyforge.keda.elkProxy.enabled }}
+{{ if and .Values.skyforge.elk.enabled .Values.skyforge.keda.elkProxy.enabled }}
 {{- if gt (int (default 1 .Values.skyforge.keda.elkProxy.maxReplicaCount)) 1 -}}
 {{- fail "skyforge.keda.elkProxy.maxReplicaCount must be <= 1 because the bundled ELK stack is single-node and uses one RWO Elasticsearch data volume" -}}
 {{- end -}}
@@ -157,10 +161,10 @@ spec:
     name: {{ default "kibana" .Values.skyforge.elk.serviceName }}
   pollingInterval: {{ default 30 .Values.skyforge.keda.elkProxy.pollingInterval }}
   cooldownPeriod: {{ default 900 .Values.skyforge.keda.elkProxy.cooldownPeriod }}
-  minReplicaCount: {{ default 1 .Values.skyforge.keda.elkProxy.minReplicaCount }}
-  maxReplicaCount: {{ default 2 .Values.skyforge.keda.elkProxy.maxReplicaCount }}
+  minReplicaCount: {{- if hasKey .Values.skyforge.keda.elkProxy "minReplicaCount" }} {{ .Values.skyforge.keda.elkProxy.minReplicaCount }}{{- else }} 1{{- end }}
+  maxReplicaCount: {{- if hasKey .Values.skyforge.keda.elkProxy "maxReplicaCount" }} {{ .Values.skyforge.keda.elkProxy.maxReplicaCount }}{{- else }} 2{{- end }}
   triggers:
 {{ toYaml $triggers | indent 4 }}
-{{- end }}
+{{ end }}
 
 {{- end }}

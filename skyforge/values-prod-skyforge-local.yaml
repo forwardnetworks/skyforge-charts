@@ -76,6 +76,12 @@ skyforge:
     lifecycle:
       # Pin lifecycle controller tooling image in prod for deterministic reconcile behavior.
       image: public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1
+      autoStop:
+        enabled: true
+        # Keep Infoblox subordinate to core lab/platform workloads by
+        # shrinking idle/runtime windows.
+        maxIdleMinutes: 30
+        maxRunMinutes: 240
     vm:
       cpuModel: host-passthrough
       dedicatedCpuPlacement: true
@@ -138,6 +144,39 @@ skyforge:
       ES_JAVA_OPTS: "-Xms1024m -Xmx1024m"
       LS_JAVA_OPTS: "-Xms256m -Xmx256m"
       NODE_OPTIONS: "--max-old-space-size=512"
+  keda:
+    enabled: true
+    requireCRD: true
+    # Keep heavyweight integrations subordinate and cap at one replica.
+    # Scale from zero based on real request activity seen at SSO proxy edges.
+    rapid7:
+      enabled: true
+      pollingInterval: 30
+      cooldownPeriod: 300
+      minReplicaCount: 0
+      maxReplicaCount: 1
+      triggers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://skyforge-prometheus.skyforge.svc.cluster.local:9090/prometheus"
+            metricName: "rapid7_proxy_rps"
+            query: "sum(rate(envoy_http_downstream_rq_total{envoy_http_conn_manager_prefix='ingress_http',pod=~'rapid7-sso-proxy-.*'}[2m]))"
+            activationThreshold: "0.01"
+            threshold: "0.1"
+    elkProxy:
+      enabled: true
+      pollingInterval: 30
+      cooldownPeriod: 300
+      minReplicaCount: 0
+      maxReplicaCount: 1
+      triggers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://skyforge-prometheus.skyforge.svc.cluster.local:9090/prometheus"
+            metricName: "elk_proxy_rps"
+            query: "sum(rate(envoy_http_downstream_rq_total{envoy_http_conn_manager_prefix='ingress_http',pod=~'elk-sso-proxy-.*'}[2m]))"
+            activationThreshold: "0.01"
+            threshold: "0.1"
 
   # Forward in-cluster collector image + pull credentials.
   # Pin to a concrete tag to avoid drifting when `latest` is retagged.
