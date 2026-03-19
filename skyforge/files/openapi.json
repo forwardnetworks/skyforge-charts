@@ -4400,6 +4400,54 @@
         ],
         "type": "object"
       },
+      "skyforge.ToolCatalogContentEntry": {
+        "properties": {
+          "allowed": {
+            "type": "boolean"
+          },
+          "badge": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eyebrow": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "order": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "surface": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "surface",
+          "mode",
+          "badge",
+          "eyebrow",
+          "title",
+          "description",
+          "icon",
+          "order",
+          "allowed"
+        ],
+        "type": "object"
+      },
       "skyforge.ToolCatalogEntry": {
         "properties": {
           "allowed": {
@@ -18621,6 +18669,12 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "dashboardContent": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogContentEntry"
+                      },
+                      "type": "array"
+                    },
                     "dashboardHeroActions": {
                       "items": {
                         "$ref": "#/components/schemas/skyforge.ToolCatalogActionEntry"
@@ -18670,6 +18724,7 @@
                     "routes",
                     "launchpad",
                     "dashboardHeroActions",
+                    "dashboardContent",
                     "dashboardNextSteps",
                     "tools"
                   ],
