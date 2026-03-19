@@ -4456,6 +4456,42 @@
         ],
         "type": "object"
       },
+      "skyforge.ToolCatalogLaunchpadEntry": {
+        "properties": {
+          "allowed": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "order": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "href",
+          "icon",
+          "order",
+          "allowed"
+        ],
+        "type": "object"
+      },
       "skyforge.ToolCatalogNavEntry": {
         "properties": {
           "adminOnly": {
@@ -18503,6 +18539,12 @@
                       },
                       "type": "array"
                     },
+                    "launchpad": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogLaunchpadEntry"
+                      },
+                      "type": "array"
+                    },
                     "routes": {
                       "items": {
                         "$ref": "#/components/schemas/skyforge.ToolCatalogRouteEntry"
@@ -18526,6 +18568,7 @@
                     "sections",
                     "entries",
                     "routes",
+                    "launchpad",
                     "tools"
                   ],
                   "type": "object"
