@@ -4364,6 +4364,42 @@
         ],
         "type": "object"
       },
+      "skyforge.ToolCatalogActionEntry": {
+        "properties": {
+          "allowed": {
+            "type": "boolean"
+          },
+          "href": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "order": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "variant": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "href",
+          "icon",
+          "variant",
+          "order",
+          "allowed"
+        ],
+        "type": "object"
+      },
       "skyforge.ToolCatalogEntry": {
         "properties": {
           "allowed": {
@@ -4592,6 +4628,30 @@
           "icon",
           "order",
           "defaultExpanded"
+        ],
+        "type": "object"
+      },
+      "skyforge.ToolCatalogTextEntry": {
+        "properties": {
+          "allowed": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "order": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "order",
+          "allowed"
         ],
         "type": "object"
       },
@@ -18561,6 +18621,18 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "dashboardHeroActions": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogActionEntry"
+                      },
+                      "type": "array"
+                    },
+                    "dashboardNextSteps": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ToolCatalogTextEntry"
+                      },
+                      "type": "array"
+                    },
                     "entries": {
                       "items": {
                         "$ref": "#/components/schemas/skyforge.ToolCatalogNavEntry"
@@ -18597,6 +18669,8 @@
                     "entries",
                     "routes",
                     "launchpad",
+                    "dashboardHeroActions",
+                    "dashboardNextSteps",
                     "tools"
                   ],
                   "type": "object"
