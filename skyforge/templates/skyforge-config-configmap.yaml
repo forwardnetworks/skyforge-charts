@@ -24,6 +24,15 @@ data:
   SKYFORGE_NAUTOBOT_SSO_URL: {{ .Values.skyforge.nautobotSsoUrl | quote }}
   SKYFORGE_YAADE_URL: {{ .Values.skyforge.yaadeUrl | quote }}
   SKYFORGE_YAADE_ADMIN_USERNAME: {{ .Values.skyforge.yaadeAdminUsername | quote }}
+  SKYFORGE_YAADE_OIDC_CLIENT_ID: "yaade"
+  SKYFORGE_YAADE_OIDC_PROVIDER_ID: "dex"
+  SKYFORGE_YAADE_OIDC_PROVIDER_LABEL: "Sign in with Skyforge"
+  SKYFORGE_YAADE_OIDC_CALLBACK_URL: {{ printf "https://%s/api-testing/callback-dex" .Values.skyforge.hostname | quote }}
+{{- if eq (default "local" .Values.skyforge.auth.mode) "oidc" }}
+  SKYFORGE_YAADE_OIDC_SITE: {{ default (printf "https://%s/dex" .Values.skyforge.hostname) .Values.skyforge.oidc.issuerUrl | quote }}
+{{- else }}
+  SKYFORGE_YAADE_OIDC_SITE: ""
+{{- end }}
   SKYFORGE_OBJECT_STORAGE_ENDPOINT: {{ .Values.skyforge.objectStorage.endpoint | quote }}
   SKYFORGE_OBJECT_STORAGE_USE_SSL: {{ .Values.skyforge.objectStorage.useSsl | quote }}
   SKYFORGE_OBJECT_STORAGE_FILES_BUCKET: {{ .Values.skyforge.objectStorage.filesBucket | quote }}

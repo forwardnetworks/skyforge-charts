@@ -45,13 +45,24 @@ spec:
               state_dir="/var/lib/yaade-sync"
               state_file="${state_dir}/last-password"
               cookie_file="/tmp/yaade-cookie.txt"
+              auth_config_file="/tmp/yaade-auth-config.json"
               default_password="password"
+              oidc_site="${SKYFORGE_YAADE_OIDC_SITE:-}"
+              oidc_client_id="${SKYFORGE_YAADE_OIDC_CLIENT_ID:-yaade}"
+              oidc_provider_id="${SKYFORGE_YAADE_OIDC_PROVIDER_ID:-dex}"
+              oidc_provider_label="${SKYFORGE_YAADE_OIDC_PROVIDER_LABEL:-Sign in with Skyforge}"
+              oidc_callback_url="${SKYFORGE_YAADE_OIDC_CALLBACK_URL:-}"
+              oidc_secret_file="/run/secrets/dex-client-yaade-secret"
 
               mkdir -p "${state_dir}"
               umask 077
 
               json_escape() {
                 printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+              }
+
+              compact_json() {
+                tr -d '\n\r\t ' < "$1"
               }
 
               login() {
@@ -78,6 +89,43 @@ spec:
                 [ "${code}" = "200" ]
               }
 
+              render_auth_config() {
+                if [ -n "${oidc_site}" ] && [ -n "${oidc_callback_url}" ] && [ -s "${oidc_secret_file}" ]; then
+                  oidc_client_secret=$(tr -d '\n' < "${oidc_secret_file}")
+                  cat > "${auth_config_file}" <<PAYLOAD
+              {"providers":[{"id":"$(json_escape "${oidc_provider_id}")","label":"$(json_escape "${oidc_provider_label}")","provider":"oidc-discovery","params":{"site":"$(json_escape "${oidc_site}")","clientId":"$(json_escape "${oidc_client_id}")","clientSecret":"$(json_escape "${oidc_client_secret}")","callbackUrl":"$(json_escape "${oidc_callback_url}")","fields":{"username":"/preferred_username","groups":"/groups","defaultGroups":["users"]},"scopes":["openid","profile","email","groups"]}}]}
+              PAYLOAD
+                else
+                  printf '%s' '{"providers":[]}' > "${auth_config_file}"
+                fi
+              }
+
+              ensure_auth_config() {
+                render_auth_config
+                current_code=$(curl -sS -o /tmp/yaade-auth-config-current.out -w '%{http_code}' \
+                  -b "${cookie_file}" \
+                  "${base}/api/config/auth_config" || true)
+                if [ "${current_code}" != "200" ]; then
+                  echo "yaade-admin-sync: unable to read current auth config (status=${current_code})"
+                  return 1
+                fi
+                if [ "$(compact_json /tmp/yaade-auth-config-current.out)" = "$(compact_json "${auth_config_file}")" ]; then
+                  return 0
+                fi
+                update_code=$(curl -sS -o /tmp/yaade-auth-config-put.out -w '%{http_code}' \
+                  -b "${cookie_file}" \
+                  -X PUT \
+                  -H 'Content-Type: application/json' \
+                  --data-binary @"${auth_config_file}" \
+                  "${base}/api/config/auth_config" || true)
+                if [ "${update_code}" = "200" ]; then
+                  echo "yaade-admin-sync: reconciled auth providers"
+                  return 0
+                fi
+                echo "yaade-admin-sync: auth config update failed (status=${update_code})"
+                return 1
+              }
+
               while true; do
                 if [ ! -s "${desired_file}" ]; then
                   echo "yaade-admin-sync: desired password secret missing; retrying..."
@@ -94,6 +142,7 @@ spec:
 
                 if login "${desired}"; then
                   printf '%s' "${desired}" > "${state_file}"
+                  ensure_auth_config || true
                   sleep "${interval}"
                   continue
                 fi
@@ -127,6 +176,31 @@ spec:
                 configMapKeyRef:
                   name: skyforge-config
                   key: SKYFORGE_YAADE_ADMIN_USERNAME
+            - name: SKYFORGE_YAADE_OIDC_SITE
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_YAADE_OIDC_SITE
+            - name: SKYFORGE_YAADE_OIDC_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_YAADE_OIDC_CLIENT_ID
+            - name: SKYFORGE_YAADE_OIDC_PROVIDER_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_YAADE_OIDC_PROVIDER_ID
+            - name: SKYFORGE_YAADE_OIDC_PROVIDER_LABEL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_YAADE_OIDC_PROVIDER_LABEL
+            - name: SKYFORGE_YAADE_OIDC_CALLBACK_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skyforge-config
+                  key: SKYFORGE_YAADE_OIDC_CALLBACK_URL
           volumeMounts:
             - name: run-secrets
               mountPath: /run/secrets
@@ -143,5 +217,10 @@ spec:
                   items:
                     - key: yaade-admin-password
                       path: yaade-admin-password
+              - secret:
+                  name: dex-client-yaade-secret
+                  items:
+                    - key: dex-client-yaade-secret
+                      path: dex-client-yaade-secret
         - name: yaade-sync-state
           emptyDir: {}

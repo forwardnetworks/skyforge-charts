@@ -741,7 +741,7 @@ skyforge:
     # When empty, Skyforge will not deploy a collector Pod (Collector page will
     # show "not configured").
     # Example:
-    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-18"
+    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-20"
     image: ""
     pullPolicy: "IfNotPresent"
     heapSizeGB: 0
@@ -979,6 +979,8 @@ secrets:
       dex-client-grafana-secret: ""
     dex-client-gitea-secret:
       dex-client-gitea-secret: ""
+    dex-client-yaade-secret:
+      dex-client-yaade-secret: ""
     dex-client-netbox-secret:
       dex-client-netbox-secret: ""
     dex-client-nautobot-secret:

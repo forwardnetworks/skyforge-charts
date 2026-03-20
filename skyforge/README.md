@@ -57,6 +57,7 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `secrets.items.skyforge-admin-shared.password`: Shared admin password used to seed Skyforge, Gitea,
   NetBox and Nautobot.
 - `secrets.items.dex-client-gitea-secret.dex-client-gitea-secret`: Dex OIDC client secret for Gitea (required when `skyforge.gitea.enabled=true`).
+- `secrets.items.dex-client-yaade-secret.dex-client-yaade-secret`: Dex OIDC client secret for Yaade/API Testing (required when `skyforge.yaade.enabled=true`; autogen when `secrets.create=true`).
 - `secrets.items.dex-client-netbox-secret.dex-client-netbox-secret`: Dex OIDC client secret for NetBox (required when `skyforge.netbox.enabled=true`).
 - `secrets.items.dex-client-nautobot-secret.dex-client-nautobot-secret`: Dex OIDC client secret for Nautobot (required when `skyforge.nautobot.enabled=true`).
 - `secrets.items.db-forward-app-password` / `secrets.items.db-forward-fdb-password`: Forward app/FDB

@@ -163,6 +163,9 @@ early when required configuration is missing.
   {{- if .Values.skyforge.gitea.enabled -}}
     {{- $requiredSecrets = append $requiredSecrets "dex-client-gitea-secret" -}}
   {{- end -}}
+  {{- if .Values.skyforge.yaade.enabled -}}
+    {{- $requiredSecrets = append $requiredSecrets "dex-client-yaade-secret" -}}
+  {{- end -}}
   {{- if and $obsEnabled $obsManagedEnabled $obsGrafanaOIDCEnabled -}}
     {{- $requiredSecrets = append $requiredSecrets "dex-client-grafana-secret" -}}
   {{- end -}}
