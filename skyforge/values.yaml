@@ -397,6 +397,9 @@ skyforge:
         # or when reseed marks license_pending=true.
         enabled: true
         schedule: "*/20 * * * *"
+        # Optional virtctl image that includes /usr/local/bin/virtctl.
+        # Leave empty to use chart default.
+        virtctlImage: ""
         # Set true only for temporary operator pause; default is always active.
         suspend: false
         maxAttempts: 3

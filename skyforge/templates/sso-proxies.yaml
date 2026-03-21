@@ -352,7 +352,7 @@ spec:
     - name: http
       port: 8080
       targetPort: 8080
-{{- end }}
+{{ end }}
 
 {{ if (default false .Values.skyforge.observability.enabled) }}
 {{- $obsNs := default $.Release.Namespace .Values.skyforge.observability.namespace -}}

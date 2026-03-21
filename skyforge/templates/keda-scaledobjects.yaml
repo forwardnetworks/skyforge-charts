@@ -47,7 +47,7 @@ spec:
         activationTargetQueryValue: {{ printf "%v" (default (default "1" .Values.skyforge.keda.worker.activationQueryValue) .Values.skyforge.keda.worker.activationTargetQueryValue) | quote }}
       authenticationRef:
         name: skyforge-worker-postgresql-auth
-{{- end }}
+{{ end }}
 
 {{- if and .Values.skyforge.jira.enabled .Values.skyforge.jira.managed .Values.skyforge.keda.jira.enabled }}
 {{- $triggers := default (list) .Values.skyforge.keda.jira.triggers -}}

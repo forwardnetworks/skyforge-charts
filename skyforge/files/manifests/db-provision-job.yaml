@@ -7,7 +7,7 @@ kind: Job
 metadata:
   annotations:
     helm.sh/hook: {{ join "," $hookEvents | quote }}
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
     helm.sh/hook-weight: "-20"
   labels:
     app.kubernetes.io/name: db-provision
@@ -136,13 +136,13 @@ spec:
               grant_schema_rw() {
                 db="$1"
                 role="$2"
-                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT USAGE, CREATE ON SCHEMA public TO ${role};"
-                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON ALL TABLES IN SCHEMA public TO ${role};"
-                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${role};"
-                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ${role};"
-                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES TO ${role};"
-                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO ${role};"
-                psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO ${role};"
+                psql -h db -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT USAGE, CREATE ON SCHEMA public TO ${role};"
+                psql -h db -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON ALL TABLES IN SCHEMA public TO ${role};"
+                psql -h db -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${role};"
+                psql -h db -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ${role};"
+                psql -h db -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES TO ${role};"
+                psql -h db -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO ${role};"
+                psql -h db -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${db}" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO ${role};"
               }
 
               grant_db_connect fwd_app fwd_app
