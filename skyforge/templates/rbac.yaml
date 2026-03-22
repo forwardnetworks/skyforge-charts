@@ -119,7 +119,7 @@ rules:
     resources: ["replicasets"]
     verbs: ["get", "list", "watch", "create", "patch", "update", "delete", "deletecollection"]
   - apiGroups: ["apps"]
-    resources: ["deployments"]
+    resources: ["deployments", "statefulsets", "daemonsets"]
     verbs: ["get", "list", "watch", "create", "patch", "update", "delete", "deletecollection"]
   - apiGroups: [""]
     resources: ["secrets", "serviceaccounts"]

@@ -3035,7 +3035,6 @@ data:
     SET forward_type = CASE lower(device_key)
         WHEN 'arubacx' THEN 'aruba_aos_cx_ssh'
         WHEN 'asav' THEN 'cisco_asa_ssh'
-        WHEN 'cumulus' THEN 'cumulus_ssh'
         WHEN 'dellos10' THEN 'dell_os10_switch_ssh'
         WHEN 'eos' THEN 'arista_eos_ssh'
         WHEN 'fortios' THEN 'fortinet_ssh'

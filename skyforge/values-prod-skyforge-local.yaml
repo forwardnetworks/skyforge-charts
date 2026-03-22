@@ -268,8 +268,10 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260319-kne-prepull-spread-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260322-kne-no-startup-anywhere-r1"
     pullPolicy: "IfNotPresent"
+    runtimePrepull:
+      enabled: true
 
   # Skyforge deploys in-cluster topologies through KNE.
   kne:
@@ -281,6 +283,21 @@ skyforge:
   worker:
     priorityClassName: "skyforge-core"
     replicas: 1
+    placement:
+      poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
+      preferredPoolClass: "control"
+      pools:
+        - control
+        - app
+        - lab
+      poolWeight: 100
+      requiredPoolClass: "control"
+      nodeSelector: {}
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+      affinity: {}
     autoscaling:
       enabled: false
     pdb:
@@ -299,6 +316,21 @@ skyforge:
       activationBatchSize: 200
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300
+
+  server:
+    priorityClassName: "skyforge-core"
+    placement:
+      poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
+      pools:
+        - control
+      poolWeight: 100
+      requiredPoolClass: "control"
+      nodeSelector: {}
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+      affinity: {}
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").

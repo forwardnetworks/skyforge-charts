@@ -1,0 +1,50 @@
+{{- if .Values.skyforge.netlab.runtimePrepull.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: skyforge-netlab-runtime-prepull
+  labels:
+    app.kubernetes.io/name: skyforge-netlab-runtime-prepull
+    app.kubernetes.io/part-of: skyforge
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge-netlab-runtime-prepull
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: skyforge-netlab-runtime-prepull
+        app.kubernetes.io/part-of: skyforge
+    spec:
+      {{- with .Values.kubernetes.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . | quote }}
+        {{- end }}
+      {{- end }}
+      # Do not schedule on tainted control-plane nodes; this is purely for
+      # worker-side image cache warm-up.
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: skyforge.forwardnetworks.com/pool-class
+                    operator: In
+                    values: ["lab"]
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: skyforge.forwardnetworks.com/pool-class
+                    operator: In
+                    values: ["app"]
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: prepull
+          image: {{ .Values.skyforge.netlab.image | quote }}
+          imagePullPolicy: {{ .Values.skyforge.netlab.pullPolicy | quote }}
+          command: ["/bin/sh", "-c", "trap 'exit 0' TERM INT; sleep infinity & wait"]
+          resources:
+            {{- toYaml .Values.skyforge.netlab.runtimePrepull.resources | nindent 12 }}
+{{- end }}

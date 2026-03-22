@@ -18,7 +18,7 @@ spec:
       serviceAccountName: coder
       initContainers:
         - name: skyforge-ca-bundle
-          image: alpine:3.20
+          image: public.ecr.aws/docker/library/alpine:latest
           command:
             - sh
             - -c
@@ -33,7 +33,7 @@ spec:
             - name: skyforge-ca-bundle
               mountPath: /work
         - name: wait-for-dex
-          image: alpine:3.20
+          image: public.ecr.aws/docker/library/alpine:latest
           command:
             - sh
             - -c

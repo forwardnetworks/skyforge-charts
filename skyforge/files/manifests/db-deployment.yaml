@@ -117,7 +117,7 @@ spec:
         emptyDir: {}
       initContainers:
       - name: skyforge-ca-bundle
-        image: alpine:3.20
+        image: public.ecr.aws/docker/library/alpine:latest
         command:
         - sh
         - -c

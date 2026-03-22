@@ -195,7 +195,7 @@ spec:
         emptyDir: {}
       initContainers:
       - name: nautobot-init-volumes
-        image: alpine:3.20
+        image: public.ecr.aws/docker/library/alpine:latest
         command:
         - /bin/sh
         - -c
@@ -209,7 +209,7 @@ spec:
         - mountPath: /opt/nautobot/jobs
           name: nautobot-jobs
       - name: skyforge-ca-bundle
-        image: alpine:3.20
+        image: public.ecr.aws/docker/library/alpine:latest
         command:
         - sh
         - -c

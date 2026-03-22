@@ -230,7 +230,7 @@ spec:
         emptyDir: {}
       initContainers:
       - name: skyforge-ca-bundle
-        image: alpine:3.20
+        image: public.ecr.aws/docker/library/alpine:latest
         command:
         - sh
         - -c
@@ -242,7 +242,7 @@ spec:
         - name: skyforge-ca-bundle
           mountPath: /work
       - name: gitea-storage-default
-        image: alpine:3.20
+        image: public.ecr.aws/docker/library/alpine:latest
         command:
         - sh
         - -lc

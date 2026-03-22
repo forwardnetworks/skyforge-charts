@@ -648,6 +648,14 @@ skyforge:
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
     image: "ghcr.io/forwardnetworks/skyforge-netlab:20260319-kne-prepull-spread-r1"
     pullPolicy: "IfNotPresent"
+    runtimePrepull:
+      enabled: false
+      # Keep this low-impact; the pod only exists to ensure the image is cached.
+      resources:
+        requests:
+          cpu: "10m"
+          memory: "32Mi"
+        limits: {}
   dns:
     enabled: false
     adminUsername: "admin"
@@ -798,7 +806,7 @@ skyforge:
     sslmode: "disable"
     # Forward services can open many idle JDBC sessions; keep headroom so
     # platform integrations (Dex/NetBox/Nautobot/Coder) are not starved.
-    maxConnections: 300
+    maxConnections: 600
   sessionCookie: "skyforge_session"
   syslog:
     enabled: false
@@ -891,7 +899,7 @@ skyforge:
     enabled: true
 images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
-  alpine: "public.ecr.aws/docker/library/alpine:3.20"
+  alpine: "public.ecr.aws/docker/library/alpine:latest"
   kubectl: "public.ecr.aws/bitnami/kubectl:latest"
   envoy: "envoyproxy/envoy:v1.31.2"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
