@@ -1130,6 +1130,9 @@
         ],
         "type": "object"
       },
+      "forwardtenant.TenantKind": {
+        "type": "string"
+      },
       "platform.ForwardTenantResetBaseline": {
         "properties": {
           "capturedAt": {
@@ -1200,6 +1203,9 @@
           "status": {
             "type": "string"
           },
+          "tenantKind": {
+            "type": "string"
+          },
           "updatedAt": {
             "type": "string"
           },
@@ -1210,6 +1216,7 @@
         "required": [
           "id",
           "username",
+          "tenantKind",
           "mode",
           "status",
           "requestedBy",
@@ -3358,11 +3365,15 @@
           "status": {
             "type": "string"
           },
+          "tenantKind": {
+            "type": "string"
+          },
           "userScopeId": {
             "type": "string"
           }
         },
         "required": [
+          "tenantKind",
           "id",
           "userScopeId",
           "forwardNetworkId",
@@ -7858,9 +7869,13 @@
                   },
                   "reason": {
                     "type": "string"
+                  },
+                  "tenantKind": {
+                    "type": "string"
                   }
                 },
                 "required": [
+                  "tenantKind",
                   "mode",
                   "reason",
                   "metadata"
@@ -7903,6 +7918,9 @@
                     "status": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -7913,6 +7931,7 @@
                   "required": [
                     "id",
                     "username",
+                    "tenantKind",
                     "mode",
                     "status",
                     "requestedBy",
@@ -15280,6 +15299,488 @@
         "summary": "ListForwardCollectors lists collectors visible to the authenticated user's\nForward org.\n"
       }
     },
+    "/api/forward/demo-org-credential": {
+      "get": {
+        "operationId": "GET:skyforge.GetCurrentUserForwardDemoTenantCredential",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "lastRotatedAt": {
+                      "type": "string"
+                    },
+                    "orgId": {
+                      "type": "string"
+                    },
+                    "orgName": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tenantKind",
+                    "configured",
+                    "orgId",
+                    "orgName",
+                    "username",
+                    "email",
+                    "hasPassword",
+                    "password",
+                    "updatedAt",
+                    "lastRotatedAt",
+                    "source"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetCurrentUserForwardDemoTenantCredential returns the current user's demo\nForward org credential.\n"
+      }
+    },
+    "/api/forward/demo-org-credential/reset": {
+      "post": {
+        "operationId": "POST:skyforge.ResetCurrentUserForwardDemoTenantPassword",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "lastRotatedAt": {
+                      "type": "string"
+                    },
+                    "orgId": {
+                      "type": "string"
+                    },
+                    "orgName": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tenantKind",
+                    "configured",
+                    "orgId",
+                    "orgName",
+                    "username",
+                    "email",
+                    "hasPassword",
+                    "password",
+                    "updatedAt",
+                    "lastRotatedAt",
+                    "source"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ResetCurrentUserForwardDemoTenantPassword rotates the current user's demo\nForward org password.\n"
+      }
+    },
+    "/api/forward/demo-org-credential/reveal": {
+      "post": {
+        "description": "demo managed Forward credential with password material included.\n",
+        "operationId": "POST:skyforge.RevealCurrentUserForwardDemoTenantCredentialPassword",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "lastRotatedAt": {
+                      "type": "string"
+                    },
+                    "orgId": {
+                      "type": "string"
+                    },
+                    "orgName": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tenantKind",
+                    "configured",
+                    "orgId",
+                    "orgName",
+                    "username",
+                    "email",
+                    "hasPassword",
+                    "password",
+                    "updatedAt",
+                    "lastRotatedAt",
+                    "source"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RevealCurrentUserForwardDemoTenantCredentialPassword returns the current user's\n"
+      }
+    },
+    "/api/forward/demo-org/performance-networks": {
+      "get": {
+        "operationId": "GET:skyforge.ListCurrentUserForwardDemoTenantPerformanceNetworks",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "networks": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForwardPerformanceNetworkSummary"
+                      },
+                      "type": "array"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tenantKind",
+                    "userScopeId",
+                    "networks"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListCurrentUserForwardDemoTenantPerformanceNetworks returns demo-org Forward\nnetworks with latest processed snapshot metadata.\n"
+      }
+    },
+    "/api/forward/demo-org/performance-networks/{networkID}/generate": {
+      "post": {
+        "operationId": "POST:skyforge.GenerateCurrentUserForwardDemoTenantPerformanceData",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "generationIntervalMins": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "healthyDeviceOdds": {
+                    "type": "number"
+                  },
+                  "healthyInterfaceOdds": {
+                    "type": "number"
+                  },
+                  "snapshotId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "snapshotId",
+                  "generationIntervalMins",
+                  "healthyDeviceOdds",
+                  "healthyInterfaceOdds"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "numDevices": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "numInterfaces": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "snapshotId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tenantKind",
+                    "userScopeId",
+                    "forwardNetworkId",
+                    "snapshotId",
+                    "status",
+                    "numDevices",
+                    "numInterfaces"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GenerateCurrentUserForwardDemoTenantPerformanceData generates synthetic\nperformance data for a demo-org Forward network.\n"
+      }
+    },
+    "/api/forward/demo-org/rebuild": {
+      "post": {
+        "operationId": "POST:skyforge.RequestCurrentUserForwardDemoTenantRebuild",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "metadata": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "mode": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "tenantKind": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tenantKind",
+                  "mode",
+                  "reason",
+                  "metadata"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseline": {
+                      "$ref": "#/components/schemas/platform.ForwardTenantResetBaseline"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadata": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "tenantKind",
+                    "mode",
+                    "status",
+                    "requestedBy",
+                    "reason",
+                    "baseline",
+                    "createdAt",
+                    "updatedAt",
+                    "metadata"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RequestCurrentUserForwardDemoTenantRebuild requests a platform-managed Forward\ndemo org rebuild for the current user.\n"
+      }
+    },
+    "/api/forward/demo-org/rebuild/runs": {
+      "get": {
+        "operationId": "GET:skyforge.ListCurrentUserForwardDemoTenantRebuildRuns",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "runs": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.ForwardTenantResetRun"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "runs"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListCurrentUserForwardDemoTenantRebuildRuns returns demo-org reset runs for the\ncurrent user.\n"
+      }
+    },
     "/api/forward/networks/{networkID}/session": {
       "get": {
         "description": "authenticated Skyforge host and redirects the browser to the Forward-host bridge path for a specific network search target.\n",
@@ -15341,6 +15842,9 @@
                     "source": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -15349,6 +15853,7 @@
                     }
                   },
                   "required": [
+                    "tenantKind",
                     "configured",
                     "orgId",
                     "orgName",
@@ -15370,7 +15875,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetCurrentUserForwardTenantCredential returns the current user's Forward org\ncredential.\n"
+        "summary": "GetCurrentUserForwardTenantCredential returns the current user's deployment\nForward org credential.\n"
       }
     },
     "/api/forward/org-credential/reset": {
@@ -15406,6 +15911,9 @@
                     "source": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -15414,6 +15922,7 @@
                     }
                   },
                   "required": [
+                    "tenantKind",
                     "configured",
                     "orgId",
                     "orgName",
@@ -15435,12 +15944,12 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "ResetCurrentUserForwardTenantPassword rotates the current user's Forward org\npassword.\n"
+        "summary": "ResetCurrentUserForwardTenantPassword rotates the current user's deployment\nForward org password.\n"
       }
     },
     "/api/forward/org-credential/reveal": {
       "post": {
-        "description": "managed Forward credential with password material included.\n",
+        "description": "deployment managed Forward credential with password material included.\n",
         "operationId": "POST:skyforge.RevealCurrentUserForwardTenantCredentialPassword",
         "responses": {
           "200": {
@@ -15472,6 +15981,9 @@
                     "source": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -15480,6 +15992,7 @@
                     }
                   },
                   "required": [
+                    "tenantKind",
                     "configured",
                     "orgId",
                     "orgName",
@@ -15577,6 +16090,144 @@
         "summary": "PutCurrentUserForwardTenantFeatures upserts per-user experimental Forward org\nfeature flags.\n"
       }
     },
+    "/api/forward/org/performance-networks": {
+      "get": {
+        "operationId": "GET:skyforge.ListCurrentUserForwardTenantPerformanceNetworks",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "networks": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForwardPerformanceNetworkSummary"
+                      },
+                      "type": "array"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tenantKind",
+                    "userScopeId",
+                    "networks"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListCurrentUserForwardTenantPerformanceNetworks returns deployment-org Forward\nnetworks with latest processed snapshot metadata.\n"
+      }
+    },
+    "/api/forward/org/performance-networks/{networkID}/generate": {
+      "post": {
+        "operationId": "POST:skyforge.GenerateCurrentUserForwardTenantPerformanceData",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "generationIntervalMins": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "healthyDeviceOdds": {
+                    "type": "number"
+                  },
+                  "healthyInterfaceOdds": {
+                    "type": "number"
+                  },
+                  "snapshotId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "snapshotId",
+                  "generationIntervalMins",
+                  "healthyDeviceOdds",
+                  "healthyInterfaceOdds"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "numDevices": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "numInterfaces": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "snapshotId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tenantKind",
+                    "userScopeId",
+                    "forwardNetworkId",
+                    "snapshotId",
+                    "status",
+                    "numDevices",
+                    "numInterfaces"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GenerateCurrentUserForwardTenantPerformanceData generates synthetic performance\ndata for a deployment-org Forward network.\n"
+      }
+    },
     "/api/forward/org/rebuild": {
       "post": {
         "operationId": "POST:skyforge.RequestCurrentUserForwardTenantRebuild",
@@ -15596,9 +16247,13 @@
                   },
                   "reason": {
                     "type": "string"
+                  },
+                  "tenantKind": {
+                    "type": "string"
                   }
                 },
                 "required": [
+                  "tenantKind",
                   "mode",
                   "reason",
                   "metadata"
@@ -15641,6 +16296,9 @@
                     "status": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -15651,6 +16309,7 @@
                   "required": [
                     "id",
                     "username",
+                    "tenantKind",
                     "mode",
                     "status",
                     "requestedBy",
@@ -15670,7 +16329,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "RequestCurrentUserForwardTenantRebuild requests a platform-managed Forward org\nrebuild for the current user.\n"
+        "summary": "RequestCurrentUserForwardTenantRebuild requests a platform-managed Forward\ndeployment org rebuild for the current user.\n"
       }
     },
     "/api/forward/org/rebuild/runs": {
@@ -15702,7 +16361,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "ListCurrentUserForwardTenantRebuildRuns returns reset runs for the current user.\n"
+        "summary": "ListCurrentUserForwardTenantRebuildRuns returns deployment-org reset runs for\nthe current user.\n"
       }
     },
     "/api/forward/session": {
@@ -25186,11 +25845,15 @@
                       },
                       "type": "array"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "userScopeId": {
                       "type": "string"
                     }
                   },
                   "required": [
+                    "tenantKind",
                     "userScopeId",
                     "networks"
                   ],
@@ -25287,11 +25950,15 @@
                     "status": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "userScopeId": {
                       "type": "string"
                     }
                   },
                   "required": [
+                    "tenantKind",
                     "userScopeId",
                     "forwardNetworkId",
                     "snapshotId",
@@ -32758,11 +33425,15 @@
                   "supportUsername": {
                     "type": "string"
                   },
+                  "tenantKind": {
+                    "$ref": "#/components/schemas/forwardtenant.TenantKind"
+                  },
                   "username": {
                     "type": "string"
                   }
                 },
                 "required": [
+                  "tenantKind",
                   "username",
                   "mode",
                   "forwardEnabled",
@@ -32826,11 +33497,15 @@
                   "supportUsername": {
                     "type": "string"
                   },
+                  "tenantKind": {
+                    "$ref": "#/components/schemas/forwardtenant.TenantKind"
+                  },
                   "username": {
                     "type": "string"
                   }
                 },
                 "required": [
+                  "tenantKind",
                   "username",
                   "displayName",
                   "email",
@@ -32869,6 +33544,9 @@
                     "password": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "$ref": "#/components/schemas/forwardtenant.TenantKind"
+                    },
                     "updatedAt": {
                       "format": "date-time",
                       "type": "string"
@@ -32878,6 +33556,7 @@
                     }
                   },
                   "required": [
+                    "tenantKind",
                     "orgId",
                     "orgName",
                     "username",
@@ -32925,11 +33604,15 @@
                   "supportUsername": {
                     "type": "string"
                   },
+                  "tenantKind": {
+                    "$ref": "#/components/schemas/forwardtenant.TenantKind"
+                  },
                   "username": {
                     "type": "string"
                   }
                 },
                 "required": [
+                  "tenantKind",
                   "username",
                   "forwardEnabled",
                   "sessionSecret",
@@ -32965,6 +33648,9 @@
                     "password": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "$ref": "#/components/schemas/forwardtenant.TenantKind"
+                    },
                     "updatedAt": {
                       "format": "date-time",
                       "type": "string"
@@ -32974,6 +33660,7 @@
                     }
                   },
                   "required": [
+                    "tenantKind",
                     "orgId",
                     "orgName",
                     "username",
@@ -34583,6 +35270,9 @@
                     "status": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -34593,6 +35283,7 @@
                   "required": [
                     "id",
                     "username",
+                    "tenantKind",
                     "mode",
                     "status",
                     "requestedBy",
@@ -35251,12 +35942,16 @@
                   "includeAll": {
                     "type": "boolean"
                   },
+                  "tenantKind": {
+                    "type": "string"
+                  },
                   "username": {
                     "type": "string"
                   }
                 },
                 "required": [
                   "username",
+                  "tenantKind",
                   "includeAll"
                 ],
                 "type": "object"
@@ -35780,12 +36475,16 @@
                   "requestedBy": {
                     "type": "string"
                   },
+                  "tenantKind": {
+                    "type": "string"
+                  },
                   "username": {
                     "type": "string"
                   }
                 },
                 "required": [
                   "username",
+                  "tenantKind",
                   "mode",
                   "requestedBy",
                   "reason",
@@ -35830,6 +36529,9 @@
                     "status": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -35840,6 +36542,7 @@
                   "required": [
                     "id",
                     "username",
+                    "tenantKind",
                     "mode",
                     "status",
                     "requestedBy",
@@ -35925,6 +36628,9 @@
                     "status": {
                       "type": "string"
                     },
+                    "tenantKind": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -35935,6 +36641,7 @@
                   "required": [
                     "id",
                     "username",
+                    "tenantKind",
                     "mode",
                     "status",
                     "requestedBy",
