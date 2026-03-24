@@ -3403,6 +3403,12 @@
           "name": {
             "type": "string"
           },
+          "processedSnapshots": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.ForwardPerformanceSnapshotSummary"
+            },
+            "type": "array"
+          },
           "status": {
             "type": "string"
           },
@@ -3425,11 +3431,31 @@
           "latestProcessedSnapshotId",
           "latestProcessedSnapshotName",
           "latestProcessedSnapshotState",
+          "processedSnapshots",
           "defaultGenerationIntervalMins",
           "defaultHealthyDeviceOdds",
           "defaultHealthyInterfaceOdds",
           "status",
           "error"
+        ],
+        "type": "object"
+      },
+      "skyforge.ForwardPerformanceSnapshotSummary": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "state"
         ],
         "type": "object"
       },
@@ -4659,6 +4685,9 @@
             "format": "int64",
             "type": "integer"
           },
+          "navigationParentId": {
+            "type": "string"
+          },
           "navigationSection": {
             "type": "string"
           },
@@ -4682,6 +4711,7 @@
           "category",
           "experience",
           "navigationSection",
+          "navigationParentId",
           "navigationLabel",
           "navigationOrder",
           "navigationIcon",
@@ -4768,6 +4798,9 @@
             "format": "int64",
             "type": "integer"
           },
+          "navigationParentId": {
+            "type": "string"
+          },
           "navigationSection": {
             "type": "string"
           }
@@ -4776,6 +4809,7 @@
           "id",
           "label",
           "navigationSection",
+          "navigationParentId",
           "navigationOrder",
           "navigationIcon",
           "navigationHref",

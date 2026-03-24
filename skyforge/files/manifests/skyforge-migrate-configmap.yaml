@@ -4307,3 +4307,41 @@ data:
   20260319193000_user_settings_ui_experience_mode.up.sql: |
     ALTER TABLE public.sf_user_settings
     	ADD COLUMN ui_experience_mode text DEFAULT 'simple'::text NOT NULL;
+
+  20260324120000_forward_tenant_kind.up.sql: |
+    ALTER TABLE public.sf_user_forward_tenants
+        ADD COLUMN IF NOT EXISTS tenant_kind text NOT NULL DEFAULT 'primary';
+    
+    UPDATE public.sf_user_forward_tenants
+    SET tenant_kind = 'primary'
+    WHERE COALESCE(NULLIF(trim(tenant_kind), ''), 'primary') <> tenant_kind;
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        DROP CONSTRAINT IF EXISTS sf_user_forward_tenants_pkey;
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        ADD CONSTRAINT sf_user_forward_tenants_pkey PRIMARY KEY (username, tenant_kind);
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        ADD CONSTRAINT sf_user_forward_tenants_tenant_kind_check
+        CHECK (tenant_kind = ANY (ARRAY['primary'::text, 'demo'::text]));
+    
+    CREATE INDEX IF NOT EXISTS sf_user_forward_tenants_username_idx
+        ON public.sf_user_forward_tenants (username);
+    
+    CREATE INDEX IF NOT EXISTS sf_user_forward_tenants_tenant_kind_idx
+        ON public.sf_user_forward_tenants (tenant_kind);
+    
+    ALTER TABLE public.sf_forward_tenant_reset_runs
+        ADD COLUMN IF NOT EXISTS tenant_kind text NOT NULL DEFAULT 'primary';
+    
+    UPDATE public.sf_forward_tenant_reset_runs
+    SET tenant_kind = 'primary'
+    WHERE COALESCE(NULLIF(trim(tenant_kind), ''), 'primary') <> tenant_kind;
+    
+    ALTER TABLE public.sf_forward_tenant_reset_runs
+        ADD CONSTRAINT sf_forward_tenant_reset_runs_tenant_kind_check
+        CHECK (tenant_kind = ANY (ARRAY['primary'::text, 'demo'::text]));
+    
+    CREATE INDEX IF NOT EXISTS sf_forward_tenant_reset_runs_username_tenant_kind_idx
+        ON public.sf_forward_tenant_reset_runs (username, tenant_kind, created_at DESC);
