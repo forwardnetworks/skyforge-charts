@@ -2020,6 +2020,47 @@
         ],
         "type": "object"
       },
+      "skyforge.AdminForwardDemoSeedItem": {
+        "properties": {
+          "contentSha256": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "order": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "uploadedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "fileName",
+          "contentSha256",
+          "sizeBytes",
+          "enabled",
+          "order",
+          "uploadedAt"
+        ],
+        "type": "object"
+      },
       "skyforge.AdminSmokeRunCheck": {
         "properties": {
           "detail": {
@@ -8131,6 +8172,243 @@
             "$ref": "#/components/responses/APIError"
           }
         }
+      }
+    },
+    "/api/admin/integrations/forward/demo-seeds": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminForwardDemoSeedCatalog",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "seeds": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminForwardDemoSeedItem"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "updatedAt",
+                    "seeds"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminForwardDemoSeedCatalog returns the admin-managed demo seed catalog.\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.PutAdminForwardDemoSeed",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "contentBase64": {
+                    "type": "string"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "fileName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "displayName",
+                  "fileName",
+                  "contentBase64",
+                  "enabled"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "seeds": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminForwardDemoSeedItem"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "updatedAt",
+                    "seeds"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutAdminForwardDemoSeed uploads or replaces a demo seed zip.\n"
+      }
+    },
+    "/api/admin/integrations/forward/demo-seeds/{seedID}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteAdminForwardDemoSeed",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "seedID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "seeds": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminForwardDemoSeedItem"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "updatedAt",
+                    "seeds"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteAdminForwardDemoSeed removes a demo seed zip from the catalog.\n"
+      },
+      "patch": {
+        "operationId": "PATCH:skyforge.PatchAdminForwardDemoSeed",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "seedID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "order": {
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "displayName",
+                  "enabled",
+                  "order"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "seeds": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminForwardDemoSeedItem"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "configured",
+                    "updatedAt",
+                    "seeds"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PatchAdminForwardDemoSeed updates metadata for an existing demo seed.\n"
       }
     },
     "/api/admin/integrations/forward/support-credential": {
@@ -34351,6 +34629,20 @@
             "$ref": "#/components/responses/APIError"
           }
         }
+      }
+    },
+    "/internal/cron/forward/demo-org/reset": {
+      "post": {
+        "operationId": "POST:skyforge.CronForwardDemoOrgNightlyReset",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CronForwardDemoOrgNightlyReset queues nightly demo-org rebuilds for all known\nusers.\n"
       }
     },
     "/internal/cron/kne/orphans/cleanup": {
