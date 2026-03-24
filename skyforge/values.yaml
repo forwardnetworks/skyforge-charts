@@ -646,7 +646,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260319-kne-prepull-spread-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260324-kne-servicenow-forward-perf-r1"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: false
@@ -752,7 +752,7 @@ skyforge:
     # When empty, Skyforge will not deploy a collector Pod (Collector page will
     # show "not configured").
     # Example:
-    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-20"
+    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.1-02"
     image: ""
     pullPolicy: "IfNotPresent"
     heapSizeGB: 0
@@ -922,10 +922,10 @@ images:
   atlas: "arigaio/atlas:1.1.6-alpine"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260319-terminal-integrations-timeline-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260319-terminal-integrations-timeline-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true

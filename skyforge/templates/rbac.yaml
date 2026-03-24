@@ -170,7 +170,7 @@ rules:
     resources: ["ceoslabdevices"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["kubevirt.io"]
-    resources: ["virtualmachineinstances"]
+    resources: ["virtualmachineinstances", "virtualmachines"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
   - apiGroups: ["cdnos.dev.drivenets.net"]
     resources: ["cdnoss"]

@@ -3313,6 +3313,101 @@
         ],
         "type": "object"
       },
+      "skyforge.ForwardPerformanceNetworkSummary": {
+        "properties": {
+          "collectorConfigId": {
+            "type": "string"
+          },
+          "credentialSource": {
+            "type": "string"
+          },
+          "defaultGenerationIntervalMins": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "defaultHealthyDeviceOdds": {
+            "type": "number"
+          },
+          "defaultHealthyInterfaceOdds": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "forwardNetworkId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "latestProcessedSnapshotId": {
+            "type": "string"
+          },
+          "latestProcessedSnapshotName": {
+            "type": "string"
+          },
+          "latestProcessedSnapshotState": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "userScopeId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userScopeId",
+          "forwardNetworkId",
+          "name",
+          "description",
+          "collectorConfigId",
+          "credentialSource",
+          "latestProcessedSnapshotId",
+          "latestProcessedSnapshotName",
+          "latestProcessedSnapshotState",
+          "defaultGenerationIntervalMins",
+          "defaultHealthyDeviceOdds",
+          "defaultHealthyInterfaceOdds",
+          "status",
+          "error"
+        ],
+        "type": "object"
+      },
+      "skyforge.ForwardTenantFeatureFlags": {
+        "properties": {
+          "networkMaps": {
+            "type": "boolean"
+          },
+          "nqeEspresso": {
+            "type": "boolean"
+          },
+          "nqeSecurityRulesPanos": {
+            "type": "boolean"
+          },
+          "predictModeling": {
+            "type": "boolean"
+          },
+          "topoLayoutVersioning": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "predictModeling",
+          "nqeEspresso",
+          "nqeSecurityRulesPanos",
+          "topoLayoutVersioning",
+          "networkMaps"
+        ],
+        "type": "object"
+      },
       "skyforge.JSONMap": {
         "additionalProperties": {
           "type": "object"
@@ -5454,9 +5549,6 @@
           "configured": {
             "type": "boolean"
           },
-          "forwardCredentialSetId": {
-            "type": "string"
-          },
           "globalConfigured": {
             "type": "boolean"
           },
@@ -5494,7 +5586,6 @@
           "instanceUrl",
           "adminUsername",
           "hasAdminPassword",
-          "forwardCredentialSetId",
           "tenantUsername",
           "tenantProvisioned",
           "updatedAt",
@@ -8127,9 +8218,6 @@
                     "adminUsername": {
                       "type": "string"
                     },
-                    "bootstrapCredentialSet": {
-                      "type": "string"
-                    },
                     "configured": {
                       "type": "boolean"
                     },
@@ -8148,7 +8236,6 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "bootstrapCredentialSet",
                     "updatedAt"
                   ],
                   "type": "object"
@@ -8176,9 +8263,6 @@
                   "adminUsername": {
                     "type": "string"
                   },
-                  "bootstrapCredentialSet": {
-                    "type": "string"
-                  },
                   "instanceUrl": {
                     "type": "string"
                   }
@@ -8186,8 +8270,7 @@
                 "required": [
                   "instanceUrl",
                   "adminUsername",
-                  "adminPassword",
-                  "bootstrapCredentialSet"
+                  "adminPassword"
                 ],
                 "type": "object"
               }
@@ -8201,9 +8284,6 @@
                 "schema": {
                   "properties": {
                     "adminUsername": {
-                      "type": "string"
-                    },
-                    "bootstrapCredentialSet": {
                       "type": "string"
                     },
                     "configured": {
@@ -8224,7 +8304,6 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "bootstrapCredentialSet",
                     "updatedAt"
                   ],
                   "type": "object"
@@ -8274,7 +8353,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "PushAdminServiceNowForwardConfig performs admin-driven app/bootstrap push (admin\nonly).\n"
+        "summary": "PushAdminServiceNowForwardConfig installs shared ServiceNow app assets (admin\nonly).\n"
       }
     },
     "/api/admin/integrations/teams/global-config": {
@@ -15425,6 +15504,79 @@
         "summary": "RevealCurrentUserForwardTenantCredentialPassword returns the current user's\n"
       }
     },
+    "/api/forward/org-features": {
+      "get": {
+        "operationId": "GET:skyforge.GetCurrentUserForwardTenantFeatures",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "features": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTenantFeatureFlags"
+                    }
+                  },
+                  "required": [
+                    "features"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetCurrentUserForwardTenantFeatures returns per-user experimental Forward org\nfeature flags.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.PutCurrentUserForwardTenantFeatures",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "features": {
+                    "$ref": "#/components/schemas/skyforge.ForwardTenantFeatureFlags"
+                  }
+                },
+                "required": [
+                  "features"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "features": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTenantFeatureFlags"
+                    }
+                  },
+                  "required": [
+                    "features"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutCurrentUserForwardTenantFeatures upserts per-user experimental Forward org\nfeature flags.\n"
+      }
+    },
     "/api/forward/org/rebuild": {
       "post": {
         "operationId": "POST:skyforge.RequestCurrentUserForwardTenantRebuild",
@@ -15936,9 +16088,6 @@
                     "configured": {
                       "type": "boolean"
                     },
-                    "forwardCredentialSetId": {
-                      "type": "string"
-                    },
                     "globalConfigured": {
                       "type": "boolean"
                     },
@@ -15976,7 +16125,6 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "forwardCredentialSetId",
                     "tenantUsername",
                     "tenantProvisioned",
                     "updatedAt",
@@ -15999,23 +16147,6 @@
       },
       "put": {
         "operationId": "PUT:skyforge.PutUserServiceNowConfig",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "forwardCredentialSetId": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "forwardCredentialSetId"
-                ],
-                "type": "object"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "content": {
@@ -16027,9 +16158,6 @@
                     },
                     "configured": {
                       "type": "boolean"
-                    },
-                    "forwardCredentialSetId": {
-                      "type": "string"
                     },
                     "globalConfigured": {
                       "type": "boolean"
@@ -16068,7 +16196,6 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "forwardCredentialSetId",
                     "tenantUsername",
                     "tenantProvisioned",
                     "updatedAt",
@@ -25031,6 +25158,160 @@
         "summary": "DeploymentUIEventsStream streams deployment UI events as SSE.\n"
       }
     },
+    "/api/users/{id}/forward-network-performance": {
+      "get": {
+        "operationId": "GET:skyforge.ListUserScopeForwardPerformanceNetworks",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "networks": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForwardPerformanceNetworkSummary"
+                      },
+                      "type": "array"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userScopeId",
+                    "networks"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListUserScopeForwardPerformanceNetworks returns saved Forward networks with\nlatest processed snapshot metadata.\n"
+      }
+    },
+    "/api/users/{id}/forward-network-performance/{networkRef}/generate": {
+      "post": {
+        "operationId": "POST:skyforge.GenerateUserScopeForwardNetworkPerformance",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "networkRef",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "generationIntervalMins": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "healthyDeviceOdds": {
+                    "type": "number"
+                  },
+                  "healthyInterfaceOdds": {
+                    "type": "number"
+                  },
+                  "snapshotId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "snapshotId",
+                  "generationIntervalMins",
+                  "healthyDeviceOdds",
+                  "healthyInterfaceOdds"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "numDevices": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "numInterfaces": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "snapshotId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "userScopeId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userScopeId",
+                    "forwardNetworkId",
+                    "snapshotId",
+                    "status",
+                    "numDevices",
+                    "numInterfaces"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GenerateUserScopeForwardNetworkPerformance generates synthetic performance data\nfor a saved Forward network.\n"
+      }
+    },
     "/api/users/{id}/forward-networks": {
       "get": {
         "operationId": "GET:skyforge.ListUserScopeForwardNetworks",
@@ -32527,6 +32808,12 @@
                   "forwardEnabled": {
                     "type": "boolean"
                   },
+                  "optionalOverrides": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
                   "sessionSecret": {
                     "type": "string"
                   },
@@ -32552,7 +32839,8 @@
                   "supportUsername",
                   "supportPassword",
                   "baseUrl",
-                  "skipTlsVerify"
+                  "skipTlsVerify",
+                  "optionalOverrides"
                 ],
                 "type": "object"
               }
@@ -36087,9 +36375,6 @@
                     "configured": {
                       "type": "boolean"
                     },
-                    "forwardCredentialSetId": {
-                      "type": "string"
-                    },
                     "globalConfigured": {
                       "type": "boolean"
                     },
@@ -36127,7 +36412,6 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "forwardCredentialSetId",
                     "tenantUsername",
                     "tenantProvisioned",
                     "updatedAt",
@@ -36285,9 +36569,6 @@
                     "adminUsername": {
                       "type": "string"
                     },
-                    "bootstrapCredentialSet": {
-                      "type": "string"
-                    },
                     "configured": {
                       "type": "boolean"
                     },
@@ -36306,7 +36587,6 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "bootstrapCredentialSet",
                     "updatedAt"
                   ],
                   "type": "object"
@@ -36353,9 +36633,6 @@
                     "adminUsername": {
                       "type": "string"
                     },
-                    "bootstrapCredentialSet": {
-                      "type": "string"
-                    },
                     "instanceUrl": {
                       "type": "string"
                     }
@@ -36363,8 +36640,7 @@
                   "required": [
                     "instanceUrl",
                     "adminUsername",
-                    "adminPassword",
-                    "bootstrapCredentialSet"
+                    "adminPassword"
                   ],
                   "type": "object"
                 }
@@ -36570,12 +36846,16 @@
                   },
                   "instanceUrl": {
                     "type": "string"
+                  },
+                  "tenantUsername": {
+                    "type": "string"
                   }
                 },
                 "required": [
                   "instanceUrl",
                   "adminUsername",
                   "adminPassword",
+                  "tenantUsername",
                   "forwardBaseUrl",
                   "forwardUsername",
                   "forwardPassword"
@@ -36685,12 +36965,16 @@
                   },
                   "instanceUrl": {
                     "type": "string"
+                  },
+                  "tenantUsername": {
+                    "type": "string"
                   }
                 },
                 "required": [
                   "instanceUrl",
                   "adminUsername",
                   "adminPassword",
+                  "tenantUsername",
                   "forwardBaseUrl",
                   "forwardUsername",
                   "forwardPassword"
@@ -36718,9 +37002,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "forwardCredentialSetId": {
-                    "type": "string"
-                  },
                   "sessionSecret": {
                     "type": "string"
                   },
@@ -36730,8 +37011,7 @@
                 },
                 "required": [
                   "username",
-                  "sessionSecret",
-                  "forwardCredentialSetId"
+                  "sessionSecret"
                 ],
                 "type": "object"
               }
@@ -36749,9 +37029,6 @@
                     },
                     "configured": {
                       "type": "boolean"
-                    },
-                    "forwardCredentialSetId": {
-                      "type": "string"
                     },
                     "globalConfigured": {
                       "type": "boolean"
@@ -36790,7 +37067,6 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "forwardCredentialSetId",
                     "tenantUsername",
                     "tenantProvisioned",
                     "updatedAt",
@@ -36825,9 +37101,6 @@
                   "adminUsername": {
                     "type": "string"
                   },
-                  "bootstrapCredentialSet": {
-                    "type": "string"
-                  },
                   "instanceUrl": {
                     "type": "string"
                   },
@@ -36839,8 +37112,7 @@
                   "sessionSecret",
                   "instanceUrl",
                   "adminUsername",
-                  "adminPassword",
-                  "bootstrapCredentialSet"
+                  "adminPassword"
                 ],
                 "type": "object"
               }
@@ -36854,9 +37126,6 @@
                 "schema": {
                   "properties": {
                     "adminUsername": {
-                      "type": "string"
-                    },
-                    "bootstrapCredentialSet": {
                       "type": "string"
                     },
                     "configured": {
@@ -36877,7 +37146,6 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "bootstrapCredentialSet",
                     "updatedAt"
                   ],
                   "type": "object"
@@ -36993,9 +37261,6 @@
                     "configured": {
                       "type": "boolean"
                     },
-                    "forwardCredentialSetId": {
-                      "type": "string"
-                    },
                     "globalConfigured": {
                       "type": "boolean"
                     },
@@ -37033,7 +37298,6 @@
                     "instanceUrl",
                     "adminUsername",
                     "hasAdminPassword",
-                    "forwardCredentialSetId",
                     "tenantUsername",
                     "tenantProvisioned",
                     "updatedAt",

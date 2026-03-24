@@ -62,7 +62,7 @@ skyforge:
   forward:
     enabled: true
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-20
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.1-02
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -84,7 +84,7 @@ skyforge:
     actionsRunner:
       enabled: false
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260317-kne-contract-hardcut-r1
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260324-kne-servicenow-forward-perf-r1
     pullPolicy: IfNotPresent
   kne:
     enabled: true
@@ -112,8 +112,8 @@ skyforge:
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300
 images:
-  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260317-kne-cleanup-r7
-  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260317-kne-cleanup-r7-worker
+  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1
+  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1-worker
   atlas: ghcr.io/forwardnetworks/atlas:1.1.6-alpine
 kubernetes:
   imagePullSecrets:

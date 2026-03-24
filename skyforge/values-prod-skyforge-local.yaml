@@ -243,7 +243,7 @@ skyforge:
   forward:
     enabled: true
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.0-20
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.1-02
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -268,7 +268,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260322-kne-no-startup-anywhere-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260324-kne-servicenow-forward-perf-r1"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: true
@@ -334,9 +334,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260320-forward-tenant-access-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260320-forward-tenant-access-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1-worker"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"
 
