@@ -268,7 +268,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-asav-multinode-linkfix-r3"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-fortios-naming-r1"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: true
