@@ -4346,3 +4346,31 @@ data:
     
     CREATE INDEX IF NOT EXISTS sf_forward_tenant_reset_runs_username_tenant_kind_idx
         ON public.sf_forward_tenant_reset_runs (username, tenant_kind, created_at DESC);
+
+  20260325181000_forward_network_insight_runs.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_forward_network_insight_runs (
+        id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        user_id text NOT NULL,
+        forward_network_ref uuid NOT NULL,
+        forward_network_id text NOT NULL,
+        insight_type text NOT NULL,
+        pack_id text NOT NULL,
+        snapshot_id text NOT NULL DEFAULT '',
+        status text NOT NULL DEFAULT 'success',
+        summary jsonb NOT NULL DEFAULT '{}'::jsonb,
+        results jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_by text NOT NULL DEFAULT '',
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT sf_forward_network_insight_runs_insight_type_check
+            CHECK (insight_type = ANY (ARRAY['security'::text, 'cloud'::text]))
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_forward_network_insight_runs_user_ref_type_created_idx
+        ON public.sf_forward_network_insight_runs (user_id, forward_network_ref, insight_type, created_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS sf_forward_network_insight_runs_user_net_type_created_idx
+        ON public.sf_forward_network_insight_runs (user_id, forward_network_id, insight_type, created_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS sf_forward_network_insight_runs_created_idx
+        ON public.sf_forward_network_insight_runs (created_at DESC);

@@ -8,6 +8,8 @@ metadata:
     app.kubernetes.io/component: worker
 spec:
   replicas: {{ default 1 .Values.skyforge.worker.replicas }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: skyforge
@@ -44,7 +46,8 @@ spec:
             - topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  skyforge.forwardnetworks.com/spread-group: skyforge-core
+                  app.kubernetes.io/name: skyforge
+                  app.kubernetes.io/component: worker
 {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
@@ -52,7 +55,8 @@ spec:
                 topologyKey: kubernetes.io/hostname
                 labelSelector:
                   matchLabels:
-                    skyforge.forwardnetworks.com/spread-group: skyforge-core
+                    app.kubernetes.io/name: skyforge
+                    app.kubernetes.io/component: worker
 {{- end }}
 {{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.worker.placement) }}
 {{ . | nindent 8 }}
