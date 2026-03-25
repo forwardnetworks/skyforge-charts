@@ -84,7 +84,7 @@ skyforge:
     actionsRunner:
       enabled: false
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260325-fortios-naming-r1
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260325-vsrx-transitional-r9
     pullPolicy: IfNotPresent
   kne:
     enabled: true

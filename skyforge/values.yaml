@@ -646,7 +646,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-fortios-naming-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-vsrx-transitional-r9"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: false
@@ -687,6 +687,27 @@ skyforge:
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
     servicePort: 8080
+    nodeRoleReconciler:
+      enabled: false
+      # Reconcile the Forward scheduling labels onto the intended nodes. This
+      # self-heals node re-registration drift where a recreated node object
+      # loses its role labels and Forward master pods become unschedulable.
+      schedule: "*/1 * * * *"
+      image: ""
+      pullPolicy: "IfNotPresent"
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 2
+      ttlSecondsAfterFinished: 3600
+      roleLabel: "forwardnetworks.com/role"
+      roleValue: "forward"
+      scratchGroupLabel: "forwardnetworks.com/scratch-group"
+      scratchGroupValue: "forward-scratch"
+      nodeRoles:
+        master: []
+        monitoring: []
+        compute: []
+        search: []
+        forward: []
   observability:
     # Global browser-facing observability UIs used by Skyforge platform
     # operations and capacity workflows.

@@ -3390,6 +3390,21 @@
         ],
         "type": "object"
       },
+      "skyforge.ForwardAnalyticsAvailableNetwork": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
       "skyforge.ForwardAnalyticsNetwork": {
         "properties": {
           "collectorConfigId": {
@@ -27305,6 +27320,71 @@
           }
         },
         "summary": "DeploymentUIEventsStream streams deployment UI events as SSE.\n"
+      }
+    },
+    "/api/users/{id}/forward-network-options": {
+      "get": {
+        "description": "the selected collector credential set so the UI can offer a network picker instead of requiring raw id entry.\n",
+        "operationId": "GET:skyforge.ListUserScopeForwardAvailableNetworks",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "collectorConfigId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "collectorConfigId": {
+                      "type": "string"
+                    },
+                    "credentialSource": {
+                      "type": "string"
+                    },
+                    "networks": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForwardAnalyticsAvailableNetwork"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "collectorConfigId",
+                    "credentialSource",
+                    "networks"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListUserScopeForwardAvailableNetworks lists Forward networks reachable through\n"
       }
     },
     "/api/users/{id}/forward-network-performance": {

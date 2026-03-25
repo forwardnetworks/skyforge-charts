@@ -1,0 +1,210 @@
+{{- $fc := .Values.skyforge.forwardCluster -}}
+{{- $reconciler := default dict $fc.nodeRoleReconciler -}}
+{{- if and $fc.enabled $reconciler.enabled }}
+{{- $name := default "forward-node-role-reconciler" $reconciler.name -}}
+{{- $sa := default $name $reconciler.serviceAccountName -}}
+{{- $image := default .Values.images.kubectl $reconciler.image -}}
+{{- $pullPolicy := default "IfNotPresent" $reconciler.pullPolicy -}}
+{{- $schedule := default "*/1 * * * *" $reconciler.schedule -}}
+{{- $ttl := default 3600 $reconciler.ttlSecondsAfterFinished -}}
+{{- $successfulJobsHistoryLimit := default 1 $reconciler.successfulJobsHistoryLimit -}}
+{{- $failedJobsHistoryLimit := default 2 $reconciler.failedJobsHistoryLimit -}}
+{{- $roleLabel := default "forwardnetworks.com/role" $reconciler.roleLabel -}}
+{{- $roleValue := default "forward" $reconciler.roleValue -}}
+{{- $scratchGroupLabel := default "forwardnetworks.com/scratch-group" $reconciler.scratchGroupLabel -}}
+{{- $scratchGroupValue := default "forward-scratch" $reconciler.scratchGroupValue -}}
+{{- $roles := default dict $reconciler.nodeRoles -}}
+{{- $masterNodes := default (list) $roles.master -}}
+{{- $monitoringNodes := default (list) $roles.monitoring -}}
+{{- $computeNodes := default (list) $roles.compute -}}
+{{- $searchNodes := default (list) $roles.search -}}
+{{- $forwardNodes := default (list) $roles.forward -}}
+{{- if eq (len $masterNodes) 0 -}}
+{{- fail "skyforge.forwardCluster.nodeRoleReconciler.enabled=true requires at least one master node in skyforge.forwardCluster.nodeRoleReconciler.nodeRoles.master" -}}
+{{- end -}}
+{{- $managedNodes := uniq (concat $masterNodes $monitoringNodes $computeNodes $searchNodes $forwardNodes) -}}
+{{- if eq (len $managedNodes) 0 -}}
+{{- fail "skyforge.forwardCluster.nodeRoleReconciler.enabled=true requires at least one managed node in skyforge.forwardCluster.nodeRoleReconciler.nodeRoles" -}}
+{{- end -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $sa }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-node-role-reconciler
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-node-role-reconciler
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-node-role-reconciler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $name }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $sa }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-node-role-reconciler
+data:
+  reconcile.sh: |
+    #!/bin/sh
+    set -eu
+
+    contains_node() {
+      needle="$1"
+      shift
+      for item in "$@"; do
+        if [ "$item" = "$needle" ]; then
+          return 0
+        fi
+      done
+      return 1
+    }
+
+    reconcile_label() {
+      node="$1"
+      key="$2"
+      value="$3"
+      shift 3
+      if contains_node "$node" "$@"; then
+        kubectl label node "$node" "${key}=${value}" --overwrite >/dev/null
+      else
+        kubectl label node "$node" "${key}-" >/dev/null 2>&1 || true
+      fi
+    }
+
+    reconcile_presence_label() {
+      node="$1"
+      key="$2"
+      shift 2
+      if contains_node "$node" "$@"; then
+        kubectl label node "$node" "${key}=" --overwrite >/dev/null
+      else
+        kubectl label node "$node" "${key}-" >/dev/null 2>&1 || true
+      fi
+    }
+
+    MASTER_NODES="{{ join " " $masterNodes }}"
+    MONITORING_NODES="{{ join " " $monitoringNodes }}"
+    COMPUTE_NODES="{{ join " " $computeNodes }}"
+    SEARCH_NODES="{{ join " " $searchNodes }}"
+    FORWARD_NODES="{{ join " " $forwardNodes }}"
+    MANAGED_NODES="{{ join " " $managedNodes }}"
+
+    for node in ${MANAGED_NODES}; do
+      reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-master" ${MASTER_NODES}
+      reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-monitoring" ${MONITORING_NODES}
+      reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-compute-worker" ${COMPUTE_NODES}
+      reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-search-worker" ${SEARCH_NODES}
+      reconcile_label "$node" "{{ $roleLabel }}" "{{ $roleValue }}" ${FORWARD_NODES}
+      if contains_node "$node" ${MASTER_NODES} ${MONITORING_NODES} ${COMPUTE_NODES} ${SEARCH_NODES}; then
+        kubectl label node "$node" "{{ $scratchGroupLabel }}={{ $scratchGroupValue }}" --overwrite >/dev/null
+      else
+        kubectl label node "$node" "{{ $scratchGroupLabel }}-" >/dev/null 2>&1 || true
+      fi
+    done
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ printf "%s-bootstrap" $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-node-role-reconciler
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  ttlSecondsAfterFinished: {{ $ttl }}
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/component: forward-node-role-reconciler
+    spec:
+      serviceAccountName: {{ $sa }}
+      restartPolicy: OnFailure
+      enableServiceLinks: false
+      containers:
+        - name: reconcile
+          image: {{ $image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command:
+            - /bin/sh
+            - /config/reconcile.sh
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ $name }}
+            defaultMode: 0755
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-node-role-reconciler
+spec:
+  schedule: {{ $schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ $successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ $failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ $ttl }}
+      template:
+        metadata:
+          labels:
+            {{- include "skyforge.labels" . | nindent 12 }}
+            app.kubernetes.io/component: forward-node-role-reconciler
+        spec:
+          serviceAccountName: {{ $sa }}
+          restartPolicy: OnFailure
+          enableServiceLinks: false
+          containers:
+            - name: reconcile
+              image: {{ $image | quote }}
+              imagePullPolicy: {{ $pullPolicy | quote }}
+              command:
+                - /bin/sh
+                - /config/reconcile.sh
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                  readOnly: true
+          volumes:
+            - name: config
+              configMap:
+                name: {{ $name }}
+                defaultMode: 0755
+{{- end }}

@@ -253,6 +253,23 @@ skyforge:
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
     servicePort: 8080
+    nodeRoleReconciler:
+      enabled: true
+      schedule: "*/1 * * * *"
+      nodeRoles:
+        master:
+          - "skyforge-worker-2"
+        monitoring:
+          - "skyforge-worker-2"
+        compute:
+          - "skyforge-worker-2"
+          - "skyforge-worker-4"
+        search:
+          - "skyforge-worker-2"
+          - "skyforge-worker-4"
+        forward:
+          - "skyforge-worker-2"
+          - "skyforge-worker-4"
   observability:
     enabled: true
     managed:
@@ -268,7 +285,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-fortios-naming-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-vsrx-transitional-r9"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: true
@@ -325,7 +342,8 @@ skyforge:
         - control
       poolWeight: 100
       requiredPoolClass: "control"
-      nodeSelector: {}
+      nodeSelector:
+        kubernetes.io/hostname: "skyforge"
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
           operator: "Exists"
