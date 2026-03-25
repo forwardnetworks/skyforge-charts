@@ -5,6 +5,7 @@ metadata:
     app.kubernetes.io/name: s3gw-init
   name: s3gw-init
 spec:
+  ttlSecondsAfterFinished: 600
   template:
     metadata:
       labels:

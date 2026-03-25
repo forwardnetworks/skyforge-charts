@@ -7,11 +7,12 @@ metadata:
 spec:
   schedule: "17 3 * * *" # daily 03:17 UTC
   suspend: true
-  successfulJobsHistoryLimit: 2
-  failedJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       backoffLimit: 1
+      ttlSecondsAfterFinished: 3600
       template:
         spec:
           restartPolicy: Never
