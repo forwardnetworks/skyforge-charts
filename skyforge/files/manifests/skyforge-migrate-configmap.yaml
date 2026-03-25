@@ -3046,6 +3046,7 @@ data:
         WHEN 'sros' THEN 'nokia_ssh'
         WHEN 'vjunos-router' THEN 'juniper_junos_ssh'
         WHEN 'vjunos-switch' THEN 'juniper_junos_ssh'
+        WHEN 'vsrx' THEN 'juniper_junos_ssh'
         WHEN 'vmx' THEN 'juniper_junos_ssh'
         WHEN 'vptx' THEN 'juniper_junos_ssh'
         ELSE forward_type
