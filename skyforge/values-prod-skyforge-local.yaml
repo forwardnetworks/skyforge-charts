@@ -268,7 +268,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260324-kne-servicenow-forward-perf-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-asav-multinode-linkfix-r3"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: true

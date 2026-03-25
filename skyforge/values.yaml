@@ -646,7 +646,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260324-kne-servicenow-forward-perf-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-asav-multinode-linkfix-r3"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: false
