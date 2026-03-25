@@ -2020,6 +2020,129 @@
         ],
         "type": "object"
       },
+      "skyforge.AdminEphemeralRuntimeNamespaceRecord": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "deletionTimestamp": {
+            "type": "string"
+          },
+          "deploymentId": {
+            "type": "string"
+          },
+          "eligibleForCleanup": {
+            "type": "boolean"
+          },
+          "eligibleForForceFinalize": {
+            "type": "boolean"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "expired": {
+            "type": "boolean"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "finalizers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "resourceCounts": {
+            "$ref": "#/components/schemas/skyforge.AdminEphemeralRuntimeResourceCounts"
+          },
+          "topologyName": {
+            "type": "string"
+          },
+          "userScopeId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "namespace",
+          "phase",
+          "purpose",
+          "owner",
+          "userScopeId",
+          "deploymentId",
+          "topologyName",
+          "createdAt",
+          "expiresAt",
+          "deletionTimestamp",
+          "finalizers",
+          "active",
+          "expired",
+          "eligibleForCleanup",
+          "eligibleForForceFinalize",
+          "resourceCounts",
+          "errors"
+        ],
+        "type": "object"
+      },
+      "skyforge.AdminEphemeralRuntimeResourceCounts": {
+        "properties": {
+          "configMaps": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "jobs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pods": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "services": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "topologies": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "virtualMachineInstances": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "virtualMachines": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pods",
+          "services",
+          "jobs",
+          "configMaps",
+          "topologies",
+          "virtualMachines",
+          "virtualMachineInstances"
+        ],
+        "type": "object"
+      },
       "skyforge.AdminForwardDemoSeedItem": {
         "properties": {
           "contentSha256": {
@@ -2688,6 +2811,56 @@
         ],
         "type": "object"
       },
+      "skyforge.CleanupAdminEphemeralRuntimeNamespaceResult": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "eligibleForCleanup": {
+            "type": "boolean"
+          },
+          "eligibleForForceFinalize": {
+            "type": "boolean"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "orphanCleanupAttempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "topologiesDeleted": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "topologiesFound": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "topologyOwnersFound": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "namespace",
+          "active",
+          "eligibleForCleanup",
+          "eligibleForForceFinalize",
+          "topologiesFound",
+          "topologyOwnersFound",
+          "topologiesDeleted",
+          "orphanCleanupAttempts",
+          "errors"
+        ],
+        "type": "object"
+      },
       "skyforge.CompositePlanPreviewBinding": {
         "properties": {
           "as": {
@@ -3188,6 +3361,32 @@
           "name",
           "repo",
           "defaultBranch"
+        ],
+        "type": "object"
+      },
+      "skyforge.ForceFinalizeAdminEphemeralRuntimeNamespaceResult": {
+        "properties": {
+          "eligibleForForceFinalize": {
+            "type": "boolean"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "finalized": {
+            "type": "boolean"
+          },
+          "namespace": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "namespace",
+          "eligibleForForceFinalize",
+          "finalized",
+          "errors"
         ],
         "type": "object"
       },
@@ -10749,6 +10948,260 @@
           }
         },
         "summary": "TaskQueueDiag provides admin diagnostics for the task queue.\n"
+      }
+    },
+    "/api/admin/tasks/ephemeral-runtimes": {
+      "get": {
+        "operationId": "GET:skyforge.ListAdminEphemeralRuntimeNamespaces",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "active": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "eligibleForCleanup": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "eligibleForForceFinalize": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "expired": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "inactive": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "items": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminEphemeralRuntimeNamespaceRecord"
+                      },
+                      "type": "array"
+                    },
+                    "resourceTotals": {
+                      "$ref": "#/components/schemas/skyforge.AdminEphemeralRuntimeResourceCounts"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "terminating": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "total": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "total",
+                    "active",
+                    "inactive",
+                    "expired",
+                    "eligibleForCleanup",
+                    "eligibleForForceFinalize",
+                    "terminating",
+                    "resourceTotals",
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListAdminEphemeralRuntimeNamespaces returns orphan-prone ephemeral KNE runtime\nnamespaces (admin only).\n"
+      }
+    },
+    "/api/admin/tasks/ephemeral-runtimes/cleanup": {
+      "post": {
+        "operationId": "POST:skyforge.CleanupAdminEphemeralRuntimeNamespaces",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "dryRun": {
+                    "type": "boolean"
+                  },
+                  "namespaces": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "namespaces",
+                  "dryRun"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "dryRun": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "namespaceResults": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CleanupAdminEphemeralRuntimeNamespaceResult"
+                      },
+                      "type": "array"
+                    },
+                    "namespacesCleaned": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "namespacesConsidered": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "namespacesSelected": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "skippedActive": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "skippedIneligible": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "dryRun",
+                    "namespacesSelected",
+                    "namespacesConsidered",
+                    "namespacesCleaned",
+                    "skippedActive",
+                    "skippedIneligible",
+                    "namespaceResults",
+                    "errors"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CleanupAdminEphemeralRuntimeNamespaces deletes eligible ephemeral KNE runtime\nnamespaces (admin only).\n"
+      }
+    },
+    "/api/admin/tasks/ephemeral-runtimes/finalize": {
+      "post": {
+        "operationId": "POST:skyforge.ForceFinalizeAdminEphemeralRuntimeNamespaces",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "namespaces": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "namespaces"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "errors": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "namespaceResults": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForceFinalizeAdminEphemeralRuntimeNamespaceResult"
+                      },
+                      "type": "array"
+                    },
+                    "namespacesConsidered": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "namespacesFinalized": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "namespacesSelected": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "skippedIneligible": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "namespacesSelected",
+                    "namespacesConsidered",
+                    "namespacesFinalized",
+                    "skippedIneligible",
+                    "namespaceResults",
+                    "errors"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ForceFinalizeAdminEphemeralRuntimeNamespaces clears namespace finalizers for\nstuck, labeled ephemeral runtimes (admin only).\n"
       }
     },
     "/api/admin/tasks/reconcile": {
@@ -23287,6 +23740,731 @@
           }
         },
         "summary": "RunUserScopeDeploymentAction runs a deployment operation with consistent UX\nverbs.\n"
+      }
+    },
+    "/api/users/{id}/deployments/{deploymentID}/browser/{node}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeploymentNodeBrowserProxyDelete",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "get": {
+        "operationId": "GET:skyforge.DeploymentNodeBrowserProxyGet",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "head": {
+        "operationId": "HEAD:skyforge.DeploymentNodeBrowserProxyHead",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "options": {
+        "operationId": "OPTIONS:skyforge.DeploymentNodeBrowserProxyOptions",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "PATCH:skyforge.DeploymentNodeBrowserProxyPatch",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "post": {
+        "operationId": "POST:skyforge.DeploymentNodeBrowserProxyPost",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "put": {
+        "operationId": "PUT:skyforge.DeploymentNodeBrowserProxyPut",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/deployments/{deploymentID}/browser/{node}/{rest}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeploymentNodeBrowserProxyDeleteAny",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "rest",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "get": {
+        "operationId": "GET:skyforge.DeploymentNodeBrowserProxyGetAny",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "rest",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "head": {
+        "operationId": "HEAD:skyforge.DeploymentNodeBrowserProxyHeadAny",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "rest",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "options": {
+        "operationId": "OPTIONS:skyforge.DeploymentNodeBrowserProxyOptionsAny",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "rest",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "PATCH:skyforge.DeploymentNodeBrowserProxyPatchAny",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "rest",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "post": {
+        "operationId": "POST:skyforge.DeploymentNodeBrowserProxyPostAny",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "rest",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "put": {
+        "operationId": "PUT:skyforge.DeploymentNodeBrowserProxyPutAny",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "node",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "rest",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/capacity/growth": {
