@@ -36,6 +36,13 @@ spec:
             skyforge.forwardnetworks.com/spread-group: skyforge-core
       affinity:
         podAntiAffinity:
+{{- if .Values.skyforge.server.placement.requiredAntiAffinity }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                skyforge.forwardnetworks.com/spread-group: skyforge-core
+{{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 100
             podAffinityTerm:
@@ -43,6 +50,7 @@ spec:
               labelSelector:
                 matchLabels:
                   skyforge.forwardnetworks.com/spread-group: skyforge-core
+{{- end }}
 {{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.server.placement) }}
 {{ . | nindent 8 }}
 {{- end }}

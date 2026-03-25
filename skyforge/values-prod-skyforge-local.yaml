@@ -309,6 +309,7 @@ skyforge:
         - lab
       poolWeight: 100
       requiredPoolClass: "control"
+      requiredAntiAffinity: true
       nodeSelector: {}
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
@@ -342,6 +343,7 @@ skyforge:
         - control
       poolWeight: 100
       requiredPoolClass: "control"
+      requiredAntiAffinity: true
       nodeSelector:
         kubernetes.io/hostname: "skyforge"
       tolerations:

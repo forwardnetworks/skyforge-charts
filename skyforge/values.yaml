@@ -67,6 +67,7 @@ skyforge:
       affinity: {}
       tolerations: []
       affinity: {}
+      requiredAntiAffinity: false
     resources:
       requests:
         cpu: "250m"
@@ -130,6 +131,7 @@ skyforge:
       nodeSelector: {}
       tolerations: []
       affinity: {}
+      requiredAntiAffinity: false
   domain: "forwardnetworks.com"
   gateway:
     # Optional explicit Gateway addresses.

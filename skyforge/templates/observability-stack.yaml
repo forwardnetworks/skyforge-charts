@@ -80,6 +80,8 @@ data:
     global:
       scrape_interval: {{ $scrapeInterval | quote }}
       evaluation_interval: {{ $scrapeInterval | quote }}
+    rule_files:
+      - /etc/prometheus/rules/*.yml
     scrape_configs:
       - job_name: prometheus
         static_configs:
@@ -142,6 +144,43 @@ spec:
   {{- end }}
 {{- end }}
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skyforge-prometheus-alert-rules
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+data:
+  skyforge-forward-capacity.rules.yml: |
+    groups:
+      - name: skyforge-forward-capacity
+        rules:
+          - alert: SkyforgeForwardCapacityRollupsStale
+            expr: skyforge_forward_capacity_signal_stale_current{signal="rollup"} > 0
+            for: 30m
+            labels:
+              severity: warning
+            annotations:
+              summary: Forward capacity rollups are stale
+              description: One or more saved Forward networks have rollup data older than 2h.
+          - alert: SkyforgeForwardSecurityInsightsStale
+            expr: skyforge_forward_capacity_signal_stale_current{signal="security_insight"} > 0
+            for: 45m
+            labels:
+              severity: warning
+            annotations:
+              summary: Forward security insights are stale
+              description: One or more saved Forward networks are missing fresh security insight runs.
+          - alert: SkyforgeForwardCloudInsightsStale
+            expr: skyforge_forward_capacity_signal_stale_current{signal="cloud_insight"} > 0
+            for: 45m
+            labels:
+              severity: warning
+            annotations:
+              summary: Forward cloud insights are stale
+              description: One or more saved Forward networks are missing fresh cloud insight runs.
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -186,12 +225,17 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/prometheus
+            - name: alert-rules
+              mountPath: /etc/prometheus/rules
             - name: data
               mountPath: /prometheus
       volumes:
         - name: config
           configMap:
             name: skyforge-prometheus-config
+        - name: alert-rules
+          configMap:
+            name: skyforge-prometheus-alert-rules
         - name: data
 {{- if $promPersistenceEnabled }}
           persistentVolumeClaim:
