@@ -160,6 +160,24 @@
     },
     "SKYFORGE_SROS_LICENSE_B64": {
       "$env": "SKYFORGE_SROS_LICENSE_B64"
+    },
+    "SKYFORGE_AWS_ACCESS_KEY_ID": {
+      "$env": "SKYFORGE_AWS_ACCESS_KEY_ID"
+    },
+    "SKYFORGE_AWS_SECRET_ACCESS_KEY": {
+      "$env": "SKYFORGE_AWS_SECRET_ACCESS_KEY"
+    },
+    "SKYFORGE_AZURE_TENANT_ID": {
+      "$env": "SKYFORGE_AZURE_TENANT_ID"
+    },
+    "SKYFORGE_AZURE_CLIENT_ID": {
+      "$env": "SKYFORGE_AZURE_CLIENT_ID"
+    },
+    "SKYFORGE_AZURE_CLIENT_SECRET": {
+      "$env": "SKYFORGE_AZURE_CLIENT_SECRET"
+    },
+    "SKYFORGE_GCP_SERVICE_ACCOUNT_JSON": {
+      "$env": "SKYFORGE_GCP_SERVICE_ACCOUNT_JSON"
     }
   },
   "env": {

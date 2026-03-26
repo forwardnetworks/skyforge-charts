@@ -202,6 +202,16 @@ skyforge:
   adminUsers: "skyforge"
   awsSsoRegion: "us-east-1"
   awsSsoStartUrl: ""
+  cloudPricingCredentials:
+    # Optional Kubernetes Secret that provides provider credentials for
+    # server-side cloud pricing fetchers (AWS/Azure/GCP).
+    secretName: "skyforge-cloud-pricing-creds"
+    azureTenantIdKey: "SKYFORGE_AZURE_TENANT_ID"
+    azureClientIdKey: "SKYFORGE_AZURE_CLIENT_ID"
+    azureClientSecretKey: "SKYFORGE_AZURE_CLIENT_SECRET"
+    gcpServiceAccountJSONKey: "SKYFORGE_GCP_SERVICE_ACCOUNT_JSON"
+    awsAccessKeyIdKey: "SKYFORGE_AWS_ACCESS_KEY_ID"
+    awsSecretAccessKeyKey: "SKYFORGE_AWS_SECRET_ACCESS_KEY"
   gitea:
     enabled: true
     apiUrl: "http://gitea:3000/api/v1"
