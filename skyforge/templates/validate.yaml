@@ -12,6 +12,8 @@ early when required configuration is missing.
 {{- $obsManagedEnabled := default false .Values.skyforge.observability.managed.enabled -}}
 {{- $obsGrafanaOIDC := default (dict) .Values.skyforge.observability.grafana.oidc -}}
 {{- $obsGrafanaOIDCEnabled := true -}}
+{{- $edition := lower (trim (default "enterprise" .Values.skyforge.edition)) -}}
+{{- $forwardEnabled := and (ne $edition "oss") .Values.skyforge.forward.enabled -}}
 {{- if hasKey $obsGrafanaOIDC "enabled" -}}
   {{- $obsGrafanaOIDCEnabled = (index $obsGrafanaOIDC "enabled") -}}
 {{- end -}}
@@ -20,8 +22,8 @@ early when required configuration is missing.
   {{- if not (trim (default "" .Values.skyforge.netlab.image)) -}}
     {{- fail "skyforge.netlab.image must be set (required for in-cluster netlab/kne mode)" -}}
   {{- end -}}
-  {{- if and .Values.skyforge.forward.enabled (not (trim (default "" .Values.skyforge.forwardCollector.image))) -}}
-    {{- fail "skyforge.forward.enabled=true requires skyforge.forwardCollector.image to be set" -}}
+  {{- if and $forwardEnabled (not (trim (default "" .Values.skyforge.forwardCollector.image))) -}}
+    {{- fail "Forward integration enabled requires skyforge.forwardCollector.image to be set (set skyforge.edition=oss to force-disable Forward)" -}}
   {{- end -}}
   {{- if hasKey .Values.skyforge "netlabC9s" -}}
     {{- fail "skyforge.netlabC9s is removed; use skyforge.netlab.image and skyforge.netlab.pullPolicy" -}}
@@ -55,6 +57,12 @@ early when required configuration is missing.
 {{- end -}}
 {{- if and (eq $uiAuthMode "oidc") (not .Values.skyforge.dex.enabled) -}}
   {{- fail "skyforge.auth.mode=oidc requires skyforge.dex.enabled=true; supported browser OIDC topology is Skyforge -> Dex -> IdP" -}}
+{{- end -}}
+{{- if and (ne $edition "enterprise") (ne $edition "oss") -}}
+  {{- fail (printf "skyforge.edition must be one of enterprise or oss (got %q)" $edition) -}}
+{{- end -}}
+{{- if and (eq $edition "oss") $forwardClusterEnabled -}}
+  {{- fail "skyforge.edition=oss does not support skyforge.forwardCluster.enabled=true" -}}
 {{- end -}}
 {{- if and .Values.skyforge.netbox.enabled (not .Values.skyforge.dex.enabled) -}}
   {{- fail "skyforge.netbox.enabled=true requires skyforge.dex.enabled=true (native OIDC login path)" -}}
@@ -111,6 +119,67 @@ early when required configuration is missing.
   {{- $meshnetMode := lower (trim (default "grpc" .Values.skyforge.kne.meshnetMode)) -}}
   {{- if and (ne $meshnetMode "grpc") (ne $meshnetMode "vxlan") -}}
     {{- fail "skyforge.kne.meshnetMode must be one of: grpc, vxlan" -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $forwardContract := default (dict) .Values.skyforge.forwardCluster.contractValidation -}}
+{{- $forwardContractEnabled := and $forwardClusterEnabled (default false $forwardContract.enabled) -}}
+{{- if and $forwardContractEnabled (not (.Capabilities.APIVersions.Has "helm.sh/lint")) -}}
+  {{- $expectedRoleLabel := default "forwardnetworks.com/role" $forwardContract.expectedForwardRoleLabel -}}
+  {{- $expectedRoleValue := default "forward" $forwardContract.expectedForwardRoleValue -}}
+  {{- $expectedPoolClass := default "app" $forwardContract.expectedForwardPoolClass -}}
+  {{- $longhornNs := default "longhorn-system" $forwardContract.longhornNamespace -}}
+  {{- $expectedDataPath := trimSuffix "/" (default "/var/lib/longhorn" $forwardContract.expectedLonghornDataPath) -}}
+  {{- $minimumDiskBytes := int64 (default 1000000000000 $forwardContract.minimumLonghornDiskBytes) -}}
+  {{- $nodes := lookup "v1" "Node" "" "" -}}
+  {{- if not $nodes -}}
+    {{- fail "skyforge.forwardCluster.contractValidation.enabled=true requires Node list access" -}}
+  {{- end -}}
+  {{- $nodeItems := default (list) $nodes.items -}}
+  {{- $forwardNodeNames := list -}}
+  {{- range $node := $nodeItems -}}
+    {{- $nodeName := default "" $node.metadata.name -}}
+    {{- $labels := default (dict) $node.metadata.labels -}}
+    {{- if and $nodeName (eq (default "" (index $labels $expectedRoleLabel)) $expectedRoleValue) -}}
+      {{- $forwardNodeNames = append $forwardNodeNames $nodeName -}}
+      {{- if ne (default "" (index $labels "skyforge.forwardnetworks.com/pool-class")) $expectedPoolClass -}}
+        {{- fail (printf "Forward contract violation: node %q has %s=%q; expected %q" $nodeName "skyforge.forwardnetworks.com/pool-class" (default "" (index $labels "skyforge.forwardnetworks.com/pool-class")) $expectedPoolClass) -}}
+      {{- end -}}
+      {{- if hasKey $labels "node-role.kubernetes.io/control-plane" -}}
+        {{- fail (printf "Forward contract violation: node %q is control-plane but labeled %s=%s" $nodeName $expectedRoleLabel $expectedRoleValue) -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if eq (len $forwardNodeNames) 0 -}}
+    {{- fail (printf "skyforge.forwardCluster.contractValidation.enabled=true found no nodes labeled %s=%s" $expectedRoleLabel $expectedRoleValue) -}}
+  {{- end -}}
+
+  {{- $longhornSetting := lookup "longhorn.io/v1beta2" "Setting" $longhornNs "default-data-path" -}}
+  {{- if not $longhornSetting -}}
+    {{- fail (printf "Forward contract violation: missing settings.longhorn.io/default-data-path in namespace %s" $longhornNs) -}}
+  {{- end -}}
+  {{- $actualDataPath := trimSuffix "/" (default "" $longhornSetting.value) -}}
+  {{- if ne $actualDataPath $expectedDataPath -}}
+    {{- fail (printf "Forward contract violation: Longhorn default-data-path is %q; expected %q" $actualDataPath $expectedDataPath) -}}
+  {{- end -}}
+
+  {{- range $nodeName := $forwardNodeNames -}}
+    {{- $longhornNode := lookup "longhorn.io/v1beta2" "Node" $longhornNs $nodeName -}}
+    {{- if not $longhornNode -}}
+      {{- fail (printf "Forward contract violation: missing Longhorn node object for %q in namespace %s" $nodeName $longhornNs) -}}
+    {{- end -}}
+    {{- $diskStatus := default (dict) $longhornNode.status.diskStatus -}}
+    {{- $nodeHasQualifiedDisk := false -}}
+    {{- range $diskName, $disk := $diskStatus -}}
+      {{- $diskPath := trimSuffix "/" (default "" $disk.diskPath) -}}
+      {{- $storageAvailable := int64 (default 0 $disk.storageAvailable) -}}
+      {{- if and (eq $diskPath $expectedDataPath) (ge $storageAvailable $minimumDiskBytes) -}}
+        {{- $nodeHasQualifiedDisk = true -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if not $nodeHasQualifiedDisk -}}
+      {{- fail (printf "Forward contract violation: node %q has no Longhorn disk at %q with at least %d bytes available" $nodeName $expectedDataPath $minimumDiskBytes) -}}
+    {{- end -}}
   {{- end -}}
 {{- end -}}
 

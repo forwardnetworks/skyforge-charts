@@ -52,6 +52,11 @@ skyforge:
   worker:
     replicas: 1
     priorityClassName: ""
+    strategy:
+      type: RollingUpdate
+      # IntOrString values are supported (e.g. 0, "25%")
+      maxUnavailable: 0
+      maxSurge: 1
     placement:
       # Preferred hybrid placement for the worker deployment. Pool classes help
       # align workloads to node pools like control/app/lab/burst/onprem-lab.
@@ -63,10 +68,11 @@ skyforge:
       poolWeight: 100
       # Optional hard requirement for clusters that explicitly label node pool class.
       requiredPoolClass: ""
+      # Scheduling behavior when topology spread cannot be satisfied.
+      topologyWhenUnsatisfiable: "ScheduleAnyway"
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      affinity: {}
       requiredAntiAffinity: false
     resources:
       requests:
@@ -112,7 +118,14 @@ skyforge:
     workerJson: "{}"
   hostname: "skyforge.local.forwardnetworks.com"
   server:
+    replicas: 1
+    migrateOnStartup: true
     priorityClassName: ""
+    strategy:
+      type: RollingUpdate
+      # IntOrString values are supported (e.g. 0, "25%")
+      maxUnavailable: 0
+      maxSurge: 1
     pdb:
       enabled: true
       minAvailable: 1
@@ -128,6 +141,8 @@ skyforge:
         - control
       poolWeight: 100
       requiredPoolClass: ""
+      # Scheduling behavior when topology spread cannot be satisfied.
+      topologyWhenUnsatisfiable: "ScheduleAnyway"
       nodeSelector: {}
       tolerations: []
       affinity: {}
@@ -214,6 +229,8 @@ skyforge:
     awsSecretAccessKeyKey: "SKYFORGE_AWS_SECRET_ACCESS_KEY"
   gitea:
     enabled: true
+    storage:
+      enabled: true
     apiUrl: "http://gitea:3000/api/v1"
     url: "https://skyforge.local.forwardnetworks.com/git"
     username: "skyforge"
@@ -274,6 +291,8 @@ skyforge:
   netbox:
     enabled: false
     internalUrl: ""
+    storage:
+      enabled: true
     # Redis database index for NetBox (shared Redis service).
     # Keep distinct from Skyforge (0) and Nautobot (1).
     redisDatabase: 2
@@ -624,6 +643,8 @@ skyforge:
   yaade:
     enabled: true
     internalUrl: ""
+    storage:
+      enabled: true
 
   # Optional Kubernetes admission policies that harden the cluster against
   # non-native runtime patterns (Docker-in-Docker / docker.sock).
@@ -681,6 +702,10 @@ skyforge:
   uiThemeDefault: ""
   # Typed config equivalent of SKYFORGE_NOTIFICATIONS_ENABLED. Default true.
   notificationsEnabled: true
+  # Product edition controls Forward defaults and OSS-facing behavior.
+  # enterprise: Forward integrations available (subject to skyforge.forward.enabled)
+  # oss: Forward integrations forced off in generated Encore config
+  edition: "enterprise"
   forward:
     # Enable Forward Networks integration (collector deployment + sync actions).
     # When false, Skyforge hides Forward UI and disables Forward API endpoints.
@@ -714,12 +739,27 @@ skyforge:
       roleValue: "forward"
       scratchGroupLabel: "forwardnetworks.com/scratch-group"
       scratchGroupValue: "forward-scratch"
+      poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
       nodeRoles:
         master: []
         monitoring: []
         compute: []
         search: []
         forward: []
+      nodePools:
+        control: []
+        app: []
+        lab: []
+    contractValidation:
+      # Fail Helm rendering when Forward node-role or Longhorn node contracts
+      # drift from the expected production topology.
+      enabled: false
+      longhornNamespace: "longhorn-system"
+      expectedLonghornDataPath: "/var/lib/longhorn"
+      expectedForwardPoolClass: "app"
+      expectedForwardRoleLabel: "forwardnetworks.com/role"
+      expectedForwardRoleValue: "forward"
+      minimumLonghornDiskBytes: 1000000000000
   observability:
     # Global browser-facing observability UIs used by Skyforge platform
     # operations and capacity workflows.
@@ -837,9 +877,14 @@ skyforge:
     name: "skyforge_server"
     user: "skyforge_server"
     sslmode: "disable"
+    storage:
+      enabled: true
     # Forward services can open many idle JDBC sessions; keep headroom so
     # platform integrations (Dex/NetBox/Nautobot/Coder) are not starved.
     maxConnections: 600
+  redis:
+    storage:
+      enabled: true
   sessionCookie: "skyforge_session"
   syslog:
     enabled: false
@@ -856,6 +901,8 @@ skyforge:
     interval: "10s"
   coder:
     enabled: true
+    storage:
+      enabled: true
     # Enables password auth for the bootstrap admin user (useful for demos).
     # Keep this true for strict SSO-only deployments.
     disablePasswordAuth: true
@@ -933,7 +980,7 @@ skyforge:
 images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
   alpine: "public.ecr.aws/docker/library/alpine:latest"
-  kubectl: "public.ecr.aws/bitnami/kubectl:latest"
+  kubectl: "public.ecr.aws/bitnami/kubectl:1.35.3"
   envoy: "envoyproxy/envoy:v1.31.2"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
   # Vector publishes official images under `timberio/vector` (Docker Hub).
@@ -955,10 +1002,10 @@ images:
   atlas: "arigaio/atlas:1.1.6-alpine"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260326-kne-raw-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260326-kne-raw-r1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true
