@@ -5,9 +5,9 @@ skyforge:
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
   gateway:
-    addresses:
-    - type: IPAddress
-      value: 10.128.16.73
+    # Cilium Gateway runs in host-network mode in this environment.
+    # Do not pin a static Gateway address here.
+    addresses: []
     localNodePorts:
       enabled: false
   dex:
@@ -62,7 +62,7 @@ skyforge:
   forward:
     enabled: true
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.1-02
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.3-02
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:

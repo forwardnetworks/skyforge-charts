@@ -38,7 +38,7 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 
 - `skyforge.hostname`: Public hostname for ingress routes.
 - `skyforge.domain`: Email/domain suffix used by default users.
-- `skyforge.gateway.addresses`: Optional explicit Cilium Gateway address list (recommended for node-IP ingress to avoid `AddressNotAssigned` status).
+- `skyforge.gateway.addresses`: Optional explicit Cilium Gateway address list. Leave this empty when Cilium runs Gateway API in host-network mode; use it only with LB-IPAM + L2 announcement pools.
 - `skyforge.forwardCluster.hostname`: Optional dedicated Forward UI hostname (for example `skyforge-fwd.local.forwardnetworks.com`).
 - `skyforge.forwardCluster.tlsSecretName`: TLS Secret used for the dedicated Forward hostname listener when `forwardCluster.hostname` differs from `skyforge.hostname` (default `proxy-tls-fwd`).
 - `skyforge.forwardCluster.nodeRoleReconciler.*`: Optional in-cluster reconciler that continuously enforces the desired Forward node-role labels (`fwd-master`, `fwd-monitoring`, `fwd-compute-worker`, `fwd-search-worker`, plus `forwardnetworks.com/role` and scratch-group labels) from chart values so node re-registration does not strand Forward master pods.
