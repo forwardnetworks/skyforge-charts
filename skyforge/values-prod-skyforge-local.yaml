@@ -45,6 +45,8 @@ skyforge:
     discoveryUrl: "http://dex:5556/dex"
     issuerUrl: "https://skyforge.local.forwardnetworks.com/dex"
     redirectUrl: "https://skyforge.local.forwardnetworks.com/api/auth/oidc/callback"
+  awsSsoRegion: "us-east-1"
+  awsSsoStartUrl: "https://d-9067d98db1.awsapps.com/start/#"
 
   # Comma-separated usernames/emails that should see admin-only UI + APIs.
   # NOTE: Server-side admin checks are exact-match (no wildcards).
@@ -360,9 +362,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260329-forward-bridge-selfheal-r4"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260330-aws-sso-terraform-r1"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260329-forward-bridge-selfheal-r4-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260330-aws-sso-terraform-r1-worker"
   atlas: "ghcr.io/forwardnetworks/atlas:1.1.6-alpine"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"
