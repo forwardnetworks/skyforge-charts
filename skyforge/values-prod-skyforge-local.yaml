@@ -256,6 +256,12 @@ skyforge:
     nodeRoleReconciler:
       enabled: true
       schedule: "*/1 * * * *"
+      managedNodes:
+        - "skyforge-worker-1"
+        - "skyforge-worker-2"
+        - "skyforge-worker-3"
+        - "skyforge-worker-4"
+        - "skyforge-worker-5"
       nodeRoles:
         master:
           - "skyforge-worker-2"
@@ -263,13 +269,20 @@ skyforge:
           - "skyforge-worker-2"
         compute:
           - "skyforge-worker-2"
+          - "skyforge-worker-3"
           - "skyforge-worker-4"
+          - "skyforge-worker-5"
         search:
           - "skyforge-worker-2"
+          - "skyforge-worker-3"
           - "skyforge-worker-4"
+          - "skyforge-worker-5"
         forward:
+          - "skyforge-worker-1"
           - "skyforge-worker-2"
+          - "skyforge-worker-3"
           - "skyforge-worker-4"
+          - "skyforge-worker-5"
   observability:
     enabled: true
     managed:
@@ -302,19 +315,16 @@ skyforge:
     replicas: 1
     placement:
       poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
-      preferredPoolClass: "control"
+      preferredPoolClass: "app"
       pools:
         - control
         - app
         - lab
       poolWeight: 100
-      requiredPoolClass: "control"
+      requiredPoolClass: "app"
       requiredAntiAffinity: true
       nodeSelector: {}
-      tolerations:
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Exists"
-          effect: "NoSchedule"
+      tolerations: []
       affinity: {}
     autoscaling:
       enabled: false
@@ -350,9 +360,10 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260329-forward-bridge-selfheal-r4"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260324-servicenow-forward-perf-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260329-forward-bridge-selfheal-r4-worker"
+  atlas: "ghcr.io/forwardnetworks/atlas:1.1.6-alpine"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"
 

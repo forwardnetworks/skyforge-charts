@@ -6,6 +6,7 @@
 {{- $image := default .Values.images.kubectl $reconciler.image -}}
 {{- $pullPolicy := default "IfNotPresent" $reconciler.pullPolicy -}}
 {{- $schedule := default "*/1 * * * *" $reconciler.schedule -}}
+{{- $suspend := default false $reconciler.suspend -}}
 {{- $ttl := default 3600 $reconciler.ttlSecondsAfterFinished -}}
 {{- $successfulJobsHistoryLimit := default 1 $reconciler.successfulJobsHistoryLimit -}}
 {{- $failedJobsHistoryLimit := default 2 $reconciler.failedJobsHistoryLimit -}}
@@ -19,10 +20,11 @@
 {{- $computeNodes := default (list) $roles.compute -}}
 {{- $searchNodes := default (list) $roles.search -}}
 {{- $forwardNodes := default (list) $roles.forward -}}
+{{- $configuredManagedNodes := default (list) $reconciler.managedNodes -}}
 {{- if eq (len $masterNodes) 0 -}}
 {{- fail "skyforge.forwardCluster.nodeRoleReconciler.enabled=true requires at least one master node in skyforge.forwardCluster.nodeRoleReconciler.nodeRoles.master" -}}
 {{- end -}}
-{{- $managedNodes := uniq (concat $masterNodes $monitoringNodes $computeNodes $searchNodes $forwardNodes) -}}
+{{- $managedNodes := uniq (concat $configuredManagedNodes $masterNodes $monitoringNodes $computeNodes $searchNodes $forwardNodes) -}}
 {{- if eq (len $managedNodes) 0 -}}
 {{- fail "skyforge.forwardCluster.nodeRoleReconciler.enabled=true requires at least one managed node in skyforge.forwardCluster.nodeRoleReconciler.nodeRoles" -}}
 {{- end -}}
@@ -176,6 +178,7 @@ metadata:
     app.kubernetes.io/component: forward-node-role-reconciler
 spec:
   schedule: {{ $schedule | quote }}
+  suspend: {{ $suspend }}
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: {{ $successfulJobsHistoryLimit }}
   failedJobsHistoryLimit: {{ $failedJobsHistoryLimit }}

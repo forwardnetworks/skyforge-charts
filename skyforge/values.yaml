@@ -740,6 +740,9 @@ skyforge:
       scratchGroupLabel: "forwardnetworks.com/scratch-group"
       scratchGroupValue: "forward-scratch"
       poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
+      # Optional explicit node inventory that should have Forward role labels
+      # actively reconciled (including label removals when roles are unassigned).
+      managedNodes: []
       nodeRoles:
         master: []
         monitoring: []
@@ -798,7 +801,7 @@ skyforge:
       enabled: false
       scrapeInterval: "30s"
       prometheus:
-        image: "prom/prometheus:v2.55.1"
+        image: "quay.io/prometheus/prometheus:v2.55.1"
         retention: "15d"
         resources:
           requests:
@@ -999,7 +1002,7 @@ images:
   redis: "public.ecr.aws/docker/library/redis:7-alpine"
   redoc: "redocly/redoc:v2.5.0"
   technitiumDns: "docker.io/technitium/dns-server@sha256:94f2b90d63f03181421152157a8099ea2752b13fa30b6c96833859be8e93dfa9"
-  atlas: "arigaio/atlas:1.1.6-alpine"
+  atlas: "ghcr.io/forwardnetworks/atlas:1.1.6-alpine"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
   skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260326-kne-raw-r1"
