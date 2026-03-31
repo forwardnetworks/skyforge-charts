@@ -90,8 +90,8 @@ skyforge:
     tuning:
       interactiveConcurrency: 8
       interactiveQueueSize: 64
-      backgroundConcurrency: 2
-      backgroundQueueSize: 16
+      backgroundConcurrency: 4
+      backgroundQueueSize: 64
       heartbeatIntervalSeconds: 30
       reconcileQueuedIntervalSeconds: 30
       reconcileRunningIntervalSeconds: 300
@@ -713,6 +713,7 @@ skyforge:
     snmpPlaceholderEnabled: true
     demoReset:
       enabled: true
+      baseUrl: "http://skyforge-server:8085"
       schedule: "17 3 * * *"
       timeZone: "Etc/UTC"
       suspend: false
@@ -720,12 +721,17 @@ skyforge:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 2
       username: "skyforge"
+      apiTokenSecretName: "skyforge-admin-shared"
+      apiTokenSecretKey: "api-token"
       excludedUsers:
         - "admin"
         - "skyforge"
   forwardCluster:
     # Global Forward Cluster UI endpoint.
     enabled: false
+    # Optional explicit Forward appserver Spring profile set. Leave empty to
+    # preserve the profile value rendered by the underlying Forward chart.
+    appserverProfiles: ""
     # Optional dedicated hostname for Forward Cluster wildcard routing.
     # Example: skyforge-fwd.local.forwardnetworks.com
     hostname: ""
@@ -894,6 +900,7 @@ skyforge:
     sslmode: "disable"
     storage:
       enabled: true
+      size: "50Gi"
     # Forward services can open many idle JDBC sessions; keep headroom so
     # platform integrations (Dex/NetBox/Nautobot/Coder) are not starved.
     maxConnections: 600
@@ -1018,10 +1025,10 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-terraform-envfix-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-validate-demo-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-terraform-envfix-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-validate-demo-r1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true

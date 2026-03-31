@@ -12,6 +12,9 @@
 {{- $failedJobsHistoryLimit := default 2 $demoReset.failedJobsHistoryLimit -}}
 {{- $username := default "skyforge" $demoReset.username -}}
 {{- $excludedUsers := default (list "admin" "skyforge") $demoReset.excludedUsers -}}
+{{- $baseURL := default "http://skyforge-server:8085" $demoReset.baseUrl -}}
+{{- $apiTokenSecretName := default "skyforge-admin-shared" $demoReset.apiTokenSecretName -}}
+{{- $apiTokenSecretKey := default "api-token" $demoReset.apiTokenSecretKey -}}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -31,6 +34,7 @@ data:
     from http.cookiejar import CookieJar
 
     BASE_URL = os.environ.get("SKYFORGE_BASE_URL", "http://skyforge-server:8085").rstrip("/")
+    API_TOKEN = os.environ.get("SKYFORGE_API_TOKEN", "").strip()
     USERNAME = os.environ.get("SKYFORGE_ADMIN_USERNAME", "skyforge").strip()
     PASSWORD = os.environ.get("SKYFORGE_ADMIN_PASSWORD", "").strip()
     EXCLUDED_USERS = {
@@ -43,8 +47,8 @@ data:
         print(msg, file=sys.stderr)
         raise SystemExit(code)
 
-    if not USERNAME or not PASSWORD:
-        fail("forward demo reset cron: missing admin credentials")
+    if not API_TOKEN and (not USERNAME or not PASSWORD):
+        fail("forward demo reset cron: missing api token or admin credentials")
 
     cookie_jar = CookieJar()
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
@@ -53,11 +57,14 @@ data:
         url = BASE_URL + path
         data = None
         headers = {}
+        if API_TOKEN:
+            headers["Authorization"] = f"Bearer {API_TOKEN}"
         if payload is not None:
             data = json.dumps(payload).encode("utf-8")
             headers["Content-Type"] = "application/json"
         req = urllib.request.Request(url, data=data, headers=headers, method=method)
-        with opener.open(req, timeout=30) as resp:
+        request_opener = urllib.request.urlopen if API_TOKEN else opener.open
+        with request_opener(req, timeout=30) as resp:
             raw = resp.read().decode("utf-8")
             if not raw:
                 return {}
@@ -74,10 +81,11 @@ data:
             message = str(payload.get("message") or payload.get("error") or message)
         return err.code, message
 
-    request_json("POST", "/api/auth/login", {
-        "username": USERNAME,
-        "password": PASSWORD,
-    })
+    if not API_TOKEN:
+        request_json("POST", "/api/auth/login", {
+            "username": USERNAME,
+            "password": PASSWORD,
+        })
 
     users_payload = request_json("GET", "/api/admin/rbac/users")
     candidates = []
@@ -153,7 +161,13 @@ spec:
                 - /config/run.py
               env:
                 - name: SKYFORGE_BASE_URL
-                  value: "http://skyforge-server:8085"
+                  value: {{ $baseURL | quote }}
+                - name: SKYFORGE_API_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $apiTokenSecretName | quote }}
+                      key: {{ $apiTokenSecretKey | quote }}
+                      optional: true
                 - name: SKYFORGE_ADMIN_USERNAME
                   value: {{ $username | quote }}
                 - name: SKYFORGE_ADMIN_PASSWORD
