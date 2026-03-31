@@ -244,6 +244,9 @@ skyforge:
   # Pin to a concrete tag to avoid drifting when `latest` is retagged.
   forward:
     enabled: true
+    demoReset:
+      schedule: "17 3 * * *"
+      timeZone: "America/Chicago"
   forwardCollector:
     image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.3-02
     imagePullSecretName: ""
@@ -362,9 +365,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-terraform-runtime-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-demo-reset-terraform-r1"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-terraform-runtime-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-demo-reset-terraform-r1-worker"
   atlas: "ghcr.io/forwardnetworks/atlas:1.1.6-alpine"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"

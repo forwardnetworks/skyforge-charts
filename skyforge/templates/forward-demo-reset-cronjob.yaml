@@ -1,0 +1,175 @@
+{{- $forward := .Values.skyforge.forward -}}
+{{- $demoReset := default dict $forward.demoReset -}}
+{{- if and $forward.enabled $demoReset.enabled }}
+{{- $name := default "skyforge-forward-demo-reset" $demoReset.name -}}
+{{- $image := default .Values.images.python $demoReset.image -}}
+{{- $pullPolicy := default "IfNotPresent" $demoReset.pullPolicy -}}
+{{- $schedule := default "17 3 * * *" $demoReset.schedule -}}
+{{- $timeZone := default "Etc/UTC" $demoReset.timeZone -}}
+{{- $suspend := default false $demoReset.suspend -}}
+{{- $ttl := default 3600 $demoReset.ttlSecondsAfterFinished -}}
+{{- $successfulJobsHistoryLimit := default 1 $demoReset.successfulJobsHistoryLimit -}}
+{{- $failedJobsHistoryLimit := default 2 $demoReset.failedJobsHistoryLimit -}}
+{{- $username := default "skyforge" $demoReset.username -}}
+{{- $excludedUsers := default (list "admin" "skyforge") $demoReset.excludedUsers -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-demo-reset
+data:
+  run.py: |
+    import json
+    import os
+    import sys
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+    from http.cookiejar import CookieJar
+
+    BASE_URL = os.environ.get("SKYFORGE_BASE_URL", "http://skyforge-server:8085").rstrip("/")
+    USERNAME = os.environ.get("SKYFORGE_ADMIN_USERNAME", "skyforge").strip()
+    PASSWORD = os.environ.get("SKYFORGE_ADMIN_PASSWORD", "").strip()
+    EXCLUDED_USERS = {
+        item.strip().lower()
+        for item in os.environ.get("SKYFORGE_EXCLUDED_USERS", "admin,skyforge").split(",")
+        if item.strip()
+    }
+
+    def fail(msg: str, code: int = 1) -> None:
+        print(msg, file=sys.stderr)
+        raise SystemExit(code)
+
+    if not USERNAME or not PASSWORD:
+        fail("forward demo reset cron: missing admin credentials")
+
+    cookie_jar = CookieJar()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
+
+    def request_json(method: str, path: str, payload=None):
+        url = BASE_URL + path
+        data = None
+        headers = {}
+        if payload is not None:
+            data = json.dumps(payload).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(url, data=data, headers=headers, method=method)
+        with opener.open(req, timeout=30) as resp:
+            raw = resp.read().decode("utf-8")
+            if not raw:
+                return {}
+            return json.loads(raw)
+
+    def parse_http_error(err: urllib.error.HTTPError):
+        body = err.read().decode("utf-8", errors="replace")
+        message = body.strip()
+        try:
+            payload = json.loads(body)
+        except Exception:
+            payload = None
+        if isinstance(payload, dict):
+            message = str(payload.get("message") or payload.get("error") or message)
+        return err.code, message
+
+    request_json("POST", "/api/auth/login", {
+        "username": USERNAME,
+        "password": PASSWORD,
+    })
+
+    users_payload = request_json("GET", "/api/admin/rbac/users")
+    candidates = []
+    for item in users_payload.get("users", []):
+        username = str(item.get("username", "")).strip().lower()
+        if not username or username in EXCLUDED_USERS:
+            continue
+        candidates.append(username)
+    targets = sorted(set(candidates))
+
+    queued = 0
+    skipped = 0
+    failures = []
+    for username in targets:
+        try:
+            request_json("POST", f"/api/admin/forward/orgs/{urllib.parse.quote(username, safe='')}/rebuild", {
+                "tenantKind": "demo",
+                "mode": "curated-reset",
+                "reason": "nightly demo org rebuild",
+                "metadata": {
+                    "trigger": "nightly-demo-org-reset",
+                    "source": "kubernetes-cronjob",
+                },
+            })
+            queued += 1
+        except urllib.error.HTTPError as err:
+            code, message = parse_http_error(err)
+            lower = message.lower()
+            if code in (400, 409, 412) and ("cooldown" in lower or "active forward org reset" in lower):
+                skipped += 1
+                continue
+            failures.append(f"{username}: HTTP {code} {message}")
+        except Exception as err:
+            failures.append(f"{username}: {err}")
+
+    print(f"forward-demo-reset queued={queued} skipped={skipped} total={len(targets)}")
+    if failures:
+        for line in failures:
+            print(line, file=sys.stderr)
+        raise SystemExit(1)
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-demo-reset
+spec:
+  schedule: {{ $schedule | quote }}
+  timeZone: {{ $timeZone | quote }}
+  suspend: {{ $suspend }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ $successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ $failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ $ttl }}
+      template:
+        metadata:
+          labels:
+            {{- include "skyforge.labels" . | nindent 12 }}
+            app.kubernetes.io/component: forward-demo-reset
+        spec:
+          restartPolicy: OnFailure
+          enableServiceLinks: false
+          containers:
+            - name: forward-demo-reset
+              image: {{ $image | quote }}
+              imagePullPolicy: {{ $pullPolicy | quote }}
+              command:
+                - python3
+                - /config/run.py
+              env:
+                - name: SKYFORGE_BASE_URL
+                  value: "http://skyforge-server:8085"
+                - name: SKYFORGE_ADMIN_USERNAME
+                  value: {{ $username | quote }}
+                - name: SKYFORGE_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-admin-shared
+                      key: password
+                - name: SKYFORGE_EXCLUDED_USERS
+                  value: {{ join "," $excludedUsers | quote }}
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                  readOnly: true
+          volumes:
+            - name: config
+              configMap:
+                name: {{ $name }}
+                defaultMode: 0755
+{{- end }}

@@ -295,6 +295,9 @@ spec:
               name: skyforge-worker-data
             - mountPath: /data
               name: skyforge-worker-platform
+            - mountPath: /tools
+              name: terraform-bin
+              readOnly: true
             - name: skyforge-ca-bundle
               mountPath: /etc/skyforge/ca
       volumes:
@@ -319,6 +322,8 @@ spec:
         - name: skyforge-worker-data
           emptyDir: {}
         - name: skyforge-worker-platform
+          emptyDir: {}
+        - name: terraform-bin
           emptyDir: {}
         - name: skyforge-ca-cert
           secret:
@@ -356,3 +361,16 @@ spec:
               done
               echo "nsq did not become reachable in time" >&2
               exit 1
+        - name: terraform-bin
+          image: {{ .Values.images.terraform | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              cp /bin/terraform /work/terraform
+              chmod 0555 /work/terraform
+          volumeMounts:
+            - name: terraform-bin
+              mountPath: /work
