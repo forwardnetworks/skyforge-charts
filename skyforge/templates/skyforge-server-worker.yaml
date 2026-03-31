@@ -298,6 +298,8 @@ spec:
             - mountPath: /tools
               name: terraform-bin
               readOnly: true
+            - mountPath: /tmp
+              name: skyforge-tmp
             - name: skyforge-ca-bundle
               mountPath: /etc/skyforge/ca
       volumes:
@@ -324,6 +326,8 @@ spec:
         - name: skyforge-worker-platform
           emptyDir: {}
         - name: terraform-bin
+          emptyDir: {}
+        - name: skyforge-tmp
           emptyDir: {}
         - name: skyforge-ca-cert
           secret:

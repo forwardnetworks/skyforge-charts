@@ -479,6 +479,8 @@ spec:
         - mountPath: /tools
           name: terraform-bin
           readOnly: true
+        - mountPath: /tmp
+          name: skyforge-tmp
         - name: skyforge-ca-bundle
           mountPath: /etc/skyforge/ca
       restartPolicy: Always
@@ -508,6 +510,8 @@ spec:
         persistentVolumeClaim:
           claimName: platform-data
       - name: terraform-bin
+        emptyDir: {}
+      - name: skyforge-tmp
         emptyDir: {}
       - name: skyforge-ca-cert
         secret:
