@@ -256,6 +256,7 @@ skyforge:
   burst:
     hetzner:
       enabled: false
+      provisioningEnabled: false
       apiTokenSecretName: "skyforge-hetzner-burst"
       apiTokenSecretKey: "api-token"
       hubPublicKeySecretName: "skyforge-hetzner-wireguard"

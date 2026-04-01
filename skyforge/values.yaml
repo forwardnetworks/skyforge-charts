@@ -232,6 +232,7 @@ skyforge:
   burst:
     hetzner:
       enabled: false
+      provisioningEnabled: false
       apiTokenSecretName: ""
       apiTokenSecretKey: "api-token"
       hubPublicKeySecretName: ""
@@ -256,7 +257,7 @@ skyforge:
         endpointHost: ""
         endpointPort: 51820
         listenPort: 51820
-        interfaceName: "wg-skyforge-burst"
+        interfaceName: "wg-burst0"
         tunnelCIDR: ""
         localAddressCIDR: ""
         gatewayNodeIP: ""
