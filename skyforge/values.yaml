@@ -173,7 +173,7 @@ skyforge:
     provider: "none"
     cloudflare:
       enabled: false
-      image: "ghcr.io/pl4nty/cloudflare-kubernetes-gateway:v0.8.2"
+      image: "ghcr.io/forwardnetworks/cloudflare-kubernetes-gateway:v0.8.2-skyforge-r1"
       imagePullPolicy: "IfNotPresent"
       controllerName: "github.com/pl4nty/cloudflare-kubernetes-gateway"
       controllerNamespace: ""

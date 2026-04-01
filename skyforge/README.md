@@ -23,7 +23,7 @@ helm upgrade --install skyforge ./components/charts/skyforge -n skyforge --creat
   -f values.yaml
 ```
 
-Production profile for `skyforge.local.forwardnetworks.com`:
+Production profile for a public Skyforge hostname such as `skyforge.craigjohnson.org`:
 
 ```bash
 helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
@@ -46,7 +46,7 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `skyforge.burst.hetzner.wireguard.hub.*`: Optional host-network deployment that owns the local WireGuard hub interface on one selected node. Use this together with an out-of-band Secret that stores the hub private key and peer config fragments.
 - `skyforge.burst.hetzner.routeReconciler.*`: Optional privileged host-network DaemonSet that continuously enforces return routes on selected worker nodes for Hetzner burst CIDRs carried behind a local WireGuard gateway.
 - `skyforge.publicTunnel.provider`: Optional public-access overlay selector (`none` or `cloudflare`). The direct in-cluster Gateway API path remains on Cilium.
-- `skyforge.publicTunnel.cloudflare.*`: Optional Cloudflare Gateway API controller install that attaches Skyforge routes to a Cloudflare-backed `GatewayClass`. Keep account ID and API token in a Kubernetes Secret; do not set them in values files.
+- `skyforge.publicTunnel.cloudflare.*`: Optional Cloudflare Gateway API controller install that attaches Skyforge routes to a Cloudflare-backed `GatewayClass`. The selected Skyforge and Forward hostnames must already live in an active Cloudflare-managed zone visible to the API token. Keep account ID and API token in a Kubernetes Secret; do not set them in values files.
 - `skyforge.kne.*`: Optional KNE install from vendored manifests (tracked from `forwardnetworks/kne`).
 - `skyforge.kne.controllers.*`: Installs KNE vendor controller stacks (ceoslab/cdnos/srlinux/lemming) required for CRD-backed device provisioning.
 - Dedicated worker deployment is always enabled as a singleton (`replicas: 1`) and processes queued runs from PubSub.

@@ -25,15 +25,16 @@ skyforge:
   db:
     storage:
       size: "50Gi"
-  hostname: skyforge.local.forwardnetworks.com
-  domain: forwardnetworks.com
-  publicUrl: https://skyforge.local.forwardnetworks.com
+  hostname: skyforge.craigjohnson.org
+  domain: craigjohnson.org
+  publicUrl: https://skyforge.craigjohnson.org
   publicTunnel:
-    provider: none
+    provider: cloudflare
     cloudflare:
       enabled: true
       controllerNamespace: "cloudflare-gateway"
       credentialsSecretName: "skyforge-cloudflare-gateway"
+      image: "ghcr.io/forwardnetworks/cloudflare-kubernetes-gateway:v0.8.2-skyforge-r1"
       gatewayClassName: "cloudflare"
       gatewayName: "skyforge-public"
   gateway:
@@ -54,8 +55,8 @@ skyforge:
       clientSecretSecretKey: "dex-oidc-client-secret"
   oidc:
     discoveryUrl: "http://dex:5556/dex"
-    issuerUrl: "https://skyforge.local.forwardnetworks.com/dex"
-    redirectUrl: "https://skyforge.local.forwardnetworks.com/api/auth/oidc/callback"
+    issuerUrl: "https://skyforge.craigjohnson.org/dex"
+    redirectUrl: "https://skyforge.craigjohnson.org/api/auth/oidc/callback"
   awsSsoRegion: "us-east-1"
   awsSsoStartUrl: "https://d-9067d98db1.awsapps.com/start/#"
 
@@ -334,7 +335,7 @@ skyforge:
   forwardCluster:
     enabled: true
     appserverProfiles: "K8S"
-    hostname: "skyforge-fwd.local.forwardnetworks.com"
+    hostname: "skyforge-fwd.craigjohnson.org"
     tlsSecretName: "proxy-tls-fwd"
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
