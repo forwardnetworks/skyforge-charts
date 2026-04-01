@@ -252,7 +252,7 @@ skyforge:
       k3s:
         serverUrl: ""
       wireguard:
-        mode: "outbound-client"
+        mode: "outbound-to-gateway"
         endpointHost: ""
         endpointPort: 51820
         listenPort: 51820

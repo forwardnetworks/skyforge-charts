@@ -31,7 +31,7 @@ skyforge:
   publicTunnel:
     provider: cloudflare
     cloudflare:
-      enabled: true
+      enabled: false
       controllerNamespace: "cloudflare-gateway"
       credentialsSecretName: "skyforge-cloudflare-gateway"
       image: "ghcr.io/forwardnetworks/cloudflare-kubernetes-gateway:v0.8.2-skyforge-r1"
@@ -120,7 +120,7 @@ skyforge:
       license:
         enabled: false
       autoStop:
-        enabled: true
+        enabled: false
         # Keep Infoblox subordinate to core lab/platform workloads by
         # shrinking idle/runtime windows.
         maxIdleMinutes: 30
@@ -255,7 +255,7 @@ skyforge:
             threshold: "0.1"
   burst:
     hetzner:
-      enabled: true
+      enabled: false
       apiTokenSecretName: "skyforge-hetzner-burst"
       apiTokenSecretKey: "api-token"
       hubPublicKeySecretName: "skyforge-hetzner-wireguard"
@@ -268,16 +268,16 @@ skyforge:
       networkZone: "us-east"
       networkCIDR: "10.30.0.0/16"
       workerSubnetCIDR: "10.30.0.0/24"
-      serverType: "cpx31"
-      image: "ubuntu-24.04"
+      serverType: "cpx11"
+      image: "wireguard"
       minReplicas: 0
       maxReplicas: 4
       scaleDownCooldownMinutes: 30
       k3s:
         serverUrl: "https://10.128.16.73:6443"
       wireguard:
-        mode: "outbound-client"
-        endpointHost: "skyforge.local.forwardnetworks.com"
+        mode: "outbound-to-gateway"
+        endpointHost: "5.161.43.224"
         endpointPort: 51820
         listenPort: 51820
         interfaceName: "wg-burst0"
@@ -292,7 +292,7 @@ skyforge:
         burstNodeCIDRs:
           - "10.30.0.0/24"
         hub:
-          enabled: true
+          enabled: false
           image: "docker.io/linuxserver/wireguard:latest"
           imagePullPolicy: "IfNotPresent"
           privateKeySecretName: "skyforge-hetzner-wireguard"
@@ -309,7 +309,7 @@ skyforge:
               effect: "NoSchedule"
           affinity: {}
       routeReconciler:
-        enabled: true
+        enabled: false
         image: "docker.io/nicolaka/netshoot:v0.13"
         imagePullPolicy: "IfNotPresent"
         intervalSeconds: 60
