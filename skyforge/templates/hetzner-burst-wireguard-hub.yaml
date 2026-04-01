@@ -1,0 +1,157 @@
+{{- $burst := default dict .Values.skyforge.burst -}}
+{{- $hetzner := default dict $burst.hetzner -}}
+{{- $wireguard := default dict $hetzner.wireguard -}}
+{{- $hub := default dict $wireguard.hub -}}
+{{- if and $hetzner.enabled (default false $hub.enabled) -}}
+{{- $name := default "hetzner-burst-wireguard-hub" $hub.name -}}
+{{- $image := default "docker.io/linuxserver/wireguard:latest" $hub.image -}}
+{{- $pullPolicy := default "IfNotPresent" $hub.imagePullPolicy -}}
+{{- $interfaceName := default "wg-burst0" $wireguard.interfaceName -}}
+{{- $listenPort := default 51820 $wireguard.listenPort -}}
+{{- $localAddressCIDR := required "skyforge.burst.hetzner.wireguard.localAddressCIDR is required" $wireguard.localAddressCIDR -}}
+{{- $interval := default 60 $hub.intervalSeconds -}}
+{{- $mtu := default 1420 $wireguard.mtu -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hetzner-burst-wireguard-hub
+data:
+  reconcile.sh: |
+    #!/bin/bash
+    set -euo pipefail
+
+    WG_IFACE="{{ $interfaceName }}"
+    WG_ADDR="{{ $localAddressCIDR }}"
+    WG_PORT="{{ $listenPort }}"
+    WG_MTU="{{ $mtu }}"
+    WG_INTERVAL="{{ $interval }}"
+    WG_ROUTES="{{ join " " (default (list) $wireguard.burstNodeCIDRs) }}"
+    WG_ENABLE_IP_FORWARD="{{ ternary "true" "false" (default true $hub.enableIPv4Forwarding) }}"
+    PRIVATE_KEY_FILE="/keys/private-key"
+    PEERS_FILE="/peers/peers.conf"
+    RUNTIME_CONF="/run/skyforge-hetzner-wg.conf"
+
+    while true; do
+      if ! command -v wg >/dev/null 2>&1; then
+        echo "wireguard-tools not present in image ${HOSTNAME}" >&2
+        sleep "${WG_INTERVAL}"
+        continue
+      fi
+      if [ ! -s "${PRIVATE_KEY_FILE}" ]; then
+        echo "missing private key file ${PRIVATE_KEY_FILE}" >&2
+        sleep "${WG_INTERVAL}"
+        continue
+      fi
+      if [ "${WG_ENABLE_IP_FORWARD}" = "true" ]; then
+        sysctl -w net.ipv4.ip_forward=1 >/dev/null 2>&1 || true
+      fi
+      if ! ip link show "${WG_IFACE}" >/dev/null 2>&1; then
+        ip link add "${WG_IFACE}" type wireguard || true
+      fi
+      ip link set "${WG_IFACE}" down >/dev/null 2>&1 || true
+      ip addr flush dev "${WG_IFACE}" >/dev/null 2>&1 || true
+      ip addr add "${WG_ADDR}" dev "${WG_IFACE}"
+      umask 077
+      {
+        echo "[Interface]"
+        printf 'PrivateKey = %s\n' "$(tr -d '\n' < "${PRIVATE_KEY_FILE}")"
+        printf 'ListenPort = %s\n' "${WG_PORT}"
+      } > "${RUNTIME_CONF}"
+      if [ -f "${PEERS_FILE}" ] && [ -s "${PEERS_FILE}" ]; then
+        printf '\n' >> "${RUNTIME_CONF}"
+        cat "${PEERS_FILE}" >> "${RUNTIME_CONF}"
+      fi
+      wg syncconf "${WG_IFACE}" "${RUNTIME_CONF}"
+      ip link set dev "${WG_IFACE}" mtu "${WG_MTU}" up
+      for cidr in ${WG_ROUTES}; do
+        ip route replace "${cidr}" dev "${WG_IFACE}" proto static
+      done
+      sleep "${WG_INTERVAL}"
+    done
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hetzner-burst-wireguard-hub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: hetzner-burst-wireguard-hub
+  template:
+    metadata:
+      annotations:
+        checksum/hub-config: {{ printf "%s|%s|%v|%v|%v|%v" $interfaceName $localAddressCIDR $listenPort $mtu $interval (default (list) $wireguard.burstNodeCIDRs) | sha256sum | quote }}
+        checksum/private-key-ref: {{ printf "%s|%s" (required "skyforge.burst.hetzner.wireguard.hub.privateKeySecretName is required" $hub.privateKeySecretName) (default "private-key" $hub.privateKeySecretKey) | sha256sum | quote }}
+        checksum/peer-config-ref: {{ printf "%s|%s" (default (required "skyforge.burst.hetzner.wireguard.hub.privateKeySecretName is required" $hub.privateKeySecretName) $hub.peerConfigSecretName) (default "peers.conf" $hub.peerConfigSecretKey) | sha256sum | quote }}
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/component: hetzner-burst-wireguard-hub
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      terminationGracePeriodSeconds: 5
+      enableServiceLinks: false
+      {{- with $hub.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- with $hub.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with $hub.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with $hub.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      containers:
+        - name: wireguard-hub
+          image: {{ $image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["NET_ADMIN", "SYS_MODULE"]
+          command:
+            - /bin/bash
+            - /config/reconcile.sh
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: private-key
+              mountPath: /keys
+              readOnly: true
+            - name: peer-config
+              mountPath: /peers
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ $name }}
+            defaultMode: 0755
+        - name: private-key
+          secret:
+            secretName: {{ required "skyforge.burst.hetzner.wireguard.hub.privateKeySecretName is required" $hub.privateKeySecretName | quote }}
+            items:
+              - key: {{ default "private-key" $hub.privateKeySecretKey | quote }}
+                path: private-key
+        - name: peer-config
+          secret:
+            secretName: {{ default (required "skyforge.burst.hetzner.wireguard.hub.privateKeySecretName is required" $hub.privateKeySecretName) $hub.peerConfigSecretName | quote }}
+            optional: true
+            items:
+              - key: {{ default "peers.conf" $hub.peerConfigSecretKey | quote }}
+                path: peers.conf
+{{- end }}

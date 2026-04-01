@@ -158,7 +158,7 @@ skyforge:
     #     value: "10.128.16.60"
     addresses: []
     additionalHostnames: []
-    # Local k3d can pin the generated cilium-gateway-* Service nodePorts to
+    # Local k3s can pin the generated cilium-gateway-* Service nodePorts to
     # stable values so host port bindings stay deterministic without adding a
     # separate ingress implementation.
     localNodePorts:
@@ -167,27 +167,29 @@ skyforge:
       http: 30080
       https: 30443
   publicTunnel:
-    ngrok:
+    # Optional external public-access overlay. Skyforge keeps the direct in-cluster
+    # Gateway API path on Cilium and can add a second public edge provider.
+    # Supported providers: none, cloudflare.
+    provider: "none"
+    cloudflare:
       enabled: false
-      image: "docker.io/ngrok/ngrok:3"
+      image: "ghcr.io/pl4nty/cloudflare-kubernetes-gateway:v0.8.2"
       imagePullPolicy: "IfNotPresent"
-      authtokenSecretName: "skyforge-ngrok"
-      authtokenSecretKey: "authtoken"
-      hostNetwork: false
-      dnsPolicy: ""
-      targetServiceName: "cilium-gateway-skyforge"
-      targetServiceNamespace: "kube-system"
-      targetServicePort: 80
-      targetAddress: ""
-      extraArgs: []
-      env: {}
+      controllerName: "github.com/pl4nty/cloudflare-kubernetes-gateway"
+      controllerNamespace: ""
+      gatewayClassName: "cloudflare"
+      gatewayName: "skyforge-public"
+      credentialsSecretName: ""
+      credentialsAccountIdKey: "ACCOUNT_ID"
+      credentialsApiTokenKey: "TOKEN"
+      logLevel: "info"
       resources:
         requests:
-          cpu: "50m"
+          cpu: "10m"
           memory: "64Mi"
         limits:
           cpu: "500m"
-          memory: "256Mi"
+          memory: "512Mi"
   # Skyforge uses Cilium Gateway API for ingress (no Traefik).
   kne:
     # Enable Kubernetes Network Emulation (KNE) meshnet components.
@@ -227,6 +229,66 @@ skyforge:
     gcpServiceAccountJSONKey: "SKYFORGE_GCP_SERVICE_ACCOUNT_JSON"
     awsAccessKeyIdKey: "SKYFORGE_AWS_ACCESS_KEY_ID"
     awsSecretAccessKeyKey: "SKYFORGE_AWS_SECRET_ACCESS_KEY"
+  burst:
+    hetzner:
+      enabled: false
+      apiTokenSecretName: ""
+      apiTokenSecretKey: "api-token"
+      hubPublicKeySecretName: ""
+      hubPublicKeySecretKey: "public-key"
+      k3sTokenSecretName: ""
+      k3sTokenSecretKey: "token"
+      providerLabel: "hetzner"
+      poolClass: "burst"
+      location: ""
+      networkZone: ""
+      networkCIDR: ""
+      workerSubnetCIDR: ""
+      serverType: ""
+      image: ""
+      minReplicas: 0
+      maxReplicas: 0
+      scaleDownCooldownMinutes: 30
+      k3s:
+        serverUrl: ""
+      wireguard:
+        mode: "outbound-client"
+        endpointHost: ""
+        endpointPort: 51820
+        listenPort: 51820
+        interfaceName: "wg-skyforge-burst"
+        tunnelCIDR: ""
+        localAddressCIDR: ""
+        gatewayNodeIP: ""
+        mtu: 1420
+        allowedIPs: []
+        burstNodeCIDRs: []
+        hub:
+          enabled: false
+          image: "docker.io/nicolaka/netshoot:v0.13"
+          imagePullPolicy: "IfNotPresent"
+          priorityClassName: ""
+          privateKeySecretName: ""
+          privateKeySecretKey: "private-key"
+          peerConfigSecretName: ""
+          peerConfigSecretKey: "peers.conf"
+          intervalSeconds: 60
+          enableIPv4Forwarding: true
+          nodeSelector: {}
+          tolerations: []
+          affinity: {}
+      routeReconciler:
+        enabled: false
+        image: "docker.io/nicolaka/netshoot:v0.13"
+        imagePullPolicy: "IfNotPresent"
+        priorityClassName: ""
+        intervalSeconds: 60
+        via: ""
+        dev: ""
+        destinations: []
+        nodeSelector: {}
+        tolerations: []
+        affinity: {}
   gitea:
     enabled: true
     storage:
@@ -1025,10 +1087,10 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-validate-demo-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-platform-rollup-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-validate-demo-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-platform-rollup-r1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true

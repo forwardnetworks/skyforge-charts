@@ -28,6 +28,14 @@ skyforge:
   hostname: skyforge.local.forwardnetworks.com
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
+  publicTunnel:
+    provider: none
+    cloudflare:
+      enabled: true
+      controllerNamespace: "cloudflare-gateway"
+      credentialsSecretName: "skyforge-cloudflare-gateway"
+      gatewayClassName: "cloudflare"
+      gatewayName: "skyforge-public"
   gateway:
     # Cilium Gateway runs in host-network mode in this environment.
     # Do not pin a static Gateway address here.
@@ -242,6 +250,75 @@ skyforge:
             query: "sum(rate(envoy_http_downstream_rq_total{envoy_http_conn_manager_prefix='ingress_http',pod=~'elk-sso-proxy-.*'}[2m]))"
             activationThreshold: "0.01"
             threshold: "0.1"
+  burst:
+    hetzner:
+      enabled: true
+      apiTokenSecretName: "skyforge-hetzner-burst"
+      apiTokenSecretKey: "api-token"
+      hubPublicKeySecretName: "skyforge-hetzner-wireguard"
+      hubPublicKeySecretKey: "public-key"
+      k3sTokenSecretName: "skyforge-hetzner-k3s"
+      k3sTokenSecretKey: "token"
+      providerLabel: "hetzner"
+      poolClass: "burst"
+      location: "ash"
+      networkZone: "us-east"
+      networkCIDR: "10.30.0.0/16"
+      workerSubnetCIDR: "10.30.0.0/24"
+      serverType: "cpx31"
+      image: "ubuntu-24.04"
+      minReplicas: 0
+      maxReplicas: 4
+      scaleDownCooldownMinutes: 30
+      k3s:
+        serverUrl: "https://10.128.16.73:6443"
+      wireguard:
+        mode: "outbound-client"
+        endpointHost: "skyforge.local.forwardnetworks.com"
+        endpointPort: 51820
+        listenPort: 51820
+        interfaceName: "wg-burst0"
+        tunnelCIDR: "10.31.0.0/24"
+        localAddressCIDR: "10.31.0.1/24"
+        gatewayNodeIP: "10.128.16.73"
+        mtu: 1420
+        allowedIPs:
+          - "10.128.16.0/24"
+          - "10.42.0.0/16"
+          - "10.43.0.0/16"
+        burstNodeCIDRs:
+          - "10.30.0.0/24"
+        hub:
+          enabled: true
+          image: "docker.io/linuxserver/wireguard:latest"
+          imagePullPolicy: "IfNotPresent"
+          privateKeySecretName: "skyforge-hetzner-wireguard"
+          privateKeySecretKey: "private-key"
+          peerConfigSecretName: "skyforge-hetzner-wireguard"
+          peerConfigSecretKey: "peers.conf"
+          intervalSeconds: 60
+          enableIPv4Forwarding: true
+          nodeSelector:
+            skyforge-role: "control"
+          tolerations:
+            - key: "node-role.kubernetes.io/control-plane"
+              operator: "Exists"
+              effect: "NoSchedule"
+          affinity: {}
+      routeReconciler:
+        enabled: true
+        image: "docker.io/nicolaka/netshoot:v0.13"
+        imagePullPolicy: "IfNotPresent"
+        intervalSeconds: 60
+        via: "10.128.16.73"
+        dev: ""
+        destinations:
+          - "10.30.0.0/24"
+        nodeSelector:
+          skyforge.forwardnetworks.com/pool-class: "app"
+        tolerations: []
+        affinity: {}
+
 
   # Forward in-cluster collector image + pull credentials.
   # Pin to a concrete tag to avoid drifting when `latest` is retagged.
@@ -371,9 +448,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-validate-demo-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-platform-rollup-r1"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-validate-demo-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-platform-rollup-r1-worker"
   atlas: "ghcr.io/forwardnetworks/atlas:1.1.6-alpine"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"

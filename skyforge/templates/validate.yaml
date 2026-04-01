@@ -14,6 +14,10 @@ early when required configuration is missing.
 {{- $obsGrafanaOIDCEnabled := true -}}
 {{- $edition := lower (trim (default "enterprise" .Values.skyforge.edition)) -}}
 {{- $forwardEnabled := and (ne $edition "oss") .Values.skyforge.forward.enabled -}}
+{{- $publicTunnel := default (dict) .Values.skyforge.publicTunnel -}}
+{{- $publicTunnelProvider := lower (trim (default "none" $publicTunnel.provider)) -}}
+{{- $publicTunnelCloudflare := default (dict) $publicTunnel.cloudflare -}}
+{{- $publicTunnelCloudflareEnabled := default false $publicTunnelCloudflare.enabled -}}
 {{- if hasKey $obsGrafanaOIDC "enabled" -}}
   {{- $obsGrafanaOIDCEnabled = (index $obsGrafanaOIDC "enabled") -}}
 {{- end -}}
@@ -63,6 +67,81 @@ early when required configuration is missing.
 {{- end -}}
 {{- if and (eq $edition "oss") $forwardClusterEnabled -}}
   {{- fail "skyforge.edition=oss does not support skyforge.forwardCluster.enabled=true" -}}
+{{- end -}}
+{{- if and (ne $publicTunnelProvider "") (ne $publicTunnelProvider "none") (ne $publicTunnelProvider "cloudflare") -}}
+  {{- fail (printf "skyforge.publicTunnel.provider must be one of none, cloudflare (got %q)" $publicTunnelProvider) -}}
+{{- end -}}
+{{- if eq $publicTunnelProvider "cloudflare" -}}
+  {{- if not (trim (default "" $publicTunnelCloudflare.credentialsSecretName)) -}}
+    {{- fail "skyforge.publicTunnel.provider=cloudflare requires skyforge.publicTunnel.cloudflare.credentialsSecretName" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $publicTunnelCloudflare.gatewayClassName)) -}}
+    {{- fail "skyforge.publicTunnel.provider=cloudflare requires skyforge.publicTunnel.cloudflare.gatewayClassName" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $publicTunnelCloudflare.gatewayName)) -}}
+    {{- fail "skyforge.publicTunnel.provider=cloudflare requires skyforge.publicTunnel.cloudflare.gatewayName" -}}
+  {{- end -}}
+{{- end -}}
+{{- $hetznerBurst := default (dict) .Values.skyforge.burst.hetzner -}}
+{{- $hetznerBurstEnabled := default false $hetznerBurst.enabled -}}
+{{- if and (eq $edition "oss") $hetznerBurstEnabled -}}
+  {{- fail "skyforge.edition=oss does not support skyforge.burst.hetzner.enabled=true" -}}
+{{- end -}}
+{{- if $hetznerBurstEnabled -}}
+  {{- if not $forwardEnabled -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires Forward-enabled deployment mode" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.apiTokenSecretName)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.apiTokenSecretName" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.location)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.location" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.networkZone)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.networkZone" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.networkCIDR)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.networkCIDR" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.workerSubnetCIDR)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.workerSubnetCIDR" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.serverType)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.serverType" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.image)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.image" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.k3s.serverUrl)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.k3s.serverUrl" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.wireguard.endpointHost)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.wireguard.endpointHost" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.wireguard.tunnelCIDR)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.wireguard.tunnelCIDR" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.wireguard.localAddressCIDR)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.wireguard.localAddressCIDR" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $hetznerBurst.wireguard.gatewayNodeIP)) -}}
+    {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.wireguard.gatewayNodeIP" -}}
+  {{- end -}}
+  {{- if and (default false $hetznerBurst.wireguard.hub.enabled) (not (trim (default "" $hetznerBurst.wireguard.hub.privateKeySecretName))) -}}
+    {{- fail "skyforge.burst.hetzner.wireguard.hub.enabled=true requires skyforge.burst.hetzner.wireguard.hub.privateKeySecretName" -}}
+  {{- end -}}
+  {{- if and (default false $hetznerBurst.wireguard.hub.enabled) (not (trim (default "" $hetznerBurst.wireguard.localAddressCIDR))) -}}
+    {{- fail "skyforge.burst.hetzner.wireguard.hub.enabled=true requires skyforge.burst.hetzner.wireguard.localAddressCIDR" -}}
+  {{- end -}}
+  {{- if and (default false $hetznerBurst.wireguard.hub.enabled) (eq (len (default (dict) $hetznerBurst.wireguard.hub.nodeSelector)) 0) -}}
+    {{- fail "skyforge.burst.hetzner.wireguard.hub.enabled=true requires skyforge.burst.hetzner.wireguard.hub.nodeSelector" -}}
+  {{- end -}}
+  {{- if and (default false $hetznerBurst.routeReconciler.enabled) (not (trim (default "" $hetznerBurst.routeReconciler.via))) -}}
+    {{- fail "skyforge.burst.hetzner.routeReconciler.enabled=true requires skyforge.burst.hetzner.routeReconciler.via" -}}
+  {{- end -}}
+  {{- if and (default false $hetznerBurst.routeReconciler.enabled) (eq (len (default (list) $hetznerBurst.routeReconciler.destinations)) 0) -}}
+    {{- fail "skyforge.burst.hetzner.routeReconciler.enabled=true requires skyforge.burst.hetzner.routeReconciler.destinations" -}}
+  {{- end -}}
 {{- end -}}
 {{- if and .Values.skyforge.netbox.enabled (not .Values.skyforge.dex.enabled) -}}
   {{- fail "skyforge.netbox.enabled=true requires skyforge.dex.enabled=true (native OIDC login path)" -}}

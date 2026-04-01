@@ -24,41 +24,44 @@ data:
     
 
   atlas.sum: |
-    h1:Sjv1ZwOTbBcMiE1GcqoO02LNE2C+Xdnr/gRlVq624Ho=
+    h1:uzIELBKWG8QTDQXaQZYQX5mDCyPSsy5ZlUOR0S6VAmQ=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
     20260227201000_netlab_status_current_and_forward_type_hard_cut.up.sql h1:w3BQZ1/eMfcNPeRT0YkYxNV1Yqe6/zqRDWMObCIe70c=
-    20260227224000_netlab_status_current_forward_type.up.sql h1:r5sYg+jKI0MSYSbyWqio0hrGX9YhfaH7T9Ksw9gLTSY=
-    20260227231000_netlab_status_current_contract_checks.up.sql h1:I21SWSiF1nCJzZlfj3a5CWpijNjDzFF9pJAMm0LGC5w=
-    20260227235500_deployment_type_model_hard_cut.up.sql h1:pbrBxOpPdQVPN5yC1WFOFDVcDflwF9B3qXUL2wBPR68=
-    20260228000500_deployment_engine_contract_hard_cut.up.sql h1:EwZtCvjUr0H+39JwPhrYC59QSWqUYkFbX2f7EGZKgLo=
-    20260228013000_deployment_runtime_state_hard_cut.up.sql h1:x9kYWfC0a0w1Fz1gMggASYYBM47kMH86KvkT5ZvyITw=
-    20260228193000_netlab_artifact_index.up.sql h1:K5KJMK0DTZzCDIKda1FgzCxiPHhR9kfObrA7K9VAmzg=
-    20260301080000_admin_smoke_runs.up.sql h1:NVaCnH6W7pNe2wbQ1Uzl+aR7hwjYJs00d4ndk0XNIEY=
-    20260301113000_task_runtime_contracts.up.sql h1:Qta2S1JVTaMlu2DCv/dcHzcNeLZiMklDfYzDtav1eYI=
-    20260301140000_servicenow_schema_hard_cut.up.sql h1:B6zea6nWqYS5HXqwMVYPDyJBV0Lbu3ohSJQ1XcyZbx4=
-    20260304194500_user_api_tokens.up.sql h1:95NjjU+KKRaYKvCu4Da5FP6MVUtYEA9n4tggMfIVtwQ=
-    20260305114000_user_rbac_roles.up.sql h1:Im6j4BTMTVCG85AvB8GeVXFVXYWPPmfcC3DQhgIYJr0=
-    20260306190000_user_api_permissions.up.sql h1:cG/7S9ATAEjeaMtw3OYmjiUTySIZUmoRXcbadOGxW+Y=
-    20260306213000_user_forward_tenants.up.sql h1:Mz31Kcnnis7fecRaanpFpmJ370pxzk88pZmcXuszO7w=
-    20260309190000_remove_ldap_password_cache.up.sql h1:HitXVc0AbyANKkvd85iDI//CHwgAeZqJFwYZhPL3qo0=
-    20260311103000_servicenow_global_tenant_model.up.sql h1:8aLh8U3FMpru850ULwQqWuqJ8BQc7fac5E788k4Silw=
-    20260311170000_teams_bridge.up.sql h1:rG4QmTw0i455OON2edqj2ZXh0vy4Nlo8O74dhU5fnLI=
-    20260311193000_platform_governance_contracts.up.sql h1:66cKnLhVwzFJde/IrKLhYPFdomTr5R+GvW7PhnaEUoY=
-    20260311194500_forward_tenant_reset_baseline.up.sql h1:n2uZYqKnxA0RB/DdhFJSSzh8s/apQJvX+kAewS5aRkg=
-    20260311200500_reservation_priority_and_override.up.sql h1:CM7eZh0HU13oHO61Nm++6vB8L6MOgiMzOmM0/3QYoKk=
-    20260311203000_reservation_lifecycle_events.up.sql h1:GK/5N2ypUcXRxbmo3+sePf7zqZNfgJOI6wWEiswW2Os=
-    20260311204500_deployment_usage_snapshots.up.sql h1:X5giN8MTx2LZreF3cXzKH5YbVv0TDOMRl1zTXiENp2M=
-    20260312063000_config_change_runs.up.sql h1:ulmnupPSOTxThmayKL96FfY9qfa/oJ8I7pu4LdBoRaA=
-    20260312101500_config_change_reviews.up.sql h1:hlhFrYWnaWsbRqZ0FarmacgKx7iKtVRQpADNr07zPLk=
-    20260312113000_config_change_execution_summaries.up.sql h1:dprQ/ggsv3VkQNTkWs/l4etowsKsS9m6wXMFwyZ6tHc=
-    20260313103000_composite_plans.up.sql h1:miV8EMpHXa6NPAgwv6q7dWigjosY/JxHfT7PusQmh/g=
-    20260313113000_task_runtime_contracts_terraform_outputs.up.sql h1:N4vnUxosCGE0vA6s+4ao/FjSW5Ql2qQfG0SAgiup8h4=
-    20260313131500_user_fixia_servers.up.sql h1:Lma74r7inkYPvia4R3ciZac2BJqnv0fuK0+3COpDcUs=
-    20260313210000_deployment_family_engine_pair_kne.up.sql h1:i8I2xhsNDNYtCbOPZD7Nb1WJ9zQmXhhUm9F0HGVC2Ys=
-    20260313211000_deployment_type_kne.up.sql h1:yvA9XIVxby8yMeSwZzY+0XfdrUDhC4rGtYoQAzn+T8c=
-    20260319193000_user_settings_ui_experience_mode.up.sql h1:yAe+suOY9okDf7gsfqgoClFO2xGEf/qIlA4BhTUt+M0=
+    20260227224000_netlab_status_current_forward_type.up.sql h1:Cl6mBQk6Vdu3moixLzPkJN311jrcS/GzwnuWMY6Lp5Q=
+    20260227231000_netlab_status_current_contract_checks.up.sql h1:uLDnzVHVDmtDxZJ4cmzGnxR1iTwMyym43ZnspvH0aOg=
+    20260227235500_deployment_type_model_hard_cut.up.sql h1:OmPvWVVqiCI4+pZ7dqs0vqJvuC/TX5X2HQMqFdhmdps=
+    20260228000500_deployment_engine_contract_hard_cut.up.sql h1:dwk23nosKqjleu7RRkTq1RRlZTKMAm3a4oCFPOvt7KE=
+    20260228013000_deployment_runtime_state_hard_cut.up.sql h1:2EqelwSZz/YVEHIM7bVlxCQr3biNi1npXrZLlY16Ehk=
+    20260228193000_netlab_artifact_index.up.sql h1:kqjc+MIyFkKZElCrtbuay4+KiA54cp5K303J/UdfMaQ=
+    20260301080000_admin_smoke_runs.up.sql h1:pe1NFf1ODWmK4l+hrc0SAxbKrBEueg8No73N6ePoacw=
+    20260301113000_task_runtime_contracts.up.sql h1:Nc6ybK4rM5rMu0tiWISyjqrUBVrx8QyrvgHqoYN/83g=
+    20260301140000_servicenow_schema_hard_cut.up.sql h1:jUlJLRc3dXAmzW3lwBToyhWtJ9lxG3E8E99+Yxxp5DQ=
+    20260304194500_user_api_tokens.up.sql h1:jOxYw5xbM2Pil4Z3cYF7w2KHXOrccGlSryLGxZ0wslU=
+    20260305114000_user_rbac_roles.up.sql h1:ZmEEm+nyLAl6vcHgHIWp3CDN6oGeSFOYbu/W1baihCo=
+    20260306190000_user_api_permissions.up.sql h1:k8vKhoNzH0NaNv+bPy3jcJWQwxbDZG2ggbgZ7nvg7FY=
+    20260306213000_user_forward_tenants.up.sql h1:uSmhTMsA67x0oNoiqAIhNzb9CdDgDqF+x9mNjXvKtrY=
+    20260309190000_remove_ldap_password_cache.up.sql h1:vt5jDDI7MFY8xStieUoUoojm/tR+jpIwjS/J4c73OIs=
+    20260311103000_servicenow_global_tenant_model.up.sql h1:H0GJHnbbJqfqQvR36wEvCrxKW4oAF5nZ+Fv/KuL7yUU=
+    20260311170000_teams_bridge.up.sql h1:nf8b7fqIN8HhZaCKErL9nrfHBHC1aKtC3FPxzXZMNNw=
+    20260311193000_platform_governance_contracts.up.sql h1:nUU4JjKGD25YhIobyDeuv7aHk+rWDScGuc+/G1okzwo=
+    20260311194500_forward_tenant_reset_baseline.up.sql h1:90HOgUy0GQl2tAY5FuWs1FLJX+07KAssYdaV6Pfx9+U=
+    20260311200500_reservation_priority_and_override.up.sql h1:D7kIj088nx7RamkWlofQ9vjPMjVdR9P56VpZsmbRZn4=
+    20260311203000_reservation_lifecycle_events.up.sql h1:FFNbb0+vPbS85goG1/+AulW6M25CeVcRYSNYRnJusQQ=
+    20260311204500_deployment_usage_snapshots.up.sql h1:zIpmPJXSmz2iV7oOrCvv3VUE1YTwRTDdT04ctqbIGJU=
+    20260312063000_config_change_runs.up.sql h1:Bxwqyz+Q1Dgyr4KIpRnx+DMRyDv8by9fnel5klTtACo=
+    20260312101500_config_change_reviews.up.sql h1:mgKpG6YmRilwE0UPyv0jRR5KJJPwy8HWtzrhZSB4B4I=
+    20260312113000_config_change_execution_summaries.up.sql h1:aMAZd43kMC3Ja6xgj9ZsT2B4tISz1mrRVPI1v4VF7vM=
+    20260313103000_composite_plans.up.sql h1:ZQYWcRcCivQio+YQ5hVc649iuyJ5Bzzt38c9a3hd3cc=
+    20260313113000_task_runtime_contracts_terraform_outputs.up.sql h1:r/7n4m+jAC5Il277UoVzcu2f01AZEy/ivnsbYEyN8ho=
+    20260313131500_user_fixia_servers.up.sql h1:0gCAcMdxGSqcNX2PaPuXBC3BNCH8VwARUjioqM8X5XM=
+    20260313210000_deployment_family_engine_pair_kne.up.sql h1:Z5mOawAFDKQY9U2S4ADHDsaM4pgwDZTH5a+RJ+1DiMc=
+    20260313211000_deployment_type_kne.up.sql h1:vc2FY9ptGfhmVANCkLUjvfCDRBS0Ul/G1KjGebWtKOw=
+    20260319193000_user_settings_ui_experience_mode.up.sql h1:5moYTovphFf/MVZ+5DxaLp8McTjsEzTXwGkWa6oykHY=
+    20260324120000_forward_tenant_kind.up.sql h1:5bYymB9jUL3O8fXKk7X4tDxG1n9dc1g0wlOsfnfXNmU=
+    20260325181000_forward_network_insight_runs.up.sql h1:lN4semLldECkYmBPy6ds4/VpE+AfSywcqrGN2UwKxSA=
+    20260331170000_hetzner_burst_scaffold.up.sql h1:3WQlRoXk7FiEnkV8l5dTElP6XMN+xoM1uhhquYrWDNI=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -4374,3 +4377,36 @@ data:
     
     CREATE INDEX IF NOT EXISTS sf_forward_network_insight_runs_created_idx
         ON public.sf_forward_network_insight_runs (created_at DESC);
+
+  20260331170000_hetzner_burst_scaffold.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_hetzner_burst_resources (
+        resource_key text PRIMARY KEY,
+        kind text NOT NULL,
+        name text NOT NULL,
+        hcloud_id bigint,
+        status text NOT NULL DEFAULT 'unknown',
+        last_error text NOT NULL DEFAULT '',
+        details jsonb NOT NULL DEFAULT '{}'::jsonb,
+        last_reconciled_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE TABLE IF NOT EXISTS public.sf_hetzner_burst_workers (
+        id text PRIMARY KEY,
+        server_id bigint,
+        server_name text NOT NULL DEFAULT '',
+        status text NOT NULL DEFAULT 'planned',
+        join_state text NOT NULL DEFAULT 'pending',
+        pool_class text NOT NULL DEFAULT 'burst',
+        provider_label text NOT NULL DEFAULT 'hetzner',
+        private_ip inet,
+        wg_ip inet,
+        labels jsonb NOT NULL DEFAULT '{}'::jsonb,
+        last_error text NOT NULL DEFAULT '',
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_hetzner_burst_workers_status_idx
+        ON public.sf_hetzner_burst_workers (status, join_state);

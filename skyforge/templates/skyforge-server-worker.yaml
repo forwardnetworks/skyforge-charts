@@ -173,6 +173,24 @@ spec:
                   name: {{ .Values.skyforge.cloudPricingCredentials.secretName | quote }}
                   key: {{ .Values.skyforge.cloudPricingCredentials.awsSecretAccessKeyKey | quote }}
                   optional: true
+            - name: SKYFORGE_HETZNER_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.burst.hetzner.apiTokenSecretName | quote }}
+                  key: {{ .Values.skyforge.burst.hetzner.apiTokenSecretKey | quote }}
+                  optional: true
+            - name: SKYFORGE_HETZNER_WIREGUARD_HUB_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.burst.hetzner.hubPublicKeySecretName | quote }}
+                  key: {{ .Values.skyforge.burst.hetzner.hubPublicKeySecretKey | quote }}
+                  optional: true
+            - name: SKYFORGE_HETZNER_K3S_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.skyforge.burst.hetzner.k3sTokenSecretName | quote }}
+                  key: {{ .Values.skyforge.burst.hetzner.k3sTokenSecretKey | quote }}
+                  optional: true
             - name: SKYFORGE_GITEA_USERNAME
               valueFrom:
                 configMapKeyRef:

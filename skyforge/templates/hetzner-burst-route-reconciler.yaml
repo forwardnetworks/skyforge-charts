@@ -1,0 +1,103 @@
+{{- $burst := default dict .Values.skyforge.burst -}}
+{{- $hetzner := default dict $burst.hetzner -}}
+{{- $routes := default dict $hetzner.routeReconciler -}}
+{{- if and $hetzner.enabled $routes.enabled (gt (len (default (list) $routes.destinations)) 0) (ne (default "" $routes.via) "") }}
+{{- $name := default "hetzner-burst-route-reconciler" $routes.name -}}
+{{- $image := default "docker.io/nicolaka/netshoot:v0.13" $routes.image -}}
+{{- $pullPolicy := default "IfNotPresent" $routes.imagePullPolicy -}}
+{{- $interval := default 60 $routes.intervalSeconds -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hetzner-burst-route-reconciler
+data:
+  reconcile.sh: |
+    #!/bin/sh
+    set -eu
+
+    DESTINATIONS="{{ join " " (default (list) $routes.destinations) }}"
+    VIA="{{ $routes.via }}"
+    DEV="{{ default "" $routes.dev }}"
+    INTERVAL="{{ $interval }}"
+
+    while true; do
+      if [ -n "${DEV}" ] && ! ip link show "${DEV}" >/dev/null 2>&1; then
+        sleep "${INTERVAL}"
+        continue
+      fi
+      for cidr in ${DESTINATIONS}; do
+        if [ -n "${DEV}" ]; then
+          ip route replace "${cidr}" via "${VIA}" dev "${DEV}" proto static
+        else
+          ip route replace "${cidr}" via "${VIA}" proto static
+        fi
+      done
+      sleep "${INTERVAL}"
+    done
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hetzner-burst-route-reconciler
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: hetzner-burst-route-reconciler
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/route-config: {{ printf "%s|%s|%s|%v" $interval $routes.via (default "" $routes.dev) (default (list) $routes.destinations) | sha256sum | quote }}
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/component: hetzner-burst-route-reconciler
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      terminationGracePeriodSeconds: 5
+      enableServiceLinks: false
+      {{- with $routes.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- if $routes.nodeSelector }}
+      nodeSelector:
+{{ toYaml $routes.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if $routes.affinity }}
+      affinity:
+{{ toYaml $routes.affinity | indent 8 }}
+      {{- end }}
+      {{- if $routes.tolerations }}
+      tolerations:
+{{ toYaml $routes.tolerations | indent 8 }}
+      {{- end }}
+      containers:
+        - name: reconcile
+          image: {{ $image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - /bin/sh
+            - /config/reconcile.sh
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ $name }}
+            defaultMode: 0755
+{{- end }}
