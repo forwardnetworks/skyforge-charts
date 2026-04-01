@@ -40,6 +40,7 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `skyforge.domain`: Email/domain suffix used by default users.
 - `skyforge.gateway.addresses`: Optional explicit Cilium Gateway address list. Leave this empty when Cilium runs Gateway API in host-network mode; use it only with LB-IPAM + L2 announcement pools.
 - `skyforge.forwardCluster.hostname`: Optional dedicated Forward UI hostname (for example `skyforge-fwd.local.forwardnetworks.com`).
+- `skyforge.forwardCluster.additionalHostnames`: Optional legacy/internal aliases for the dedicated Forward UI hostname.
 - `skyforge.forwardCluster.tlsSecretName`: TLS Secret used for the dedicated Forward hostname listener when `forwardCluster.hostname` differs from `skyforge.hostname` (default `proxy-tls-fwd`).
 - `skyforge.forwardCluster.nodeRoleReconciler.*`: Optional in-cluster reconciler that continuously enforces the desired Forward node-role labels (`fwd-master`, `fwd-monitoring`, `fwd-compute-worker`, `fwd-search-worker`, plus `forwardnetworks.com/role` and scratch-group labels) from chart values so node re-registration does not strand Forward master pods. In production, keep more than one worker in the `master` set so `fwd-appserver` and `fwd-backend-master` can reattach their RWO scratch PVCs onto a healthy node after a reboot.
 - `skyforge.burst.hetzner.*`: Optional Hetzner burst-capacity contract. This is disabled by default and exists to document secret references, WireGuard endpoint settings, and route-reconciler inputs for outbound-initiated Hetzner overflow workers.

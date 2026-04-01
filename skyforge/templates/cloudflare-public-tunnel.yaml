@@ -20,6 +20,7 @@
 {{- $gatewayAdditionalHostnames := .Values.skyforge.gateway.additionalHostnames | default (list) -}}
 {{- $forwardEnabled := default false .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardHost := default $mainHost .Values.skyforge.forwardCluster.hostname -}}
+{{- $forwardAdditionalHostnames := .Values.skyforge.forwardCluster.additionalHostnames | default (list) -}}
 {{- if ne $controllerNamespace .Release.Namespace }}
 ---
 apiVersion: v1
@@ -381,6 +382,9 @@ spec:
     {{- end }}
     {{- if and $forwardEnabled (ne $forwardHost $mainHost) }}
     - {{ $forwardHost | quote }}
+    {{- range $name := $forwardAdditionalHostnames }}
+    - {{ $name | quote }}
+    {{- end }}
     {{- end }}
   rules:
     - matches:

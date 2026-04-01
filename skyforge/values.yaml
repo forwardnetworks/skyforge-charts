@@ -797,6 +797,8 @@ skyforge:
     # Optional dedicated hostname for Forward Cluster wildcard routing.
     # Example: skyforge-fwd.local.forwardnetworks.com
     hostname: ""
+    # Optional legacy/internal aliases for the split-host Forward UI.
+    additionalHostnames: []
     # TLS secret used for the dedicated Forward hostname listener when
     # forwardCluster.hostname differs from skyforge.hostname.
     tlsSecretName: "proxy-tls-fwd"

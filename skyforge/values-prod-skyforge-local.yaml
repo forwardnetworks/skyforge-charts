@@ -41,6 +41,8 @@ skyforge:
     # Cilium Gateway runs in host-network mode in this environment.
     # Do not pin a static Gateway address here.
     addresses: []
+    additionalHostnames:
+      - skyforge.local.forwardnetworks.com
     localNodePorts:
       enabled: false
   dex:
@@ -336,6 +338,8 @@ skyforge:
     enabled: true
     appserverProfiles: "K8S"
     hostname: "skyforge-fwd.craigjohnson.org"
+    additionalHostnames:
+      - "skyforge-fwd.local.forwardnetworks.com"
     tlsSecretName: "proxy-tls-fwd"
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
