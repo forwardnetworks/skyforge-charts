@@ -166,30 +166,6 @@ skyforge:
       serviceName: cilium-gateway-skyforge
       http: 30080
       https: 30443
-  publicTunnel:
-    # Optional external public-access overlay. Skyforge keeps the direct in-cluster
-    # Gateway API path on Cilium and can add a second public edge provider.
-    # Supported providers: none, cloudflare.
-    provider: "none"
-    cloudflare:
-      enabled: false
-      image: "ghcr.io/forwardnetworks/cloudflare-kubernetes-gateway:v0.8.2-skyforge-r1"
-      imagePullPolicy: "IfNotPresent"
-      controllerName: "github.com/pl4nty/cloudflare-kubernetes-gateway"
-      controllerNamespace: ""
-      gatewayClassName: "cloudflare"
-      gatewayName: "skyforge-public"
-      credentialsSecretName: ""
-      credentialsAccountIdKey: "ACCOUNT_ID"
-      credentialsApiTokenKey: "TOKEN"
-      logLevel: "info"
-      resources:
-        requests:
-          cpu: "10m"
-          memory: "64Mi"
-        limits:
-          cpu: "500m"
-          memory: "512Mi"
   # Skyforge uses Cilium Gateway API for ingress (no Traefik).
   kne:
     # Enable Kubernetes Network Emulation (KNE) meshnet components.

@@ -14,10 +14,6 @@ early when required configuration is missing.
 {{- $obsGrafanaOIDCEnabled := true -}}
 {{- $edition := lower (trim (default "enterprise" .Values.skyforge.edition)) -}}
 {{- $forwardEnabled := and (ne $edition "oss") .Values.skyforge.forward.enabled -}}
-{{- $publicTunnel := default (dict) .Values.skyforge.publicTunnel -}}
-{{- $publicTunnelProvider := lower (trim (default "none" $publicTunnel.provider)) -}}
-{{- $publicTunnelCloudflare := default (dict) $publicTunnel.cloudflare -}}
-{{- $publicTunnelCloudflareEnabled := default false $publicTunnelCloudflare.enabled -}}
 {{- if hasKey $obsGrafanaOIDC "enabled" -}}
   {{- $obsGrafanaOIDCEnabled = (index $obsGrafanaOIDC "enabled") -}}
 {{- end -}}
@@ -67,20 +63,6 @@ early when required configuration is missing.
 {{- end -}}
 {{- if and (eq $edition "oss") $forwardClusterEnabled -}}
   {{- fail "skyforge.edition=oss does not support skyforge.forwardCluster.enabled=true" -}}
-{{- end -}}
-{{- if and (ne $publicTunnelProvider "") (ne $publicTunnelProvider "none") (ne $publicTunnelProvider "cloudflare") -}}
-  {{- fail (printf "skyforge.publicTunnel.provider must be one of none, cloudflare (got %q)" $publicTunnelProvider) -}}
-{{- end -}}
-{{- if eq $publicTunnelProvider "cloudflare" -}}
-  {{- if not (trim (default "" $publicTunnelCloudflare.credentialsSecretName)) -}}
-    {{- fail "skyforge.publicTunnel.provider=cloudflare requires skyforge.publicTunnel.cloudflare.credentialsSecretName" -}}
-  {{- end -}}
-  {{- if not (trim (default "" $publicTunnelCloudflare.gatewayClassName)) -}}
-    {{- fail "skyforge.publicTunnel.provider=cloudflare requires skyforge.publicTunnel.cloudflare.gatewayClassName" -}}
-  {{- end -}}
-  {{- if not (trim (default "" $publicTunnelCloudflare.gatewayName)) -}}
-    {{- fail "skyforge.publicTunnel.provider=cloudflare requires skyforge.publicTunnel.cloudflare.gatewayName" -}}
-  {{- end -}}
 {{- end -}}
 {{- $hetznerBurst := default (dict) .Values.skyforge.burst.hetzner -}}
 {{- $hetznerBurstEnabled := default false $hetznerBurst.enabled -}}

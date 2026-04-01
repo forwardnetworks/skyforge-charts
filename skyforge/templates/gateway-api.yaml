@@ -15,9 +15,6 @@
 {{- $forwardSvcNamespace := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
 {{- $forwardSvcPort := default 8080 .Values.skyforge.forwardCluster.servicePort -}}
 {{- $forwardCrossNamespace := and $forwardClusterEnabled (ne $forwardSvcNamespace .Release.Namespace) -}}
-{{- $publicTunnel := default (dict) .Values.skyforge.publicTunnel -}}
-{{- $publicTunnelProvider := lower (trim (default "none" $publicTunnel.provider)) -}}
-{{- $cloudflareGatewayName := default "skyforge-public" .Values.skyforge.publicTunnel.cloudflare.gatewayName -}}
 {{- $obsEnabled := default false .Values.skyforge.observability.enabled -}}
 {{- $obsNamespace := default .Release.Namespace .Values.skyforge.observability.namespace -}}
 {{- $obsGrafanaPrefix := default "/grafana" .Values.skyforge.observability.grafana.externalPrefix -}}

@@ -23,7 +23,7 @@ helm upgrade --install skyforge ./components/charts/skyforge -n skyforge --creat
   -f values.yaml
 ```
 
-Production profile for a public Skyforge hostname such as `skyforge.craigjohnson.org`:
+Production profile for the internal Skyforge hostname `skyforge.local.forwardnetworks.com`:
 
 ```bash
 helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
@@ -36,7 +36,7 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 
 ## Configuration
 
-- `skyforge.hostname`: Public hostname for ingress routes.
+- `skyforge.hostname`: Primary internal hostname for ingress routes.
 - `skyforge.domain`: Email/domain suffix used by default users.
 - `skyforge.gateway.addresses`: Optional explicit Cilium Gateway address list. Leave this empty when Cilium runs Gateway API in host-network mode; use it only with LB-IPAM + L2 announcement pools.
 - `skyforge.forwardCluster.hostname`: Optional dedicated Forward UI hostname (for example `skyforge-fwd.local.forwardnetworks.com`).
@@ -46,8 +46,6 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `skyforge.burst.hetzner.*`: Optional Hetzner burst-capacity contract. This is disabled by default. The supported gateway baseline is Hetzner's built-in WireGuard app (`image=wireguard`) on `cpx11`, with Skyforge initiating outbound to that gateway and local route reconciliation carrying the burst CIDRs. Use `skyforge.burst.hetzner.provisioningEnabled=false` to keep the scaffold configured but disarmed.
 - `skyforge.burst.hetzner.wireguard.hub.*`: Optional host-network deployment that owns the local WireGuard interface on one selected node. In the supported model, this node initiates outbound to a dedicated Hetzner gateway listener using peer config fragments stored out of band.
 - `skyforge.burst.hetzner.routeReconciler.*`: Optional privileged host-network DaemonSet that continuously enforces return routes on selected worker nodes for Hetzner burst CIDRs carried behind a local WireGuard gateway.
-- `skyforge.publicTunnel.provider`: Optional public-access overlay selector (`none` or `cloudflare`). The direct in-cluster Gateway API path remains on Cilium.
-- `skyforge.publicTunnel.cloudflare.*`: Optional Cloudflare Gateway API controller install that attaches the public Skyforge and Forward hostnames to a Cloudflare-backed `GatewayClass`. Legacy internal aliases remain on the direct Cilium gateway and should not be placed in the Cloudflare-managed zone. Keep account ID and API token in a Kubernetes Secret; do not set them in values files.
 - `skyforge.kne.*`: Optional KNE install from vendored manifests (tracked from `forwardnetworks/kne`).
 - `skyforge.kne.controllers.*`: Installs KNE vendor controller stacks (ceoslab/cdnos/srlinux/lemming) required for CRD-backed device provisioning.
 - Dedicated worker deployment is always enabled as a singleton (`replicas: 1`) and processes queued runs from PubSub.
