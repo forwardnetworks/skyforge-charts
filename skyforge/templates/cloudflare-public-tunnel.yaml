@@ -377,14 +377,8 @@ spec:
     - name: {{ $gatewayName }}
   hostnames:
     - {{ $mainHost | quote }}
-    {{- range $name := $gatewayAdditionalHostnames }}
-    - {{ $name | quote }}
-    {{- end }}
     {{- if and $forwardEnabled (ne $forwardHost $mainHost) }}
     - {{ $forwardHost | quote }}
-    {{- range $name := $forwardAdditionalHostnames }}
-    - {{ $name | quote }}
-    {{- end }}
     {{- end }}
   rules:
     - matches:
