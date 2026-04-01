@@ -31,7 +31,7 @@ skyforge:
   publicTunnel:
     provider: cloudflare
     cloudflare:
-      enabled: false
+      enabled: true
       controllerNamespace: "cloudflare-gateway"
       credentialsSecretName: "skyforge-cloudflare-gateway"
       image: "ghcr.io/forwardnetworks/cloudflare-kubernetes-gateway:v0.8.2-skyforge-r1"
@@ -120,7 +120,7 @@ skyforge:
       license:
         enabled: false
       autoStop:
-        enabled: false
+        enabled: true
         # Keep Infoblox subordinate to core lab/platform workloads by
         # shrinking idle/runtime windows.
         maxIdleMinutes: 30
