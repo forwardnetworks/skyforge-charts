@@ -72,6 +72,10 @@ spec:
           value: 'true'
         - name: GITEA__server__HTTP_PORT
           value: '3000'
+        - name: GITEA__DEFAULT__OFFLINE_MODE
+          value: 'false'
+        - name: GITEA__server__LFS_START_SERVER
+          value: 'true'
         - name: GITEA__server__ROOT_URL
           valueFrom:
             configMapKeyRef:
@@ -106,6 +110,12 @@ spec:
           value: {{ default "preferred_username" .Values.skyforge.gitea.oidc.username | quote }}
         - name: GITEA__service__REQUIRE_EXTERNAL_REGISTRATION_PASSWORD
           value: {{ ternary "true" "false" (default false .Values.skyforge.gitea.oidc.requireExternalRegistrationPassword) | quote }}
+        - name: GITEA__picture__DEFAULT_AVATAR
+          value: {{ default "identicon" .Values.skyforge.gitea.picture.defaultAvatar | quote }}
+        - name: GITEA__picture__DISABLE_GRAVATAR
+          value: {{ ternary "true" "false" (default true .Values.skyforge.gitea.picture.disableGravatar) | quote }}
+        - name: GITEA__picture__ENABLE_FEDERATED_AVATAR
+          value: {{ ternary "true" "false" (default false .Values.skyforge.gitea.picture.enableFederatedAvatar) | quote }}
         - name: GITEA__service__REQUIRE_SIGNIN_VIEW
           value: 'true'
         - name: GITEA__service__RESERVED_USERNAMES

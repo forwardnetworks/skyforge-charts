@@ -266,6 +266,20 @@ spec:
   rules:
     - matches:
         - path:
+            type: Exact
+            value: {{ $obsGrafanaPrefix | quote }}
+        - path:
+            type: Exact
+            value: {{ printf "%s/" (trimSuffix "/" $obsGrafanaPrefix) | quote }}
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            statusCode: 302
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: {{ printf "%s/d/skyforge-signals/skyforge-signals" (trimSuffix "/" $obsGrafanaPrefix) | quote }}
+    - matches:
+        - path:
             type: PathPrefix
             value: {{ $obsGrafanaPrefix | quote }}
       filters:
@@ -289,6 +303,20 @@ spec:
           namespace: {{ $obsNamespace }}
           {{- end }}
           port: {{ int $obsGrafanaSvcPort }}
+    - matches:
+        - path:
+            type: Exact
+            value: {{ $obsPromPrefix | quote }}
+        - path:
+            type: Exact
+            value: {{ printf "%s/" (trimSuffix "/" $obsPromPrefix) | quote }}
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            statusCode: 302
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: {{ printf "%s/graph" (trimSuffix "/" $obsPromPrefix) | quote }}
     - matches:
         - path:
             type: PathPrefix

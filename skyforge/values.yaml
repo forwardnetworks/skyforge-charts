@@ -291,6 +291,13 @@ skyforge:
       username: "preferred_username"
       # Keep external accounts passwordless by default.
       requireExternalRegistrationPassword: false
+    picture:
+      # Default avatar style when Gitea needs to synthesize one.
+      defaultAvatar: "identicon"
+      # Keep Gravatar enabled so missing local avatars resolve cleanly instead of 404ing.
+      disableGravatar: false
+      # Allow OIDC-managed users to resolve provider-backed avatar metadata when available.
+      enableFederatedAvatar: true
     actionsRunner:
       enabled: true
       replicas: 1
