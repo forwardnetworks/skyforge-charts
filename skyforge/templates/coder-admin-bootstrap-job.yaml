@@ -1,6 +1,6 @@
-{{- $username := default "" .Values.skyforge.coder.bootstrap.username -}}
-{{- $email := default "" .Values.skyforge.coder.bootstrap.email -}}
-{{- $secretName := default "coder-admin-bootstrap" .Values.skyforge.coder.bootstrap.passwordSecretName -}}
+{{- $username := default "skyforge" .Values.skyforge.coder.bootstrap.username -}}
+{{- $email := default (printf "skyforge@%s" .Values.skyforge.hostname) .Values.skyforge.coder.bootstrap.email -}}
+{{- $secretName := default "skyforge-admin-shared" .Values.skyforge.coder.bootstrap.passwordSecretName -}}
 {{- $secretKey := default "password" .Values.skyforge.coder.bootstrap.passwordSecretKey -}}
 {{- $hookEvents := list "post-install" -}}
 {{- if .Values.skyforge.hooks.coderAdminBootstrap.runOnUpgrade -}}

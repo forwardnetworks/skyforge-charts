@@ -98,8 +98,14 @@ spec:
           value: 'true'
         - name: GITEA__service__SHOW_REGISTRATION_BUTTON
           value: 'false'
-        - name: GITEA__service__ACCOUNT_LINKING
-          value: 'auto'
+        - name: GITEA__oauth2_client__ENABLE_AUTO_REGISTRATION
+          value: {{ ternary "true" "false" (default true .Values.skyforge.gitea.oidc.enableAutoRegistration) | quote }}
+        - name: GITEA__oauth2_client__ACCOUNT_LINKING
+          value: {{ default "auto" .Values.skyforge.gitea.oidc.accountLinking | quote }}
+        - name: GITEA__oauth2_client__USERNAME
+          value: {{ default "preferred_username" .Values.skyforge.gitea.oidc.username | quote }}
+        - name: GITEA__service__REQUIRE_EXTERNAL_REGISTRATION_PASSWORD
+          value: {{ ternary "true" "false" (default false .Values.skyforge.gitea.oidc.requireExternalRegistrationPassword) | quote }}
         - name: GITEA__service__REQUIRE_SIGNIN_VIEW
           value: 'true'
         - name: GITEA__service__RESERVED_USERNAMES

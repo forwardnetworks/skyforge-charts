@@ -164,7 +164,7 @@ spec:
         - name: SKYFORGE_GITEA_OIDC_CLIENT_ID
           value: "gitea"
         - name: SKYFORGE_GITEA_OIDC_SOURCE_NAME
-          value: "oidc"
+          value: {{ default "oidc" .Values.skyforge.gitea.oidc.sourceName | quote }}
         image: ghcr.io/go-gitea/gitea:1.24.6-rootless
         name: gitea-admin-sync
         securityContext:

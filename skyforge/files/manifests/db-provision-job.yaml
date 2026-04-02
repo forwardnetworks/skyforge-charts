@@ -69,6 +69,7 @@ spec:
               GITEA_DB_PASSWORD="$(read_secret db-gitea-password "${GITEA_DB_PASSWORD:-gitea}")"
               CODER_DB_PASSWORD="$(read_secret db-coder-password "${CODER_DB_PASSWORD:-coder}")"
               DEX_DB_PASSWORD="$(read_secret db-dex-password "${DEX_DB_PASSWORD:-dex}")"
+              JIRA_DB_PASSWORD="$(read_secret db-jira-password "${JIRA_DB_PASSWORD:-jira}")"
               SKYFORGE_SERVER_DB_PASSWORD="$(read_secret db-skyforge-server-password "${SKYFORGE_SERVER_DB_PASSWORD:-skyforge_server}")"
               FORWARD_APP_DB_PASSWORD="$(read_secret db-forward-app-password "${FORWARD_APP_DB_PASSWORD:-fwd_app}")"
               FORWARD_FDB_DB_PASSWORD="$(read_secret db-forward-fdb-password "${FORWARD_FDB_DB_PASSWORD:-fwd_fdb}")"
@@ -107,6 +108,7 @@ spec:
               create_role gitea "${GITEA_DB_PASSWORD}"
               create_role coder "${CODER_DB_PASSWORD}"
               create_role dex "${DEX_DB_PASSWORD}"
+              create_role jira "${JIRA_DB_PASSWORD}"
               create_role skyforge_server "${SKYFORGE_SERVER_DB_PASSWORD}"
               create_role_md5 fwd_app "${FORWARD_APP_DB_PASSWORD}"
               create_role_md5 fwd_app_non_admin "${FORWARD_APP_DB_PASSWORD}_pass"
@@ -122,6 +124,7 @@ spec:
               create_db gitea gitea
               create_db coder coder
               create_db dex dex
+              create_db jira jira
               create_db skyforge_server skyforge_server
               create_db fwd_app fwd_app
               create_db fwd_fdb_0 fwd_fdb
@@ -149,6 +152,9 @@ spec:
               grant_db_connect fwd_app fwd_app_non_admin
               grant_schema_rw fwd_app fwd_app
               grant_schema_rw fwd_app fwd_app_non_admin
+
+              grant_db_connect jira jira
+              grant_schema_rw jira jira
 
               grant_db_connect fwd_fdb_0 fwd_fdb
               grant_db_connect fwd_fdb_1 fwd_fdb
@@ -198,6 +204,12 @@ spec:
                     - key: db-dex-password
                       path: db-dex-password
                   name: db-dex-password
+              - secret:
+                  optional: true
+                  items:
+                    - key: db-jira-password
+                      path: db-jira-password
+                  name: db-jira-password
               - secret:
                   items:
                     - key: db-skyforge-server-password

@@ -59,10 +59,19 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `secrets.items`: Provide secret values.
 - `secrets.items.skyforge-admin-shared.password`: Shared admin password used to seed Skyforge, Gitea,
   NetBox and Nautobot.
+- `skyforge.gitea.oidc.*`: Controls Gitea's native Dex-backed onboarding behavior (auto-registration,
+  account linking, username claim selection) so first-time SSO users do not need to manually register/link.
+- `skyforge.coder.oidcUsernameField`: Coder OIDC username claim (default: `preferred_username`).
+- `skyforge.coder.oidcAllowSignups`: Keeps first-time Dex-authenticated users on the normal Coder sign-in path once the owner exists (default: `true`).
+- `skyforge.coder.bootstrap.*`: First-owner bootstrap for Coder. By default the chart creates a `skyforge` owner using the shared admin password so users do not hit Coder's first-user setup screen.
+- `skyforge.jira.database.*`: Managed Jira database contract. When `skyforge.jira.managed=true`, the chart can provision a dedicated Postgres database/user and generate Jira's `dbconfig.xml` on startup so users skip the Atlassian database setup wizard.
+- `secrets.items.db-jira-password.db-jira-password`: Jira Postgres password (autogen when `secrets.create=true`).
 - `secrets.items.dex-client-gitea-secret.dex-client-gitea-secret`: Dex OIDC client secret for Gitea (required when `skyforge.gitea.enabled=true`).
 - `secrets.items.dex-client-yaade-secret.dex-client-yaade-secret`: Dex OIDC client secret for Yaade/API Testing (required when `skyforge.yaade.enabled=true`; autogen when `secrets.create=true`).
 - `secrets.items.dex-client-netbox-secret.dex-client-netbox-secret`: Dex OIDC client secret for NetBox (required when `skyforge.netbox.enabled=true`).
 - `secrets.items.dex-client-nautobot-secret.dex-client-nautobot-secret`: Dex OIDC client secret for Nautobot (required when `skyforge.nautobot.enabled=true`).
+- `secrets.items.dex-client-grafana-secret.dex-client-grafana-secret`: Dex OIDC client secret for Grafana when observability Grafana OIDC is enabled.
+- `skyforge.observability.grafana.oidc.tokenURL` / `apiURL`: Optional override for Grafana's server-side Dex exchange endpoints; defaults keep token and userinfo on in-cluster Dex.
 - `secrets.items.db-forward-app-password` / `secrets.items.db-forward-fdb-password`: Forward app/FDB
   Postgres passwords used to provision shared DB roles and sync `forward` namespace credentials.
 - `secrets.create`: Set to `false` if you manage secrets out-of-band.
@@ -91,6 +100,7 @@ The chart no longer installs Kubernetes CronJobs for these flows.
 
 The chart includes one-time admin bootstrap jobs:
 
+- `coder-admin-bootstrap`
 - `gitea-admin-bootstrap`
 - `netbox-admin-bootstrap`
 - `nautobot-admin-bootstrap`
@@ -103,6 +113,7 @@ and run a Helm upgrade:
 
 ```bash
 kubectl -n skyforge delete job \
+  coder-admin-bootstrap \
   gitea-admin-bootstrap \
   netbox-admin-bootstrap \
   nautobot-admin-bootstrap

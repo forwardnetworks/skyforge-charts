@@ -8,6 +8,18 @@
 {{- $proxyPort := default "443" (get .Values.skyforge.jira.env "ATL_PROXY_PORT") -}}
 {{- $proxyScheme := default "https" (get .Values.skyforge.jira.env "ATL_TOMCAT_SCHEME") -}}
 {{- $proxySecure := default "true" (get .Values.skyforge.jira.env "ATL_TOMCAT_SECURE") -}}
+{{- $db := default (dict) .Values.skyforge.jira.database -}}
+{{- $dbProvision := true -}}
+{{- if hasKey $db "provision" -}}
+{{- $dbProvision = (index $db "provision") -}}
+{{- end -}}
+{{- $dbHost := default "db" (index $db "host") -}}
+{{- $dbPort := default 5432 (index $db "port") -}}
+{{- $dbName := default "jira" (index $db "name") -}}
+{{- $dbUser := default "jira" (index $db "user") -}}
+{{- $dbSchema := default "public" (index $db "schema") -}}
+{{- $dbSecretName := default "db-jira-password" (index $db "secretName") -}}
+{{- $dbSecretKey := default "db-jira-password" (index $db "secretKey") -}}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -105,6 +117,50 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: jira
     spec:
+      initContainers:
+        - name: render-jira-dbconfig
+          image: {{ .Values.images.postgres | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -lc
+          args:
+            - |
+              set -euo pipefail
+              mkdir -p /work
+              export JIRA_DB_PASSWORD="$(cat /run/secrets/jira-db-password)"
+              cat > /work/dbconfig.xml <<EOF
+              <?xml version="1.0" encoding="UTF-8"?>
+              <jira-database-config>
+                <name>defaultDS</name>
+                <delegator-name>default</delegator-name>
+                <database-type>postgres72</database-type>
+                <schema-name>{{ $dbSchema }}</schema-name>
+                <jdbc-datasource>
+                  <url>jdbc:postgresql://{{ $dbHost }}:{{ $dbPort }}/{{ $dbName }}</url>
+                  <driver-class>org.postgresql.Driver</driver-class>
+                  <username>{{ $dbUser }}</username>
+                  <password>${JIRA_DB_PASSWORD}</password>
+                  <pool-min-size>20</pool-min-size>
+                  <pool-max-size>20</pool-max-size>
+                  <pool-max-wait>30000</pool-max-wait>
+                  <pool-max-idle>20</pool-max-idle>
+                  <pool-remove-abandoned>true</pool-remove-abandoned>
+                  <pool-remove-abandoned-timeout>300</pool-remove-abandoned-timeout>
+                  <validation-query>select version();</validation-query>
+                  <min-evictable-idle-time-millis>60000</min-evictable-idle-time-millis>
+                  <time-between-eviction-runs-millis>300000</time-between-eviction-runs-millis>
+                  <pool-test-while-idle>true</pool-test-while-idle>
+                  <pool-test-on-borrow>false</pool-test-on-borrow>
+                </jdbc-datasource>
+              </jira-database-config>
+              EOF
+          volumeMounts:
+            - name: jira-dbconfig
+              mountPath: /work
+            - name: jira-db-password
+              mountPath: /run/secrets
+              readOnly: true
       containers:
         - name: jira
           image: {{ required "skyforge.jira.image is required when jira.managed=true" .Values.skyforge.jira.image | quote }}
@@ -134,6 +190,9 @@ spec:
           volumeMounts:
             - name: jira-home
               mountPath: /var/atlassian/application-data/jira
+            - name: jira-dbconfig
+              mountPath: /var/atlassian/application-data/jira/dbconfig.xml
+              subPath: dbconfig.xml
             - name: jira-server-xml
               mountPath: /opt/atlassian/jira/conf/server.xml
               subPath: server.xml
@@ -145,6 +204,14 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+        - name: jira-dbconfig
+          emptyDir: {}
+        - name: jira-db-password
+          secret:
+            secretName: {{ $dbSecretName }}
+            items:
+              - key: {{ $dbSecretKey }}
+                path: jira-db-password
         - name: jira-server-xml
           configMap:
             name: {{ $name }}-server-xml

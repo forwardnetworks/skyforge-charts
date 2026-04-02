@@ -14,7 +14,9 @@ skyforge:
       backoffLimit: 1
       activeDeadlineSeconds: 300
     coderAdminBootstrap:
-      runOnUpgrade: false
+      # Run on upgrade too so an existing deployment with no first Coder user
+      # can self-heal into normal OIDC onboarding on the next rollout.
+      runOnUpgrade: true
       backoffLimit: 1
       activeDeadlineSeconds: 600
     giteaActionsRunnerTokenReconcile:
@@ -276,6 +278,19 @@ skyforge:
     repoPrivate: true
     adminUsername: "skyforge"
     allowedDomains: ""
+    oidc:
+      # Gitea native OIDC login source name used by the Dex-backed auth sync.
+      sourceName: "oidc"
+      # Automatically create user accounts in Gitea on first successful OIDC login.
+      enableAutoRegistration: true
+      # How to handle an existing local account with matching username/email.
+      # Supported values: disabled, login, auto
+      accountLinking: "auto"
+      # Preferred Gitea username claim normalization source.
+      # Supported values include userid, nickname, preferred_username, email.
+      username: "preferred_username"
+      # Keep external accounts passwordless by default.
+      requireExternalRegistrationPassword: false
     actionsRunner:
       enabled: true
       replicas: 1
@@ -511,6 +526,17 @@ skyforge:
       # OIDC-gated browser access through Skyforge SSO proxy.
       enabled: true
     contextPath: "/jira"
+    database:
+      # When managed=true, Skyforge can provision a dedicated Postgres database
+      # and preseed Jira's dbconfig.xml so users do not land in the DB wizard.
+      provision: true
+      host: "db"
+      port: 5432
+      name: "jira"
+      user: "jira"
+      schema: "public"
+      secretName: "db-jira-password"
+      secretKey: "db-jira-password"
     storage:
       enabled: true
       size: "20Gi"
@@ -837,6 +863,14 @@ skyforge:
         clientID: "grafana"
         clientSecretSecretName: "dex-client-grafana-secret"
         clientSecretSecretKey: "dex-client-grafana-secret"
+        # Browser-facing authorization endpoint. Leave empty to derive
+        # https://<skyforge.hostname>/dex/auth.
+        authURL: ""
+        # Server-side token and userinfo exchange should stay on the in-cluster
+        # Dex service, not the public ingress host, so Grafana does not depend
+        # on external TLS trust or edge routing for OAuth callback completion.
+        tokenURL: "http://dex:5556/dex/token"
+        apiURL: "http://dex:5556/dex/userinfo"
     prometheus:
       externalPrefix: "/prometheus"
       serviceName: "skyforge-prometheus"
@@ -964,21 +998,32 @@ skyforge:
     enabled: true
     storage:
       enabled: true
-    # Enables password auth for the bootstrap admin user (useful for demos).
-    # Keep this true for strict SSO-only deployments.
+    # Disables Coder's built-in username/password sign-in page so browser access
+    # goes through Dex-backed OIDC. The bootstrap owner still uses the shared
+    # admin password secret during the one-time create-admin-user job.
     disablePasswordAuth: true
     oidcAutoLogin: true
+    # Explicitly derive usernames from the upstream preferred_username claim so
+    # Coder accounts line up with Skyforge/Gitea usernames.
+    oidcUsernameField: "preferred_username"
+    # Keep OIDC signups enabled so first-time authenticated users are created
+    # automatically after the initial site owner exists.
+    oidcAllowSignups: true
+    oidcSignInText: "Sign in with Skyforge"
     # Portal link (/coder) redirect target.
     # Default uses Coder's standard landing path.
     # For demo "open VS Code", set this to something like:
     #   /user/@skyforge-demo/skyforge-demo/apps/code-server
     portalRedirectPath: "/coder/launch"
-    # Optional bootstrap admin user (created once, idempotent).
-    # If you leave these empty, you'll need to create the first user manually.
+    # Bootstrap owner user (created once, idempotent).
+    # Defaults intentionally self-heal existing installs that never created the
+    # first Coder user, which otherwise forces users into the first-user flow.
     bootstrap:
-      username: ""
+      username: "skyforge"
       email: ""
-      passwordSecretName: "coder-admin-bootstrap"
+      # Reuse the existing shared admin bootstrap password by default so no
+      # extra secret is required for Coder onboarding.
+      passwordSecretName: "skyforge-admin-shared"
       passwordSecretKey: "password"
     demo:
       enabled: false
@@ -1120,6 +1165,8 @@ secrets:
       db-coder-password: ""
     db-dex-password:
       db-dex-password: ""
+    db-jira-password:
+      db-jira-password: ""
     db-skyforge-server-password:
       db-skyforge-server-password: ""
     db-forward-app-password:

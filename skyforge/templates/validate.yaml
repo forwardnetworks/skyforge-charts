@@ -293,6 +293,9 @@ early when required configuration is missing.
   {{- if .Values.skyforge.gitea.enabled -}}
     {{- $requiredSecrets = append $requiredSecrets "dex-client-gitea-secret" -}}
   {{- end -}}
+  {{- if and .Values.skyforge.jira.enabled .Values.skyforge.jira.managed -}}
+    {{- $requiredSecrets = append $requiredSecrets (default "db-jira-password" .Values.skyforge.jira.database.secretName) -}}
+  {{- end -}}
   {{- if .Values.skyforge.yaade.enabled -}}
     {{- $requiredSecrets = append $requiredSecrets "dex-client-yaade-secret" -}}
   {{- end -}}

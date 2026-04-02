@@ -75,6 +75,12 @@ spec:
               value: "true"
             - name: CODER_OIDC_AUTO_LOGIN
               value: {{ .Values.skyforge.coder.oidcAutoLogin | quote }}
+            - name: CODER_OIDC_ALLOW_SIGNUPS
+              value: {{ .Values.skyforge.coder.oidcAllowSignups | quote }}
+            - name: CODER_OIDC_USERNAME_FIELD
+              value: {{ .Values.skyforge.coder.oidcUsernameField | quote }}
+            - name: CODER_OIDC_SIGN_IN_TEXT
+              value: {{ .Values.skyforge.coder.oidcSignInText | quote }}
             - name: CODER_DISABLE_PASSWORD_AUTH
               value: {{ .Values.skyforge.coder.disablePasswordAuth | quote }}
             - name: CODER_OAUTH2_GITHUB_DEFAULT_PROVIDER_ENABLE

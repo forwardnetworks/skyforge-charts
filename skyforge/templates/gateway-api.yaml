@@ -329,6 +329,21 @@ spec:
     {{- end }}
   rules:
 {{- if .Values.skyforge.s3gw.enabled }}
+    # Human-readable artifacts browser entrypoint.
+    - matches:
+        - path:
+            type: Exact
+            value: /files
+        - path:
+            type: Exact
+            value: /files/
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            statusCode: 302
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /dashboard/s3
     # /files/* -> s3gw /<files-bucket>/*
     - matches:
         - path:
