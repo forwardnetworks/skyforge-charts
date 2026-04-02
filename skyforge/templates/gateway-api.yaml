@@ -461,6 +461,19 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /git/avatars/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /avatar/
+      backendRefs:
+        - name: gitea
+          port: 3000
+    - matches:
+        - path:
+            type: PathPrefix
             value: /git
       filters:
         - type: RequestHeaderModifier
