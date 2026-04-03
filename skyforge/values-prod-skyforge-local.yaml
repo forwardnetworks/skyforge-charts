@@ -245,7 +245,7 @@ skyforge:
             threshold: "0.1"
   burst:
     hetzner:
-      enabled: false
+      enabled: true
       provisioningEnabled: false
       apiTokenSecretName: "skyforge-hetzner-burst"
       apiTokenSecretKey: "api-token"
