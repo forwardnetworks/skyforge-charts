@@ -272,7 +272,7 @@ skyforge:
     enabled: true
     storage:
       enabled: true
-    apiUrl: "http://gitea:3000/api/v1"
+    apiUrl: "https://skyforge.local.forwardnetworks.com/git/api/v1"
     url: "https://skyforge.local.forwardnetworks.com/git"
     username: "skyforge"
     repoPrivate: true

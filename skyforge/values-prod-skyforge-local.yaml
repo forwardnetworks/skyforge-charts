@@ -373,9 +373,10 @@ skyforge:
       enabled: true
 
   # Enable Gitea provisioning for blueprint-backed workflows.
-  # API URL is in-cluster; UI URL is the SSO-proxied external path.
+  # Skyforge uses the routed /git API path so blueprint/LFS reads work from the
+  # application pods and from browser-driven flows the same way.
   gitea:
-    apiUrl: http://gitea:3000/api/v1
+    apiUrl: https://skyforge.local.forwardnetworks.com/git/api/v1
     url: /git
 
   # Pin the single netlab runtime image used by both create/apply phases.
