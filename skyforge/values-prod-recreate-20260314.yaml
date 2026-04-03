@@ -19,7 +19,7 @@ skyforge:
       insecureSkipEmailVerified: true
       clientSecretSecretName: dex-oidc-client-secret
       clientSecretSecretKey: dex-oidc-client-secret
-  adminUsers: skyforge,craigjohnson,craigjohnson@forwardnetworks.com
+  adminUsers: skyforge
   encoreCfg:
     create: true
   encoreRuntimeConfig:

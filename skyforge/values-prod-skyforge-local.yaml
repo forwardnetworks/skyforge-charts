@@ -54,7 +54,7 @@ skyforge:
 
   # Comma-separated usernames/emails that should see admin-only UI + APIs.
   # NOTE: Server-side admin checks are exact-match (no wildcards).
-  adminUsers: "skyforge,craigjohnson"
+  adminUsers: "skyforge"
 
   encoreCfg:
     # Manage the API service typed config secret via Helm so feature flags and
