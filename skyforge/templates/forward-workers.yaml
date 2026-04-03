@@ -1,0 +1,498 @@
+{{- $fc := .Values.skyforge.forwardCluster -}}
+{{- $workers := default (dict) $fc.workers -}}
+{{- $owner := lower (trim (default "upstream" $workers.owner)) -}}
+{{- if and $fc.enabled (eq $owner "skyforge") -}}
+{{- $ns := default $fc.serviceNamespace $workers.namespace -}}
+{{- $priorityClassName := default "" $workers.priorityClassName -}}
+{{- $imagePullSecretName := default "" $workers.imagePullSecretName -}}
+{{- $pullPolicy := default "IfNotPresent" $workers.imagePullPolicy -}}
+{{- $alpineImage := required "skyforge.forwardCluster.workers.alpineImage is required when owner=skyforge" $workers.alpineImage -}}
+{{- $runAsUser := default 1000 $workers.securityContext.runAsUser -}}
+{{- $fsGroup := default 1000 $workers.securityContext.fsGroup -}}
+{{- $mounts := default (dict) $workers.containerMounts -}}
+{{- $logsDir := default "/var/log/forward" $mounts.logs -}}
+{{- $scratchDataDir := default "/scratch/data" $mounts.scratchDataDir -}}
+{{- $scratch := default (dict) $workers.scratch -}}
+{{- $scratchHostPath := required "skyforge.forwardCluster.workers.scratch.hostPath is required when owner=skyforge" $scratch.hostPath -}}
+{{- $memoryProfileConfigMapName := default "fwd-memory-profile-overrides" $workers.memoryProfileConfigMapName -}}
+{{- $db := default (dict) $workers.database -}}
+{{- $dbMode := lower (trim (default "external" $db.mode)) -}}
+{{- $dbCert := default "" $db.certificate -}}
+{{- $logForwarding := default (dict) $workers.logForwarding -}}
+{{- $logForwardingEnabled := default true $logForwarding.enabled -}}
+{{- $fluentBitImage := default "quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3" $logForwarding.fluentBitImage -}}
+{{- $fluentBitHTTPPort := default 2020 $logForwarding.httpPort -}}
+{{- $fluentBitOutputs := default (list) $logForwarding.outputs -}}
+{{- $compute := default (dict) $workers.compute -}}
+{{- $search := default (dict) $workers.search -}}
+{{- $rollout := default (dict) $workers.rollout -}}
+{{- $strategyType := default "RollingUpdate" $rollout.strategyType -}}
+{{- $pdb := default (dict) $workers.pdb -}}
+{{- $pdbEnabled := default true $pdb.enabled -}}
+{{- $computePdb := default (dict) $pdb.compute -}}
+{{- $searchPdb := default (dict) $pdb.search -}}
+{{- $discovery := default (dict) $workers.discovery -}}
+{{- $nodeAgentAlias := default (dict) $discovery.nodeAgentHeadlessAlias -}}
+{{- $nodeAgentAliasEnabled := default true $nodeAgentAlias.enabled -}}
+{{- $nodeAgentAliasServiceName := default "fwd-node-agent-headless" $nodeAgentAlias.serviceName -}}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-compute-worker-headless
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-compute-worker
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-compute-worker
+  ports:
+    - protocol: TCP
+      name: grpc
+      port: {{ default 30060 $compute.port }}
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-search-worker-headless
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-search-worker
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-search-worker
+  ports:
+    - protocol: TCP
+      name: grpc
+      port: {{ default 30050 $search.port }}
+  clusterIP: None
+{{- if $nodeAgentAliasEnabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $nodeAgentAliasServiceName }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-search-worker
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-search-worker
+  ports:
+    - protocol: TCP
+      name: grpc
+      port: {{ default 30050 $search.port }}
+  clusterIP: None
+{{- end }}
+{{- if $pdbEnabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: fwd-compute-worker
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-compute-worker
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-compute-worker
+  {{- if hasKey $computePdb "maxUnavailable" }}
+  maxUnavailable: {{ $computePdb.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ default 1 $computePdb.minAvailable }}
+  {{- end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: fwd-search-worker
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-search-worker
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-search-worker
+  {{- if hasKey $searchPdb "maxUnavailable" }}
+  maxUnavailable: {{ $searchPdb.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ default 1 $searchPdb.minAvailable }}
+  {{- end }}
+{{- end }}
+{{- if $logForwardingEnabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-compute-worker-fluent-bit-config
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-compute-worker
+data:
+  {{- include "skyforge.forwardWorker.logForwarderConfig" (dict
+      "enabled" true
+      "serviceTag" "compute_worker"
+      "serviceLogFile" "compute_worker"
+      "logsDir" $logsDir
+      "outputs" $fluentBitOutputs
+    ) | nindent 2 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-search-worker-fluent-bit-config
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-search-worker
+data:
+  {{- include "skyforge.forwardWorker.logForwarderConfig" (dict
+      "enabled" true
+      "serviceTag" "search_worker"
+      "serviceLogFile" "search_worker"
+      "logsDir" $logsDir
+      "outputs" $fluentBitOutputs
+    ) | nindent 2 }}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-compute-worker
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-compute-worker
+spec:
+  replicas: {{ default 1 $compute.replicas }}
+  strategy:
+    type: {{ $strategyType }}
+    {{- if eq $strategyType "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ default 0 $rollout.maxUnavailable }}
+      maxSurge: {{ default 1 $rollout.maxSurge }}
+    {{- end }}
+  minReadySeconds: {{ default 10 $rollout.minReadySeconds }}
+  progressDeadlineSeconds: {{ default 600 $rollout.progressDeadlineSeconds }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-compute-worker
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-compute-worker
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: {{ default 90 $rollout.terminationGracePeriodSeconds }}
+      {{- if $priorityClassName }}
+      priorityClassName: {{ $priorityClassName | quote }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - fwd-compute-worker
+              topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/fwd-compute-worker
+                    operator: Exists
+      securityContext:
+        fsGroup: {{ $fsGroup }}
+      {{- if $imagePullSecretName }}
+      imagePullSecrets:
+        - name: {{ $imagePullSecretName | quote }}
+      {{- end }}
+      initContainers:
+        - name: fix-permissions
+          image: {{ $alpineImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command:
+            - /bin/sh
+          args:
+            - -c
+            - >-
+              mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/ &&
+              chown {{ $runAsUser }}:{{ $fsGroup }} -R /mnt/scratch
+          volumeMounts:
+            - name: scratch
+              subPathExpr: "fwd-compute-worker"
+              mountPath: /mnt/scratch
+      containers:
+        - name: compute-container
+          image: {{ required "skyforge.forwardCluster.workers.compute.image is required when owner=skyforge" $compute.image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            runAsUser: {{ $runAsUser }}
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep {{ default 20 $rollout.preStopSleepSeconds }}
+          resources:
+{{ toYaml $compute.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{ $logsDir }}
+              name: scratch
+              subPathExpr: "fwd-compute-worker/logs"
+            - mountPath: {{ $scratchDataDir }}
+              name: scratch
+              subPathExpr: "fwd-compute-worker/scratch-data"
+            - mountPath: /tmp
+              name: scratch
+              subPathExpr: "fwd-compute-worker/tmp"
+            {{- include "skyforge.forwardWorker.dbVolumeMounts" (dict "mode" $dbMode "certificate" $dbCert) | nindent 12 }}
+          ports:
+            - containerPort: {{ default 30060 $compute.port }}
+          {{- include "skyforge.forwardWorker.probes" (dict
+              "port" (default 30060 $compute.port)
+              "initialDelaySeconds" (default 10 $compute.probes.initialDelaySeconds)
+              "periodSeconds" (default 60 $compute.probes.periodSeconds)
+              "failureThreshold" (default 10 $compute.probes.failureThreshold)
+              "timeoutSeconds" (default 3 $compute.probes.timeoutSeconds)
+            ) | nindent 10 }}
+          envFrom:
+            - configMapRef:
+                name: {{ $memoryProfileConfigMapName | quote }}
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: COMPUTE_WORKER_PROFILES
+              value: "K8S,COMPUTE_WORKER,ON_PREM"
+            - name: MEMORY_PROFILE
+              value: "SINGLE_BOX"
+            {{- if $compute.reservedMemoryOverride }}
+            - name: RESERVED_MEMORY_OVERRIDE
+              value: {{ $compute.reservedMemoryOverride | quote }}
+            {{- end }}
+            {{- if $compute.memoryLimitMB }}
+            - name: COMPUTE_WORKER_MEMORY_LIMIT_MB
+              value: {{ printf "%v" $compute.memoryLimitMB | quote }}
+            {{- end }}
+            {{- if $compute.memoryPctOverride }}
+            - name: COMPUTE_WORKER_MEMORY_PCT_OVERRIDE
+              value: {{ $compute.memoryPctOverride | quote }}
+            {{- end }}
+            - name: WORKER_STORES_PATH
+              value: "/should-not-be-used"
+            - name: SHERLOCK_WORK_DIR
+              value: {{ printf "%s/sherlock" $scratchDataDir | quote }}
+            {{- include "skyforge.forwardWorker.postgresEnv" (dict "db" $db "mode" $dbMode) | nindent 12 }}
+        {{- include "skyforge.forwardWorker.logForwarderContainer" (dict
+            "enabled" $logForwardingEnabled
+            "image" $fluentBitImage
+            "pullPolicy" $pullPolicy
+            "runAsUser" $runAsUser
+            "httpPort" $fluentBitHTTPPort
+            "logsDir" $logsDir
+            "serviceName" "fwd-compute-worker"
+            "configMapVolumeName" "fluent-bit-config"
+          ) | nindent 8 }}
+      volumes:
+        - name: scratch
+          hostPath:
+            path: {{ $scratchHostPath | quote }}
+            type: DirectoryOrCreate
+        {{- include "skyforge.forwardWorker.dbVolumes" (dict "mode" $dbMode "certificate" $dbCert) | nindent 8 }}
+        {{- if $logForwardingEnabled }}
+        - name: fluent-bit-config
+          configMap:
+            name: fwd-compute-worker-fluent-bit-config
+        {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-search-worker
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-search-worker
+spec:
+  replicas: {{ default 1 $search.replicas }}
+  strategy:
+    type: {{ $strategyType }}
+    {{- if eq $strategyType "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ default 0 $rollout.maxUnavailable }}
+      maxSurge: {{ default 1 $rollout.maxSurge }}
+    {{- end }}
+  minReadySeconds: {{ default 10 $rollout.minReadySeconds }}
+  progressDeadlineSeconds: {{ default 600 $rollout.progressDeadlineSeconds }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-search-worker
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-search-worker
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: {{ default 90 $rollout.terminationGracePeriodSeconds }}
+      {{- if $priorityClassName }}
+      priorityClassName: {{ $priorityClassName | quote }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - fwd-search-worker
+              topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/fwd-search-worker
+                    operator: Exists
+      securityContext:
+        fsGroup: {{ $fsGroup }}
+      {{- if $imagePullSecretName }}
+      imagePullSecrets:
+        - name: {{ $imagePullSecretName | quote }}
+      {{- end }}
+      initContainers:
+        - name: fix-permissions
+          image: {{ $alpineImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command:
+            - /bin/sh
+          args:
+            - -c
+            - >-
+              mkdir -p /mnt/scratch/tmp/ /mnt/scratch/logs/ /mnt/scratch/scratch-data/ &&
+              chown {{ $runAsUser }}:{{ $fsGroup }} -R /mnt/scratch
+          volumeMounts:
+            - name: scratch
+              subPathExpr: "fwd-search-worker"
+              mountPath: /mnt/scratch
+      containers:
+        - name: search-container
+          image: {{ required "skyforge.forwardCluster.workers.search.image is required when owner=skyforge" $search.image | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            runAsUser: {{ $runAsUser }}
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep {{ default 20 $rollout.preStopSleepSeconds }}
+          resources:
+{{ toYaml $search.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{ $logsDir }}
+              name: scratch
+              subPathExpr: "fwd-search-worker/logs"
+            - mountPath: {{ $scratchDataDir }}
+              name: scratch
+              subPathExpr: "fwd-search-worker/scratch-data"
+            - mountPath: /tmp
+              name: scratch
+              subPathExpr: "fwd-search-worker/tmp"
+            {{- include "skyforge.forwardWorker.dbVolumeMounts" (dict "mode" $dbMode "certificate" $dbCert) | nindent 12 }}
+          ports:
+            - containerPort: {{ default 30050 $search.port }}
+          {{- include "skyforge.forwardWorker.probes" (dict
+              "port" (default 30050 $search.port)
+              "initialDelaySeconds" (default 10 $search.probes.initialDelaySeconds)
+              "periodSeconds" (default 60 $search.probes.periodSeconds)
+              "failureThreshold" (default 10 $search.probes.failureThreshold)
+              "timeoutSeconds" (default 3 $search.probes.timeoutSeconds)
+            ) | nindent 10 }}
+          envFrom:
+            - configMapRef:
+                name: {{ $memoryProfileConfigMapName | quote }}
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SEARCH_WORKER_PROFILES
+              value: "K8S,SEARCH_WORKER,ON_PREM"
+            - name: MEMORY_PROFILE
+              value: "SINGLE_BOX"
+            {{- if $search.reservedMemoryOverride }}
+            - name: RESERVED_MEMORY_OVERRIDE
+              value: {{ $search.reservedMemoryOverride | quote }}
+            {{- end }}
+            {{- if $search.memoryLimitMB }}
+            - name: SEARCH_WORKER_MEMORY_LIMIT_MB
+              value: {{ printf "%v" $search.memoryLimitMB | quote }}
+            {{- end }}
+            {{- if $search.memoryPctOverride }}
+            - name: SEARCH_WORKER_MEMORY_PCT_OVERRIDE
+              value: {{ $search.memoryPctOverride | quote }}
+            {{- end }}
+            - name: WORKER_STORES_PATH
+              value: {{ printf "%s/sherlock/" $scratchDataDir | quote }}
+            - name: CUSTOM_WORKER_PARAMS
+              value: {{ printf "%s -Dfdb.jdbc.maxPoolSize=%v" (ternary (printf "-Dioexec.threadsPerCore=%v" $search.ioexecThreadsPerCore) "" (ne (printf "%v" $search.ioexecThreadsPerCore) "")) (default 30 $search.fdbJdbcMaxPoolSize) | trim | quote }}
+            {{- include "skyforge.forwardWorker.postgresEnv" (dict "db" $db "mode" $dbMode) | nindent 12 }}
+        {{- include "skyforge.forwardWorker.logForwarderContainer" (dict
+            "enabled" $logForwardingEnabled
+            "image" $fluentBitImage
+            "pullPolicy" $pullPolicy
+            "runAsUser" $runAsUser
+            "httpPort" $fluentBitHTTPPort
+            "logsDir" $logsDir
+            "serviceName" "fwd-search-worker"
+            "configMapVolumeName" "fluent-bit-config"
+          ) | nindent 8 }}
+      volumes:
+        - name: scratch
+          hostPath:
+            path: {{ $scratchHostPath | quote }}
+            type: DirectoryOrCreate
+        {{- include "skyforge.forwardWorker.dbVolumes" (dict "mode" $dbMode "certificate" $dbCert) | nindent 8 }}
+        {{- if $logForwardingEnabled }}
+        - name: fluent-bit-config
+          configMap:
+            name: fwd-search-worker-fluent-bit-config
+        {{- end }}
+{{- end -}}

@@ -358,6 +358,12 @@ spec:
             secretKeyRef:
               name: skyforge-session-secret
               key: skyforge-session-secret
+        - name: SKYFORGE_AUDIT_EXPORT_SIGNING_KEY
+          valueFrom:
+            secretKeyRef:
+              name: skyforge-audit-export-signing-key
+              key: skyforge-audit-export-signing-key
+              optional: true
         - name: SKYFORGE_SESSION_TTL
           valueFrom:
             configMapKeyRef:

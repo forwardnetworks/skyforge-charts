@@ -8,6 +8,8 @@ early when required configuration is missing.
 {{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}
 {{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
+{{- $forwardWorkers := default (dict) .Values.skyforge.forwardCluster.workers -}}
+{{- $forwardWorkerOwner := lower (trim (default "upstream" $forwardWorkers.owner)) -}}
 {{- $obsEnabled := default false .Values.skyforge.observability.enabled -}}
 {{- $obsManagedEnabled := default false .Values.skyforge.observability.managed.enabled -}}
 {{- $obsGrafanaOIDC := default (dict) .Values.skyforge.observability.grafana.oidc -}}
@@ -63,6 +65,33 @@ early when required configuration is missing.
 {{- end -}}
 {{- if and (eq $edition "oss") $forwardClusterEnabled -}}
   {{- fail "skyforge.edition=oss does not support skyforge.forwardCluster.enabled=true" -}}
+{{- end -}}
+{{- if and (ne $forwardWorkerOwner "upstream") (ne $forwardWorkerOwner "skyforge") -}}
+  {{- fail (printf "skyforge.forwardCluster.workers.owner must be one of upstream or skyforge (got %q)" $forwardWorkerOwner) -}}
+{{- end -}}
+{{- if eq $forwardWorkerOwner "skyforge" -}}
+  {{- if not $forwardClusterEnabled -}}
+    {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.enabled=true" -}}
+  {{- end -}}
+  {{- if not (default false $forwardWorkers.adoptionAcknowledged) -}}
+    {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.adoptionAcknowledged=true because the upstream Forward release must stop managing fwd-compute-worker and fwd-search-worker first" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $forwardWorkers.compute.image)) -}}
+    {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.compute.image" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $forwardWorkers.search.image)) -}}
+    {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.search.image" -}}
+  {{- end -}}
+  {{- if not (trim (default "" $forwardWorkers.scratch.hostPath)) -}}
+    {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.scratch.hostPath" -}}
+  {{- end -}}
+  {{- $dbMode := lower (trim (default "external" $forwardWorkers.database.mode)) -}}
+  {{- if and (ne $dbMode "external") (ne $dbMode "internal") -}}
+    {{- fail (printf "skyforge.forwardCluster.workers.database.mode must be one of external or internal (got %q)" $dbMode) -}}
+  {{- end -}}
+  {{- if and (default true $forwardWorkers.logForwarding.enabled) (eq (len (default (list) $forwardWorkers.logForwarding.outputs)) 0) -}}
+    {{- fail "skyforge.forwardCluster.workers.owner=skyforge with log forwarding enabled requires at least one skyforge.forwardCluster.workers.logForwarding.outputs entry" -}}
+  {{- end -}}
 {{- end -}}
 {{- $hetznerBurst := default (dict) .Values.skyforge.burst.hetzner -}}
 {{- $hetznerBurstEnabled := default false $hetznerBurst.enabled -}}
@@ -263,6 +292,7 @@ early when required configuration is missing.
     "proxy-tls"
     "skyforge-admin-shared"
     "skyforge-session-secret"
+    "skyforge-audit-export-signing-key"
     "skyforge-internal-token"
     "postgres-skyforge-password"
     "db-skyforge-server-password"

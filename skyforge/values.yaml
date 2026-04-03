@@ -774,6 +774,9 @@ skyforge:
   uiThemeDefault: ""
   # Typed config equivalent of SKYFORGE_NOTIFICATIONS_ENABLED. Default true.
   notificationsEnabled: true
+  audit:
+    # Audit retention duration. Set to "0" to disable automatic audit cleanup.
+    retention: "180d"
   # Product edition controls Forward defaults and OSS-facing behavior.
   # enterprise: Forward integrations available (subject to skyforge.forward.enabled)
   # oss: Forward integrations forced off in generated Encore config
@@ -814,6 +817,126 @@ skyforge:
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
     servicePort: 8080
+    workers:
+      # Ownership model for Forward compute/search worker manifests.
+      #
+      # "upstream": the upstream Forward Helm chart owns fwd-compute-worker and
+      #             fwd-search-worker resources.
+      # "skyforge": this chart owns the worker Services, fluent-bit ConfigMaps,
+      #             and Deployments directly in the Forward namespace.
+      #
+      # The Skyforge-owned path is intentionally explicit and currently targets
+      # the on-prem/shared-cluster deployment contract that uses hostPath
+      # scratch plus the existing in-cluster Postgres and log aggregator
+      # services. It is not a generic replacement for every Forward chart mode.
+      owner: "upstream"
+      # Explicit acknowledgment that enabling owner=skyforge is a deliberate
+      # ownership transfer. The upstream Forward release must stop managing the
+      # same worker names before a rollout claims them here.
+      adoptionAcknowledged: false
+      namespace: ""
+      imagePullSecretName: ""
+      imagePullPolicy: "IfNotPresent"
+      alpineImage: "quay.io/forwardnetworks/docker:alpine_3.18.3"
+      priorityClassName: ""
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      memoryProfileConfigMapName: "fwd-memory-profile-overrides"
+      rollout:
+        strategyType: "RollingUpdate"
+        maxUnavailable: 0
+        maxSurge: 1
+        minReadySeconds: 10
+        progressDeadlineSeconds: 600
+        terminationGracePeriodSeconds: 90
+        preStopSleepSeconds: 20
+      pdb:
+        enabled: true
+        compute:
+          minAvailable: 1
+        search:
+          minAvailable: 1
+      discovery:
+        # The Forward backend worker discovery path expects a node-agent
+        # headless service in this deployment contract. Keep this alias mapped
+        # to search worker pods to avoid stale/unresolvable worker endpoints.
+        nodeAgentHeadlessAlias:
+          enabled: true
+          serviceName: "fwd-node-agent-headless"
+      containerMounts:
+        logs: "/var/log/forward"
+        scratchDataDir: "/scratch/data"
+      scratch:
+        hostPath: "/mnt/forward/extended/scratch/pods"
+      logForwarding:
+        enabled: true
+        fluentBitImage: "quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3"
+        httpPort: 2020
+        outputs:
+          - host: "fwd-log-aggregator-0"
+            port: 24224
+          - host: "fwd-log-aggregator-1"
+            port: 24224
+      database:
+        # Skyforge-owned workers support the existing shared-cluster database
+        # contract explicitly. Use mode=external for the current deployment
+        # where app/FDB Postgres endpoints are exposed from the Skyforge DB.
+        mode: "external"
+        port: 5432
+        appHost: "db.skyforge.svc.cluster.local"
+        fdbHost: "db.skyforge.svc.cluster.local"
+        sslMode: "DISABLE"
+        certificate: ""
+        appCredentialsSecretName: "postgres.fwd-pg-app.credentials"
+        appUserKey: "user"
+        appPasswordKey: "password"
+        fdbExternalCredentialsSecretName: "postgres.fwd-pg-fdb.credentials"
+        fdbUserKey: "user"
+        fdbPasswordKey: "password"
+        fdbInternalPartition0SecretName: "postgres.fwd-pg-fdb-0.credentials"
+        fdbInternalPartition1SecretName: "postgres.fwd-pg-fdb-1.credentials"
+        fdbPartitionPasswordKey: "password"
+      compute:
+        replicas: 2
+        image: ""
+        port: 30060
+        reservedMemoryOverride: ""
+        memoryLimitMB: 0
+        memoryPctOverride: ""
+        resources:
+          requests:
+            cpu: "4"
+            memory: "12Gi"
+          limits:
+            cpu: "4"
+            memory: "12Gi"
+        probes:
+          initialDelaySeconds: 10
+          periodSeconds: 60
+          failureThreshold: 10
+          timeoutSeconds: 3
+      search:
+        replicas: 2
+        image: ""
+        port: 30050
+        reservedMemoryOverride: ""
+        memoryLimitMB: 0
+        memoryPctOverride: ""
+        ioexecThreadsPerCore: ""
+        fdbJdbcMaxPoolSize: 30
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        probes:
+          initialDelaySeconds: 10
+          periodSeconds: 60
+          failureThreshold: 10
+          timeoutSeconds: 3
     nodeRoleReconciler:
       enabled: false
       # Reconcile the Forward scheduling labels onto the intended nodes. This
@@ -1148,6 +1271,8 @@ secrets:
   items:
     skyforge-session-secret:
       skyforge-session-secret: ""
+    skyforge-audit-export-signing-key:
+      skyforge-audit-export-signing-key: ""
     skyforge-admin-shared:
       password: ""
     skyforge-internal-token:
