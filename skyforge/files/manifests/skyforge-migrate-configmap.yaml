@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:uzIELBKWG8QTDQXaQZYQX5mDCyPSsy5ZlUOR0S6VAmQ=
+    h1:AgpG4dXxh6Z3zHD/beFyEaZKwrfzxYmZ4iqWkc4OQ1o=
     20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
@@ -62,6 +62,12 @@ data:
     20260324120000_forward_tenant_kind.up.sql h1:5bYymB9jUL3O8fXKk7X4tDxG1n9dc1g0wlOsfnfXNmU=
     20260325181000_forward_network_insight_runs.up.sql h1:lN4semLldECkYmBPy6ds4/VpE+AfSywcqrGN2UwKxSA=
     20260331170000_hetzner_burst_scaffold.up.sql h1:3WQlRoXk7FiEnkV8l5dTElP6XMN+xoM1uhhquYrWDNI=
+    20260403110000_audit_log_enterprise_fields.up.sql h1:ZeZUFp3bMq3nkuYn468dmChZ0qAY4fMp1sVR0utbf18=
+    20260403124500_audit_saved_views_and_retention.up.sql h1:plo0pViwnWCqrvQxGnJ81GHFGNPD09gIjysNpQFFFWc=
+    20260403125500_audit_log_legacy_details_backfill.up.sql h1:UyTVgzZbkBnwmCyOlnwRtSOXe/vOpvhqHZ+a+7HzZUI=
+    20260403143000_audit_export_signatures.up.sql h1:qFu5qRQlIOGsvbzOreBSrggRUoBRsEJFaU2icm6eXKA=
+    20260403150000_audit_log_hash_chain.up.sql h1:w7sHtOiZ8KyOZHL9onAmZS7BzJHlyq8B/eKE+kpxWxA=
+    20260403153000_audit_integrity_checkpoints.up.sql h1:yOf7C5S+nmhvzhUypVDrLzRGOZclhdTjYPeKthKnFIs=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -4410,3 +4416,184 @@ data:
     
     CREATE INDEX IF NOT EXISTS sf_hetzner_burst_workers_status_idx
         ON public.sf_hetzner_burst_workers (status, join_state);
+
+  20260403110000_audit_log_enterprise_fields.up.sql: |
+    ALTER TABLE sf_audit_log
+      ADD COLUMN IF NOT EXISTS event_type text,
+      ADD COLUMN IF NOT EXISTS event_category text,
+      ADD COLUMN IF NOT EXISTS severity text,
+      ADD COLUMN IF NOT EXISTS outcome text,
+      ADD COLUMN IF NOT EXISTS actor_type text,
+      ADD COLUMN IF NOT EXISTS target_type text,
+      ADD COLUMN IF NOT EXISTS target_id text,
+      ADD COLUMN IF NOT EXISTS target_display text,
+      ADD COLUMN IF NOT EXISTS correlation_id text,
+      ADD COLUMN IF NOT EXISTS source_ip text,
+      ADD COLUMN IF NOT EXISTS user_agent text,
+      ADD COLUMN IF NOT EXISTS auth_method text,
+      ADD COLUMN IF NOT EXISTS message text,
+      ADD COLUMN IF NOT EXISTS details_json jsonb NOT NULL DEFAULT '{}'::jsonb;
+    
+    UPDATE sf_audit_log
+    SET
+      event_type = COALESCE(NULLIF(event_type, ''), action),
+      event_category = COALESCE(NULLIF(event_category, ''), lower(NULLIF(split_part(COALESCE(action, ''), '.', 1), ''))),
+      severity = COALESCE(NULLIF(severity, ''), 'info'),
+      outcome = COALESCE(NULLIF(outcome, ''), 'success'),
+      actor_type = COALESCE(
+        NULLIF(actor_type, ''),
+        CASE lower(COALESCE(actor_username, ''))
+          WHEN 'system' THEN 'system'
+          WHEN 'skyforge' THEN 'service'
+          WHEN 'admin' THEN 'break-glass'
+          ELSE 'human'
+        END
+      ),
+      target_type = COALESCE(NULLIF(target_type, ''), CASE WHEN COALESCE(user_id, '') <> '' THEN 'user_scope' ELSE NULL END),
+      target_id = COALESCE(NULLIF(target_id, ''), NULLIF(user_id, '')),
+      target_display = COALESCE(NULLIF(target_display, ''), NULLIF(user_id, '')),
+      message = COALESCE(NULLIF(message, ''), action),
+      details_json = CASE
+        WHEN details_json <> '{}'::jsonb THEN details_json
+        WHEN COALESCE(details, '') = '' THEN '{}'::jsonb
+        ELSE jsonb_build_object('legacyDetails', details)
+      END
+    WHERE
+      event_type IS NULL OR event_type = '' OR
+      event_category IS NULL OR event_category = '' OR
+      severity IS NULL OR severity = '' OR
+      outcome IS NULL OR outcome = '' OR
+      actor_type IS NULL OR actor_type = '' OR
+      target_type IS NULL OR target_type = '' OR
+      target_id IS NULL OR target_id = '' OR
+      target_display IS NULL OR target_display = '' OR
+      message IS NULL OR message = '' OR
+      details_json = '{}'::jsonb;
+    
+    CREATE INDEX IF NOT EXISTS sf_audit_log_actor_created_idx ON sf_audit_log (actor_username, created_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_audit_log_event_type_created_idx ON sf_audit_log (event_type, created_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_audit_log_event_category_created_idx ON sf_audit_log (event_category, created_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_audit_log_outcome_created_idx ON sf_audit_log (outcome, created_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_audit_log_target_created_idx ON sf_audit_log (target_type, target_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_audit_log_source_ip_created_idx ON sf_audit_log (source_ip, created_at DESC);
+    CREATE INDEX IF NOT EXISTS sf_audit_log_details_json_gin_idx ON sf_audit_log USING GIN (details_json);
+
+  20260403124500_audit_saved_views_and_retention.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_admin_audit_saved_views (
+      id text PRIMARY KEY,
+      owner_username text NOT NULL REFERENCES sf_users(username) ON UPDATE CASCADE ON DELETE CASCADE,
+      name text NOT NULL,
+      filters_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_admin_audit_saved_views_owner_name_idx
+      ON sf_admin_audit_saved_views (owner_username, lower(name));
+    
+    CREATE INDEX IF NOT EXISTS sf_admin_audit_saved_views_owner_updated_idx
+      ON sf_admin_audit_saved_views (owner_username, updated_at DESC);
+
+  20260403125500_audit_log_legacy_details_backfill.up.sql: |
+    WITH extracted AS (
+      SELECT
+        id,
+        details,
+        NULLIF((regexp_match(details, '(^|[ ,])username=([^ ,]+)'))[2], '') AS username,
+        NULLIF((regexp_match(details, '(^|[ ,])seed(ID)?=([^ ,]+)'))[3], '') AS seed_id,
+        NULLIF((regexp_match(details, '(^|[ ,])reservation=([^ ,]+)'))[2], '') AS reservation_id,
+        NULLIF((regexp_match(details, '(^|[ ,])run(ID)?=([^ ,]+)'))[3], '') AS run_id,
+        NULLIF((regexp_match(details, '(^|[ ,])network=([^ ,]+)'))[2], '') AS network_name,
+        NULLIF((regexp_match(details, '(^|[ ,])webhook=([^ ,]+)'))[2], '') AS webhook,
+        NULLIF((regexp_match(details, '(^|[ ,])primaryProvider=([^ ,]+)'))[2], '') AS primary_provider
+      FROM sf_audit_log
+      WHERE COALESCE(details, '') <> ''
+        AND details_json ? 'legacyDetails'
+    )
+    UPDATE sf_audit_log a
+    SET
+      details_json = jsonb_strip_nulls(
+        a.details_json ||
+        jsonb_build_object(
+          'username', extracted.username,
+          'seedID', extracted.seed_id,
+          'reservation', extracted.reservation_id,
+          'runID', extracted.run_id,
+          'network', extracted.network_name,
+          'webhook', extracted.webhook,
+          'primaryProvider', extracted.primary_provider
+        )
+      ),
+      target_type = COALESCE(
+        NULLIF(a.target_type, ''),
+        CASE
+          WHEN extracted.username IS NOT NULL THEN 'user'
+          WHEN extracted.seed_id IS NOT NULL THEN 'demo_seed'
+          WHEN extracted.reservation_id IS NOT NULL THEN 'reservation'
+          WHEN extracted.run_id IS NOT NULL THEN 'workflow_run'
+          ELSE NULL
+        END
+      ),
+      target_id = COALESCE(
+        NULLIF(a.target_id, ''),
+        extracted.username,
+        extracted.seed_id,
+        extracted.reservation_id,
+        extracted.run_id
+      ),
+      target_display = COALESCE(
+        NULLIF(a.target_display, ''),
+        extracted.username,
+        extracted.seed_id,
+        extracted.reservation_id,
+        extracted.run_id
+      )
+    FROM extracted
+    WHERE a.id = extracted.id;
+
+  20260403143000_audit_export_signatures.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_audit_export_signatures (
+        id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+        actor_username text NOT NULL,
+        export_format text NOT NULL,
+        filter_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+        event_count integer NOT NULL DEFAULT 0,
+        body_sha256 text NOT NULL,
+        signature_algorithm text NOT NULL,
+        signature_b64 text NOT NULL,
+        key_id text NOT NULL,
+        public_key_b64 text NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT now()
+    );
+    
+    ALTER TABLE ONLY sf_audit_export_signatures
+        ADD CONSTRAINT sf_audit_export_signatures_actor_username_fkey
+        FOREIGN KEY (actor_username) REFERENCES public.sf_users(username) ON UPDATE CASCADE;
+    
+    CREATE INDEX IF NOT EXISTS sf_audit_export_signatures_actor_created_idx
+        ON sf_audit_export_signatures (actor_username, created_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS sf_audit_export_signatures_key_created_idx
+        ON sf_audit_export_signatures (key_id, created_at DESC);
+
+  20260403150000_audit_log_hash_chain.up.sql: |
+    ALTER TABLE sf_audit_log
+      ADD COLUMN IF NOT EXISTS chain_version integer NOT NULL DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS prev_chain_hash text,
+      ADD COLUMN IF NOT EXISTS chain_hash text;
+    
+    CREATE UNIQUE INDEX IF NOT EXISTS sf_audit_log_chain_hash_uidx
+      ON sf_audit_log (chain_hash)
+      WHERE chain_hash IS NOT NULL;
+    
+    CREATE INDEX IF NOT EXISTS sf_audit_log_chain_created_idx
+      ON sf_audit_log (created_at DESC, id DESC);
+
+  20260403153000_audit_integrity_checkpoints.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_audit_integrity_checkpoints (
+        checkpoint_key text PRIMARY KEY,
+        verified_through_event_id bigint NOT NULL DEFAULT 0,
+        verified_through_hash text NOT NULL DEFAULT '',
+        total_checked integer NOT NULL DEFAULT 0,
+        updated_at timestamp with time zone NOT NULL DEFAULT now()
+    );
