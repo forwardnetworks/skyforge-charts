@@ -1,0 +1,27 @@
+{{- $fc := .Values.skyforge.forwardCluster -}}
+{{- $workers := default (dict) $fc.workers -}}
+{{- $discovery := default (dict) $workers.discovery -}}
+{{- $nodeAgentAlias := default (dict) $discovery.nodeAgentHeadlessAlias -}}
+{{- $nodeAgentAliasEnabled := default true $nodeAgentAlias.enabled -}}
+{{- if and $fc.enabled $nodeAgentAliasEnabled -}}
+{{- $ns := default $fc.serviceNamespace $workers.namespace -}}
+{{- $serviceName := default "fwd-node-agent-headless" $nodeAgentAlias.serviceName -}}
+{{- $search := default (dict) $workers.search -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $serviceName }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-search-worker
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: fwd-search-worker
+  ports:
+    - protocol: TCP
+      name: grpc
+      port: {{ default 30050 $search.port }}
+{{- end }}

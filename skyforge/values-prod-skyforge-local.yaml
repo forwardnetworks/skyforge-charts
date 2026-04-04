@@ -322,7 +322,7 @@ skyforge:
       schedule: "17 3 * * *"
       timeZone: "America/Chicago"
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.3-02
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.4-02
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -390,7 +390,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-vsrx-transitional-r9"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260404-kne-xr-nosnoopv4-r2"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: true

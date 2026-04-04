@@ -31,10 +31,6 @@
 {{- $pdbEnabled := default true $pdb.enabled -}}
 {{- $computePdb := default (dict) $pdb.compute -}}
 {{- $searchPdb := default (dict) $pdb.search -}}
-{{- $discovery := default (dict) $workers.discovery -}}
-{{- $nodeAgentAlias := default (dict) $discovery.nodeAgentHeadlessAlias -}}
-{{- $nodeAgentAliasEnabled := default true $nodeAgentAlias.enabled -}}
-{{- $nodeAgentAliasServiceName := default "fwd-node-agent-headless" $nodeAgentAlias.serviceName -}}
 
 ---
 apiVersion: v1
@@ -70,25 +66,6 @@ spec:
       name: grpc
       port: {{ default 30050 $search.port }}
   clusterIP: None
-{{- if $nodeAgentAliasEnabled }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ $nodeAgentAliasServiceName }}
-  namespace: {{ $ns }}
-  labels:
-    {{- include "skyforge.labels" . | nindent 4 }}
-    app.kubernetes.io/name: fwd-search-worker
-spec:
-  selector:
-    app.kubernetes.io/name: fwd-search-worker
-  ports:
-    - protocol: TCP
-      name: grpc
-      port: {{ default 30050 $search.port }}
-  clusterIP: None
-{{- end }}
 {{- if $pdbEnabled }}
 ---
 apiVersion: policy/v1
