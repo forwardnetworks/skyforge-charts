@@ -172,6 +172,8 @@ skyforge:
   kne:
     # Enable Kubernetes Network Emulation (KNE) meshnet components.
     # This installs the upstream meshnet CRDs + daemonset.
+    # On Cilium clusters, bootstrap must also set kube-system/cilium-config
+    # cni-exclusive=false or meshnet will be removed from the active CNI chain.
     enabled: false
     # meshnet mode: grpc or vxlan
     meshnetMode: grpc
@@ -181,11 +183,11 @@ skyforge:
       ceoslab:
         enabled: true
       cdnos:
-        enabled: true
+        enabled: false
       srlinux:
-        enabled: true
+        enabled: false
       lemming:
-        enabled: true
+        enabled: false
     # Source used for the vendored manifest files:
     # https://github.com/forwardnetworks/kne/tree/main/manifests
     upstreamRef: "forwardnetworks/kne@c5df08f"
@@ -346,6 +348,11 @@ skyforge:
     # Internal Skyforge -> Dex discovery URL used only when skyforge.auth.mode=oidc.
     # This is not the upstream IdP/Okta endpoint; configure that under skyforge.dex.oidc.*.
     discoveryUrl: "http://dex:5556/dex"
+    # Dex static client credentials consumed by Skyforge app login.
+    clientIDSecretName: "skyforge-oidc-client-id"
+    clientIDSecretKey: "skyforge-oidc-client-id"
+    clientSecretSecretName: "skyforge-oidc-client-secret"
+    clientSecretSecretKey: "skyforge-oidc-client-secret"
   listenAddr: ":8085"
   maxGroups: 50
   ssoSkipTlsVerify: false
@@ -751,7 +758,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260325-vsrx-transitional-r9"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260408-kne-linux-nsfix-r25"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: false
@@ -769,6 +776,16 @@ skyforge:
     nodePort: 30053
     # NodePort for the DNS web UI on the k3s host.
     webNodePort: 30380
+    persistence:
+      enabled: true
+      size: "5Gi"
+    resources:
+      requests:
+        cpu: "25m"
+        memory: "128Mi"
+      limits:
+        cpu: "250m"
+        memory: "512Mi"
   userDataDir: "/var/lib/skyforge"
   userDeleteMode: "live"
   uiThemeDefault: ""
@@ -1211,8 +1228,22 @@ skyforge:
         - profile
         - email
         - groups
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
   redoc:
     enabled: true
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
 images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
   alpine: "public.ecr.aws/docker/library/alpine:latest"
@@ -1239,10 +1270,10 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-platform-rollup-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260408-kne-nos-native-r14"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-platform-rollup-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260408-kne-nos-native-r14-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true
@@ -1277,8 +1308,8 @@ secrets:
       password: ""
     skyforge-internal-token:
       skyforge-internal-token: ""
-    skyforge-containerlab-jwt-secret:
-      skyforge-containerlab-jwt-secret: ""
+    skyforge-kne-jwt-secret:
+      skyforge-kne-jwt-secret: ""
     skyforge-netlab-servers:
       # JSON array of netlab server configs. Example:
       # [{"name":"netlab","apiUrl":"https://netlab.local.forwardnetworks.com/netlab","apiInsecure":false,"apiToken":"<bearer>"}]

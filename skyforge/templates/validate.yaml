@@ -27,8 +27,8 @@ early when required configuration is missing.
   {{- if and $forwardEnabled (not (trim (default "" .Values.skyforge.forwardCollector.image))) -}}
     {{- fail "Forward integration enabled requires skyforge.forwardCollector.image to be set (set skyforge.edition=oss to force-disable Forward)" -}}
   {{- end -}}
-  {{- if hasKey .Values.skyforge "netlabC9s" -}}
-    {{- fail "skyforge.netlabC9s is removed; use skyforge.netlab.image and skyforge.netlab.pullPolicy" -}}
+  {{- if hasKey .Values.skyforge "netlabKNE" -}}
+    {{- fail "skyforge.netlabKNE is removed; use skyforge.netlab.image and skyforge.netlab.pullPolicy" -}}
   {{- end -}}
 {{- end -}}
 
@@ -309,6 +309,7 @@ early when required configuration is missing.
     "object-storage-root-password"
   -}}
   {{- if and .Values.skyforge.dex.enabled .Values.skyforge.dex.manageConfig -}}
+    {{- $requiredSecrets = append $requiredSecrets "skyforge-oidc-client-id" -}}
     {{- $requiredSecrets = append $requiredSecrets "skyforge-oidc-client-secret" -}}
   {{- end -}}
   {{- if not .Values.skyforge.dex.manageConfig -}}

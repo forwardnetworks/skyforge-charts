@@ -60,6 +60,8 @@ spec:
           image: {{ .Values.images.dex | quote }}
           command: ["dex"]
           args: ["serve", "/etc/dex/config.yaml"]
+          resources:
+{{ toYaml .Values.skyforge.dex.resources | nindent 12 }}
           ports:
             - containerPort: 5556
           volumeMounts:

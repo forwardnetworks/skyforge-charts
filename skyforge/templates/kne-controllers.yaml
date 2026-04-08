@@ -4,16 +4,4 @@
 {{- if (($controllers.ceoslab | default dict).enabled | default false) -}}
 {{ .Files.Get "files/manifests/kne-controller-ceoslab.yaml" }}
 {{- end -}}
-{{- if (($controllers.cdnos | default dict).enabled | default false) -}}
----
-{{ .Files.Get "files/manifests/kne-controller-cdnos.yaml" }}
-{{- end -}}
-{{- if (($controllers.srlinux | default dict).enabled | default false) -}}
----
-{{ .Files.Get "files/manifests/kne-controller-srlinux.yaml" }}
-{{- end -}}
-{{- if (($controllers.lemming | default dict).enabled | default false) -}}
----
-{{ .Files.Get "files/manifests/kne-controller-lemming.yaml" }}
-{{- end -}}
 {{- end -}}

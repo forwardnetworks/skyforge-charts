@@ -37,6 +37,8 @@ spec:
       - name: redoc
         image: {{ .Values.images.redoc | quote }}
         imagePullPolicy: Always
+        resources:
+{{ toYaml .Values.skyforge.redoc.resources | indent 10 }}
         env:
         - name: SPEC_URL
           valueFrom:

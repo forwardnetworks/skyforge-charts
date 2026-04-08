@@ -1,4 +1,6 @@
 {{- $serverPriorityClass := default .Values.skyforge.corePriorityClassName .Values.skyforge.server.priorityClassName -}}
+{{- $forwardClusterEnabled := default false .Values.skyforge.forwardCluster.enabled -}}
+{{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -395,23 +397,27 @@ spec:
               name: skyforge-config
               key: SKYFORGE_OIDC_REDIRECT_URL
         - name: SKYFORGE_OIDC_CLIENT_ID
-          value: {{ .Values.skyforge.dex.oidc.clientID | quote }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ default "skyforge-oidc-client-id" .Values.skyforge.oidc.clientIDSecretName | quote }}
+              key: {{ default "skyforge-oidc-client-id" .Values.skyforge.oidc.clientIDSecretKey | quote }}
+              optional: true
         - name: SKYFORGE_OIDC_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: {{ default "dex-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretName | quote }}
-              key: {{ default "dex-oidc-client-secret" .Values.skyforge.dex.oidc.clientSecretSecretKey | quote }}
+              name: {{ default "skyforge-oidc-client-secret" .Values.skyforge.oidc.clientSecretSecretName | quote }}
+              key: {{ default "skyforge-oidc-client-secret" .Values.skyforge.oidc.clientSecretSecretKey | quote }}
               optional: true
         - name: SKYFORGE_INTERNAL_TOKEN
           valueFrom:
             secretKeyRef:
               name: skyforge-internal-token
               key: skyforge-internal-token
-        - name: SKYFORGE_CONTAINERLAB_JWT_SECRET
+        - name: SKYFORGE_KNE_JWT_SECRET
           valueFrom:
             secretKeyRef:
-              name: skyforge-containerlab-jwt-secret
-              key: skyforge-containerlab-jwt-secret
+              name: skyforge-kne-jwt-secret
+              key: skyforge-kne-jwt-secret
               optional: true
         - name: SKYFORGE_QUICK_DEPLOY_FORWARD_USERNAME
           valueFrom:
@@ -540,6 +546,14 @@ spec:
       - name: skyforge-ca-cert
         secret:
           secretName: skyforge-ca-cert
+      - name: proxy-tls
+        secret:
+          secretName: proxy-tls
+{{- if and $forwardClusterEnabled (ne $forwardTlsSecretName "proxy-tls") }}
+      - name: proxy-tls-forward
+        secret:
+          secretName: {{ $forwardTlsSecretName }}
+{{- end }}
       - name: skyforge-ca-bundle
         emptyDir: {}
       - name: skyforge-migrate-config
@@ -612,11 +626,27 @@ spec:
         command:
         - sh
         - -c
-        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        - |
+          set -eu
+          cat /etc/ssl/certs/ca-certificates.crt \
+            /etc/skyforge/skyforge-ca-cert \
+            /etc/proxy-main/tls.crt \
+{{- if and $forwardClusterEnabled (ne $forwardTlsSecretName "proxy-tls") }}
+            /etc/proxy-forward/tls.crt \
+{{- end }}
+            > /work/ca-certificates.crt
         volumeMounts:
         - name: skyforge-ca-cert
           mountPath: /etc/skyforge
           readOnly: true
+        - name: proxy-tls
+          mountPath: /etc/proxy-main
+          readOnly: true
+{{- if and $forwardClusterEnabled (ne $forwardTlsSecretName "proxy-tls") }}
+        - name: proxy-tls-forward
+          mountPath: /etc/proxy-forward
+          readOnly: true
+{{- end }}
         - name: skyforge-ca-bundle
           mountPath: /work
       - name: wait-for-nsq

@@ -18,7 +18,8 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: technitium-dns
-          image: technitium/dns-server:latest
+          image: {{ .Values.images.technitiumDns | quote }}
+          imagePullPolicy: IfNotPresent
           ports:
             - name: web
               containerPort: 5380
@@ -56,9 +57,29 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 3
+          resources:
+{{ toYaml .Values.skyforge.dns.resources | indent 12 }}
       volumes:
         - name: data
+{{- if .Values.skyforge.dns.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: technitium-dns-data
+{{- else }}
           emptyDir: {}
+{{- end }}
+{{- if .Values.skyforge.dns.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: technitium-dns-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.skyforge.dns.persistence.size | quote }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service

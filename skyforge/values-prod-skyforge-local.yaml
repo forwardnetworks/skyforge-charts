@@ -169,7 +169,7 @@ skyforge:
       hostname: "rapid7"
       caConfigMapName: "rapid7-ca"
   elk:
-    enabled: true
+    enabled: false
     managed: true
     priorityClassName: "skyforge-integrations"
     env:
@@ -246,7 +246,7 @@ skyforge:
   burst:
     hetzner:
       enabled: true
-      provisioningEnabled: false
+      provisioningEnabled: true
       apiTokenSecretName: "skyforge-hetzner-burst"
       apiTokenSecretKey: "api-token"
       hubPublicKeySecretName: "skyforge-hetzner-wireguard"
@@ -255,8 +255,8 @@ skyforge:
       k3sTokenSecretKey: "token"
       providerLabel: "hetzner"
       poolClass: "burst"
-      location: "ash"
-      networkZone: "us-east"
+      location: "hil"
+      networkZone: "us-west"
       networkCIDR: "10.30.0.0/16"
       workerSubnetCIDR: "10.30.0.0/24"
       serverType: "cpx11"
@@ -268,7 +268,7 @@ skyforge:
         serverUrl: "https://10.128.16.73:6443"
       wireguard:
         mode: "outbound-to-gateway"
-        endpointHost: "5.161.43.224"
+        endpointHost: "5.78.94.119"
         endpointPort: 51820
         listenPort: 51820
         interfaceName: "wg-burst0"
@@ -280,10 +280,12 @@ skyforge:
           - "10.128.16.0/24"
           - "10.42.0.0/16"
           - "10.43.0.0/16"
+          - "192.168.1.0/24"
         burstNodeCIDRs:
           - "10.30.0.0/24"
+          - "192.168.1.0/24"
         hub:
-          enabled: false
+          enabled: true
           image: "docker.io/linuxserver/wireguard:latest"
           imagePullPolicy: "IfNotPresent"
           privateKeySecretName: "skyforge-hetzner-wireguard"
@@ -300,7 +302,7 @@ skyforge:
               effect: "NoSchedule"
           affinity: {}
       routeReconciler:
-        enabled: false
+        enabled: true
         image: "docker.io/nicolaka/netshoot:v0.13"
         imagePullPolicy: "IfNotPresent"
         intervalSeconds: 60
@@ -308,10 +310,20 @@ skyforge:
         dev: ""
         destinations:
           - "10.30.0.0/24"
-        nodeSelector:
-          skyforge.forwardnetworks.com/pool-class: "app"
-        tolerations: []
-        affinity: {}
+          - "10.31.0.0/24"
+          - "192.168.1.0/24"
+        nodeSelector: {}
+        tolerations:
+          - key: "skyforge.forwardnetworks.com/disabled"
+            operator: "Exists"
+            effect: "NoSchedule"
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: "node-role.kubernetes.io/control-plane"
+                      operator: "DoesNotExist"
 
 
   # Forward in-cluster collector image + pull credentials.
@@ -322,7 +334,7 @@ skyforge:
       schedule: "17 3 * * *"
       timeZone: "America/Chicago"
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.4-02
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-02
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -344,6 +356,7 @@ skyforge:
       enabled: true
       schedule: "*/1 * * * *"
       managedNodes:
+        - "skyforge"
         - "skyforge-worker-1"
         - "skyforge-worker-2"
         - "skyforge-worker-3"
@@ -390,7 +403,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260404-kne-xr-nosnoopv4-r2"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260408-kne-linux-nsfix-r25"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: true
@@ -401,6 +414,14 @@ skyforge:
     meshnetMode: grpc
     controllers:
       enabled: true
+      ceoslab:
+        enabled: true
+      cdnos:
+        enabled: false
+      srlinux:
+        enabled: false
+      lemming:
+        enabled: false
 
   worker:
     priorityClassName: "skyforge-core"
@@ -452,9 +473,9 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260331-platform-rollup-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260408-kne-nos-native-r14"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260331-platform-rollup-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260408-kne-nos-native-r14-worker"
   atlas: "ghcr.io/forwardnetworks/atlas:1.1.6-alpine"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"

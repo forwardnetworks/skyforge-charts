@@ -73,11 +73,11 @@ SKYFORGE_FORWARD_WORKER_MANIFEST_OWNER=skyforge
 That script now stages a temporary copy of the upstream Forward chart with the
 compute/search worker templates removed before Helm runs. Keep the default as
 `upstream` until the Skyforge takeover overlay is part of the same rollout.
-- `skyforge.burst.hetzner.*`: Optional Hetzner burst-capacity contract. This is disabled by default. The supported gateway baseline is Hetzner's built-in WireGuard app (`image=wireguard`) on `cpx11`, with Skyforge initiating outbound to that gateway and local route reconciliation carrying the burst CIDRs. Use `skyforge.burst.hetzner.provisioningEnabled=false` to keep the scaffold configured but disarmed.
+- `skyforge.burst.hetzner.*`: Optional Hetzner burst-capacity contract. This is disabled by default. The supported gateway baseline is Hetzner's built-in WireGuard app (`image=wireguard`) on `cx23`, with Skyforge initiating outbound to that gateway and local route reconciliation carrying the burst CIDRs. Use `skyforge.burst.hetzner.provisioningEnabled=false` to keep the scaffold configured but disarmed.
 - `skyforge.burst.hetzner.wireguard.hub.*`: Optional host-network deployment that owns the local WireGuard interface on one selected node. In the supported model, this node initiates outbound to a dedicated Hetzner gateway listener using peer config fragments stored out of band.
 - `skyforge.burst.hetzner.routeReconciler.*`: Optional privileged host-network DaemonSet that continuously enforces return routes on selected worker nodes for Hetzner burst CIDRs carried behind a local WireGuard gateway.
-- `skyforge.kne.*`: Optional KNE install from vendored manifests (tracked from `forwardnetworks/kne`).
-- `skyforge.kne.controllers.*`: Installs KNE vendor controller stacks (ceoslab/cdnos/srlinux/lemming) required for CRD-backed device provisioning.
+- `skyforge.kne.*`: Optional KNE install from vendored manifests (tracked from `forwardnetworks/kne`). On Cilium clusters, KNE meshnet requires `kube-system/cilium-config` `cni-exclusive=false`; otherwise Cilium renames `00-meshnet.conflist` out of the active chain and multi-node links stall at `Connected 1 interfaces out of 2`.
+- `skyforge.kne.controllers.*`: Installs the KNE vendor controller stack used by this workflow (`ceoslab` only). Cisco (`iol`, `ios-xrd`) and kubevirt paths use native KNE runtime support and do not require additional vendor controllers.
 - Dedicated worker deployment is always enabled as a singleton (`replicas: 1`) and processes queued runs from PubSub.
 - `skyforge.auth.mode`: Skyforge browser auth mode (`local` or `oidc`).
 - `skyforge.dex.authMode`: Dex connector profile (`google`, `local`, `oidc`).

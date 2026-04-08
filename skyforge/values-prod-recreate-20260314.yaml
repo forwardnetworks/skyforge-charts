@@ -48,7 +48,7 @@ skyforge:
       hostname: rapid7
       caConfigMapName: rapid7-ca
   elk:
-    enabled: true
+    enabled: false
     managed: true
     env:
       ELASTICSEARCH_START: "1"
@@ -84,13 +84,21 @@ skyforge:
     actionsRunner:
       enabled: false
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260325-vsrx-transitional-r9
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260406-kne-provider-contract-r1
     pullPolicy: IfNotPresent
   kne:
     enabled: true
     meshnetMode: grpc
     controllers:
       enabled: true
+      ceoslab:
+        enabled: true
+      cdnos:
+        enabled: false
+      srlinux:
+        enabled: false
+      lemming:
+        enabled: false
   worker:
     replicas: 1
     autoscaling:

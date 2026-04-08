@@ -10,6 +10,7 @@ data:
   SKYFORGE_GITEA_API_URL: {{ .Values.skyforge.gitea.apiUrl | quote }}
   SKYFORGE_GITEA_URL: {{ .Values.skyforge.gitea.url | quote }}
   SKYFORGE_GITEA_USERNAME: {{ .Values.skyforge.gitea.username | quote }}
+  SKYFORGE_AUTH_MODE: {{ default "local" .Values.skyforge.auth.mode | quote }}
   SKYFORGE_SSO_SKIP_TLS_VERIFY: {{ .Values.skyforge.ssoSkipTlsVerify | quote }}
   SKYFORGE_GITEA_REPO_PRIVATE: {{ .Values.skyforge.gitea.repoPrivate | quote }}
   SKYFORGE_REGISTRY_URL: {{ .Values.skyforge.registry.url | quote }}
@@ -66,6 +67,11 @@ data:
   SKYFORGE_UI_HEADER_BG_URL: {{ .Values.skyforge.ui.headerBgUrl | quote }}
   SKYFORGE_UI_SUPPORT_TEXT: {{ .Values.skyforge.ui.supportText | quote }}
   SKYFORGE_UI_SUPPORT_URL: {{ .Values.skyforge.ui.supportUrl | quote }}
+{{- if eq (default "local" .Values.skyforge.auth.mode) "oidc" }}
+  SKYFORGE_UI_OIDC_LOGIN_URL: "/api/auth/oidc/login"
+{{- else }}
+  SKYFORGE_UI_OIDC_LOGIN_URL: ""
+{{- end }}
   YAADE_BASE_PATH: "/api-testing"
   YAADE_ADMIN_USERNAME: "admin"
   SKYFORGE_OPENAPI_URL: {{ default (printf "https://%s/swagger/openapi.json" .Values.skyforge.hostname) .Values.skyforge.openApiUrl | quote }}

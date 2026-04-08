@@ -111,6 +111,12 @@ data:
       fi
     }
 
+    is_control_node() {
+      node="$1"
+      pool="$(kubectl get node "$node" -o jsonpath="{.metadata.labels['skyforge-role']}" 2>/dev/null || true)"
+      [ "$pool" = "control" ]
+    }
+
     MASTER_NODES="{{ join " " $masterNodes }}"
     MONITORING_NODES="{{ join " " $monitoringNodes }}"
     COMPUTE_NODES="{{ join " " $computeNodes }}"
@@ -123,6 +129,10 @@ data:
       reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-monitoring" ${MONITORING_NODES}
       reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-compute-worker" ${COMPUTE_NODES}
       reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-search-worker" ${SEARCH_NODES}
+      if is_control_node "$node"; then
+        kubectl label node "$node" "node-role.kubernetes.io/fwd-compute-worker-" >/dev/null 2>&1 || true
+        kubectl label node "$node" "node-role.kubernetes.io/fwd-search-worker-" >/dev/null 2>&1 || true
+      fi
       reconcile_label "$node" "{{ $roleLabel }}" "{{ $roleValue }}" ${FORWARD_NODES}
       if contains_node "$node" ${MASTER_NODES} ${MONITORING_NODES} ${COMPUTE_NODES} ${SEARCH_NODES}; then
         kubectl label node "$node" "{{ $scratchGroupLabel }}={{ $scratchGroupValue }}" --overwrite >/dev/null

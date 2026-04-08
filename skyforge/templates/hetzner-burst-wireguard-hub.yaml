@@ -67,6 +67,9 @@ data:
       fi
       wg syncconf "${WG_IFACE}" "${RUNTIME_CONF}"
       ip link set dev "${WG_IFACE}" mtu "${WG_MTU}" up
+      # Allow new forwarded flows both into and out of the burst tunnel.
+      iptables -C FORWARD -i "${WG_IFACE}" -j ACCEPT >/dev/null 2>&1 || iptables -I FORWARD -i "${WG_IFACE}" -j ACCEPT
+      iptables -C FORWARD -o "${WG_IFACE}" -j ACCEPT >/dev/null 2>&1 || iptables -I FORWARD -o "${WG_IFACE}" -j ACCEPT
       for cidr in ${WG_ROUTES}; do
         ip route replace "${cidr}" dev "${WG_IFACE}" proto static
       done

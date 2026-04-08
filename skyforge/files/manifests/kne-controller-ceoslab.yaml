@@ -421,7 +421,10 @@ data:
       port: 9443
     leaderElection:
       leaderElect: true
+      leaseDuration: 60s
       resourceName: a8645112.arista.com
+      renewDeadline: 40s
+      retryPeriod: 15s
 kind: ConfigMap
 metadata:
   name: arista-ceoslab-operator-manager-config
@@ -477,10 +480,10 @@ spec:
         resources:
           limits:
             cpu: 500m
-            memory: 128Mi
+            memory: 256Mi
           requests:
-            cpu: 5m
-            memory: 64Mi
+            cpu: 50m
+            memory: 128Mi
       - args:
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1:8080
@@ -503,11 +506,11 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: 500m
-            memory: 128Mi
+            cpu: "1"
+            memory: 512Mi
           requests:
-            cpu: 10m
-            memory: 64Mi
+            cpu: 250m
+            memory: 256Mi
         securityContext:
           allowPrivilegeEscalation: false
       securityContext:

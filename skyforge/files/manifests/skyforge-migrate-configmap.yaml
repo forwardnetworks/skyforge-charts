@@ -329,7 +329,7 @@ data:
         last_status text,
         last_started_at timestamp with time zone,
         last_finished_at timestamp with time zone,
-        CONSTRAINT sf_deployments_type_check CHECK ((type = ANY (ARRAY['terraform'::text, 'netlab'::text, 'netlab-c9s'::text, 'eve_ng'::text, 'containerlab'::text, 'clabernetes'::text])))
+        CONSTRAINT sf_deployments_type_check CHECK ((type = ANY (ARRAY['terraform'::text, 'netlab'::text, 'netlab-kne'::text, 'eve_ng'::text, 'kne'::text, 'kne'::text])))
     );
     
     
@@ -942,10 +942,10 @@ data:
     
     
     --
-    -- Name: sf_user_containerlab_servers; Type: TABLE; Schema: public; Owner: -
+    -- Name: sf_user_kne_servers; Type: TABLE; Schema: public; Owner: -
     --
     
-    CREATE TABLE public.sf_user_containerlab_servers (
+    CREATE TABLE public.sf_user_kne_servers (
         id uuid NOT NULL,
         username text NOT NULL,
         name text NOT NULL,
@@ -1305,12 +1305,12 @@ data:
         updated_at timestamp with time zone DEFAULT now() NOT NULL,
         is_public boolean DEFAULT false NOT NULL,
         eve_ng_run_template_id integer,
-        containerlab_run_template_id integer,
+        kne_run_template_id integer,
         allow_external_template_repos boolean DEFAULT false NOT NULL,
         allow_custom_eve_servers boolean DEFAULT false NOT NULL,
         allow_custom_netlab_servers boolean DEFAULT false NOT NULL,
         external_template_repos jsonb DEFAULT '[]'::jsonb NOT NULL,
-        allow_custom_containerlab_servers boolean DEFAULT false NOT NULL
+        allow_custom_kne_servers boolean DEFAULT false NOT NULL
     );
     
     
@@ -1806,19 +1806,19 @@ data:
     
     
     --
-    -- Name: sf_user_containerlab_servers sf_user_containerlab_servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+    -- Name: sf_user_kne_servers sf_user_kne_servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
     --
     
-    ALTER TABLE ONLY public.sf_user_containerlab_servers
-        ADD CONSTRAINT sf_user_containerlab_servers_pkey PRIMARY KEY (id);
+    ALTER TABLE ONLY public.sf_user_kne_servers
+        ADD CONSTRAINT sf_user_kne_servers_pkey PRIMARY KEY (id);
     
     
     --
-    -- Name: sf_user_containerlab_servers sf_user_containerlab_servers_username_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+    -- Name: sf_user_kne_servers sf_user_kne_servers_username_name_key; Type: CONSTRAINT; Schema: public; Owner: -
     --
     
-    ALTER TABLE ONLY public.sf_user_containerlab_servers
-        ADD CONSTRAINT sf_user_containerlab_servers_username_name_key UNIQUE (username, name);
+    ALTER TABLE ONLY public.sf_user_kne_servers
+        ADD CONSTRAINT sf_user_kne_servers_username_name_key UNIQUE (username, name);
     
     
     --
@@ -2312,10 +2312,10 @@ data:
     
     
     --
-    -- Name: sf_user_containerlab_servers_username_idx; Type: INDEX; Schema: public; Owner: -
+    -- Name: sf_user_kne_servers_username_idx; Type: INDEX; Schema: public; Owner: -
     --
     
-    CREATE INDEX sf_user_containerlab_servers_username_idx ON public.sf_user_containerlab_servers USING btree (username);
+    CREATE INDEX sf_user_kne_servers_username_idx ON public.sf_user_kne_servers USING btree (username);
     
     
     --
@@ -2842,11 +2842,11 @@ data:
     
     
     --
-    -- Name: sf_user_containerlab_servers sf_user_containerlab_servers_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+    -- Name: sf_user_kne_servers sf_user_kne_servers_username_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
     --
     
-    ALTER TABLE ONLY public.sf_user_containerlab_servers
-        ADD CONSTRAINT sf_user_containerlab_servers_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+    ALTER TABLE ONLY public.sf_user_kne_servers
+        ADD CONSTRAINT sf_user_kne_servers_username_fkey FOREIGN KEY (username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
     
     
     --
@@ -3025,7 +3025,7 @@ data:
         mgmt_ip text,
         ping_ip text,
         node_status text,
-        source text NOT NULL DEFAULT 'netlab_c9s_graph_snapshot',
+        source text NOT NULL DEFAULT 'netlab_kne_graph_snapshot',
         task_id bigint,
         updated_at timestamp with time zone NOT NULL DEFAULT now(),
         PRIMARY KEY (deployment_id, node_name)
@@ -3117,7 +3117,7 @@ data:
 
   20260227235500_deployment_type_model_hard_cut.up.sql: |
     -- Hard-cut deployment type model to canonical values:
-    --   terraform | c9s | byos
+    --   terraform | kne | byos
     --
     -- Legacy deployment rows are removed instead of migrated.
     -- Related queued/history task rows and UI event rows are removed for those deployments.
@@ -3126,18 +3126,18 @@ data:
     WHERE deployment_id IN (
       SELECT id
       FROM sf_deployments
-      WHERE type IN ('netlab', 'netlab-c9s', 'eve_ng', 'containerlab', 'clabernetes')
+      WHERE type IN ('netlab', 'netlab-kne', 'eve_ng', 'kne', 'kne')
     );
     
     DELETE FROM sf_deployment_ui_events
     WHERE deployment_id IN (
       SELECT id::text
       FROM sf_deployments
-      WHERE type IN ('netlab', 'netlab-c9s', 'eve_ng', 'containerlab', 'clabernetes')
+      WHERE type IN ('netlab', 'netlab-kne', 'eve_ng', 'kne', 'kne')
     );
     
     DELETE FROM sf_deployments
-    WHERE type IN ('netlab', 'netlab-c9s', 'eve_ng', 'containerlab', 'clabernetes');
+    WHERE type IN ('netlab', 'netlab-kne', 'eve_ng', 'kne', 'kne');
     
     ALTER TABLE sf_deployments
       DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
@@ -3145,7 +3145,7 @@ data:
     ALTER TABLE sf_deployments
       ADD CONSTRAINT sf_deployments_type_check
       CHECK (
-        type = ANY (ARRAY['terraform'::text, 'c9s'::text, 'byos'::text])
+        type = ANY (ARRAY['terraform'::text, 'kne'::text, 'byos'::text])
       );
 
   20260228000500_deployment_engine_contract_hard_cut.up.sql: |
@@ -3165,7 +3165,7 @@ data:
           d.type,
           CASE d.type
             WHEN 'terraform' THEN 'terraform'
-            WHEN 'c9s' THEN COALESCE(
+            WHEN 'kne' THEN COALESCE(
               NULLIF(lower(replace(trim(d.config->>'engine'), '-', '_')), ''),
               NULLIF(lower(replace(trim(d.config->>'compiler'), '-', '_')), '')
             )
@@ -3177,7 +3177,7 @@ data:
             ELSE NULL
           END AS engine
         FROM sf_deployments d
-        WHERE d.type IN ('terraform', 'c9s', 'byos')
+        WHERE d.type IN ('terraform', 'kne', 'byos')
       )
       SELECT count(*) INTO unresolved_count
       FROM resolved r
@@ -3193,7 +3193,7 @@ data:
           d.type,
           CASE d.type
             WHEN 'terraform' THEN 'terraform'
-            WHEN 'c9s' THEN COALESCE(
+            WHEN 'kne' THEN COALESCE(
               NULLIF(lower(replace(trim(d.config->>'engine'), '-', '_')), ''),
               NULLIF(lower(replace(trim(d.config->>'compiler'), '-', '_')), '')
             )
@@ -3205,14 +3205,14 @@ data:
             ELSE NULL
           END AS engine
         FROM sf_deployments d
-        WHERE d.type IN ('terraform', 'c9s', 'byos')
+        WHERE d.type IN ('terraform', 'kne', 'byos')
       )
       SELECT count(*) INTO invalid_pair_count
       FROM resolved r
       WHERE NOT (
         (r.type = 'terraform' AND r.engine = 'terraform') OR
-        (r.type = 'c9s' AND r.engine IN ('netlab', 'containerlab')) OR
-        (r.type = 'byos' AND r.engine IN ('netlab', 'containerlab', 'eve_ng'))
+        (r.type = 'kne' AND r.engine IN ('netlab', 'kne')) OR
+        (r.type = 'byos' AND r.engine IN ('netlab', 'kne', 'eve_ng'))
       );
     
       IF invalid_pair_count > 0 THEN
@@ -3226,7 +3226,7 @@ data:
           'engine',
           CASE d.type
             WHEN 'terraform' THEN 'terraform'
-            WHEN 'c9s' THEN COALESCE(
+            WHEN 'kne' THEN COALESCE(
               NULLIF(lower(replace(trim(d.config->>'engine'), '-', '_')), ''),
               NULLIF(lower(replace(trim(d.config->>'compiler'), '-', '_')), '')
             )
@@ -3238,7 +3238,7 @@ data:
           END
         )
       )
-      WHERE d.type IN ('terraform', 'c9s', 'byos');
+      WHERE d.type IN ('terraform', 'kne', 'byos');
     END $$;
     
     ALTER TABLE sf_deployments
@@ -3248,8 +3248,8 @@ data:
       ADD CONSTRAINT sf_deployments_family_engine_pair_check
       CHECK (
         (type = 'terraform' AND config->>'engine' = 'terraform') OR
-        (type = 'c9s' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'containerlab'::text])) OR
-        (type = 'byos' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'containerlab'::text, 'eve_ng'::text]))
+        (type = 'kne' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'kne'::text])) OR
+        (type = 'byos' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'kne'::text, 'eve_ng'::text]))
       );
     
     ALTER TABLE sf_deployments
@@ -3409,7 +3409,7 @@ data:
           ON d.id = t.deployment_id
         WHERE t.deployment_id IS NOT NULL
           AND COALESCE(NULLIF(t.metadata->>'topologyKey', ''), '') <> ''
-          AND t.task_type = ANY (ARRAY['netlab-c9s-run', 'clabernetes-run', 'containerlab-run', 'netlab-run', 'eve-ng-run'])
+          AND t.task_type = ANY (ARRAY['netlab-kne-run', 'kne-run', 'kne-run', 'netlab-run', 'eve-ng-run'])
         ORDER BY d.user_id, t.deployment_id, COALESCE(t.finished_at, t.started_at, t.created_at, now()) DESC, t.id DESC
     )
     INSERT INTO public.sf_deployment_topology_current (
@@ -3430,9 +3430,9 @@ data:
         l.task_id,
         l.artifact_key,
         CASE
-            WHEN l.task_type = 'netlab-c9s-run' THEN 'netlab-c9s'
-            WHEN l.task_type = 'clabernetes-run' THEN 'clabernetes'
-            WHEN l.task_type = 'containerlab-run' THEN 'containerlab'
+            WHEN l.task_type = 'netlab-kne-run' THEN 'netlab-kne'
+            WHEN l.task_type = 'kne-run' THEN 'kne'
+            WHEN l.task_type = 'kne-run' THEN 'kne'
             WHEN l.task_type = 'netlab-run' THEN 'netlab'
             WHEN l.task_type = 'eve-ng-run' THEN 'eve-ng'
             ELSE 'task'
@@ -3496,7 +3496,7 @@ data:
         now(),
         now()
     FROM public.sf_deployments d
-    WHERE d.type = ANY (ARRAY['terraform', 'c9s', 'byos'])
+    WHERE d.type = ANY (ARRAY['terraform', 'kne', 'byos'])
     ON CONFLICT (deployment_id) DO UPDATE
     SET user_id = EXCLUDED.user_id,
         enabled = EXCLUDED.enabled,
@@ -3552,7 +3552,7 @@ data:
         now(),
         now()
     FROM public.sf_deployments d
-    WHERE d.type = ANY (ARRAY['terraform', 'c9s', 'byos'])
+    WHERE d.type = ANY (ARRAY['terraform', 'kne', 'byos'])
     ON CONFLICT (deployment_id) DO UPDATE
     SET user_id = EXCLUDED.user_id,
         enabled = EXCLUDED.enabled,
@@ -3582,7 +3582,7 @@ data:
         - 'leaseExpiresAt'
         - 'leaseStoppedAt'
         - 'leaseStopTaskId'
-    WHERE type = ANY (ARRAY['terraform', 'c9s', 'byos']);
+    WHERE type = ANY (ARRAY['terraform', 'kne', 'byos']);
 
   20260228193000_netlab_artifact_index.up.sql: |
     -- Hard-cut netlab artifact index out of task JSON metadata into a typed table
@@ -3655,7 +3655,7 @@ data:
         FROM public.sf_tasks t
         JOIN public.sf_deployments d
           ON d.id = t.deployment_id
-        WHERE t.task_type = 'netlab-c9s-run'
+        WHERE t.task_type = 'netlab-kne-run'
           AND t.deployment_id IS NOT NULL
           AND jsonb_typeof(t.metadata->'netlabArtifacts') = 'object'
     ),
@@ -3746,10 +3746,10 @@ data:
         user_id text NOT NULL,
         deployment_id text,
     
-        clabernetes_deploy_policy jsonb,
-        clabernetes_compatibility_preflight jsonb,
-        clabernetes_capacity_preflight jsonb,
-        clabernetes_apply_summary jsonb,
+        kne_deploy_policy jsonb,
+        kne_compatibility_preflight jsonb,
+        kne_capacity_preflight jsonb,
+        kne_apply_summary jsonb,
     
         netlab_catalog_provenance jsonb,
         netlab_contract jsonb,
@@ -4283,7 +4283,7 @@ data:
     --   engine(config.engine):
     --     terraform -> terraform
     --     kne       -> netlab
-    --     byos      -> netlab | containerlab
+    --     byos      -> netlab | kne
     
     ALTER TABLE sf_deployments
       DROP CONSTRAINT IF EXISTS sf_deployments_family_engine_pair_check;
@@ -4293,17 +4293,17 @@ data:
       CHECK (
         (type = 'terraform' AND config->>'engine' = 'terraform') OR
         (type = 'kne' AND config->>'engine' = 'netlab') OR
-        (type = 'byos' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'containerlab'::text]))
+        (type = 'byos' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'kne'::text]))
       );
 
   20260313211000_deployment_type_kne.up.sql: |
     -- Align stored deployment family type with hard-cut API/runtime naming:
-    --   c9s -> kne
+    --   kne -> kne
     --   valid families: terraform | kne | byos
     
     UPDATE sf_deployments
     SET type = 'kne'
-    WHERE type = 'c9s';
+    WHERE type = 'kne';
     
     ALTER TABLE sf_deployments
       DROP CONSTRAINT IF EXISTS sf_deployments_type_check;
