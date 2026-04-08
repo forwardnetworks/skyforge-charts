@@ -24,50 +24,51 @@ data:
     
 
   atlas.sum: |
-    h1:AgpG4dXxh6Z3zHD/beFyEaZKwrfzxYmZ4iqWkc4OQ1o=
-    20260222170000_user_scope_baseline.up.sql h1:k63+LKxGAVLRvTHh+0d5TmN1Tre5fO+ZvHiY/e2HoWo=
-    20260225113000_servicenow_zero_touch_setup.up.sql h1:+Wkjitt1Lm/LLdOq8sHwwjLkGVyr7Qd9Zr0L+w0weYU=
-    20260226183000_deployment_lease_key_hard_cut.up.sql h1:3u0I2OJuHR0rpN4Ddk1lilJOtnXRoYTHvgQlhFzaRKY=
-    20260227201000_netlab_status_current_and_forward_type_hard_cut.up.sql h1:w3BQZ1/eMfcNPeRT0YkYxNV1Yqe6/zqRDWMObCIe70c=
-    20260227224000_netlab_status_current_forward_type.up.sql h1:Cl6mBQk6Vdu3moixLzPkJN311jrcS/GzwnuWMY6Lp5Q=
-    20260227231000_netlab_status_current_contract_checks.up.sql h1:uLDnzVHVDmtDxZJ4cmzGnxR1iTwMyym43ZnspvH0aOg=
-    20260227235500_deployment_type_model_hard_cut.up.sql h1:OmPvWVVqiCI4+pZ7dqs0vqJvuC/TX5X2HQMqFdhmdps=
-    20260228000500_deployment_engine_contract_hard_cut.up.sql h1:dwk23nosKqjleu7RRkTq1RRlZTKMAm3a4oCFPOvt7KE=
-    20260228013000_deployment_runtime_state_hard_cut.up.sql h1:2EqelwSZz/YVEHIM7bVlxCQr3biNi1npXrZLlY16Ehk=
-    20260228193000_netlab_artifact_index.up.sql h1:kqjc+MIyFkKZElCrtbuay4+KiA54cp5K303J/UdfMaQ=
-    20260301080000_admin_smoke_runs.up.sql h1:pe1NFf1ODWmK4l+hrc0SAxbKrBEueg8No73N6ePoacw=
-    20260301113000_task_runtime_contracts.up.sql h1:Nc6ybK4rM5rMu0tiWISyjqrUBVrx8QyrvgHqoYN/83g=
-    20260301140000_servicenow_schema_hard_cut.up.sql h1:jUlJLRc3dXAmzW3lwBToyhWtJ9lxG3E8E99+Yxxp5DQ=
-    20260304194500_user_api_tokens.up.sql h1:jOxYw5xbM2Pil4Z3cYF7w2KHXOrccGlSryLGxZ0wslU=
-    20260305114000_user_rbac_roles.up.sql h1:ZmEEm+nyLAl6vcHgHIWp3CDN6oGeSFOYbu/W1baihCo=
-    20260306190000_user_api_permissions.up.sql h1:k8vKhoNzH0NaNv+bPy3jcJWQwxbDZG2ggbgZ7nvg7FY=
-    20260306213000_user_forward_tenants.up.sql h1:uSmhTMsA67x0oNoiqAIhNzb9CdDgDqF+x9mNjXvKtrY=
-    20260309190000_remove_ldap_password_cache.up.sql h1:vt5jDDI7MFY8xStieUoUoojm/tR+jpIwjS/J4c73OIs=
-    20260311103000_servicenow_global_tenant_model.up.sql h1:H0GJHnbbJqfqQvR36wEvCrxKW4oAF5nZ+Fv/KuL7yUU=
-    20260311170000_teams_bridge.up.sql h1:nf8b7fqIN8HhZaCKErL9nrfHBHC1aKtC3FPxzXZMNNw=
-    20260311193000_platform_governance_contracts.up.sql h1:nUU4JjKGD25YhIobyDeuv7aHk+rWDScGuc+/G1okzwo=
-    20260311194500_forward_tenant_reset_baseline.up.sql h1:90HOgUy0GQl2tAY5FuWs1FLJX+07KAssYdaV6Pfx9+U=
-    20260311200500_reservation_priority_and_override.up.sql h1:D7kIj088nx7RamkWlofQ9vjPMjVdR9P56VpZsmbRZn4=
-    20260311203000_reservation_lifecycle_events.up.sql h1:FFNbb0+vPbS85goG1/+AulW6M25CeVcRYSNYRnJusQQ=
-    20260311204500_deployment_usage_snapshots.up.sql h1:zIpmPJXSmz2iV7oOrCvv3VUE1YTwRTDdT04ctqbIGJU=
-    20260312063000_config_change_runs.up.sql h1:Bxwqyz+Q1Dgyr4KIpRnx+DMRyDv8by9fnel5klTtACo=
-    20260312101500_config_change_reviews.up.sql h1:mgKpG6YmRilwE0UPyv0jRR5KJJPwy8HWtzrhZSB4B4I=
-    20260312113000_config_change_execution_summaries.up.sql h1:aMAZd43kMC3Ja6xgj9ZsT2B4tISz1mrRVPI1v4VF7vM=
-    20260313103000_composite_plans.up.sql h1:ZQYWcRcCivQio+YQ5hVc649iuyJ5Bzzt38c9a3hd3cc=
-    20260313113000_task_runtime_contracts_terraform_outputs.up.sql h1:r/7n4m+jAC5Il277UoVzcu2f01AZEy/ivnsbYEyN8ho=
-    20260313131500_user_fixia_servers.up.sql h1:0gCAcMdxGSqcNX2PaPuXBC3BNCH8VwARUjioqM8X5XM=
-    20260313210000_deployment_family_engine_pair_kne.up.sql h1:Z5mOawAFDKQY9U2S4ADHDsaM4pgwDZTH5a+RJ+1DiMc=
-    20260313211000_deployment_type_kne.up.sql h1:vc2FY9ptGfhmVANCkLUjvfCDRBS0Ul/G1KjGebWtKOw=
-    20260319193000_user_settings_ui_experience_mode.up.sql h1:5moYTovphFf/MVZ+5DxaLp8McTjsEzTXwGkWa6oykHY=
-    20260324120000_forward_tenant_kind.up.sql h1:5bYymB9jUL3O8fXKk7X4tDxG1n9dc1g0wlOsfnfXNmU=
-    20260325181000_forward_network_insight_runs.up.sql h1:lN4semLldECkYmBPy6ds4/VpE+AfSywcqrGN2UwKxSA=
-    20260331170000_hetzner_burst_scaffold.up.sql h1:3WQlRoXk7FiEnkV8l5dTElP6XMN+xoM1uhhquYrWDNI=
-    20260403110000_audit_log_enterprise_fields.up.sql h1:ZeZUFp3bMq3nkuYn468dmChZ0qAY4fMp1sVR0utbf18=
-    20260403124500_audit_saved_views_and_retention.up.sql h1:plo0pViwnWCqrvQxGnJ81GHFGNPD09gIjysNpQFFFWc=
-    20260403125500_audit_log_legacy_details_backfill.up.sql h1:UyTVgzZbkBnwmCyOlnwRtSOXe/vOpvhqHZ+a+7HzZUI=
-    20260403143000_audit_export_signatures.up.sql h1:qFu5qRQlIOGsvbzOreBSrggRUoBRsEJFaU2icm6eXKA=
-    20260403150000_audit_log_hash_chain.up.sql h1:w7sHtOiZ8KyOZHL9onAmZS7BzJHlyq8B/eKE+kpxWxA=
-    20260403153000_audit_integrity_checkpoints.up.sql h1:yOf7C5S+nmhvzhUypVDrLzRGOZclhdTjYPeKthKnFIs=
+    h1:87DAYK4rJFd/eVqhtEYVEL1poy8zmt214wNGMvsahKE=
+    20260222170000_user_scope_baseline.up.sql h1:HfGY06u+cqowMWsvJbj9T0u/unus+5At31uUGJcGY88=
+    20260225113000_servicenow_zero_touch_setup.up.sql h1:3FAKn5+UMGrrSZoN7XWmYGsOVdS/uNw94GcvZwVmbvQ=
+    20260226183000_deployment_lease_key_hard_cut.up.sql h1:rDG5i289QUNJBFmi1cNM2pv7InZZwmp/Xmu1PhPJFrw=
+    20260227201000_netlab_status_current_and_forward_type_hard_cut.up.sql h1:UBgYuqupv4NzLZQwtRIa8dLa1xKc4w1zV1xvQsTZUaU=
+    20260227224000_netlab_status_current_forward_type.up.sql h1:AptA36oFhW1nzFo+wdO3zS9zzr5unh691VNYAb6qCJ8=
+    20260227231000_netlab_status_current_contract_checks.up.sql h1:aD6a0ZGiwz5U5UXzuIl99egp83ndhCrxYl0k4qZ0yro=
+    20260227235500_deployment_type_model_hard_cut.up.sql h1:qTTdtpgUmVfAm1NSl9QHrpS/skprwt+j3CxsrYcrio4=
+    20260228000500_deployment_engine_contract_hard_cut.up.sql h1:YqtYLQNXecuuUA6HHv3LR6TWvOCXR1EglW7Xd3OYtE0=
+    20260228013000_deployment_runtime_state_hard_cut.up.sql h1:ZATMIYPs1uy5xOULJtJARSBexXEeZov0AO3iSo+dqpU=
+    20260228193000_netlab_artifact_index.up.sql h1:9UODui+bdisvCQpGUQGwV8cFt8dUIEVFkBxvpnDmfsY=
+    20260301080000_admin_smoke_runs.up.sql h1:a8jGXEM5/txqyjWWlVq2qmdW0Sdz7ki6GWNXUJmeWZg=
+    20260301113000_task_runtime_contracts.up.sql h1:mPJaNYd+0b6AMWnUgG3bTnU2aERdKyhCEPQ1MJe5EpU=
+    20260301140000_servicenow_schema_hard_cut.up.sql h1:cjxK6N+0AunApVFLGQUi5BAx8zEuWyVSvrXGTDog83o=
+    20260304194500_user_api_tokens.up.sql h1:OdJ5BdYEa94ZvviIvzr7SMdsT65HjFpT8o1YrSdywx4=
+    20260305114000_user_rbac_roles.up.sql h1:v2S0/L+2YN59NXwrV4Xs4RCo9Uwh5zNFgGfPX21WKgo=
+    20260306190000_user_api_permissions.up.sql h1:yesZi8feVOMoGLjuPqMnHIU8kNVwu9Qa1wTTa7apRVI=
+    20260306213000_user_forward_tenants.up.sql h1:aLgeRjcLKbJjjT12wTte2O6tHyc3rF6P5M2zcVDB2nU=
+    20260309190000_remove_ldap_password_cache.up.sql h1:6/6Dbl82SEmTz2wqlh2eiyBM4+DTU0ZoTH4Z5cqcmEo=
+    20260311103000_servicenow_global_tenant_model.up.sql h1:uKI+VdzPeqg2BdSgF5KOSMYjU1/RTpvYYxRQ92QHoP8=
+    20260311170000_teams_bridge.up.sql h1:em8RO/WsmaDbPM5T2L7SFxtxnuMcuQ5Xr6f143+UyU8=
+    20260311193000_platform_governance_contracts.up.sql h1:A/WnkG1IKcc3vQAJ8dYPVOdQdU9brt8z40oy0xY+PEo=
+    20260311194500_forward_tenant_reset_baseline.up.sql h1:ksAMMhSwrL3qwjjrQUSfoiDr5w9hWfZM1JcSRP6qeQw=
+    20260311200500_reservation_priority_and_override.up.sql h1:qZX9W5I2UAh4kKrSzqBzXDtVLga67QTqmJXvJi1m47U=
+    20260311203000_reservation_lifecycle_events.up.sql h1:7pvrfUQNNBzmxbc5XJLVbB2MhSenRBltCjtZfcOve+c=
+    20260311204500_deployment_usage_snapshots.up.sql h1:wlonimFkh1uBE+/q++4s19+wRybxbjDkH0hhPcwlkJ4=
+    20260312063000_config_change_runs.up.sql h1:dqTFh6LKz9dTNbXWR8vr1li3Gt7vkRjPntmfpGbChZI=
+    20260312101500_config_change_reviews.up.sql h1:WBoMA8GcUaF+QpWDJfl6s2bvYtMneRUmCPrA5frNmJY=
+    20260312113000_config_change_execution_summaries.up.sql h1:Ug1TU3A0BAH7Qyr08/ZkAZaVX9gFqUQnoijjvy0tkmA=
+    20260313103000_composite_plans.up.sql h1:ITW3wnEX27AkXpLJ5WSlOBl79U30+Nw1fWnq99AtHuY=
+    20260313113000_task_runtime_contracts_terraform_outputs.up.sql h1:GGCeoRPcDcxAI6tnRHKrJdTY57NikL/6ukq1kNdEvtM=
+    20260313131500_user_fixia_servers.up.sql h1:JatpxLy2vQcTioMud8rAERJgkZ1u16ST9fSzNjr1Z5w=
+    20260313210000_deployment_family_engine_pair_kne.up.sql h1:iDKcuXXY22+d63nOxej72HO1RJdYnXsogwL+9TwyN9k=
+    20260313211000_deployment_type_kne.up.sql h1:NureGAUuQvP94kaiHzNwcHKrnJ47FNHctBmS73kyzag=
+    20260319193000_user_settings_ui_experience_mode.up.sql h1:LH/Vvg+nDCMnoPzha7VhfG6qOmcHpUP2Qiv4dWF7Fw0=
+    20260324120000_forward_tenant_kind.up.sql h1:WEtJUQsqtlJt4155OD/2ySUTdXOSJT4V0qfbf6J0yJQ=
+    20260325181000_forward_network_insight_runs.up.sql h1:RK/HKLHNxFmgc0HBHkMIZMTFi2AHTsygzt16MlUjqNo=
+    20260331170000_hetzner_burst_scaffold.up.sql h1:nPopPe2PGJaG4pkFreDYcRZ11STKSpo1hZb4SdWcuLo=
+    20260403110000_audit_log_enterprise_fields.up.sql h1:8dx6J/woSc4H+LxD4BEkK/lvY3HlIipmzwyZ4NXq8VI=
+    20260403124500_audit_saved_views_and_retention.up.sql h1:6toLljBHWcqOo9CNqwziFLag+21IycQarWEMi+vyw2U=
+    20260403125500_audit_log_legacy_details_backfill.up.sql h1:/5bHq/yLp0jQeBcIko7nXdr1h/NAR7nCBoI/KzyYrQ8=
+    20260403143000_audit_export_signatures.up.sql h1:+gOWy2jjFXMViDAjHyp9nfbzLe64xSYLAOhqfJkR4og=
+    20260403150000_audit_log_hash_chain.up.sql h1:gFiKcLLCLDH6fWQTYCHPRLLhF+EWISQLCfAvRhhKV9c=
+    20260403153000_audit_integrity_checkpoints.up.sql h1:cUDBHXhrp98ArhDGe0AOt9jCTQFQNoz/f7lnHLXzuHI=
+    20260408103000_forward_tenant_customer_kind.up.sql h1:h9NXZShhiZwOcyG4lFKjX5FAZc4bRLpOQWKdcnzBQZA=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -4597,3 +4598,118 @@ data:
         total_checked integer NOT NULL DEFAULT 0,
         updated_at timestamp with time zone NOT NULL DEFAULT now()
     );
+
+  20260408103000_forward_tenant_customer_kind.up.sql: |
+    ALTER TABLE public.sf_user_forward_tenants
+        DROP CONSTRAINT IF EXISTS sf_user_forward_tenants_tenant_kind_check;
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        ADD CONSTRAINT sf_user_forward_tenants_tenant_kind_check
+        CHECK (tenant_kind = ANY (ARRAY['primary'::text, 'demo'::text, 'customer'::text]));
+    
+    ALTER TABLE public.sf_forward_tenant_reset_runs
+        DROP CONSTRAINT IF EXISTS sf_forward_tenant_reset_runs_tenant_kind_check;
+    
+    ALTER TABLE public.sf_forward_tenant_reset_runs
+        ADD CONSTRAINT sf_forward_tenant_reset_runs_tenant_kind_check
+        CHECK (tenant_kind = ANY (ARRAY['primary'::text, 'demo'::text, 'customer'::text]));
+
+  20260408143000_deployment_source_shares.up.sql: |
+    ALTER TABLE public.sf_deployment_forward_state
+        ADD COLUMN IF NOT EXISTS topology_source_user_id text;
+    
+    ALTER TABLE public.sf_deployment_forward_state
+        ADD COLUMN IF NOT EXISTS topology_source_deployment_id uuid;
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_forward_state_topology_source_user_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_forward_state
+                ADD CONSTRAINT sf_deployment_forward_state_topology_source_user_fkey
+                FOREIGN KEY (topology_source_user_id) REFERENCES public.sf_user_scopes(id) ON DELETE SET NULL;
+        END IF;
+    EXCEPTION
+        WHEN undefined_column THEN
+            NULL;
+    END
+    $$;
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_forward_state_topology_source_deployment_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_forward_state
+                ADD CONSTRAINT sf_deployment_forward_state_topology_source_deployment_fkey
+                FOREIGN KEY (topology_source_deployment_id) REFERENCES public.sf_deployments(id) ON DELETE SET NULL;
+        END IF;
+    EXCEPTION
+        WHEN undefined_column THEN
+            NULL;
+    END
+    $$;
+    
+    CREATE TABLE IF NOT EXISTS public.sf_deployment_source_shares (
+        source_user_id text NOT NULL,
+        source_deployment_id uuid NOT NULL,
+        grantee_username text NOT NULL,
+        access text NOT NULL DEFAULT 'read',
+        created_by text,
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL DEFAULT now(),
+        PRIMARY KEY (source_user_id, source_deployment_id, grantee_username),
+        CONSTRAINT sf_deployment_source_shares_access_check CHECK (access = ANY (ARRAY['read', 'write']))
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_deployment_source_shares_grantee_idx
+        ON public.sf_deployment_source_shares (grantee_username, updated_at DESC);
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_source_shares_user_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_source_shares
+                ADD CONSTRAINT sf_deployment_source_shares_user_fkey
+                FOREIGN KEY (source_user_id) REFERENCES public.sf_user_scopes(id) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_source_shares_deployment_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_source_shares
+                ADD CONSTRAINT sf_deployment_source_shares_deployment_fkey
+                FOREIGN KEY (source_deployment_id) REFERENCES public.sf_deployments(id) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_source_shares_grantee_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_source_shares
+                ADD CONSTRAINT sf_deployment_source_shares_grantee_fkey
+                FOREIGN KEY (grantee_username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_deployment_source_shares_created_by_fkey'
+        ) THEN
+            ALTER TABLE public.sf_deployment_source_shares
+                ADD CONSTRAINT sf_deployment_source_shares_created_by_fkey
+                FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON DELETE SET NULL;
+        END IF;
+    END
+    $$;
