@@ -334,7 +334,7 @@ skyforge:
       schedule: "17 3 * * *"
       timeZone: "America/Chicago"
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-02
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.4-02
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -387,6 +387,16 @@ skyforge:
           - "skyforge-worker-3"
           - "skyforge-worker-4"
           - "skyforge-worker-5"
+      nodePools:
+        control:
+          - "skyforge"
+        app:
+          - "skyforge-worker-1"
+          - "skyforge-worker-2"
+          - "skyforge-worker-3"
+          - "skyforge-worker-4"
+          - "skyforge-worker-5"
+        lab: []
   observability:
     enabled: true
     managed:

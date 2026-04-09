@@ -14,12 +14,17 @@
 {{- $roleValue := default "forward" $reconciler.roleValue -}}
 {{- $scratchGroupLabel := default "forwardnetworks.com/scratch-group" $reconciler.scratchGroupLabel -}}
 {{- $scratchGroupValue := default "forward-scratch" $reconciler.scratchGroupValue -}}
+{{- $poolLabelKey := default "skyforge.forwardnetworks.com/pool-class" $reconciler.poolLabelKey -}}
 {{- $roles := default dict $reconciler.nodeRoles -}}
 {{- $masterNodes := default (list) $roles.master -}}
 {{- $monitoringNodes := default (list) $roles.monitoring -}}
 {{- $computeNodes := default (list) $roles.compute -}}
 {{- $searchNodes := default (list) $roles.search -}}
 {{- $forwardNodes := default (list) $roles.forward -}}
+{{- $nodePools := default dict $reconciler.nodePools -}}
+{{- $controlPoolNodes := default (list) $nodePools.control -}}
+{{- $appPoolNodes := default (list) $nodePools.app -}}
+{{- $labPoolNodes := default (list) $nodePools.lab -}}
 {{- $configuredManagedNodes := default (list) $reconciler.managedNodes -}}
 {{- if eq (len $masterNodes) 0 -}}
 {{- fail "skyforge.forwardCluster.nodeRoleReconciler.enabled=true requires at least one master node in skyforge.forwardCluster.nodeRoleReconciler.nodeRoles.master" -}}
@@ -111,6 +116,20 @@ data:
       fi
     }
 
+    reconcile_pool_label() {
+      node="$1"
+      key="$2"
+      if contains_node "$node" ${CONTROL_POOL_NODES}; then
+        kubectl label node "$node" "${key}=control" --overwrite >/dev/null
+      elif contains_node "$node" ${APP_POOL_NODES}; then
+        kubectl label node "$node" "${key}=app" --overwrite >/dev/null
+      elif contains_node "$node" ${LAB_POOL_NODES}; then
+        kubectl label node "$node" "${key}=lab" --overwrite >/dev/null
+      else
+        kubectl label node "$node" "${key}-" >/dev/null 2>&1 || true
+      fi
+    }
+
     is_control_node() {
       node="$1"
       pool="$(kubectl get node "$node" -o jsonpath="{.metadata.labels['skyforge-role']}" 2>/dev/null || true)"
@@ -123,6 +142,9 @@ data:
     SEARCH_NODES="{{ join " " $searchNodes }}"
     FORWARD_NODES="{{ join " " $forwardNodes }}"
     MANAGED_NODES="{{ join " " $managedNodes }}"
+    CONTROL_POOL_NODES="{{ join " " $controlPoolNodes }}"
+    APP_POOL_NODES="{{ join " " $appPoolNodes }}"
+    LAB_POOL_NODES="{{ join " " $labPoolNodes }}"
 
     for node in ${MANAGED_NODES}; do
       reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-master" ${MASTER_NODES}
@@ -139,6 +161,7 @@ data:
       else
         kubectl label node "$node" "{{ $scratchGroupLabel }}-" >/dev/null 2>&1 || true
       fi
+      reconcile_pool_label "$node" "{{ $poolLabelKey }}"
     done
 ---
 apiVersion: batch/v1

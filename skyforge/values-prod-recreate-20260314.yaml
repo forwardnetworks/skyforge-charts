@@ -62,7 +62,7 @@ skyforge:
   forward:
     enabled: true
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.3-02
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.4-02
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
