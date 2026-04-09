@@ -954,6 +954,11 @@ skyforge:
           periodSeconds: 60
           failureThreshold: 10
           timeoutSeconds: 3
+    upstreamWorkerRuntime:
+      compute:
+        memoryLimitMB: 0
+      search:
+        memoryLimitMB: 0
     nodeRoleReconciler:
       enabled: false
       # Reconcile the Forward scheduling labels onto the intended nodes. This
