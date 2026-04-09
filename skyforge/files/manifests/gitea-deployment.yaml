@@ -242,6 +242,9 @@ spec:
       - name: skyforge-ca-cert
         secret:
           secretName: skyforge-ca-cert
+      - name: proxy-tls
+        secret:
+          secretName: proxy-tls
       - name: skyforge-ca-bundle
         emptyDir: {}
       initContainers:
@@ -250,10 +253,20 @@ spec:
         command:
         - sh
         - -c
-        - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert > /work/ca-certificates.crt
+        - |
+          # Trust both the explicit Skyforge CA secret and the current ingress
+          # serving certificate chain. This keeps Dex/Gitea OIDC callback
+          # exchange working across certificate rotations even if the CA secret
+          # lags the active ingress leaf.
+          cat /etc/ssl/certs/ca-certificates.crt \
+            /etc/skyforge/skyforge-ca-cert \
+            /etc/proxy/tls.crt > /work/ca-certificates.crt
         volumeMounts:
         - name: skyforge-ca-cert
           mountPath: /etc/skyforge
+          readOnly: true
+        - name: proxy-tls
+          mountPath: /etc/proxy
           readOnly: true
         - name: skyforge-ca-bundle
           mountPath: /work

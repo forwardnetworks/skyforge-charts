@@ -16,6 +16,25 @@ spec:
     spec:
       automountServiceAccountToken: false
       enableServiceLinks: false
+      initContainers:
+      - name: skyforge-ca-bundle
+        image: public.ecr.aws/docker/library/alpine:latest
+        command:
+        - sh
+        - -c
+        - |
+          cat /etc/ssl/certs/ca-certificates.crt \
+            /etc/skyforge/skyforge-ca-cert \
+            /etc/proxy/tls.crt > /work/ca-certificates.crt
+        volumeMounts:
+        - name: skyforge-ca-cert
+          mountPath: /etc/skyforge
+          readOnly: true
+        - name: proxy-tls
+          mountPath: /etc/proxy
+          readOnly: true
+        - name: skyforge-ca-bundle
+          mountPath: /work
       affinity:
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -165,6 +184,8 @@ spec:
           value: "gitea"
         - name: SKYFORGE_GITEA_OIDC_SOURCE_NAME
           value: {{ default "oidc" .Values.skyforge.gitea.oidc.sourceName | quote }}
+        - name: SSL_CERT_FILE
+          value: /etc/skyforge/ca/ca-certificates.crt
         image: ghcr.io/go-gitea/gitea:1.24.6-rootless
         name: gitea-admin-sync
         securityContext:
@@ -176,6 +197,9 @@ spec:
           readOnly: true
         - mountPath: /var/lib/gitea
           name: gitea-data
+        - mountPath: /etc/skyforge/ca
+          name: skyforge-ca-bundle
+          readOnly: true
       restartPolicy: Always
       volumes:
       - name: run-secrets
@@ -204,6 +228,11 @@ spec:
       - name: skyforge-ca-cert
         secret:
           secretName: skyforge-ca-cert
+      - name: proxy-tls
+        secret:
+          secretName: proxy-tls
+      - name: skyforge-ca-bundle
+        emptyDir: {}
       - name: gitea-data
         persistentVolumeClaim:
           claimName: gitea-data
