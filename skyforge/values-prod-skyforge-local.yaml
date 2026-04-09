@@ -418,7 +418,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260408-kne-linux-nsfix-r25"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260409-kne-topology-namespace-r2"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: true
@@ -488,7 +488,7 @@ skyforge:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260409-workerheapcaps-r2"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260409-kne-delete-cleanup-r1"
   # Worker can run from the same image tag as the API container.
   skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260409-workerheapcaps-r2-worker"
   atlas: "ghcr.io/forwardnetworks/atlas:1.1.6-alpine"

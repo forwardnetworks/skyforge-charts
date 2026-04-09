@@ -758,7 +758,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260408-kne-linux-nsfix-r25"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260409-kne-topology-namespace-r2"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: false
@@ -1275,7 +1275,7 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260408-kne-nos-native-r14"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260409-kne-delete-cleanup-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
   skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260408-kne-nos-native-r14-worker"
