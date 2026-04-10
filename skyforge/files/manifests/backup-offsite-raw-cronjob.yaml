@@ -1,0 +1,69 @@
+{{- if and .Values.skyforge.s3gw.enabled (default false .Values.skyforge.backups.offsiteRaw.enabled) }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  labels:
+    app.kubernetes.io/name: backup-offsite-raw
+  name: backup-offsite-raw
+spec:
+  schedule: {{ default "23 * * * *" .Values.skyforge.backups.offsiteRaw.schedule | quote }}
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      ttlSecondsAfterFinished: 3600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: backup-offsite-raw
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+{{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.backups.offsiteRaw.placement) }}
+          affinity:
+{{ . | nindent 12 }}
+{{- end }}
+{{- with include "skyforge.workloadPlacementSpec" (list .Values.skyforge.backups.offsiteRaw.placement) }}
+{{ . | nindent 10 }}
+{{- end }}
+          containers:
+            - name: backup-offsite-raw
+              image: {{ default "alpine:3.20" .Values.skyforge.backups.offsiteRaw.image | quote }}
+              command:
+                - /bin/sh
+                - -lc
+              args:
+                - |
+                  set -euo pipefail
+                  apk add --no-cache rsync >/dev/null
+                  src="/source"
+                  dst="/dest/${POD_NODE_NAME}"
+                  mkdir -p "${src}" "${dst}"
+                  echo "offsite-raw: syncing ${src} -> ${dst}"
+                  rsync -a --delete "${src}/" "${dst}/"
+                  src_count="$(find "${src}" -type f | wc -l | tr -d ' ')"
+                  dst_count="$(find "${dst}" -type f | wc -l | tr -d ' ')"
+                  echo "offsite-raw: complete src_files=${src_count} dst_files=${dst_count}"
+              env:
+                - name: POD_NODE_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: spec.nodeName
+              volumeMounts:
+                - name: source
+                  mountPath: /source
+                - name: dest
+                  mountPath: /dest
+              resources:
+{{ toYaml (default (dict "requests" (dict "cpu" "20m" "memory" "64Mi") "limits" (dict "memory" "256Mi")) .Values.skyforge.backups.offsiteRaw.resources) | nindent 16 }}
+          volumes:
+            - name: source
+              hostPath:
+                path: {{ default "/var/lib/skyforge/local-backups" .Values.skyforge.backups.offsiteRaw.sourceHostPath | quote }}
+                type: DirectoryOrCreate
+            - name: dest
+              hostPath:
+                path: {{ default "/mnt/hetzner-wireguard/skyforge-backups" .Values.skyforge.backups.offsiteRaw.destinationHostPath | quote }}
+                type: DirectoryOrCreate
+{{- end }}

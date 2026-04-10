@@ -66,6 +66,14 @@ early when required configuration is missing.
 {{- if and (eq $edition "oss") $forwardClusterEnabled -}}
   {{- fail "skyforge.edition=oss does not support skyforge.forwardCluster.enabled=true" -}}
 {{- end -}}
+{{- if $forwardClusterEnabled -}}
+  {{- if not (trim (default "" .Values.skyforge.forwardCluster.hostname)) -}}
+    {{- fail "skyforge.forwardCluster.enabled=true requires skyforge.forwardCluster.hostname to be set explicitly and distinct from skyforge.hostname" -}}
+  {{- end -}}
+  {{- if eq $forwardHost $host -}}
+    {{- fail "skyforge.forwardCluster.hostname must be distinct from skyforge.hostname to avoid HTTPRoute hostname collisions" -}}
+  {{- end -}}
+{{- end -}}
 {{- if and (ne $forwardWorkerOwner "upstream") (ne $forwardWorkerOwner "skyforge") -}}
   {{- fail (printf "skyforge.forwardCluster.workers.owner must be one of upstream or skyforge (got %q)" $forwardWorkerOwner) -}}
 {{- end -}}
@@ -218,9 +226,7 @@ early when required configuration is missing.
   {{- $expectedRoleLabel := default "forwardnetworks.com/role" $forwardContract.expectedForwardRoleLabel -}}
   {{- $expectedRoleValue := default "forward" $forwardContract.expectedForwardRoleValue -}}
   {{- $expectedPoolClass := default "app" $forwardContract.expectedForwardPoolClass -}}
-  {{- $longhornNs := default "longhorn-system" $forwardContract.longhornNamespace -}}
-  {{- $expectedDataPath := trimSuffix "/" (default "/var/lib/longhorn" $forwardContract.expectedLonghornDataPath) -}}
-  {{- $minimumDiskBytes := int64 (default 1000000000000 $forwardContract.minimumLonghornDiskBytes) -}}
+  {{- $minimumForwardNodeCount := int (default 1 $forwardContract.minimumForwardNodeCount) -}}
   {{- $nodes := lookup "v1" "Node" "" "" -}}
   {{- if not $nodes -}}
     {{- fail "skyforge.forwardCluster.contractValidation.enabled=true requires Node list access" -}}
@@ -240,36 +246,8 @@ early when required configuration is missing.
       {{- end -}}
     {{- end -}}
   {{- end -}}
-  {{- if eq (len $forwardNodeNames) 0 -}}
-    {{- fail (printf "skyforge.forwardCluster.contractValidation.enabled=true found no nodes labeled %s=%s" $expectedRoleLabel $expectedRoleValue) -}}
-  {{- end -}}
-
-  {{- $longhornSetting := lookup "longhorn.io/v1beta2" "Setting" $longhornNs "default-data-path" -}}
-  {{- if not $longhornSetting -}}
-    {{- fail (printf "Forward contract violation: missing settings.longhorn.io/default-data-path in namespace %s" $longhornNs) -}}
-  {{- end -}}
-  {{- $actualDataPath := trimSuffix "/" (default "" $longhornSetting.value) -}}
-  {{- if ne $actualDataPath $expectedDataPath -}}
-    {{- fail (printf "Forward contract violation: Longhorn default-data-path is %q; expected %q" $actualDataPath $expectedDataPath) -}}
-  {{- end -}}
-
-  {{- range $nodeName := $forwardNodeNames -}}
-    {{- $longhornNode := lookup "longhorn.io/v1beta2" "Node" $longhornNs $nodeName -}}
-    {{- if not $longhornNode -}}
-      {{- fail (printf "Forward contract violation: missing Longhorn node object for %q in namespace %s" $nodeName $longhornNs) -}}
-    {{- end -}}
-    {{- $diskStatus := default (dict) $longhornNode.status.diskStatus -}}
-    {{- $nodeHasQualifiedDisk := false -}}
-    {{- range $diskName, $disk := $diskStatus -}}
-      {{- $diskPath := trimSuffix "/" (default "" $disk.diskPath) -}}
-      {{- $storageAvailable := int64 (default 0 $disk.storageAvailable) -}}
-      {{- if and (eq $diskPath $expectedDataPath) (ge $storageAvailable $minimumDiskBytes) -}}
-        {{- $nodeHasQualifiedDisk = true -}}
-      {{- end -}}
-    {{- end -}}
-    {{- if not $nodeHasQualifiedDisk -}}
-      {{- fail (printf "Forward contract violation: node %q has no Longhorn disk at %q with at least %d bytes available" $nodeName $expectedDataPath $minimumDiskBytes) -}}
-    {{- end -}}
+  {{- if lt (len $forwardNodeNames) $minimumForwardNodeCount -}}
+    {{- fail (printf "skyforge.forwardCluster.contractValidation.enabled=true found %d nodes labeled %s=%s (minimum required: %d)" (len $forwardNodeNames) $expectedRoleLabel $expectedRoleValue $minimumForwardNodeCount) -}}
   {{- end -}}
 {{- end -}}
 

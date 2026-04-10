@@ -1,0 +1,81 @@
+{{- if and .Values.skyforge.s3gw.enabled (default false .Values.skyforge.backups.localSpread.enabled) }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app.kubernetes.io/name: backup-local-spread
+  name: backup-local-spread
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backup-local-spread
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backup-local-spread
+    spec:
+      automountServiceAccountToken: false
+{{- with include "skyforge.workloadNodeAffinity" (list .Values.skyforge.backups.localSpread.placement) }}
+      affinity:
+{{ . | nindent 8 }}
+{{- end }}
+{{- with include "skyforge.workloadPlacementSpec" (list .Values.skyforge.backups.localSpread.placement) }}
+{{ . | nindent 6 }}
+{{- end }}
+      containers:
+        - name: backup-local-spread
+          image: {{ .Values.skyforge.backups.localSpread.image | quote }}
+          command:
+            - /bin/sh
+            - -lc
+          args:
+            - |
+              set -euo pipefail
+              endpoint="http://{{ .Values.skyforge.s3gw.serviceName }}:{{ .Values.skyforge.s3gw.service.port }}"
+              if [[ "{{ ternary "true" "false" .Values.skyforge.objectStorage.useSsl }}" == "true" ]]; then
+                endpoint="https://{{ .Values.skyforge.s3gw.serviceName }}:{{ .Values.skyforge.s3gw.service.port }}"
+              fi
+              export AWS_ACCESS_KEY_ID="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+              export AWS_SECRET_ACCESS_KEY="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+              export AWS_DEFAULT_REGION="us-east-1"
+              export AWS_PAGER=""
+              aws configure set default.s3.max_concurrent_requests 2
+              aws configure set default.s3.multipart_threshold 128MB
+              aws configure set default.s3.multipart_chunksize 32MB
+              while true; do
+                mkdir -p /var/local-backups
+{{- range (default (list "skyforge-backups" "forward-cbr-backups") .Values.skyforge.backups.localSpread.includeBuckets) }}
+                mkdir -p "/var/local-backups/{{ . }}"
+                aws --no-progress --only-show-errors --endpoint-url "${endpoint}" s3 sync "s3://{{ . }}/" "/var/local-backups/{{ . }}/" --delete || true
+{{- end }}
+                find /var/local-backups -type f -mtime +{{ default 7 .Values.skyforge.backups.localSpread.retentionDays }} -delete || true
+                sleep {{ default 1800 .Values.skyforge.backups.localSpread.intervalSeconds }}
+              done
+          resources:
+{{ toYaml (default (dict "requests" (dict "cpu" "50m" "memory" "256Mi") "limits" (dict "memory" "1Gi")) .Values.skyforge.backups.localSpread.resources) | nindent 12 }}
+          volumeMounts:
+            - mountPath: /run/secrets
+              name: run-secrets
+              readOnly: true
+            - mountPath: /var/local-backups
+              name: local-backups
+      restartPolicy: Always
+      volumes:
+        - name: run-secrets
+          projected:
+            sources:
+              - secret:
+                  items:
+                    - key: object-storage-root-user
+                      path: object-storage-root-user
+                  name: object-storage-root-user
+              - secret:
+                  items:
+                    - key: object-storage-root-password
+                      path: object-storage-root-password
+                  name: object-storage-root-password
+        - name: local-backups
+          hostPath:
+            path: {{ default "/var/lib/skyforge/local-backups" .Values.skyforge.backups.localSpread.hostPath | quote }}
+            type: DirectoryOrCreate
+{{- end }}

@@ -989,15 +989,13 @@ skyforge:
         app: []
         lab: []
     contractValidation:
-      # Fail Helm rendering when Forward node-role or Longhorn node contracts
-      # drift from the expected production topology.
+      # Fail Helm rendering when Forward node-role contracts drift from the
+      # expected production topology.
       enabled: false
-      longhornNamespace: "longhorn-system"
-      expectedLonghornDataPath: "/var/lib/longhorn"
       expectedForwardPoolClass: "app"
       expectedForwardRoleLabel: "forwardnetworks.com/role"
       expectedForwardRoleValue: "forward"
-      minimumLonghornDiskBytes: 1000000000000
+      minimumForwardNodeCount: 1
   observability:
     # Global browser-facing observability UIs used by Skyforge platform
     # operations and capacity workflows.
@@ -1107,6 +1105,68 @@ skyforge:
     persistence:
       enabled: true
       size: "5Gi"
+  backups:
+    forward:
+      bucket: "forward-cbr-backups"
+    postgres:
+      enabled: true
+      schedule: "17 3 * * *"
+      suspend: false
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 1
+      ttlSecondsAfterFinished: 3600
+      bucket: "skyforge-backups"
+      prefix: "postgres"
+      endpoint: "s3gw:7480"
+      useSSL: false
+    mirror:
+      enabled: false
+      bucket: ""
+      endpoint: "s3.us-west-2.amazonaws.com"
+      useSSL: true
+      prefix: "skyforge"
+      # Credentials for offsite object-store mirror target.
+      credentials:
+        secretName: "cloud-pricing-credentials"
+        accessKeyIdKey: "aws_access_key_id"
+        secretAccessKeyKey: "aws_secret_access_key"
+    localSpread:
+      enabled: true
+      intervalSeconds: 1800
+      retentionDays: 7
+      hostPath: "/var/lib/skyforge/local-backups"
+      image: "public.ecr.aws/aws-cli/aws-cli:2.17.50"
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "256Mi"
+        limits:
+          memory: "1Gi"
+      includeBuckets:
+        - "skyforge-backups"
+        - "forward-cbr-backups"
+      placement:
+        requiredPoolClass: "app"
+        nodeSelector: {}
+        tolerations: []
+        affinity: {}
+    offsiteRaw:
+      enabled: false
+      schedule: "23 * * * *"
+      sourceHostPath: "/var/lib/skyforge/local-backups"
+      destinationHostPath: "/mnt/hetzner-wireguard/skyforge-backups"
+      image: "alpine:3.20"
+      resources:
+        requests:
+          cpu: "20m"
+          memory: "64Mi"
+        limits:
+          memory: "256Mi"
+      placement:
+        requiredPoolClass: "app"
+        nodeSelector: {}
+        tolerations: []
+        affinity: {}
   # Placement for core PVC-backed platform services that must stay on a stable
   # node in local-path or other node-local storage environments.
   #

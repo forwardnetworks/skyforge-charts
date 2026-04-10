@@ -1,3 +1,4 @@
+{{- if and .Values.skyforge.s3gw.enabled (default true .Values.skyforge.backups.postgres.enabled) }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -5,17 +6,18 @@ metadata:
   labels:
     app.kubernetes.io/name: backup-postgres-s3
 spec:
-  schedule: "17 3 * * *" # daily 03:17 UTC
-  suspend: true
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
+  schedule: {{ default "17 3 * * *" .Values.skyforge.backups.postgres.schedule | quote }}
+  suspend: {{ ternary "true" "false" (default false .Values.skyforge.backups.postgres.suspend) }}
+  successfulJobsHistoryLimit: {{ default 1 .Values.skyforge.backups.postgres.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ default 1 .Values.skyforge.backups.postgres.failedJobsHistoryLimit }}
   jobTemplate:
     spec:
       backoffLimit: 1
-      ttlSecondsAfterFinished: 3600
+      ttlSecondsAfterFinished: {{ default 3600 .Values.skyforge.backups.postgres.ttlSecondsAfterFinished }}
       template:
         spec:
           restartPolicy: Never
+          automountServiceAccountToken: false
           containers:
             - name: backup
               image: public.ecr.aws/docker/library/postgres:15-alpine
@@ -28,26 +30,38 @@ spec:
                   out="/tmp/skyforge-postgres-${ts}.sql.gz"
 
                   : "${BACKUP_S3_BUCKET:?set BACKUP_S3_BUCKET}"
-                  prefix="${BACKUP_S3_PREFIX:-skyforge-backups/postgres}"
+                  : "${BACKUP_S3_ENDPOINT:?set BACKUP_S3_ENDPOINT}"
+                  endpoint="${BACKUP_S3_ENDPOINT}"
+                  if [[ "${endpoint}" != http://* && "${endpoint}" != https://* ]]; then
+                    if [[ "${BACKUP_S3_USE_SSL}" == "true" ]]; then
+                      endpoint="https://${endpoint}"
+                    else
+                      endpoint="http://${endpoint}"
+                    fi
+                  fi
 
-                  export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password)"
+                  export AWS_ACCESS_KEY_ID="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
+                  export AWS_SECRET_ACCESS_KEY="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
+                  export AWS_DEFAULT_REGION="us-east-1"
+                  export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password | tr -d '\r\n')"
+
                   echo "Dumping Postgres..."
-                  pg_dumpall -h db -U skyforge | gzip -9 > "${out}"
+                  pg_dumpall -h db -U "${BACKUP_PG_USER}" | gzip -9 > "${out}"
 
-                  echo "Uploading to s3://${BACKUP_S3_BUCKET}/${prefix}/"
-                  aws s3 cp "${out}" "s3://${BACKUP_S3_BUCKET}/${prefix}/$(basename "${out}")"
+                  echo "Uploading to s3://${BACKUP_S3_BUCKET}/${BACKUP_S3_PREFIX}/"
+                  aws --endpoint-url "${endpoint}" s3 cp "${out}" "s3://${BACKUP_S3_BUCKET}/${BACKUP_S3_PREFIX}/$(basename "${out}")"
                   echo "Done."
               env:
-                - name: AWS_PROFILE
-                  value: default
-                - name: AWS_SDK_LOAD_CONFIG
-                  value: "1"
-                - name: AWS_SHARED_CREDENTIALS_FILE
-                  value: /run/secrets/aws-terraform-shared-credentials
                 - name: BACKUP_S3_BUCKET
-                  value: ""
+                  value: {{ default "skyforge-backups" .Values.skyforge.backups.postgres.bucket | quote }}
                 - name: BACKUP_S3_PREFIX
-                  value: "skyforge-backups/postgres"
+                  value: {{ default "postgres" .Values.skyforge.backups.postgres.prefix | quote }}
+                - name: BACKUP_S3_ENDPOINT
+                  value: {{ default "s3gw:7480" .Values.skyforge.backups.postgres.endpoint | quote }}
+                - name: BACKUP_S3_USE_SSL
+                  value: {{ ternary "true" "false" (default false .Values.skyforge.backups.postgres.useSSL) | quote }}
+                - name: BACKUP_PG_USER
+                  value: {{ default "skyforge" .Values.skyforge.backups.postgres.user | quote }}
               volumeMounts:
                 - name: run-secrets
                   mountPath: /run/secrets
@@ -62,7 +76,13 @@ spec:
                         - key: postgres-skyforge-password
                           path: postgres-skyforge-password
                   - secret:
-                      name: aws-terraform-shared-credentials
+                      name: object-storage-root-user
                       items:
-                        - key: aws-terraform-shared-credentials
-                          path: aws-terraform-shared-credentials
+                        - key: object-storage-root-user
+                          path: object-storage-root-user
+                  - secret:
+                      name: object-storage-root-password
+                      items:
+                        - key: object-storage-root-password
+                          path: object-storage-root-password
+{{- end }}

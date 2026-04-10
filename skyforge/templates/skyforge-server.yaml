@@ -297,6 +297,28 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_OBJECT_STORAGE_USE_SSL
+        - name: SKYFORGE_FORWARD_BACKUP_BUCKET
+          value: {{ default "forward-cbr-backups" .Values.skyforge.backups.forward.bucket | quote }}
+        - name: SKYFORGE_OBJECT_MIRROR_BUCKET
+          value: {{ default "" .Values.skyforge.backups.mirror.bucket | quote }}
+        - name: SKYFORGE_OBJECT_MIRROR_ENDPOINT
+          value: {{ default "s3.us-west-2.amazonaws.com" .Values.skyforge.backups.mirror.endpoint | quote }}
+        - name: SKYFORGE_OBJECT_MIRROR_USE_SSL
+          value: {{ ternary "true" "false" (default true .Values.skyforge.backups.mirror.useSSL) | quote }}
+        - name: SKYFORGE_OBJECT_MIRROR_PREFIX
+          value: {{ default "skyforge" .Values.skyforge.backups.mirror.prefix | quote }}
+        - name: SKYFORGE_OBJECT_MIRROR_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ default .Values.skyforge.cloudPricingCredentials.secretName .Values.skyforge.backups.mirror.credentials.secretName | quote }}
+              key: {{ default .Values.skyforge.cloudPricingCredentials.awsAccessKeyIdKey .Values.skyforge.backups.mirror.credentials.accessKeyIdKey | quote }}
+              optional: true
+        - name: SKYFORGE_OBJECT_MIRROR_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ default .Values.skyforge.cloudPricingCredentials.secretName .Values.skyforge.backups.mirror.credentials.secretName | quote }}
+              key: {{ default .Values.skyforge.cloudPricingCredentials.awsSecretAccessKeyKey .Values.skyforge.backups.mirror.credentials.secretAccessKeyKey | quote }}
+              optional: true
         - name: SKYFORGE_NETLAB_SSH_HOST
         - name: SKYFORGE_NETLAB_SSH_KEY_FILE
           value: /run/secrets/netlab-runner-rsa

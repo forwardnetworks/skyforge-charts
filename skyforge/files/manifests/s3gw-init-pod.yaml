@@ -33,6 +33,8 @@ spec:
           done
           aws --endpoint-url "${endpoint}" s3api create-bucket --bucket {{ .Values.skyforge.objectStorage.filesBucket | quote }} >/dev/null 2>&1 || true
           aws --endpoint-url "${endpoint}" s3api create-bucket --bucket gitea >/dev/null 2>&1 || true
+          aws --endpoint-url "${endpoint}" s3api create-bucket --bucket {{ default "skyforge-backups" .Values.skyforge.backups.postgres.bucket | quote }} >/dev/null 2>&1 || true
+          aws --endpoint-url "${endpoint}" s3api create-bucket --bucket {{ default "forward-cbr-backups" .Values.skyforge.backups.forward.bucket | quote }} >/dev/null 2>&1 || true
         volumeMounts:
         - mountPath: /run/secrets
           name: run-secrets
