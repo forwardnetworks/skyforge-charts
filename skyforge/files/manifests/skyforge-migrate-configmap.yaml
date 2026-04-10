@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:87DAYK4rJFd/eVqhtEYVEL1poy8zmt214wNGMvsahKE=
+    h1:DzA6L2+uSFO+try0ymQlouamVPHMa8S0T+KmsjO/EOI=
     20260222170000_user_scope_baseline.up.sql h1:HfGY06u+cqowMWsvJbj9T0u/unus+5At31uUGJcGY88=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:3FAKn5+UMGrrSZoN7XWmYGsOVdS/uNw94GcvZwVmbvQ=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:rDG5i289QUNJBFmi1cNM2pv7InZZwmp/Xmu1PhPJFrw=
@@ -69,6 +69,8 @@ data:
     20260403150000_audit_log_hash_chain.up.sql h1:gFiKcLLCLDH6fWQTYCHPRLLhF+EWISQLCfAvRhhKV9c=
     20260403153000_audit_integrity_checkpoints.up.sql h1:cUDBHXhrp98ArhDGe0AOt9jCTQFQNoz/f7lnHLXzuHI=
     20260408103000_forward_tenant_customer_kind.up.sql h1:h9NXZShhiZwOcyG4lFKjX5FAZc4bRLpOQWKdcnzBQZA=
+    20260408143000_deployment_source_shares.up.sql h1:XT6Hrj8p9ptYoWErk/6wkX/9CIvwQkMHrS6sGj43jek=
+    20260410170000_deployment_family_engine_pair_kne_native.up.sql h1:oGUvEmgUN/uf5To1Z5kIfi94BfeLHZWhD6L9wV0lQn0=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -4713,3 +4715,22 @@ data:
         END IF;
     END
     $$;
+
+  20260410170000_deployment_family_engine_pair_kne_native.up.sql: |
+    -- Allow native KNE-engine designer deployments while preserving existing rows.
+    -- family(type): terraform | kne | byos
+    -- engine(config.engine):
+    --   terraform -> terraform
+    --   kne       -> netlab | kne
+    --   byos      -> netlab | kne
+    
+    ALTER TABLE sf_deployments
+      DROP CONSTRAINT IF EXISTS sf_deployments_family_engine_pair_check;
+    
+    ALTER TABLE sf_deployments
+      ADD CONSTRAINT sf_deployments_family_engine_pair_check
+      CHECK (
+        (type = 'terraform' AND config->>'engine' = 'terraform') OR
+        (type = 'kne' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'kne'::text])) OR
+        (type = 'byos' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'kne'::text]))
+      );
