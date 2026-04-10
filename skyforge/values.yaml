@@ -1335,10 +1335,10 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260409-kne-delete-cleanup-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260410-designer-ux-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260408-kne-nos-native-r14-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260410-designer-ux-r1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true
