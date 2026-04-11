@@ -120,8 +120,8 @@ skyforge:
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300
 images:
-  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260410-designer-ux-r1
-  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260410-designer-ux-r1-worker
+  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260411-kne-native-deploy-r6
+  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260411-kne-native-deploy-r6-worker
   atlas: ghcr.io/forwardnetworks/atlas:1.1.6-alpine
 kubernetes:
   imagePullSecrets:

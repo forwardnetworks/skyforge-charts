@@ -139,7 +139,32 @@ spec:
       openAPIV3Schema:
         properties:
           spec:
+            x-kubernetes-preserve-unknown-fields: true
             properties:
+              definition:
+                properties:
+                  topology:
+                    type: string
+                required:
+                - topology
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              imagePull:
+                properties:
+                  pullSecrets:
+                    items:
+                      type: string
+                    type: array
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              connectivity:
+                type: string
+              scheduling:
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              expose:
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               deployment:
                 properties:
                   filesFromConfigMap:

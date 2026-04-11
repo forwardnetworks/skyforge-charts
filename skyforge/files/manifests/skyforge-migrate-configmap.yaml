@@ -4734,3 +4734,56 @@ data:
         (type = 'kne' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'kne'::text])) OR
         (type = 'byos' AND config->>'engine' = ANY (ARRAY['netlab'::text, 'kne'::text]))
       );
+
+  20260410201000_task_runtime_contracts_column_reconcile.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_task_runtime_contracts (
+        task_id bigint PRIMARY KEY
+            REFERENCES sf_tasks(id) ON DELETE CASCADE
+    );
+    
+    ALTER TABLE IF EXISTS sf_task_runtime_contracts
+        ADD COLUMN IF NOT EXISTS user_id text,
+        ADD COLUMN IF NOT EXISTS deployment_id text,
+        ADD COLUMN IF NOT EXISTS kne_deploy_policy jsonb,
+        ADD COLUMN IF NOT EXISTS kne_compatibility_preflight jsonb,
+        ADD COLUMN IF NOT EXISTS kne_capacity_preflight jsonb,
+        ADD COLUMN IF NOT EXISTS kne_apply_summary jsonb,
+        ADD COLUMN IF NOT EXISTS netlab_catalog_provenance jsonb,
+        ADD COLUMN IF NOT EXISTS netlab_contract jsonb,
+        ADD COLUMN IF NOT EXISTS netlab_k8s_contract jsonb,
+        ADD COLUMN IF NOT EXISTS netlab_node_resolution_summary jsonb,
+        ADD COLUMN IF NOT EXISTS netlab_node_status_current jsonb,
+        ADD COLUMN IF NOT EXISTS terraform_outputs jsonb,
+        ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
+        ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+    
+    DO $$
+    BEGIN
+        IF EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'sf_task_runtime_contracts'
+              AND column_name = 'clabernetes_deploy_policy'
+        ) THEN
+            UPDATE sf_task_runtime_contracts
+            SET kne_deploy_policy = COALESCE(kne_deploy_policy, clabernetes_deploy_policy),
+                kne_compatibility_preflight = COALESCE(kne_compatibility_preflight, clabernetes_compatibility_preflight),
+                kne_capacity_preflight = COALESCE(kne_capacity_preflight, clabernetes_capacity_preflight),
+                kne_apply_summary = COALESCE(kne_apply_summary, clabernetes_apply_summary)
+            WHERE kne_deploy_policy IS NULL
+               OR kne_compatibility_preflight IS NULL
+               OR kne_capacity_preflight IS NULL
+               OR kne_apply_summary IS NULL;
+        END IF;
+    END$$;
+    
+    UPDATE sf_task_runtime_contracts
+    SET user_id = COALESCE(user_id, '')
+    WHERE user_id IS NULL;
+    
+    ALTER TABLE sf_task_runtime_contracts
+        ALTER COLUMN user_id SET NOT NULL;
+    
+    CREATE INDEX IF NOT EXISTS sf_task_runtime_contracts_user_deployment_idx
+        ON sf_task_runtime_contracts (user_id, deployment_id);
