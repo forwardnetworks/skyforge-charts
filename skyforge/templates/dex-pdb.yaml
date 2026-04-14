@@ -1,0 +1,17 @@
+{{- if and .Values.skyforge.dex.enabled .Values.skyforge.dex.pdb.enabled -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: dex
+  labels:
+    app.kubernetes.io/name: dex
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dex
+{{- if .Values.skyforge.dex.pdb.minAvailable }}
+  minAvailable: {{ .Values.skyforge.dex.pdb.minAvailable }}
+{{- else }}
+  maxUnavailable: {{ default 0 .Values.skyforge.dex.pdb.maxUnavailable }}
+{{- end }}
+{{- end }}

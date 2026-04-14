@@ -1,3 +1,6 @@
+{{- if and .Values.nsq.enabled (ne (int (default 1 .Values.nsq.replicas)) 1) -}}
+{{- fail "nsq.replicas must remain 1 in Encore-native mode; scale skyforge.worker replicas/autoscaling instead" -}}
+{{- end }}
 {{- if .Values.nsq.enabled }}
 apiVersion: v1
 kind: Service
@@ -26,7 +29,7 @@ metadata:
   labels:
     app.kubernetes.io/name: nsq
 spec:
-  replicas: 1
+  replicas: {{ default 1 .Values.nsq.replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: nsq
@@ -34,9 +37,46 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: nsq
+        skyforge.forwardnetworks.com/spread-group: skyforge-core
     spec:
+{{- with .Values.kubernetes.imagePullSecrets }}
+      imagePullSecrets:
+{{- range . }}
+        - name: {{ . | quote }}
+{{- end }}
+{{- end }}
 {{- if .Values.skyforge.corePriorityClassName }}
       priorityClassName: {{ .Values.skyforge.corePriorityClassName | quote }}
+{{- end }}
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            skyforge.forwardnetworks.com/spread-group: skyforge-core
+      affinity:
+        podAntiAffinity:
+{{- if .Values.nsq.placement.requiredAntiAffinity }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: nsq
+{{- else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: nsq
+{{- end }}
+{{- with include "skyforge.workloadNodeAffinity" (list .Values.nsq.placement) }}
+{{ . | nindent 8 }}
+{{- end }}
+{{- with include "skyforge.workloadPlacementSpec" (list .Values.nsq.placement) }}
+{{ . | nindent 6 }}
 {{- end }}
       containers:
         - name: nsqd
@@ -67,7 +107,29 @@ spec:
               port: 4150
             initialDelaySeconds: 10
             periodSeconds: 10
+{{- with .Values.nsq.resources }}
+          resources:
+{{ toYaml . | nindent 12 }}
+{{- end }}
       volumes:
         - name: data
           emptyDir: {}
+{{- if .Values.nsq.pdb.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nsq
+  labels:
+    app.kubernetes.io/name: nsq
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nsq
+{{- if .Values.nsq.pdb.minAvailable }}
+  minAvailable: {{ .Values.nsq.pdb.minAvailable }}
+{{- else }}
+  maxUnavailable: 1
+{{- end }}
+{{- end }}
 {{- end }}

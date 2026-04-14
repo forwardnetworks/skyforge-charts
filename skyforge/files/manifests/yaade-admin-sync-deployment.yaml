@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/name: yaade-admin-sync
   name: yaade-admin-sync
 spec:
-  replicas: 1
+  replicas: {{ default 1 (index (default (dict) .Values.skyforge.yaade.adminSync) "replicas") }}
   selector:
     matchLabels:
       app.kubernetes.io/name: yaade-admin-sync

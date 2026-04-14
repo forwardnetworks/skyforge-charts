@@ -403,6 +403,11 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_COOKIE_DOMAIN
+        - name: SKYFORGE_AUTH_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: skyforge-config
+              key: SKYFORGE_AUTH_MODE
         - name: SKYFORGE_OIDC_ISSUER_URL
           valueFrom:
             configMapKeyRef:

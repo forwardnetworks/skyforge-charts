@@ -1,4 +1,5 @@
 {{- if .Values.skyforge.dex.enabled -}}
+{{- $dexPlacement := default (dict) .Values.skyforge.dex.placement -}}
 {{- $dexConfigChecksum := "" -}}
 {{- if .Values.skyforge.dex.manageConfig -}}
   {{- $dexConfigChecksum = (include (print $.Template.BasePath "/dex-config-secret.yaml") . | sha256sum) -}}
@@ -22,7 +23,9 @@ metadata:
     app.kubernetes.io/name: dex
   name: dex
 spec:
-  replicas: 1
+  replicas: {{ default 1 .Values.skyforge.dex.replicas }}
+  strategy:
+{{ toYaml (default (dict "type" "RollingUpdate" "rollingUpdate" (dict "maxUnavailable" 0 "maxSurge" 1)) .Values.skyforge.dex.strategy) | nindent 4 }}
   selector:
     matchLabels:
       app.kubernetes.io/name: dex
@@ -33,7 +36,42 @@ spec:
         checksum/dex-config-patcher: {{ include (print $.Template.BasePath "/dex-config-patcher.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: dex
+        skyforge.forwardnetworks.com/spread-group: skyforge-auth
     spec:
+{{- with .Values.skyforge.dex.dnsConfig }}
+      dnsConfig:
+{{ toYaml . | nindent 8 }}
+{{- end }}
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: {{ default "ScheduleAnyway" (index $dexPlacement "topologyWhenUnsatisfiable") }}
+        labelSelector:
+          matchLabels:
+            skyforge.forwardnetworks.com/spread-group: skyforge-auth
+      affinity:
+        podAntiAffinity:
+{{- if (default false (index $dexPlacement "requiredAntiAffinity")) }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: dex
+{{- else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: dex
+{{- end }}
+{{- with include "skyforge.workloadNodeAffinity" (list $dexPlacement) }}
+{{ . | nindent 8 }}
+{{- end }}
+{{- with include "skyforge.workloadPlacementSpec" (list $dexPlacement) }}
+{{ . | nindent 6 }}
+{{- end }}
       initContainers:
         - name: patch-config
           image: {{ .Values.images.python | quote }}

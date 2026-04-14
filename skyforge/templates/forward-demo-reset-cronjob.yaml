@@ -35,6 +35,7 @@ data:
 
     BASE_URL = os.environ.get("SKYFORGE_BASE_URL", "http://skyforge-server:8085").rstrip("/")
     API_TOKEN = os.environ.get("SKYFORGE_API_TOKEN", "").strip()
+    AUTH_MODE = os.environ.get("SKYFORGE_AUTH_MODE", "").strip().lower()
     USERNAME = os.environ.get("SKYFORGE_ADMIN_USERNAME", "skyforge").strip()
     PASSWORD = os.environ.get("SKYFORGE_ADMIN_PASSWORD", "").strip()
     EXCLUDED_USERS = {
@@ -46,6 +47,9 @@ data:
     def fail(msg: str, code: int = 1) -> None:
         print(msg, file=sys.stderr)
         raise SystemExit(code)
+
+    if AUTH_MODE == "oidc" and not API_TOKEN:
+        fail("forward demo reset cron: missing api token while SKYFORGE_AUTH_MODE=oidc")
 
     if not API_TOKEN and (not USERNAME or not PASSWORD):
         fail("forward demo reset cron: missing api token or admin credentials")
@@ -167,6 +171,12 @@ spec:
                     secretKeyRef:
                       name: {{ $apiTokenSecretName | quote }}
                       key: {{ $apiTokenSecretKey | quote }}
+                      optional: true
+                - name: SKYFORGE_AUTH_MODE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: skyforge-config
+                      key: SKYFORGE_AUTH_MODE
                       optional: true
                 - name: SKYFORGE_ADMIN_USERNAME
                   value: {{ $username | quote }}

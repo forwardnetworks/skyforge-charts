@@ -5,8 +5,8 @@ skyforge:
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
   gateway:
-    # Cilium Gateway runs in host-network mode in this environment.
-    # Do not pin a static Gateway address here.
+    # Local Skyforge exposure uses the LB-IPAM/L2-announced VIP path.
+    # Keep addresses empty so Cilium assigns the reserved Gateway VIP.
     addresses: []
     localNodePorts:
       enabled: false
@@ -19,7 +19,7 @@ skyforge:
       insecureSkipEmailVerified: true
       clientSecretSecretName: dex-oidc-client-secret
       clientSecretSecretKey: dex-oidc-client-secret
-  adminUsers: skyforge
+  adminUsers: "skyforge,craigjohnson"
   encoreCfg:
     create: true
   encoreRuntimeConfig:
@@ -61,8 +61,9 @@ skyforge:
       NODE_OPTIONS: --max-old-space-size=512
   forward:
     enabled: true
+    baseUrl: https://fwd-appserver.forward.svc:8443
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-03
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-06
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -79,8 +80,8 @@ skyforge:
     dashboards:
       enabled: true
   gitea:
-    apiUrl: https://skyforge.local.forwardnetworks.com/git/api/v1
-    url: https://skyforge.local.forwardnetworks.com/git
+    apiUrl: http://gitea.skyforge.svc.cluster.local:3000/api/v1
+    url: /git
     actionsRunner:
       enabled: false
   netlab:

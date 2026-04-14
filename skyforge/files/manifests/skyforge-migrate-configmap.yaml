@@ -4787,3 +4787,11 @@ data:
     
     CREATE INDEX IF NOT EXISTS sf_task_runtime_contracts_user_deployment_idx
         ON sf_task_runtime_contracts (user_id, deployment_id);
+
+  20260412120000_user_forward_collectors_api_token.up.sql: |
+    ALTER TABLE public.sf_user_forward_collectors
+        ADD COLUMN IF NOT EXISTS api_token text;
+
+  20260412121500_user_scope_forward_credentials_api_token.up.sql: |
+    ALTER TABLE public.sf_user_scope_forward_credentials
+        ADD COLUMN IF NOT EXISTS api_token text;

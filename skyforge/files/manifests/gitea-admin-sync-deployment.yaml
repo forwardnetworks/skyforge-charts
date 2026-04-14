@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/name: gitea-admin-sync
   name: gitea-admin-sync
 spec:
-  replicas: 1
+  replicas: {{ default 1 (index (default (dict) .Values.skyforge.gitea.adminSync) "replicas") }}
   selector:
     matchLabels:
       app.kubernetes.io/name: gitea-admin-sync

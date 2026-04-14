@@ -49,13 +49,6 @@ spec:
                 sleep 2
               done
 
-              setting_exists() {
-                key="$1"
-                esc_key="$(printf "%s" "${key}" | sed "s/'/''/g")"
-                exists="$(psql "${db_url}" -v ON_ERROR_STOP=1 -tAc "SELECT 1 FROM sf_settings WHERE key='${esc_key}' LIMIT 1;")"
-                [ "$(printf "%s" "${exists}" | tr -d '[:space:]')" = "1" ]
-              }
-
               upsert_setting() {
                 key="$1"
                 value="$2"
@@ -64,11 +57,6 @@ spec:
                 psql "${db_url}" -v ON_ERROR_STOP=1 \
                   -c "INSERT INTO sf_settings (key, value) VALUES ('${esc_key}', '${esc_value}') ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value, updated_at=now();"
               }
-
-              if setting_exists "ui_auth_primary_provider"; then
-                echo "runtime auth settings already present; skipping seed" >&2
-                exit 0
-              fi
 
               case "${auth_mode}" in
                 oidc)

@@ -20,7 +20,7 @@ skyforge:
       backoffLimit: 1
       activeDeadlineSeconds: 600
     giteaActionsRunnerTokenReconcile:
-      runOnUpgrade: false
+      runOnUpgrade: true
       backoffLimit: 1
       activeDeadlineSeconds: 600
     dbProvision:
@@ -82,6 +82,8 @@ skyforge:
         memory: "1Gi"
       limits: {}
     autoscaling:
+      # Preferred scale path for queue throughput in Encore-native mode.
+      # Keep nsq singleton and scale worker pods (plus per-pod concurrency) instead.
       enabled: false
       minReplicas: 1
       maxReplicas: 3
@@ -272,10 +274,15 @@ skyforge:
         affinity: {}
   gitea:
     enabled: true
+    adminSync:
+      replicas: 1
     storage:
       enabled: true
-    apiUrl: "https://skyforge.local.forwardnetworks.com/git/api/v1"
-    url: "https://skyforge.local.forwardnetworks.com/git"
+    # Keep server-side Gitea API traffic in-cluster. Browser links can remain
+    # same-origin via `url`, but workers and backend jobs should not hairpin
+    # through the external Gateway VIP for API/raw/LFS fetches.
+    apiUrl: "http://gitea.skyforge.svc.cluster.local:3000/api/v1"
+    url: "/git"
     username: "skyforge"
     repoPrivate: true
     adminUsername: "skyforge"
@@ -373,6 +380,8 @@ skyforge:
   netboxMgmtSubnet: "10.255.0.0/24"
   nautobot:
     enabled: false
+    adminSync:
+      replicas: 1
     internalUrl: ""
     # Redis database index for Nautobot (shared Redis service).
     # Keep distinct from Skyforge (0) and NetBox (2).
@@ -721,6 +730,8 @@ skyforge:
   yaadeAdminUsername: "admin"
   yaade:
     enabled: true
+    adminSync:
+      replicas: 1
     internalUrl: ""
     storage:
       enabled: true
@@ -802,6 +813,11 @@ skyforge:
     # Enable Forward Networks integration (collector deployment + sync actions).
     # When false, Skyforge hides Forward UI and disables Forward API endpoints.
     enabled: true
+    # Optional managed Forward API base URL used by quick deploy + sync control
+    # paths. When empty and forwardCluster.enabled=true, the chart defaults this
+    # to https://<skyforge.forwardCluster.hostname>; otherwise it falls back to
+    # the in-cluster service URL.
+    baseUrl: ""
     snmpPlaceholderEnabled: true
     demoReset:
       enabled: true
@@ -823,7 +839,7 @@ skyforge:
     enabled: false
     # Optional explicit Forward appserver Spring profile set. Leave empty to
     # preserve the profile value rendered by the underlying Forward chart.
-    appserverProfiles: ""
+    appserverProfiles: "K8S"
     # Optional dedicated hostname for Forward Cluster wildcard routing.
     # Example: skyforge-fwd.local.forwardnetworks.com
     hostname: ""
@@ -956,9 +972,15 @@ skyforge:
           timeoutSeconds: 3
     upstreamWorkerRuntime:
       compute:
+        memoryProfile: ""
         memoryLimitMB: 0
+        podMemoryRequest: ""
+        podMemoryLimit: ""
       search:
+        memoryProfile: ""
         memoryLimitMB: 0
+        podMemoryRequest: ""
+        podMemoryLimit: ""
     nodeRoleReconciler:
       enabled: false
       # Reconcile the Forward scheduling labels onto the intended nodes. This
@@ -1241,6 +1263,30 @@ skyforge:
       enabled: false
   dex:
     enabled: true
+    replicas: 1
+    dnsConfig:
+      options:
+        - name: ndots
+          value: "1"
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 0
+    pdb:
+      enabled: true
+      minAvailable: 1
+    placement:
+      poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
+      pools:
+        - control
+      poolWeight: 100
+      requiredPoolClass: ""
+      topologyWhenUnsatisfiable: "ScheduleAnyway"
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+      requiredAntiAffinity: false
     # When false, Dex config is expected to be provided via the `dex-config` Secret
     # (for example, via deploy/skyforge-secrets.yaml). When true, the chart
     # generates and manages `dex-config` based on the values below.
@@ -1335,13 +1381,26 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260411-kne-native-deploy-r10"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260413-stack-sync-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
   # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260411-kne-native-deploy-r10-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260413-stack-sync-r1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true
+  # NOTE: Keep replicas=1 unless/ until runtime pubsub is moved to an HA-aware
+  # topology (for example nsqlookupd-backed discovery or alternate broker).
+  # Multiple standalone nsqd pods behind one ClusterIP can partition queues.
+  replicas: 1
+  resources: {}
+  pdb:
+    enabled: true
+    minAvailable: 1
+  placement:
+    requiredAntiAffinity: false
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
 
 kubernetes:
   # Optional image pull secrets to attach to service accounts created by the chart.
@@ -1371,6 +1430,9 @@ secrets:
       skyforge-audit-export-signing-key: ""
     skyforge-admin-shared:
       password: ""
+      # User API token used by automation flows that must run in OIDC mode
+      # (for example, skyforge.forward.demoReset CronJob).
+      api-token: ""
     skyforge-internal-token:
       skyforge-internal-token: ""
     skyforge-kne-jwt-secret:

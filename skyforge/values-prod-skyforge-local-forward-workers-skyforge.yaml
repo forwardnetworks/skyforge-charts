@@ -1,5 +1,6 @@
 skyforge:
   forwardCluster:
+    appserverProfiles: "K8S"
     workers:
       owner: "skyforge"
       adoptionAcknowledged: true
@@ -62,7 +63,7 @@ skyforge:
         fdbPartitionPasswordKey: "password"
       compute:
         replicas: 5
-        image: "harbor.local.forwardnetworks.com/forward/fwd_compute_worker:26.4.0-03"
+        image: "harbor.local.forwardnetworks.com/forward/fwd_compute_worker:26.4.0-06"
         port: 30060
         reservedMemoryOverride: ""
         memoryLimitMB: 0
@@ -81,7 +82,7 @@ skyforge:
           timeoutSeconds: 3
       search:
         replicas: 5
-        image: "harbor.local.forwardnetworks.com/forward/fwd_search_worker:26.4.0-03"
+        image: "harbor.local.forwardnetworks.com/forward/fwd_search_worker:26.4.0-06"
         port: 30050
         reservedMemoryOverride: ""
         memoryLimitMB: 0

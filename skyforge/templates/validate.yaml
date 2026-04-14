@@ -73,6 +73,30 @@ early when required configuration is missing.
   {{- if eq $forwardHost $host -}}
     {{- fail "skyforge.forwardCluster.hostname must be distinct from skyforge.hostname to avoid HTTPRoute hostname collisions" -}}
   {{- end -}}
+  {{- if .Values.secrets.create -}}
+    {{- $secretItems := default (dict) .Values.secrets.items -}}
+    {{- $forwardTlsItem := index $secretItems $forwardTlsSecretName -}}
+    {{- $forwardTlsCrt := "" -}}
+    {{- if $forwardTlsItem -}}
+      {{- $forwardTlsCrt = (trim (default "" (index $forwardTlsItem "tls.crt"))) -}}
+    {{- end -}}
+    {{- if not $forwardTlsCrt -}}
+      {{- fail (printf "skyforge.forwardCluster.enabled=true with secrets.create=true requires secrets.items.%s.tls.crt" $forwardTlsSecretName) -}}
+    {{- end -}}
+    {{- $certCount := len (regexFindAll "-----BEGIN CERTIFICATE-----" $forwardTlsCrt -1) -}}
+    {{- if lt $certCount 2 -}}
+      {{- fail (printf "secrets.items.%s.tls.crt must include full certificate chain (leaf + intermediate); found %d certificate block(s)" $forwardTlsSecretName $certCount) -}}
+    {{- end -}}
+  {{- else if and (default false .Values.secrets.validatePrecreated) (not (.Capabilities.APIVersions.Has "helm.sh/lint")) -}}
+    {{- $forwardTlsSecret := lookup "v1" "Secret" .Release.Namespace $forwardTlsSecretName -}}
+    {{- if and $forwardTlsSecret (hasKey $forwardTlsSecret.data "tls.crt") -}}
+      {{- $existingCrt := (trim ((index $forwardTlsSecret.data "tls.crt") | b64dec)) -}}
+      {{- $existingCount := len (regexFindAll "-----BEGIN CERTIFICATE-----" $existingCrt -1) -}}
+      {{- if lt $existingCount 2 -}}
+        {{- fail (printf "precreated Secret %s/%s tls.crt must include full certificate chain (leaf + intermediate); found %d certificate block(s)" .Release.Namespace $forwardTlsSecretName $existingCount) -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
 {{- end -}}
 {{- if and (ne $forwardWorkerOwner "upstream") (ne $forwardWorkerOwner "skyforge") -}}
   {{- fail (printf "skyforge.forwardCluster.workers.owner must be one of upstream or skyforge (got %q)" $forwardWorkerOwner) -}}
