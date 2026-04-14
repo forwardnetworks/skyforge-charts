@@ -342,8 +342,9 @@ spec:
           enableServiceLinks: false
           restartPolicy: OnFailure
           initContainers:
+            {{- if $license.virtctlImage }}
             - name: install-virtctl
-              image: {{ default "quay.io/kubevirt/virtctl:v1.7.2" $license.virtctlImage | quote }}
+              image: {{ $license.virtctlImage | quote }}
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/sh
@@ -360,6 +361,38 @@ spec:
               volumeMounts:
                 - name: infoblox-tools
                   mountPath: /tools
+            {{- else }}
+            - name: install-virtctl
+              image: {{ default "docker.io/curlimages/curl:8.13.0" $license.virtctlDownloadImage | quote }}
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+
+                  arch="$(uname -m)"
+                  case "${arch}" in
+                    x86_64|amd64)
+                      asset_arch="amd64"
+                      ;;
+                    aarch64|arm64)
+                      asset_arch="arm64"
+                      ;;
+                    *)
+                      echo "unsupported virtctl architecture: ${arch}" >&2
+                      exit 1
+                      ;;
+                  esac
+
+                  version="{{ default "v1.7.2" $license.virtctlVersion }}"
+                  url="https://github.com/kubevirt/kubevirt/releases/download/${version}/virtctl-${version}-linux-${asset_arch}"
+                  curl -fsSL "${url}" -o /tools/virtctl
+                  chmod +x /tools/virtctl
+              volumeMounts:
+                - name: infoblox-tools
+                  mountPath: /tools
+            {{- end }}
           containers:
             - name: license
               image: {{ $image | quote }}

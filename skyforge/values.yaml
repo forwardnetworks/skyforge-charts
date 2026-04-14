@@ -518,8 +518,12 @@ skyforge:
         enabled: true
         schedule: "*/20 * * * *"
         # Optional virtctl image that includes /usr/local/bin/virtctl.
-        # Leave empty to use chart default.
+        # Leave empty to download the upstream release binary.
         virtctlImage: ""
+        # Upstream KubeVirt release version used when virtctlImage is empty.
+        virtctlVersion: "v1.7.2"
+        # Init image used to fetch the release binary from GitHub.
+        virtctlDownloadImage: "docker.io/curlimages/curl:8.13.0"
         # Set true only for temporary operator pause; default is always active.
         suspend: false
         maxAttempts: 3
