@@ -129,8 +129,7 @@ spec:
         - containerPort: 8080
           protocol: TCP
         resources:
-          limits:
-            memory: '2147483648'
+{{ toYaml .Values.skyforge.netbox.resources | indent 10 }}
         volumeMounts:
         - mountPath: /run/secrets
           name: run-secrets

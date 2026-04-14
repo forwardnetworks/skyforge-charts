@@ -134,8 +134,7 @@ spec:
         - containerPort: 8080
           protocol: TCP
         resources:
-          limits:
-            memory: '3221225472'
+{{ toYaml .Values.skyforge.nautobot.resources | indent 10 }}
         securityContext:
           runAsGroup: 0
           runAsUser: 0
