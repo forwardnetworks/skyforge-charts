@@ -20,6 +20,8 @@ skyforge:
   corePriorityClassName: "skyforge-core"
   integrationsPriorityClassName: "skyforge-integrations"
   labPriorityClassName: "skyforge-lab"
+  apiPriorityAndFairness:
+    create: true
   auth:
     mode: oidc
   hostname: skyforge.local.forwardnetworks.com

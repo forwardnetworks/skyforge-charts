@@ -1,0 +1,102 @@
+{{- if .Values.skyforge.apiPriorityAndFairness.create }}
+{{- $apf := .Values.skyforge.apiPriorityAndFairness -}}
+{{- $platformPL := $apf.priorityLevels.platform -}}
+{{- $labPL := $apf.priorityLevels.labControllers -}}
+{{- $platformFS := $apf.flowSchemas.platform -}}
+{{- $labFS := $apf.flowSchemas.labControllers -}}
+---
+apiVersion: flowcontrol.apiserver.k8s.io/v1
+kind: PriorityLevelConfiguration
+metadata:
+  name: {{ default "skyforge-platform" $platformPL.name | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: Limited
+  limited:
+    nominalConcurrencyShares: {{ default 200 $platformPL.nominalConcurrencyShares }}
+    limitResponse:
+      type: Queue
+      queuing:
+        queues: {{ default 32 $platformPL.queues }}
+        handSize: {{ default 8 $platformPL.handSize }}
+        queueLengthLimit: {{ default 50 $platformPL.queueLengthLimit }}
+---
+apiVersion: flowcontrol.apiserver.k8s.io/v1
+kind: PriorityLevelConfiguration
+metadata:
+  name: {{ default "skyforge-lab-controllers" $labPL.name | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  type: Limited
+  limited:
+    nominalConcurrencyShares: {{ default 30 $labPL.nominalConcurrencyShares }}
+    limitResponse:
+      type: Queue
+      queuing:
+        queues: {{ default 16 $labPL.queues }}
+        handSize: {{ default 6 $labPL.handSize }}
+        queueLengthLimit: {{ default 50 $labPL.queueLengthLimit }}
+---
+apiVersion: flowcontrol.apiserver.k8s.io/v1
+kind: FlowSchema
+metadata:
+  name: {{ default "skyforge-platform" $platformFS.name | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  distinguisherMethod:
+    type: ByUser
+  matchingPrecedence: {{ default 400 $platformFS.matchingPrecedence }}
+  priorityLevelConfiguration:
+    name: {{ default "skyforge-platform" $platformPL.name | quote }}
+  rules:
+    - subjects:
+        {{- range $group := default (list "system:serviceaccounts:skyforge") $platformFS.serviceAccountGroups }}
+        - kind: Group
+          group:
+            name: {{ $group | quote }}
+        {{- end }}
+      resourceRules:
+        - verbs: ["*"]
+          apiGroups: ["*"]
+          resources: ["*"]
+          namespaces: ["*"]
+        - verbs: ["*"]
+          apiGroups: ["*"]
+          resources: ["*"]
+          clusterScope: true
+      nonResourceRules:
+        - verbs: ["*"]
+          nonResourceURLs: ["*"]
+---
+apiVersion: flowcontrol.apiserver.k8s.io/v1
+kind: FlowSchema
+metadata:
+  name: {{ default "skyforge-lab-controllers" $labFS.name | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  distinguisherMethod:
+    type: ByUser
+  matchingPrecedence: {{ default 500 $labFS.matchingPrecedence }}
+  priorityLevelConfiguration:
+    name: {{ default "skyforge-lab-controllers" $labPL.name | quote }}
+  rules:
+    - subjects:
+        {{- range $group := default (list "system:serviceaccounts:meshnet" "system:serviceaccounts:kubevirt" "system:serviceaccounts:cdi" "system:serviceaccounts:arista-ceoslab-operator-system") $labFS.serviceAccountGroups }}
+        - kind: Group
+          group:
+            name: {{ $group | quote }}
+        {{- end }}
+      resourceRules:
+        - verbs: ["*"]
+          apiGroups: ["*"]
+          resources: ["*"]
+          namespaces: ["*"]
+        - verbs: ["*"]
+          apiGroups: ["*"]
+          resources: ["*"]
+          clusterScope: true
+{{- end }}

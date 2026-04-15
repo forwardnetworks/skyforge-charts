@@ -48,6 +48,39 @@ skyforge:
   integrationsPriorityClassName: ""
   labPriorityClassName: ""
 
+  # Kubernetes API Priority and Fairness (APF) lets Skyforge reserve
+  # apiserver concurrency for platform service accounts while pushing
+  # chatty lab controller traffic into a lower-priority queue.
+  apiPriorityAndFairness:
+    create: false
+    priorityLevels:
+      platform:
+        name: "skyforge-platform"
+        nominalConcurrencyShares: 200
+        queues: 32
+        handSize: 8
+        queueLengthLimit: 50
+      labControllers:
+        name: "skyforge-lab-controllers"
+        nominalConcurrencyShares: 30
+        queues: 16
+        handSize: 6
+        queueLengthLimit: 50
+    flowSchemas:
+      platform:
+        name: "skyforge-platform"
+        matchingPrecedence: 400
+        serviceAccountGroups:
+          - "system:serviceaccounts:skyforge"
+      labControllers:
+        name: "skyforge-lab-controllers"
+        matchingPrecedence: 500
+        serviceAccountGroups:
+          - "system:serviceaccounts:meshnet"
+          - "system:serviceaccounts:kubevirt"
+          - "system:serviceaccounts:cdi"
+          - "system:serviceaccounts:arista-ceoslab-operator-system"
+
   # Optional: run a standalone Atlas migration Job as a Helm hook.
   #
   # This is normally unnecessary because `skyforge-server` already runs migrations
