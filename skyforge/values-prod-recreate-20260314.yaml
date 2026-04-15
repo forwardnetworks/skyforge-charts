@@ -142,9 +142,9 @@ skyforge:
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300
 images:
-  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260415-observability-forward-r2
-  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260415-observability-forward-r2-worker
-  atlas: ghcr.io/forwardnetworks/atlas:1.1.6-alpine
+  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260415-observability-forward-r3
+  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260415-observability-forward-r3-worker
+  atlas: arigaio/atlas:latest-alpine
 kubernetes:
   imagePullSecrets:
   - ghcr-pull
