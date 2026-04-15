@@ -183,6 +183,26 @@ data:
             annotations:
               summary: Forward cloud insights are stale
               description: One or more saved Forward networks are missing fresh cloud insight runs.
+  skyforge-platform-inventory.rules.yml: |
+    groups:
+      - name: skyforge-platform-inventory
+        rules:
+          - alert: SkyforgePlatformInventorySnapshotStale
+            expr: skyforge_platform_inventory_snapshot_age_seconds > 300
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: Platform inventory snapshot is stale
+              description: Skyforge platform overview is running on cluster inventory older than 5 minutes.
+          - alert: SkyforgeLabPodsOnControlPlane
+            expr: skyforge_platform_inventory_control_plane_lab_pods_current > 0
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: Lab pods are running on control-plane nodes
+              description: One or more KNE or lab pods are currently placed on control-plane nodes.
 ---
 apiVersion: apps/v1
 kind: Deployment

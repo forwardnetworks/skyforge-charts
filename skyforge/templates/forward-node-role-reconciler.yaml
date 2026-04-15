@@ -132,8 +132,7 @@ data:
 
     is_control_node() {
       node="$1"
-      pool="$(kubectl get node "$node" -o jsonpath="{.metadata.labels['skyforge-role']}" 2>/dev/null || true)"
-      [ "$pool" = "control" ]
+      contains_node "$node" ${CONTROL_POOL_NODES}
     }
 
     MASTER_NODES="{{ join " " $masterNodes }}"

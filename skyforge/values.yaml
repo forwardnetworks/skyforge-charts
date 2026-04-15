@@ -40,8 +40,13 @@ skyforge:
       name: "skyforge-integrations"
       value: -100
       description: "Skyforge optional heavyweight integrations."
+    labs:
+      name: "skyforge-lab"
+      value: -1000
+      description: "Skyforge lab workloads that should yield to platform services."
   corePriorityClassName: ""
   integrationsPriorityClassName: ""
+  labPriorityClassName: ""
 
   # Optional: run a standalone Atlas migration Job as a Helm hook.
   #
@@ -278,6 +283,12 @@ skyforge:
       replicas: 1
     storage:
       enabled: true
+    ssh:
+      enabled: true
+      # Rootless Gitea should listen on a high in-container port and let the
+      # Service/Gateway publish standard port 22 externally.
+      listenPort: 2222
+      servicePort: 22
     # Keep server-side Gitea API traffic in-cluster. Browser links can remain
     # same-origin via `url`, but workers and backend jobs should not hairpin
     # through the external Gateway VIP for API/raw/LFS fetches.
@@ -289,6 +300,8 @@ skyforge:
     allowedDomains: ""
     oidc:
       # Gitea native OIDC login source name used by the Dex-backed auth sync.
+      # Browser entry should stay on /git/user/oauth2/oidc; Skyforge /api/git/sso
+      # redirects there rather than maintaining a local-password bridge session.
       sourceName: "oidc"
       # Automatically create user accounts in Gitea on first successful OIDC login.
       enableAutoRegistration: true
@@ -785,7 +798,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260409-kne-topology-namespace-r2"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260414-kne-startup-sidecar-r1"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: false
@@ -1205,6 +1218,38 @@ skyforge:
         nodeSelector: {}
         tolerations: []
         affinity: {}
+    forwardRaw:
+      enabled: false
+      intervalSeconds: 1800
+      sourceHostPath: "/opt/local-path-provisioner"
+      destinationHostPath: "/mnt/hetzner-wireguard/skyforge-backups/forward-pv"
+      image: "alpine:3.20"
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "128Mi"
+        limits:
+          memory: "512Mi"
+      includeClaims:
+        - "aggregated-logs-fwd-log-aggregator-0"
+        - "aggregated-logs-fwd-log-aggregator-1"
+        - "forward-scratch"
+        - "pgdata-fwd-pg-app-0"
+        - "pgdata-fwd-pg-app-1"
+        - "pgdata-fwd-pg-app-2"
+        - "pgdata-fwd-pg-fdb-0-1"
+        - "pgdata-fwd-pg-fdb-0-2"
+        - "pgdata-fwd-pg-fdb-1-1"
+        - "pgdata-fwd-pg-fdb-1-2"
+        - "pvc-fwd-appserver"
+        - "pvc-fwd-backend-master"
+        - "pvc-fwd-collector"
+        - "pvc-fwd-efs"
+      placement:
+        requiredPoolClass: "app"
+        nodeSelector: {}
+        tolerations: []
+        affinity: {}
   # Placement for core PVC-backed platform services that must stay on a stable
   # node in local-path or other node-local storage environments.
   #
@@ -1241,9 +1286,6 @@ skyforge:
     # SNMP trap events are collected via Telegraf (DaemonSet, hostNetwork).
     # Host port to bind on each node (UDP); defaults to 162.
     hostPort: 162
-  nodeMetrics:
-    enabled: false
-    interval: "10s"
   coder:
     enabled: true
     storage:

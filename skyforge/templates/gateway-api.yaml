@@ -7,6 +7,8 @@
 {{- $filesBucket := .Values.skyforge.objectStorage.filesBucket | default "skyforge-files" -}}
 {{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
 {{- $gatewayAdditionalHostnames := .Values.skyforge.gateway.additionalHostnames | default (list) -}}
+{{- $giteaSSHEnabled := and $giteaEnabled (default true .Values.skyforge.gitea.ssh.enabled) -}}
+{{- $giteaSSHServicePort := default 22 .Values.skyforge.gitea.ssh.servicePort -}}
 {{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}
 {{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
@@ -116,6 +118,14 @@ spec:
           from: Same
           {{- end }}
     {{- end }}
+    {{- if $giteaSSHEnabled }}
+    - name: ssh
+      protocol: TCP
+      port: {{ $giteaSSHServicePort }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -159,6 +169,23 @@ spec:
       backendRefs:
         - name: dex
           port: 5556
+{{- end }}
+{{- if $giteaSSHEnabled }}
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: skyforge-gitea-ssh
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: skyforge
+      sectionName: ssh
+  rules:
+    - backendRefs:
+        - name: gitea
+          port: {{ $giteaSSHServicePort }}
 {{- end }}
 
     # Root landing: / -> /index.html

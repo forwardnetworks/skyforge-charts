@@ -1,6 +1,7 @@
 {{- if .Values.skyforge.priorityClasses.create }}
 {{- $core := .Values.skyforge.priorityClasses.core -}}
 {{- $integrations := .Values.skyforge.priorityClasses.integrations -}}
+{{- $labs := .Values.skyforge.priorityClasses.labs -}}
 ---
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
@@ -23,4 +24,15 @@ value: {{ default -100 $integrations.value }}
 globalDefault: false
 preemptionPolicy: PreemptLowerPriority
 description: {{ default "Skyforge optional heavyweight integrations." $integrations.description | quote }}
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ default "skyforge-lab" $labs.name | quote }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+value: {{ default -1000 $labs.value }}
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: {{ default "Skyforge lab workloads that should yield to platform services." $labs.description | quote }}
 {{- end }}

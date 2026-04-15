@@ -1,4 +1,11 @@
 skyforge:
+  backups:
+    localSpread:
+      enabled: true
+    offsiteRaw:
+      enabled: true
+    forwardRaw:
+      enabled: true
   hooks:
     authRuntimeSync:
       runOnUpgrade: false
@@ -18,8 +25,12 @@ skyforge:
     integrations:
       name: "skyforge-integrations"
       value: -100
+    labs:
+      name: "skyforge-lab"
+      value: -1000
   corePriorityClassName: "skyforge-core"
   integrationsPriorityClassName: "skyforge-integrations"
+  labPriorityClassName: "skyforge-lab"
   auth:
     mode: oidc
   db:
@@ -341,7 +352,7 @@ skyforge:
       schedule: "17 3 * * *"
       timeZone: "America/Chicago"
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-06
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-08
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -373,9 +384,11 @@ skyforge:
     nodeRoleReconciler:
       enabled: true
       schedule: "*/1 * * * *"
+      # Local-path Forward state is pinned onto this master set. Keep every node
+      # that owns critical Forward PVCs in `master`, and avoid shrinking this
+      # set without first moving the underlying PVs.
       managedNodes:
-        - "skyforge"
-        - "skyforge-worker-1"
+        - "skyforge-worker-0"
         - "skyforge-worker-2"
         - "skyforge-worker-3"
         - "skyforge-worker-4"
@@ -383,33 +396,33 @@ skyforge:
       nodeRoles:
         master:
           - "skyforge-worker-2"
+          - "skyforge-worker-3"
           - "skyforge-worker-4"
           - "skyforge-worker-5"
         monitoring:
           - "skyforge-worker-2"
         compute:
-          - "skyforge-worker-1"
+          - "skyforge-worker-0"
           - "skyforge-worker-2"
           - "skyforge-worker-3"
           - "skyforge-worker-4"
           - "skyforge-worker-5"
         search:
-          - "skyforge-worker-1"
+          - "skyforge-worker-0"
           - "skyforge-worker-2"
           - "skyforge-worker-3"
           - "skyforge-worker-4"
           - "skyforge-worker-5"
         forward:
-          - "skyforge-worker-1"
+          - "skyforge-worker-0"
           - "skyforge-worker-2"
           - "skyforge-worker-3"
           - "skyforge-worker-4"
           - "skyforge-worker-5"
       nodePools:
-        control:
-          - "skyforge"
+        control: []
         app:
-          - "skyforge-worker-1"
+          - "skyforge-worker-0"
           - "skyforge-worker-2"
           - "skyforge-worker-3"
           - "skyforge-worker-4"
@@ -427,11 +440,11 @@ skyforge:
   # application pods and from browser-driven flows the same way.
   gitea:
     apiUrl: http://gitea.skyforge.svc.cluster.local:3000/api/v1
-    url: /git
+    url: https://skyforge.local.forwardnetworks.com/git
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260409-kne-topology-namespace-r2"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260414-kne-startup-sidecar-r1"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: true
@@ -521,9 +534,9 @@ nsq:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260413-oidc-manual-login-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260414-git-reauth-r1"
   # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260413-oidc-manual-login-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260414-git-reauth-r1-worker"
   atlas: "ghcr.io/forwardnetworks/atlas:1.1.6-alpine"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"

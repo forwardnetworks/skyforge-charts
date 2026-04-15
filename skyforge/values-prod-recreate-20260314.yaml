@@ -1,4 +1,25 @@
 skyforge:
+  backups:
+    localSpread:
+      enabled: true
+    offsiteRaw:
+      enabled: true
+    forwardRaw:
+      enabled: true
+  priorityClasses:
+    create: true
+    core:
+      name: "skyforge-core"
+      value: 100000
+    integrations:
+      name: "skyforge-integrations"
+      value: -100
+    labs:
+      name: "skyforge-lab"
+      value: -1000
+  corePriorityClassName: "skyforge-core"
+  integrationsPriorityClassName: "skyforge-integrations"
+  labPriorityClassName: "skyforge-lab"
   auth:
     mode: oidc
   hostname: skyforge.local.forwardnetworks.com
@@ -63,7 +84,7 @@ skyforge:
     enabled: true
     baseUrl: https://fwd-appserver.forward.svc:8443
   forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-06
+    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-08
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -81,7 +102,7 @@ skyforge:
       enabled: true
   gitea:
     apiUrl: http://gitea.skyforge.svc.cluster.local:3000/api/v1
-    url: /git
+    url: https://skyforge.local.forwardnetworks.com/git
     actionsRunner:
       enabled: false
   netlab:

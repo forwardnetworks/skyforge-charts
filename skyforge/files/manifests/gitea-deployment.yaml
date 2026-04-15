@@ -89,11 +89,11 @@ spec:
               key: SKYFORGE_HOSTNAME
               name: skyforge-config
         - name: GITEA__server__SSH_LISTEN_PORT
-          value: '22'
+          value: {{ default 2222 .Values.skyforge.gitea.ssh.listenPort | quote }}
         - name: GITEA__server__SSH_PORT
-          value: '22'
+          value: {{ default 22 .Values.skyforge.gitea.ssh.servicePort | quote }}
         - name: GITEA__server__START_SSH_SERVER
-          value: 'false'
+          value: {{ ternary "true" "false" (default true .Values.skyforge.gitea.ssh.enabled) | quote }}
         - name: GITEA__actions__ENABLED
           value: 'true'
         - name: GITEA__service__DISABLE_REGISTRATION
@@ -208,6 +208,11 @@ spec:
         ports:
         - containerPort: 3000
           protocol: TCP
+        {{- if (default true .Values.skyforge.gitea.ssh.enabled) }}
+        - name: ssh
+          containerPort: {{ default 2222 .Values.skyforge.gitea.ssh.listenPort }}
+          protocol: TCP
+        {{- end }}
         resources:
           requests:
             memory: '2147483648'

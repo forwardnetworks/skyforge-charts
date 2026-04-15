@@ -8,6 +8,10 @@
 {{- end -}}
 
 {{- if .Values.skyforge.keda.worker.enabled }}
+{{- $workerDBHost := default "db" .Values.skyforge.db.host -}}
+{{- if not (contains "." $workerDBHost) -}}
+{{- $workerDBHost = printf "%s.%s.svc.cluster.local" $workerDBHost .Release.Namespace -}}
+{{- end -}}
 ---
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
@@ -37,7 +41,7 @@ spec:
   triggers:
     - type: postgresql
       metadata:
-        host: {{ default "db" .Values.skyforge.db.host | quote }}
+        host: {{ $workerDBHost | quote }}
         port: {{ default "5432" .Values.skyforge.db.port | quote }}
         dbName: {{ default "skyforge_server" .Values.skyforge.db.name | quote }}
         userName: {{ default "skyforge_server" .Values.skyforge.db.user | quote }}

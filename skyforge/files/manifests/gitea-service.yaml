@@ -9,5 +9,10 @@ spec:
     - name: "3000"
       port: 3000
       targetPort: 3000
+    {{- if (default true .Values.skyforge.gitea.ssh.enabled) }}
+    - name: ssh
+      port: {{ default 22 .Values.skyforge.gitea.ssh.servicePort }}
+      targetPort: ssh
+    {{- end }}
   selector:
     app.kubernetes.io/name: gitea
