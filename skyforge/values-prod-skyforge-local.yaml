@@ -353,8 +353,8 @@ skyforge:
     demoReset:
       schedule: "17 3 * * *"
       timeZone: "America/Chicago"
-  forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-08
+  forwardImages:
+    tag: 26.4.0-10
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -375,11 +375,13 @@ skyforge:
     upstreamWorkerRuntime:
       compute:
         memoryProfile: "ISOLATED_WORKER"
+        javaToolOptions: ""
         memoryLimitMB: 16384
         podMemoryRequest: "8Gi"
         podMemoryLimit: "24Gi"
       search:
         memoryProfile: "ISOLATED_WORKER"
+        javaToolOptions: ""
         memoryLimitMB: 8192
         podMemoryRequest: "4Gi"
         podMemoryLimit: "12Gi"
@@ -389,6 +391,10 @@ skyforge:
       # Local-path Forward state is pinned onto this master set. Keep every node
       # that owns critical Forward PVCs in `master`, and avoid shrinking this
       # set without first moving the underlying PVs.
+      # `skyforge-worker-0` is still intentionally part of the app pool for
+      # compute/search fanout even though it also carries k3s control-plane
+      # roles. If it drops out of the app pool, Forward worker replicas will
+      # cap at 4/5 because of required anti-affinity.
       managedNodes:
         - "skyforge-worker-0"
         - "skyforge-worker-2"
@@ -536,9 +542,10 @@ nsq:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260415-observability-forward-r3"
-  # Worker can run from the same image tag as the API container.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260415-observability-forward-r3-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-public-login-r19"
+  # Keep the worker image explicit so IaC matches live even when worker and API
+  # roll on different tags during incident-driven fixes.
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-reauth-r11-worker"
   atlas: "arigaio/atlas:latest-alpine"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"

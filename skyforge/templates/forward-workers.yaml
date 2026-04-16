@@ -25,6 +25,8 @@
 {{- $fluentBitOutputs := default (list) $logForwarding.outputs -}}
 {{- $compute := default (dict) $workers.compute -}}
 {{- $search := default (dict) $workers.search -}}
+{{- $computeImage := include "skyforge.forwardWorker.computeImage" . -}}
+{{- $searchImage := include "skyforge.forwardWorker.searchImage" . -}}
 {{- $rollout := default (dict) $workers.rollout -}}
 {{- $strategyType := default "RollingUpdate" $rollout.strategyType -}}
 {{- $pdb := default (dict) $workers.pdb -}}
@@ -213,7 +215,7 @@ spec:
               mountPath: /mnt/scratch
       containers:
         - name: compute-container
-          image: {{ required "skyforge.forwardCluster.workers.compute.image is required when owner=skyforge" $compute.image | quote }}
+          image: {{ required "skyforge.forwardCluster.workers.compute.image or skyforge.forwardImages.tag is required when owner=skyforge" $computeImage | quote }}
           imagePullPolicy: {{ $pullPolicy | quote }}
           securityContext:
             runAsUser: {{ $runAsUser }}
@@ -271,6 +273,10 @@ spec:
             {{- if $compute.reservedMemoryOverride }}
             - name: RESERVED_MEMORY_OVERRIDE
               value: {{ $compute.reservedMemoryOverride | quote }}
+            {{- end }}
+            {{- if $compute.javaToolOptions }}
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ $compute.javaToolOptions | quote }}
             {{- end }}
             {{- if $compute.memoryLimitMB }}
             - name: COMPUTE_WORKER_MEMORY_LIMIT_MB
@@ -379,7 +385,7 @@ spec:
               mountPath: /mnt/scratch
       containers:
         - name: search-container
-          image: {{ required "skyforge.forwardCluster.workers.search.image is required when owner=skyforge" $search.image | quote }}
+          image: {{ required "skyforge.forwardCluster.workers.search.image or skyforge.forwardImages.tag is required when owner=skyforge" $searchImage | quote }}
           imagePullPolicy: {{ $pullPolicy | quote }}
           securityContext:
             runAsUser: {{ $runAsUser }}
@@ -437,6 +443,10 @@ spec:
             {{- if $search.reservedMemoryOverride }}
             - name: RESERVED_MEMORY_OVERRIDE
               value: {{ $search.reservedMemoryOverride | quote }}
+            {{- end }}
+            {{- if $search.javaToolOptions }}
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ $search.javaToolOptions | quote }}
             {{- end }}
             {{- if $search.memoryLimitMB }}
             - name: SEARCH_WORKER_MEMORY_LIMIT_MB

@@ -333,8 +333,8 @@ skyforge:
     allowedDomains: ""
     oidc:
       # Gitea native OIDC login source name used by the Dex-backed auth sync.
-      # Browser entry should stay on /git/user/oauth2/oidc; Skyforge /api/git/sso
-      # redirects there rather than maintaining a local-password bridge session.
+      # Browser entry stays on /git while Skyforge /api/git/sso creates the
+      # current user's Gitea bridge session before redirecting there.
       sourceName: "oidc"
       # Automatically create user accounts in Gitea on first successful OIDC login.
       enableAutoRegistration: true
@@ -997,6 +997,7 @@ skyforge:
         image: ""
         port: 30060
         reservedMemoryOverride: ""
+        javaToolOptions: ""
         memoryLimitMB: 0
         memoryPctOverride: ""
         resources:
@@ -1016,6 +1017,7 @@ skyforge:
         image: ""
         port: 30050
         reservedMemoryOverride: ""
+        javaToolOptions: ""
         memoryLimitMB: 0
         memoryPctOverride: ""
         ioexecThreadsPerCore: ""
@@ -1035,11 +1037,13 @@ skyforge:
     upstreamWorkerRuntime:
       compute:
         memoryProfile: ""
+        javaToolOptions: ""
         memoryLimitMB: 0
         podMemoryRequest: ""
         podMemoryLimit: ""
       search:
         memoryProfile: ""
+        javaToolOptions: ""
         memoryLimitMB: 0
         podMemoryRequest: ""
         podMemoryLimit: ""
@@ -1080,6 +1084,12 @@ skyforge:
       expectedForwardRoleLabel: "forwardnetworks.com/role"
       expectedForwardRoleValue: "forward"
       minimumForwardNodeCount: 1
+  forwardImages:
+    # Shared Harbor release tag for Skyforge-owned Forward images. Set this to
+    # the same value as the upstream Forward `app.image_version` so collector
+    # and optional Skyforge-owned worker images move together.
+    registry: "harbor.local.forwardnetworks.com/forward"
+    tag: ""
   observability:
     # Global browser-facing observability UIs used by Skyforge platform
     # operations and capacity workflows.
@@ -1150,8 +1160,9 @@ skyforge:
         image: "prom/node-exporter:v1.8.2"
   forwardCollector:
     # Optional: enable the in-cluster Forward collector by configuring the image.
-    # When empty, Skyforge will not deploy a collector Pod (Collector page will
-    # show "not configured").
+    # When empty, Skyforge derives the collector image from
+    # `skyforge.forwardImages.{registry,tag}`. If neither is set, Skyforge will
+    # not deploy a collector Pod (Collector page will show "not configured").
     # Example:
     # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.3-02"
     image: ""
@@ -1472,10 +1483,11 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260413-stack-sync-r6"
-  # Optional dedicated task worker image (build-tagged to include the PubSub subscription).
-  # Defaults to the same image as skyforgeServer for local/dev workflows.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260413-stack-sync-r6-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-public-login-r19"
+  # Optional dedicated task worker image (build-tagged to include the PubSub
+  # subscription). Pin this separately when worker-only or API-only fixes are
+  # rolled at different times.
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-reauth-r11-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true

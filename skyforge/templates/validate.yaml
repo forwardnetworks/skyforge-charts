@@ -10,6 +10,9 @@ early when required configuration is missing.
 {{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
 {{- $forwardWorkers := default (dict) .Values.skyforge.forwardCluster.workers -}}
 {{- $forwardWorkerOwner := lower (trim (default "upstream" $forwardWorkers.owner)) -}}
+{{- $forwardCollectorImage := include "skyforge.forwardCollector.image" . -}}
+{{- $forwardComputeImage := include "skyforge.forwardWorker.computeImage" . -}}
+{{- $forwardSearchImage := include "skyforge.forwardWorker.searchImage" . -}}
 {{- $obsEnabled := default false .Values.skyforge.observability.enabled -}}
 {{- $obsManagedEnabled := default false .Values.skyforge.observability.managed.enabled -}}
 {{- $obsGrafanaOIDC := default (dict) .Values.skyforge.observability.grafana.oidc -}}
@@ -24,8 +27,8 @@ early when required configuration is missing.
   {{- if not (trim (default "" .Values.skyforge.netlab.image)) -}}
     {{- fail "skyforge.netlab.image must be set (required for in-cluster netlab/kne mode)" -}}
   {{- end -}}
-  {{- if and $forwardEnabled (not (trim (default "" .Values.skyforge.forwardCollector.image))) -}}
-    {{- fail "Forward integration enabled requires skyforge.forwardCollector.image to be set (set skyforge.edition=oss to force-disable Forward)" -}}
+  {{- if and $forwardEnabled (not (trim $forwardCollectorImage)) -}}
+    {{- fail "Forward integration enabled requires skyforge.forwardCollector.image or skyforge.forwardImages.tag to be set (set skyforge.edition=oss to force-disable Forward)" -}}
   {{- end -}}
   {{- if hasKey .Values.skyforge "netlabKNE" -}}
     {{- fail "skyforge.netlabKNE is removed; use skyforge.netlab.image and skyforge.netlab.pullPolicy" -}}
@@ -108,11 +111,11 @@ early when required configuration is missing.
   {{- if not (default false $forwardWorkers.adoptionAcknowledged) -}}
     {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.adoptionAcknowledged=true because the upstream Forward release must stop managing fwd-compute-worker and fwd-search-worker first" -}}
   {{- end -}}
-  {{- if not (trim (default "" $forwardWorkers.compute.image)) -}}
-    {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.compute.image" -}}
+  {{- if not (trim $forwardComputeImage) -}}
+    {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.compute.image or skyforge.forwardImages.tag" -}}
   {{- end -}}
-  {{- if not (trim (default "" $forwardWorkers.search.image)) -}}
-    {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.search.image" -}}
+  {{- if not (trim $forwardSearchImage) -}}
+    {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.search.image or skyforge.forwardImages.tag" -}}
   {{- end -}}
   {{- if not (trim (default "" $forwardWorkers.scratch.hostPath)) -}}
     {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.workers.scratch.hostPath" -}}

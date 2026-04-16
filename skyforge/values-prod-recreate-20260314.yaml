@@ -85,8 +85,8 @@ skyforge:
   forward:
     enabled: true
     baseUrl: https://fwd-appserver.forward.svc:8443
-  forwardCollector:
-    image: harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-08
+  forwardImages:
+    tag: 26.4.0-10
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -144,8 +144,8 @@ skyforge:
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300
 images:
-  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260415-observability-forward-r3
-  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260415-observability-forward-r3-worker
+  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-public-login-r19
+  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-reauth-r11-worker
   atlas: arigaio/atlas:latest-alpine
 kubernetes:
   imagePullSecrets:
