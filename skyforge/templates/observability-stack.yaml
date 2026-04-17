@@ -155,6 +155,30 @@ metadata:
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
 data:
+  skyforge-queue.rules.yml: |
+    groups:
+      - name: skyforge-queue
+        rules:
+          - alert: SkyforgeTaskQueueBacklogAgeHigh
+            expr: skyforge_tasks_queued_oldest_age_seconds_total > 60
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: Skyforge task queue backlog age is elevated
+              description: The oldest queued Skyforge task has been waiting for more than 60 seconds.
+  skyforge-workers.rules.yml: |
+    groups:
+      - name: skyforge-workers
+        rules:
+          - alert: SkyforgeTaskWorkerHeartbeatStale
+            expr: skyforge_task_workers_heartbeat_age_seconds > 180
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: Skyforge worker heartbeat is stale
+              description: No recent Skyforge worker heartbeat has been recorded for more than 180 seconds.
   skyforge-forward-capacity.rules.yml: |
     groups:
       - name: skyforge-forward-capacity
@@ -471,7 +495,7 @@ spec:
             name: skyforge-grafana-dashboard-provider
         - name: dashboards
           configMap:
-            name: skyforge-signals-dashboard
+            name: skyforge-grafana-dashboards
             optional: true
 ---
 apiVersion: v1

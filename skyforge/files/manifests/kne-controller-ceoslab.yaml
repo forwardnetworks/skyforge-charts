@@ -306,6 +306,18 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - persistentvolumeclaims
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - pods
   verbs:
   - create
@@ -490,7 +502,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: ghcr.io/aristanetworks/arista-ceoslab-operator:v2.1.2
+        image: {{ .Values.skyforge.kne.controllers.ceoslab.image | default "ghcr.io/aristanetworks/arista-ceoslab-operator:v2.1.2" }}
         livenessProbe:
           httpGet:
             path: /healthz

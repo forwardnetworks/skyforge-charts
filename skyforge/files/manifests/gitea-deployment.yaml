@@ -1,5 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
+{{- $giteaSSH := default (dict) .Values.skyforge.gitea.ssh -}}
+{{- $giteaOIDC := default (dict) .Values.skyforge.gitea.oidc -}}
+{{- $giteaPicture := default (dict) .Values.skyforge.gitea.picture -}}
 metadata:
   labels:
     app.kubernetes.io/name: gitea
@@ -89,11 +92,11 @@ spec:
               key: SKYFORGE_HOSTNAME
               name: skyforge-config
         - name: GITEA__server__SSH_LISTEN_PORT
-          value: {{ default 2222 .Values.skyforge.gitea.ssh.listenPort | quote }}
+          value: {{ default 2222 $giteaSSH.listenPort | quote }}
         - name: GITEA__server__SSH_PORT
-          value: {{ default 22 .Values.skyforge.gitea.ssh.servicePort | quote }}
+          value: {{ default 22 $giteaSSH.servicePort | quote }}
         - name: GITEA__server__START_SSH_SERVER
-          value: {{ ternary "true" "false" (default true .Values.skyforge.gitea.ssh.enabled) | quote }}
+          value: {{ ternary "true" "false" (default true $giteaSSH.enabled) | quote }}
         - name: GITEA__actions__ENABLED
           value: 'true'
         - name: GITEA__service__DISABLE_REGISTRATION
@@ -103,19 +106,19 @@ spec:
         - name: GITEA__service__SHOW_REGISTRATION_BUTTON
           value: 'false'
         - name: GITEA__oauth2_client__ENABLE_AUTO_REGISTRATION
-          value: {{ ternary "true" "false" (default true .Values.skyforge.gitea.oidc.enableAutoRegistration) | quote }}
+          value: {{ ternary "true" "false" (default true $giteaOIDC.enableAutoRegistration) | quote }}
         - name: GITEA__oauth2_client__ACCOUNT_LINKING
-          value: {{ default "auto" .Values.skyforge.gitea.oidc.accountLinking | quote }}
+          value: {{ default "auto" $giteaOIDC.accountLinking | quote }}
         - name: GITEA__oauth2_client__USERNAME
-          value: {{ default "preferred_username" .Values.skyforge.gitea.oidc.username | quote }}
+          value: {{ default "preferred_username" $giteaOIDC.username | quote }}
         - name: GITEA__service__REQUIRE_EXTERNAL_REGISTRATION_PASSWORD
-          value: {{ ternary "true" "false" (default false .Values.skyforge.gitea.oidc.requireExternalRegistrationPassword) | quote }}
+          value: {{ ternary "true" "false" (default false $giteaOIDC.requireExternalRegistrationPassword) | quote }}
         - name: GITEA__picture__DEFAULT_AVATAR
-          value: {{ default "identicon" .Values.skyforge.gitea.picture.defaultAvatar | quote }}
+          value: {{ default "identicon" $giteaPicture.defaultAvatar | quote }}
         - name: GITEA__picture__DISABLE_GRAVATAR
-          value: {{ ternary "true" "false" (default true .Values.skyforge.gitea.picture.disableGravatar) | quote }}
+          value: {{ ternary "true" "false" (default true $giteaPicture.disableGravatar) | quote }}
         - name: GITEA__picture__ENABLE_FEDERATED_AVATAR
-          value: {{ ternary "true" "false" (default false .Values.skyforge.gitea.picture.enableFederatedAvatar) | quote }}
+          value: {{ ternary "true" "false" (default false $giteaPicture.enableFederatedAvatar) | quote }}
         - name: GITEA__service__REQUIRE_SIGNIN_VIEW
           value: 'true'
         - name: GITEA__service__RESERVED_USERNAMES
@@ -208,9 +211,9 @@ spec:
         ports:
         - containerPort: 3000
           protocol: TCP
-        {{- if (default true .Values.skyforge.gitea.ssh.enabled) }}
+        {{- if (default true $giteaSSH.enabled) }}
         - name: ssh
-          containerPort: {{ default 2222 .Values.skyforge.gitea.ssh.listenPort }}
+          containerPort: {{ default 2222 $giteaSSH.listenPort }}
           protocol: TCP
         {{- end }}
         resources:

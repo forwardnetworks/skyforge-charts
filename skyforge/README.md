@@ -83,7 +83,8 @@ compute/search worker templates removed before Helm runs. Keep the default as
 - `skyforge.burst.hetzner.routeReconciler.*`: Optional privileged host-network DaemonSet that continuously enforces return routes on selected worker nodes for Hetzner burst CIDRs carried behind a local WireGuard gateway.
 - `skyforge.kne.*`: Optional KNE install from vendored manifests (tracked from `forwardnetworks/kne`). On Cilium clusters, KNE meshnet requires `kube-system/cilium-config` `cni-exclusive=false`; otherwise Cilium renames `00-meshnet.conflist` out of the active chain and multi-node links stall at `Connected 1 interfaces out of 2`. Rollout guardrails must also run after the `meshnet` DaemonSet is ready so active `00-meshnet.conflist` is restored if needed and `multus.kubeconfig` points at a reachable control-plane endpoint.
 - `skyforge.kne.controllers.*`: Installs the KNE vendor controller stack used by this workflow (`ceoslab` only). Cisco (`iol`, `ios-xrd`) and kubevirt paths use native KNE runtime support and do not require additional vendor controllers.
-- Dedicated worker deployment is always enabled as a singleton (`replicas: 1`) and processes queued runs from PubSub.
+- Dedicated worker deployment is always enabled and should run at least two replicas in production-style installs so queue execution survives worker rollouts/restarts without waiting on the queued-task rescue loop.
+- When `skyforge.keda.worker.enabled=true`, keep `skyforge.keda.worker.minReplicaCount` at `2` or higher so autoscaling does not collapse the queue path back to a singleton worker during idle periods.
 - `skyforge.auth.mode`: Skyforge browser auth mode (`local` or `oidc`).
 - `skyforge.dex.authMode`: Dex connector profile (`google`, `local`, `oidc`).
 - `skyforge.redoc.enabled`: Enable the ReDoc API docs UI.
@@ -111,6 +112,9 @@ compute/search worker templates removed before Helm runs. Keep the default as
 - `secrets.items.dex-client-nautobot-secret.dex-client-nautobot-secret`: Dex OIDC client secret for Nautobot (required when `skyforge.nautobot.enabled=true`).
 - `secrets.items.dex-client-grafana-secret.dex-client-grafana-secret`: Dex OIDC client secret for Grafana when observability Grafana OIDC is enabled.
 - `skyforge.observability.grafana.oidc.tokenURL` / `apiURL`: Optional override for Grafana's server-side Dex exchange endpoints; defaults keep token and userinfo on in-cluster Dex.
+- `skyforge.observability.dashboards.enabled`: Provisions the built-in Grafana dashboard pack through explicit ConfigMap mounts in the managed observability stack.
+- `skyforge.observability.dashboards.folder`: Grafana folder name for the built-in dashboard pack.
+- `skyforge.observability.dashboards.labelKey` / `labelValue`: Deprecated compatibility knobs from the old Grafana sidecar-discovery model. They are accepted but ignored.
 - `secrets.items.db-forward-app-password` / `secrets.items.db-forward-fdb-password`: Forward app/FDB
   Postgres passwords used to provision shared DB roles and sync `forward` namespace credentials.
 - `secrets.create`: Set to `false` if you manage secrets out-of-band.

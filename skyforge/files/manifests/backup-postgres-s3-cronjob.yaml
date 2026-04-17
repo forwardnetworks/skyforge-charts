@@ -1,4 +1,6 @@
-{{- if and .Values.skyforge.s3gw.enabled (default true .Values.skyforge.backups.postgres.enabled) }}
+{{- $backups := default (dict) .Values.skyforge.backups -}}
+{{- $postgresBackup := default (dict) $backups.postgres -}}
+{{- if and .Values.skyforge.s3gw.enabled (default true $postgresBackup.enabled) }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -6,14 +8,14 @@ metadata:
   labels:
     app.kubernetes.io/name: backup-postgres-s3
 spec:
-  schedule: {{ default "17 3 * * *" .Values.skyforge.backups.postgres.schedule | quote }}
-  suspend: {{ ternary "true" "false" (default false .Values.skyforge.backups.postgres.suspend) }}
-  successfulJobsHistoryLimit: {{ default 1 .Values.skyforge.backups.postgres.successfulJobsHistoryLimit }}
-  failedJobsHistoryLimit: {{ default 1 .Values.skyforge.backups.postgres.failedJobsHistoryLimit }}
+  schedule: {{ default "17 3 * * *" $postgresBackup.schedule | quote }}
+  suspend: {{ ternary "true" "false" (default false $postgresBackup.suspend) }}
+  successfulJobsHistoryLimit: {{ default 1 $postgresBackup.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ default 1 $postgresBackup.failedJobsHistoryLimit }}
   jobTemplate:
     spec:
       backoffLimit: 1
-      ttlSecondsAfterFinished: {{ default 3600 .Values.skyforge.backups.postgres.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ default 3600 $postgresBackup.ttlSecondsAfterFinished }}
       template:
         spec:
           restartPolicy: Never
@@ -53,15 +55,15 @@ spec:
                   echo "Done."
               env:
                 - name: BACKUP_S3_BUCKET
-                  value: {{ default "skyforge-backups" .Values.skyforge.backups.postgres.bucket | quote }}
+                  value: {{ default "skyforge-backups" $postgresBackup.bucket | quote }}
                 - name: BACKUP_S3_PREFIX
-                  value: {{ default "postgres" .Values.skyforge.backups.postgres.prefix | quote }}
+                  value: {{ default "postgres" $postgresBackup.prefix | quote }}
                 - name: BACKUP_S3_ENDPOINT
-                  value: {{ default "s3gw:7480" .Values.skyforge.backups.postgres.endpoint | quote }}
+                  value: {{ default "s3gw:7480" $postgresBackup.endpoint | quote }}
                 - name: BACKUP_S3_USE_SSL
-                  value: {{ ternary "true" "false" (default false .Values.skyforge.backups.postgres.useSSL) | quote }}
+                  value: {{ ternary "true" "false" (default false $postgresBackup.useSSL) | quote }}
                 - name: BACKUP_PG_USER
-                  value: {{ default "skyforge" .Values.skyforge.backups.postgres.user | quote }}
+                  value: {{ default "skyforge" $postgresBackup.user | quote }}
               volumeMounts:
                 - name: run-secrets
                   mountPath: /run/secrets

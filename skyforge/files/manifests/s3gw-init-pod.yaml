@@ -1,3 +1,6 @@
+{{- $backups := default (dict) .Values.skyforge.backups -}}
+{{- $postgresBackup := default (dict) $backups.postgres -}}
+{{- $forwardBackup := default (dict) $backups.forward -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -36,8 +39,8 @@ spec:
           done
           aws --endpoint-url "${endpoint}" s3api create-bucket --bucket {{ .Values.skyforge.objectStorage.filesBucket | quote }} >/dev/null 2>&1 || true
           aws --endpoint-url "${endpoint}" s3api create-bucket --bucket gitea >/dev/null 2>&1 || true
-          aws --endpoint-url "${endpoint}" s3api create-bucket --bucket {{ default "skyforge-backups" .Values.skyforge.backups.postgres.bucket | quote }} >/dev/null 2>&1 || true
-          aws --endpoint-url "${endpoint}" s3api create-bucket --bucket {{ default "forward-cbr-backups" .Values.skyforge.backups.forward.bucket | quote }} >/dev/null 2>&1 || true
+          aws --endpoint-url "${endpoint}" s3api create-bucket --bucket {{ default "skyforge-backups" $postgresBackup.bucket | quote }} >/dev/null 2>&1 || true
+          aws --endpoint-url "${endpoint}" s3api create-bucket --bucket {{ default "forward-cbr-backups" $forwardBackup.bucket | quote }} >/dev/null 2>&1 || true
         volumeMounts:
         - mountPath: /run/secrets
           name: run-secrets

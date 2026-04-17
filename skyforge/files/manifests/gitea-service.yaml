@@ -1,3 +1,4 @@
+{{- $giteaSSH := default (dict) .Values.skyforge.gitea.ssh -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,9 +10,9 @@ spec:
     - name: "3000"
       port: 3000
       targetPort: 3000
-    {{- if (default true .Values.skyforge.gitea.ssh.enabled) }}
+    {{- if (default true $giteaSSH.enabled) }}
     - name: ssh
-      port: {{ default 22 .Values.skyforge.gitea.ssh.servicePort }}
+      port: {{ default 22 $giteaSSH.servicePort }}
       targetPort: ssh
     {{- end }}
   selector:

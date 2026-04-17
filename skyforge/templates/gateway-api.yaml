@@ -1,5 +1,6 @@
 {{- $host := .Values.skyforge.hostname -}}
 {{- $giteaEnabled := .Values.skyforge.gitea.enabled -}}
+{{- $giteaSSH := default (dict) .Values.skyforge.gitea.ssh -}}
 {{- $yaadeEnabled := .Values.skyforge.yaade.enabled -}}
 {{- $redocEnabled := .Values.skyforge.redoc.enabled -}}
 {{- $oidcGatewayEnabled := .Values.skyforge.dex.enabled -}}
@@ -7,8 +8,8 @@
 {{- $filesBucket := .Values.skyforge.objectStorage.filesBucket | default "skyforge-files" -}}
 {{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
 {{- $gatewayAdditionalHostnames := .Values.skyforge.gateway.additionalHostnames | default (list) -}}
-{{- $giteaSSHEnabled := and $giteaEnabled (default true .Values.skyforge.gitea.ssh.enabled) -}}
-{{- $giteaSSHServicePort := default 22 .Values.skyforge.gitea.ssh.servicePort -}}
+{{- $giteaSSHEnabled := and $giteaEnabled (default true $giteaSSH.enabled) -}}
+{{- $giteaSSHServicePort := default 22 $giteaSSH.servicePort -}}
 {{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}
 {{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}

@@ -1,3 +1,4 @@
+{{- $giteaOIDC := default (dict) .Values.skyforge.gitea.oidc -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -183,7 +184,7 @@ spec:
         - name: SKYFORGE_GITEA_OIDC_CLIENT_ID
           value: "gitea"
         - name: SKYFORGE_GITEA_OIDC_SOURCE_NAME
-          value: {{ default "oidc" .Values.skyforge.gitea.oidc.sourceName | quote }}
+          value: {{ default "oidc" $giteaOIDC.sourceName | quote }}
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
         image: ghcr.io/go-gitea/gitea:1.24.6-rootless

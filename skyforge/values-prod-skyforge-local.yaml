@@ -203,6 +203,15 @@ skyforge:
   keda:
     enabled: true
     requireCRD: true
+    worker:
+      enabled: true
+      pollingInterval: 15
+      cooldownPeriod: 120
+      minReplicaCount: 2
+      maxReplicaCount: 4
+      query: "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'"
+      activationTargetQueryValue: "1"
+      targetQueryValue: "5"
     # Keep heavyweight integrations subordinate and cap at one replica.
     # Scale from zero based on activity signals. For services without native
     # request metrics in this stack, we keep an explicit Wake control in UI/API.
@@ -354,7 +363,7 @@ skyforge:
       schedule: "17 3 * * *"
       timeZone: "America/Chicago"
   forwardImages:
-    tag: 26.4.0-10
+    tag: 26.4.0-11
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -452,7 +461,7 @@ skyforge:
 
   # Pin the single netlab runtime image used by both create/apply phases.
   netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260414-kne-startup-sidecar-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260417-kne-persistence-r1"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: true
@@ -465,6 +474,7 @@ skyforge:
       enabled: true
       ceoslab:
         enabled: true
+        image: "ghcr.io/forwardnetworks/arista-ceoslab-operator:20260417-kne-persistence-r1"
       cdnos:
         enabled: false
       srlinux:
@@ -504,8 +514,8 @@ skyforge:
       heartbeatIntervalSeconds: 30
       reconcileQueuedIntervalSeconds: 30
       reconcileRunningIntervalSeconds: 300
-      activationIntervalSeconds: 20
-      activationMinQueuedAgeSeconds: 20
+      activationIntervalSeconds: 5
+      activationMinQueuedAgeSeconds: 5
       activationBatchSize: 200
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300

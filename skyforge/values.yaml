@@ -90,7 +90,7 @@ skyforge:
     enabled: false
 
   worker:
-    replicas: 1
+    replicas: 2
     priorityClassName: ""
     strategy:
       type: RollingUpdate
@@ -137,8 +137,8 @@ skyforge:
       heartbeatIntervalSeconds: 30
       reconcileQueuedIntervalSeconds: 30
       reconcileRunningIntervalSeconds: 300
-      activationIntervalSeconds: 20
-      activationMinQueuedAgeSeconds: 20
+      activationIntervalSeconds: 5
+      activationMinQueuedAgeSeconds: 5
       activationBatchSize: 200
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300
@@ -222,6 +222,7 @@ skyforge:
       enabled: true
       ceoslab:
         enabled: true
+        image: "ghcr.io/aristanetworks/arista-ceoslab-operator:v2.1.2"
       cdnos:
         enabled: false
       srlinux:
@@ -725,7 +726,7 @@ skyforge:
       enabled: false
       pollingInterval: 15
       cooldownPeriod: 120
-      minReplicaCount: 1
+      minReplicaCount: 2
       maxReplicaCount: 6
       # Queue pressure query against Skyforge task state.
       query: "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'"
@@ -831,7 +832,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260414-kne-startup-sidecar-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260417-kne-persistence-r1"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: false
@@ -1124,10 +1125,12 @@ skyforge:
       # Defaults to http://<serviceName>.<namespace>.svc.cluster.local:<servicePort>
       internalBaseURL: ""
     dashboards:
-      # When true, create Grafana dashboard ConfigMaps in the observability
-      # namespace. This relies on Grafana sidecar dashboard discovery
-      # conventions.
+      # When true, provision the built-in Grafana dashboard pack through the
+      # managed observability stack. Dashboards are mounted explicitly; no
+      # sidecar discovery is used.
       enabled: false
+      # Deprecated compatibility knobs from the old sidecar-discovery model.
+      # They are intentionally accepted but ignored.
       labelKey: "grafana_dashboard"
       labelValue: "1"
       folder: "Skyforge"
@@ -1483,11 +1486,11 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-public-login-r19"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260416-platform-warnings-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub
   # subscription). Pin this separately when worker-only or API-only fixes are
   # rolled at different times.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-reauth-r11-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260416-platform-warnings-r1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true

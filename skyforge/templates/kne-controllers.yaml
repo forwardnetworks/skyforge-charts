@@ -2,6 +2,6 @@
 {{- $controllers := $kne.controllers | default dict -}}
 {{- if and $kne.enabled ($controllers.enabled | default false) -}}
 {{- if (($controllers.ceoslab | default dict).enabled | default false) -}}
-{{ .Files.Get "files/manifests/kne-controller-ceoslab.yaml" }}
+{{ tpl (.Files.Get "files/manifests/kne-controller-ceoslab.yaml") . }}
 {{- end -}}
 {{- end -}}

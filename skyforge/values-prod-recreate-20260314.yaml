@@ -86,7 +86,7 @@ skyforge:
     enabled: true
     baseUrl: https://fwd-appserver.forward.svc:8443
   forwardImages:
-    tag: 26.4.0-10
+    tag: 26.4.0-11
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -108,7 +108,7 @@ skyforge:
     actionsRunner:
       enabled: false
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260406-kne-provider-contract-r1
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260417-kne-persistence-r1
     pullPolicy: IfNotPresent
   kne:
     enabled: true
