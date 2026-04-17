@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
-{{- $giteaSSH := default (dict) .Values.skyforge.gitea.ssh -}}
-{{- $giteaOIDC := default (dict) .Values.skyforge.gitea.oidc -}}
-{{- $giteaPicture := default (dict) .Values.skyforge.gitea.picture -}}
+{{ $giteaSSH := default (dict) .Values.skyforge.gitea.ssh }}
+{{ $giteaOIDC := default (dict) .Values.skyforge.gitea.oidc }}
+{{ $giteaPicture := default (dict) .Values.skyforge.gitea.picture }}
 metadata:
   labels:
     app.kubernetes.io/name: gitea

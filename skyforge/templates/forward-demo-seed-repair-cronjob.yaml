@@ -1,0 +1,177 @@
+{{- $forward := .Values.skyforge.forward -}}
+{{- $demoRepair := default dict $forward.demoSeedRepair -}}
+{{- if and $forward.enabled $demoRepair.enabled }}
+{{- $name := default "skyforge-forward-demo-org-seed-repair" $demoRepair.name -}}
+{{- $image := default .Values.images.python $demoRepair.image -}}
+{{- $pullPolicy := default "IfNotPresent" $demoRepair.pullPolicy -}}
+{{- $schedule := default "*/30 * * * *" $demoRepair.schedule -}}
+{{- $timeZone := default "Etc/UTC" $demoRepair.timeZone -}}
+{{- $suspend := default false $demoRepair.suspend -}}
+{{- $ttl := default 3600 $demoRepair.ttlSecondsAfterFinished -}}
+{{- $successfulJobsHistoryLimit := default 1 $demoRepair.successfulJobsHistoryLimit -}}
+{{- $failedJobsHistoryLimit := default 2 $demoRepair.failedJobsHistoryLimit -}}
+{{- $username := default "skyforge" $demoRepair.username -}}
+{{- $excludedUsers := default (list "admin" "skyforge" "skyforge-user-bootstrap") $demoRepair.excludedUsers -}}
+{{- $baseURL := default "http://skyforge-server:8085" $demoRepair.baseUrl -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-demo-seed-repair
+data:
+  run.py: |
+    import json
+    import os
+    import sys
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+    from http.cookiejar import CookieJar
+
+    BASE_URL = os.environ.get("SKYFORGE_BASE_URL", "http://skyforge-server:8085").rstrip("/")
+    USERNAME = os.environ.get("SKYFORGE_ADMIN_USERNAME", "skyforge").strip()
+    PASSWORD = os.environ.get("SKYFORGE_ADMIN_PASSWORD", "").strip()
+    EXCLUDED_USERS = {
+        item.strip().lower()
+        for item in os.environ.get("SKYFORGE_EXCLUDED_USERS", "admin,skyforge,skyforge-user-bootstrap").split(",")
+        if item.strip()
+    }
+
+    def fail(msg: str, code: int = 1) -> None:
+        print(msg, file=sys.stderr)
+        raise SystemExit(code)
+
+    if not USERNAME or not PASSWORD:
+        fail("forward demo seed repair cron: missing admin credentials")
+
+    cookie_jar = CookieJar()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
+
+    def request_json(method: str, path: str, payload=None):
+        url = BASE_URL + path
+        data = None
+        headers = {}
+        if payload is not None:
+            data = json.dumps(payload).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(url, data=data, headers=headers, method=method)
+        with opener.open(req, timeout=60) as resp:
+            raw = resp.read().decode("utf-8")
+            if not raw:
+                return {}
+            return json.loads(raw)
+
+    def parse_http_error(err: urllib.error.HTTPError):
+        body = err.read().decode("utf-8", errors="replace")
+        message = body.strip()
+        try:
+            payload = json.loads(body)
+        except Exception:
+            payload = None
+        if isinstance(payload, dict):
+            message = str(payload.get("message") or payload.get("error") or message)
+        return err.code, message
+
+    request_json("POST", "/api/auth/login", {
+        "username": USERNAME,
+        "password": PASSWORD,
+    })
+
+    users_payload = request_json("GET", "/api/admin/rbac/users")
+    candidates = []
+    for item in users_payload.get("users", []):
+        username = str(item.get("username", "")).strip().lower()
+        if not username or username in EXCLUDED_USERS:
+            continue
+        candidates.append(username)
+    targets = sorted(set(candidates))
+
+    seeded = 0
+    repair_pending = 0
+    failures = []
+    for username in targets:
+        try:
+            request_json("POST", "/api/admin/impersonate/start", {
+                "username": username,
+            })
+            request_json("GET", "/api/forward/demo-org-credential")
+            networks_payload = request_json("GET", "/api/forward/demo-org/performance-networks")
+            networks = networks_payload.get("networks", [])
+            if any(str(item.get("latestProcessedSnapshotId", "")).strip() and str(item.get("latestProcessedSnapshotState", "")).strip().upper() == "PROCESSED" for item in networks):
+                seeded += 1
+            else:
+                repair_pending += 1
+        except urllib.error.HTTPError as err:
+            code, message = parse_http_error(err)
+            failures.append(f"{username}: HTTP {code} {message}")
+        except Exception as err:
+            failures.append(f"{username}: {err}")
+        finally:
+            try:
+                request_json("POST", "/api/admin/impersonate/stop", {})
+            except Exception:
+                pass
+
+    print(f"forward-demo-seed-repair seeded={seeded} repair_pending={repair_pending} total={len(targets)}")
+    if failures:
+        for line in failures:
+            print(line, file=sys.stderr)
+        raise SystemExit(1)
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forward-demo-seed-repair
+spec:
+  schedule: {{ $schedule | quote }}
+  timeZone: {{ $timeZone | quote }}
+  suspend: {{ $suspend }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ $successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ $failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ $ttl }}
+      template:
+        metadata:
+          labels:
+            {{- include "skyforge.labels" . | nindent 12 }}
+            app.kubernetes.io/component: forward-demo-seed-repair
+        spec:
+          restartPolicy: OnFailure
+          enableServiceLinks: false
+          containers:
+            - name: forward-demo-seed-repair
+              image: {{ $image | quote }}
+              imagePullPolicy: {{ $pullPolicy | quote }}
+              command:
+                - python3
+                - /config/run.py
+              env:
+                - name: SKYFORGE_BASE_URL
+                  value: {{ $baseURL | quote }}
+                - name: SKYFORGE_ADMIN_USERNAME
+                  value: {{ $username | quote }}
+                - name: SKYFORGE_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: skyforge-admin-shared
+                      key: password
+                - name: SKYFORGE_EXCLUDED_USERS
+                  value: {{ join "," $excludedUsers | quote }}
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                  readOnly: true
+          volumes:
+            - name: config
+              configMap:
+                name: {{ $name }}
+                defaultMode: 0755
+{{- end }}

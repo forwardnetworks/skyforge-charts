@@ -4875,3 +4875,6 @@ data:
     
     CREATE INDEX idx_sf_platform_inventory_pods_topology
         ON public.sf_platform_inventory_pods USING btree (namespace, topology_owner);
+
+  20260417123000_drop_deployment_name_uniqueness.up.sql: |
+    DROP INDEX IF EXISTS public.sf_deployments_user_scope_name_uq;

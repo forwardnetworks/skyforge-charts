@@ -897,6 +897,20 @@ skyforge:
       excludedUsers:
         - "admin"
         - "skyforge"
+    demoSeedRepair:
+      enabled: true
+      baseUrl: "http://skyforge-server:8085"
+      schedule: "*/30 * * * *"
+      timeZone: "Etc/UTC"
+      suspend: false
+      ttlSecondsAfterFinished: 3600
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 2
+      username: "skyforge"
+      excludedUsers:
+        - "admin"
+        - "skyforge"
+        - "skyforge-user-bootstrap"
   forwardCluster:
     # Global Forward Cluster UI endpoint.
     enabled: false

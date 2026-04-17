@@ -362,6 +362,9 @@ skyforge:
     demoReset:
       schedule: "17 3 * * *"
       timeZone: "America/Chicago"
+    demoSeedRepair:
+      schedule: "*/30 * * * *"
+      timeZone: "America/Chicago"
   forwardImages:
     tag: 26.4.0-11
     imagePullSecretName: ""
@@ -412,6 +415,7 @@ skyforge:
         - "skyforge-worker-5"
       nodeRoles:
         master:
+          - "skyforge-worker-0"
           - "skyforge-worker-2"
           - "skyforge-worker-3"
           - "skyforge-worker-4"
@@ -552,10 +556,10 @@ nsq:
 
 images:
   # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-public-login-r19"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260417-kne-ready-demo-seed-r3"
   # Keep the worker image explicit so IaC matches live even when worker and API
   # roll on different tags during incident-driven fixes.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-reauth-r11-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260417-kne-ready-demo-seed-r3-worker"
   atlas: "arigaio/atlas:latest-alpine"
   # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
   kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"
