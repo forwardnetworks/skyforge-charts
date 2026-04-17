@@ -171,23 +171,6 @@ spec:
         - name: dex
           port: 5556
 {{- end }}
-{{- if $giteaSSHEnabled }}
----
-apiVersion: gateway.networking.k8s.io/v1alpha2
-kind: TCPRoute
-metadata:
-  name: skyforge-gitea-ssh
-  labels:
-    {{- include "skyforge.labels" . | nindent 4 }}
-spec:
-  parentRefs:
-    - name: skyforge
-      sectionName: ssh
-  rules:
-    - backendRefs:
-        - name: gitea
-          port: {{ $giteaSSHServicePort }}
-{{- end }}
 
     # Root landing: / -> /index.html
     - matches:
@@ -229,6 +212,23 @@ spec:
       backendRefs:
         - name: skyforge-server
           port: 8085
+{{- if $giteaSSHEnabled }}
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: skyforge-gitea-ssh
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: skyforge
+      sectionName: ssh
+  rules:
+    - backendRefs:
+        - name: gitea
+          port: {{ $giteaSSHServicePort }}
+{{- end }}
 {{- if $forwardClusterEnabled }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
