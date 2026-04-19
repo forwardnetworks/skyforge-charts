@@ -161,6 +161,15 @@ spec:
       backendRefs:
         - name: skyforge-server
           port: 8085
+{{- if $coderEnabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /bin
+      backendRefs:
+        - name: coder
+          port: 7080
+{{- end }}
 
 {{- if $oidcGatewayEnabled }}
     - matches:
@@ -562,17 +571,11 @@ spec:
             statusCode: 302
             path:
               type: ReplaceFullPath
-              replaceFullPath: /coder/
+              replaceFullPath: /api/coder/session
     - matches:
         - path:
             type: PathPrefix
             value: /coder
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
       backendRefs:
         - name: coder
           port: 7080
@@ -580,6 +583,13 @@ spec:
         - path:
             type: PathPrefix
             value: /api/v2
+      backendRefs:
+        - name: coder
+          port: 7080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /bin
       backendRefs:
         - name: coder
           port: 7080

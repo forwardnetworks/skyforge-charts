@@ -1,0 +1,247 @@
+{{- if .Values.skyforge.coder.enabled -}}
+{{- $workspace := .Values.skyforge.coder.personalWorkspace -}}
+{{- $workspaceNamespace := default .Release.Namespace $workspace.namespace -}}
+{{- $workspacePublicCA := default (dict) $workspace.publicCA -}}
+{{- $workspacePublicCASecretName := default "" $workspacePublicCA.secretName -}}
+{{- $workspacePublicCASecretKey := default "ca.crt" $workspacePublicCA.secretKey -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coder-personal-workspace-template
+  labels:
+{{ include "skyforge.labels" . | indent 4 }}
+data:
+  main.tf: |
+    terraform {
+      required_providers {
+        coder = {
+          source = "coder/coder"
+        }
+        kubernetes = {
+          source = "hashicorp/kubernetes"
+        }
+      }
+    }
+
+    provider "coder" {}
+    provider "kubernetes" {}
+
+    data "coder_workspace" "me" {}
+    data "coder_workspace_owner" "me" {}
+
+    resource "coder_agent" "main" {
+      os   = "linux"
+      arch = "amd64"
+
+      startup_script = <<-EOT
+        set -e
+        curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/tmp/code-server
+        /tmp/code-server/bin/code-server --auth none --port 13337 >/tmp/code-server.log 2>&1 &
+      EOT
+    }
+
+    resource "coder_app" "code_server" {
+      agent_id     = coder_agent.main.id
+      slug         = {{ default "code-server" $workspace.appSlug | quote }}
+      display_name = "VS Code"
+      icon         = "/icon/code.svg"
+      url          = "http://localhost:13337/?folder=/home/coder"
+      subdomain    = false
+      share        = "owner"
+
+      healthcheck {
+        url       = "http://localhost:13337/healthz"
+        interval  = 3
+        threshold = 10
+      }
+    }
+
+    resource "kubernetes_persistent_volume_claim_v1" "home" {
+      metadata {
+        name      = "coder-${data.coder_workspace.me.id}-home"
+        namespace = {{ $workspaceNamespace | quote }}
+        labels = {
+          "app.kubernetes.io/name"    = "coder-workspace-home"
+          "app.kubernetes.io/part-of" = "coder"
+          "com.coder.resource"        = "true"
+          "com.coder.workspace.id"    = data.coder_workspace.me.id
+          "com.coder.workspace.name"  = data.coder_workspace.me.name
+          "com.coder.user.id"         = data.coder_workspace_owner.me.id
+          "com.coder.user.username"   = data.coder_workspace_owner.me.name
+        }
+      }
+
+      wait_until_bound = false
+
+      spec {
+        access_modes = ["ReadWriteOnce"]
+{{- if $workspace.storageClassName }}
+        storage_class_name = {{ $workspace.storageClassName | quote }}
+{{- end }}
+        resources {
+          requests = {
+            storage = {{ default "10Gi" $workspace.storageSize | quote }}
+          }
+        }
+      }
+    }
+
+    resource "kubernetes_deployment_v1" "main" {
+      count = data.coder_workspace.me.start_count
+
+      depends_on = [
+        kubernetes_persistent_volume_claim_v1.home
+      ]
+
+      wait_for_rollout = false
+
+      metadata {
+        name      = "coder-${data.coder_workspace.me.id}"
+        namespace = {{ $workspaceNamespace | quote }}
+        labels = {
+          "app.kubernetes.io/name"    = "coder-workspace"
+          "app.kubernetes.io/part-of" = "coder"
+          "com.coder.resource"        = "true"
+          "com.coder.workspace.id"    = data.coder_workspace.me.id
+          "com.coder.workspace.name"  = data.coder_workspace.me.name
+          "com.coder.user.id"         = data.coder_workspace_owner.me.id
+          "com.coder.user.username"   = data.coder_workspace_owner.me.name
+        }
+      }
+
+      spec {
+        replicas = 1
+
+        selector {
+          match_labels = {
+            "app.kubernetes.io/name"    = "coder-workspace"
+            "app.kubernetes.io/part-of" = "coder"
+            "com.coder.resource"        = "true"
+            "com.coder.workspace.id"    = data.coder_workspace.me.id
+            "com.coder.workspace.name"  = data.coder_workspace.me.name
+            "com.coder.user.id"         = data.coder_workspace_owner.me.id
+            "com.coder.user.username"   = data.coder_workspace_owner.me.name
+          }
+        }
+
+        strategy {
+          type = "Recreate"
+        }
+
+        template {
+          metadata {
+            labels = {
+              "app.kubernetes.io/name"    = "coder-workspace"
+              "app.kubernetes.io/part-of" = "coder"
+              "com.coder.resource"        = "true"
+              "com.coder.workspace.id"    = data.coder_workspace.me.id
+              "com.coder.workspace.name"  = data.coder_workspace.me.name
+              "com.coder.user.id"         = data.coder_workspace_owner.me.id
+              "com.coder.user.username"   = data.coder_workspace_owner.me.name
+            }
+          }
+
+          spec {
+            security_context {
+              run_as_user     = 1000
+              fs_group        = 1000
+              run_as_non_root = true
+            }
+{{- with $workspace.nodeSelector }}
+
+            node_selector = {
+{{- range $key, $value := . }}
+              {{ $key | quote }} = {{ $value | quote }}
+{{- end }}
+            }
+{{- end }}
+
+            container {
+              name              = "dev"
+              image             = {{ default "codercom/enterprise-base:ubuntu" $workspace.image | quote }}
+              image_pull_policy = "IfNotPresent"
+              command = ["sh", "-c", <<-EOT
+                set -e
+                cp /etc/ssl/certs/ca-certificates.crt /tmp/ca-certificates.crt
+{{- if ne $workspacePublicCASecretName "" }}
+                printf '\n' >> /tmp/ca-certificates.crt
+                cat /etc/skyforge/public-ca/ca.crt >> /tmp/ca-certificates.crt
+{{- end }}
+                export SSL_CERT_FILE=/tmp/ca-certificates.crt
+                cat >/tmp/coder-init.sh <<'CODER_EOF'
+                ${coder_agent.main.init_script}
+                CODER_EOF
+                sed -i 's#^BINARY_URL=.*#BINARY_URL=http://coder:7080/bin/coder-linux-amd64#' /tmp/coder-init.sh
+                chmod +x /tmp/coder-init.sh
+                exec /bin/sh /tmp/coder-init.sh
+              EOT
+              ]
+
+              security_context {
+                run_as_user = "1000"
+              }
+
+              env {
+                name  = "CODER_AGENT_TOKEN"
+                value = coder_agent.main.token
+              }
+
+              resources {
+                requests = {
+                  "cpu"    = "250m"
+                  "memory" = "512Mi"
+                }
+                limits = {
+                  "cpu"    = {{ default "2" $workspace.cpu | quote }}
+                  "memory" = {{ default "4Gi" $workspace.memory | quote }}
+                }
+              }
+
+              volume_mount {
+                mount_path = "/home/coder"
+                name       = "home"
+                read_only  = false
+              }
+
+{{- if ne $workspacePublicCASecretName "" }}
+              volume_mount {
+                mount_path = "/etc/skyforge/public-ca"
+                name       = "public-ca"
+                read_only  = true
+              }
+{{- end }}
+            }
+
+            volume {
+              name = "home"
+
+              persistent_volume_claim {
+                claim_name = kubernetes_persistent_volume_claim_v1.home.metadata.0.name
+                read_only  = false
+              }
+            }
+
+{{- if ne $workspacePublicCASecretName "" }}
+            volume {
+              name = "public-ca"
+
+              secret {
+                secret_name = {{ $workspacePublicCASecretName | quote }}
+
+                items {
+                  key  = {{ $workspacePublicCASecretKey | quote }}
+                  path = "ca.crt"
+                }
+              }
+            }
+{{- end }}
+          }
+        }
+      }
+    }
+  README.md: |
+    # Skyforge Personal VS Code Workspace
+
+    This template is managed by the Skyforge Helm chart.
+    Users land in a single persistent VS Code workspace backed by Kubernetes storage.
+{{- end }}

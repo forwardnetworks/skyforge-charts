@@ -189,6 +189,14 @@ skyforge:
       tolerations: []
       affinity: {}
       requiredAntiAffinity: false
+  # Startup gate for server/worker pods before Encore subscribes to NSQ.
+  # Keep this bounded so transient DNS/L4 stalls do not hang init forever.
+  waitForNsq:
+    host: "nsq.skyforge.svc.cluster.local"
+    port: 4150
+    attempts: 90
+    sleepSeconds: 2
+    connectTimeoutSeconds: 2
   domain: "forwardnetworks.com"
   gateway:
     # Optional explicit Gateway addresses.
@@ -214,9 +222,17 @@ skyforge:
     # This installs the upstream meshnet CRDs + daemonset.
     # On Cilium clusters, bootstrap must also set kube-system/cilium-config
     # cni-exclusive=false or meshnet will be removed from the active CNI chain.
+    # On K3s agent nodes, kubelet may read CNI configs from
+    # /var/lib/rancher/k3s/agent/etc/cni/net.d instead of /etc/cni/net.d, so
+    # rollout guardrails must validate and repair both paths when present.
     enabled: false
     # meshnet mode: grpc or vxlan
-    meshnetMode: grpc
+    meshnetMode: vxlan
+    meshnet:
+      # Keep this aligned with the KNE-compatible meshnet lineage. Trial fixed
+      # Forward meshnet builds here instead of patching the live DaemonSet.
+      image: "ghcr.io/forwardnetworks/meshnet:20260419-meshnet-vni-scope-r4"
+      imagePullPolicy: "IfNotPresent"
     controllers:
       # Install upstream KNE vendor controller stacks (CRDs + controller Deployments).
       enabled: true
@@ -317,6 +333,9 @@ skyforge:
       replicas: 1
     storage:
       enabled: true
+      size: "5Gi"
+      storageClassName: ""
+      accessMode: "ReadWriteOnce"
     ssh:
       enabled: true
       # Rootless Gitea should listen on a high in-container port and let the
@@ -415,6 +434,7 @@ skyforge:
     internalUrl: ""
     storage:
       enabled: true
+      storageClassName: ""
     resources:
       requests:
         cpu: "500m"
@@ -481,6 +501,9 @@ skyforge:
     vm:
       cpuCores: 4
       memory: "32Gi"
+      # Set an explicit locally administered MAC for the management interface.
+      # This avoids libvirt/KubeVirt generating an empty MAC on some clusters.
+      managementMacAddress: "02:00:00:ab:cd:01"
       # Host CPU passthrough improves appliance performance and reduces emulation overhead.
       cpuModel: "host-passthrough"
       # Pin vCPUs for lower jitter on heavier VM workloads.
@@ -501,12 +524,13 @@ skyforge:
       # Supported values: masquerade, bridge.
       podNetworkBinding: "masquerade"
       multus:
-        enabled: false
-        createNADs: false
+        enabled: true
+        createNADs: true
       lan1:
         nadName: "infoblox-lan1"
         networkName: "infoblox-lan1"
         bridgeName: "br-ibx-l1"
+        macAddress: "02:00:00:ab:cd:11"
         # Per-NAD IPAM type: host-local (default) or dhcp.
         ipamType: "host-local"
         subnet: "169.254.101.0/24"
@@ -516,12 +540,14 @@ skyforge:
         nadName: "infoblox-ha"
         networkName: "infoblox-ha"
         bridgeName: "br-ibx-ha"
+        macAddress: "02:00:00:ab:cd:12"
         ipamType: "host-local"
         subnet: "169.254.102.0/24"
       lan2:
         nadName: "infoblox-lan2"
         networkName: "infoblox-lan2"
         bridgeName: "br-ibx-l2"
+        macAddress: "02:00:00:ab:cd:13"
         ipamType: "host-local"
         subnet: "169.254.103.0/24"
       nodeSelector: {}
@@ -574,11 +600,12 @@ skyforge:
         # Set true only for temporary operator pause; default is always active.
         suspend: false
         maxAttempts: 3
-        attemptSleepSeconds: 20
-        promptWaitSeconds: 180
-        consoleTimeoutSeconds: 240
+        attemptSleepSeconds: 60
+        promptWaitSeconds: 600
+        consoleTimeoutSeconds: 420
         postBootstrapWaitSeconds: 45
         initialWaitSeconds: 8
+        licenseChoice: "2"
     # When true, create a simple Service alias (and Endpoints for IP targets)
     # so Gateway can route directly without sidecar/app proxy Deployments.
     serviceAlias:
@@ -798,6 +825,7 @@ skyforge:
     internalUrl: ""
     storage:
       enabled: true
+      storageClassName: ""
 
   # Optional Kubernetes admission policies that harden the cluster against
   # non-native runtime patterns (Docker-in-Docker / docker.sock).
@@ -832,7 +860,7 @@ skyforge:
     stateRoot: "/var/lib/skyforge/netlab"
     # Single netlab runtime image used for both create and apply phases.
     # NOTE: Override with a pinned tag in deploy values for reproducibility.
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260417-kne-persistence-r1"
+    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260418-netlab-snmpfix-r2-fe0107a"
     pullPolicy: "IfNotPresent"
     runtimePrepull:
       enabled: false
@@ -1217,6 +1245,8 @@ skyforge:
     persistence:
       enabled: true
       size: "5Gi"
+      storageClassName: ""
+      accessMode: "ReadWriteOnce"
   backups:
     forward:
       bucket: "forward-cbr-backups"
@@ -1264,10 +1294,10 @@ skyforge:
         affinity: {}
     offsiteRaw:
       enabled: false
-      schedule: "23 * * * *"
+      intervalSeconds: 1800
       sourceHostPath: "/var/lib/skyforge/local-backups"
       destinationHostPath: "/mnt/hetzner-wireguard/skyforge-backups"
-      image: "alpine:3.20"
+      image: "public.ecr.aws/docker/library/busybox:1.36"
       resources:
         requests:
           cpu: "20m"
@@ -1284,7 +1314,7 @@ skyforge:
       intervalSeconds: 1800
       sourceHostPath: "/opt/local-path-provisioner"
       destinationHostPath: "/mnt/hetzner-wireguard/skyforge-backups/forward-pv"
-      image: "alpine:3.20"
+      image: "public.ecr.aws/docker/library/busybox:1.36"
       resources:
         requests:
           cpu: "50m"
@@ -1311,16 +1341,24 @@ skyforge:
         nodeSelector: {}
         tolerations: []
         affinity: {}
-  # Placement for core PVC-backed platform services that must stay on a stable
-  # node in local-path or other node-local storage environments.
-  #
-  # This is intentionally separate from the API/worker placement knobs because
-  # DB/Redis/Gitea/object storage have different scheduling constraints.
+  # Placement for core PVC-backed platform services. Keep this separate from
+  # API/worker placement because DB/Redis/Gitea/object storage have different
+  # scheduling constraints and may need storage-aware anti-affinity.
   coreStatefulPlacement:
     requiredPoolClass: ""
     nodeSelector: {}
     tolerations: []
     affinity: {}
+  platformData:
+    storage:
+      size: "5Gi"
+      storageClassName: ""
+      accessMode: "ReadWriteOnce"
+  skyforgeServerData:
+    storage:
+      size: "5Gi"
+      storageClassName: ""
+      accessMode: "ReadWriteOnce"
   db:
     host: "db"
     port: "5432"
@@ -1330,12 +1368,17 @@ skyforge:
     storage:
       enabled: true
       size: "50Gi"
+      storageClassName: ""
+      accessMode: "ReadWriteOnce"
     # Forward services can open many idle JDBC sessions; keep headroom so
     # platform integrations (Dex/NetBox/Nautobot/Coder) are not starved.
     maxConnections: 600
   redis:
     storage:
       enabled: true
+      size: "5Gi"
+      storageClassName: ""
+      accessMode: "ReadWriteOnce"
   sessionCookie: "skyforge_session"
   syslog:
     enabled: false
@@ -1349,8 +1392,15 @@ skyforge:
     hostPort: 162
   coder:
     enabled: true
+    nodeSelector: {}
     storage:
       enabled: true
+      storageClassName: ""
+    internalUrl: "http://coder:7080"
+    organization: "coder"
+    # External base path where Coder is published through the Skyforge gateway.
+    # Keep this aligned with the HTTPRoute path and the portal redirect target.
+    basePath: "/coder"
     # Disables Coder's built-in username/password sign-in page so browser access
     # goes through Dex-backed OIDC. The bootstrap owner still uses the shared
     # admin password secret during the one-time create-admin-user job.
@@ -1364,10 +1414,8 @@ skyforge:
     oidcAllowSignups: true
     oidcSignInText: "Sign in with Skyforge"
     # Portal link (/coder) redirect target.
-    # Default uses Coder's standard landing path.
-    # For demo "open VS Code", set this to something like:
-    #   /user/@skyforge-demo/skyforge-demo/apps/code-server
-    portalRedirectPath: "/coder/launch"
+    # Default uses the Skyforge-managed personal workspace launcher.
+    portalRedirectPath: "/api/coder/session"
     # Bootstrap owner user (created once, idempotent).
     # Defaults intentionally self-heal existing installs that never created the
     # first Coder user, which otherwise forces users into the first-user flow.
@@ -1378,6 +1426,25 @@ skyforge:
       # extra secret is required for Coder onboarding.
       passwordSecretName: "skyforge-admin-shared"
       passwordSecretKey: "password"
+    automation:
+      secretName: "coder-automation"
+      tokenKey: "token"
+      tokenName: "skyforge-automation"
+    personalWorkspace:
+      templateName: "personal-vscode"
+      workspaceName: "home"
+      appSlug: "code-server"
+      namespace: ""
+      nodeSelector: {}
+      publicCA:
+        secretName: ""
+        secretKey: "ca.crt"
+        pem: ""
+      storageClassName: ""
+      storageSize: "10Gi"
+      cpu: "2"
+      memory: "4Gi"
+      image: "codercom/enterprise-base:ubuntu"
     demo:
       enabled: false
   dex:
@@ -1500,11 +1567,11 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260416-platform-warnings-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-reset-worker-r1"
   # Optional dedicated task worker image (build-tagged to include the PubSub
   # subscription). Pin this separately when worker-only or API-only fixes are
   # rolled at different times.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260416-platform-warnings-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-reset-worker-r1-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true
@@ -1525,6 +1592,8 @@ nsq:
 kubernetes:
   # Optional image pull secrets to attach to service accounts created by the chart.
   # Example: ["ghcr-pull"] for private GHCR images.
+  apiHostOverride: ""
+  apiPortOverride: ""
   imagePullSecrets: []
   imagePullSecret:
     # Optional: create a pull secret in the release namespace.

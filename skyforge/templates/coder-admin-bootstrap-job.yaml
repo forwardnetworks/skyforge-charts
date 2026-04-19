@@ -2,6 +2,8 @@
 {{- $email := default (printf "skyforge@%s" .Values.skyforge.hostname) .Values.skyforge.coder.bootstrap.email -}}
 {{- $secretName := default "skyforge-admin-shared" .Values.skyforge.coder.bootstrap.passwordSecretName -}}
 {{- $secretKey := default "password" .Values.skyforge.coder.bootstrap.passwordSecretKey -}}
+{{- $automationSecretName := default "coder-automation" .Values.skyforge.coder.automation.secretName -}}
+{{- $automationTokenKey := default "token" .Values.skyforge.coder.automation.tokenKey -}}
 {{- $hookEvents := list "post-install" -}}
 {{- if .Values.skyforge.hooks.coderAdminBootstrap.runOnUpgrade -}}
 {{- $hookEvents = append $hookEvents "post-upgrade" -}}
@@ -31,30 +33,137 @@ spec:
         - name: coder-admin-bootstrap
           image: {{ .Values.images.coder | quote }}
           imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
           command: ["/bin/sh", "-lc"]
           args:
             - |
               set -euo pipefail
+
+              CODER_INTERNAL_HOST="${CODER_SERVICE_HOST:-coder.skyforge.svc.cluster.local}"
+              CODER_INTERNAL_PORT="${CODER_SERVICE_PORT_HTTP:-7080}"
+              CODER_INTERNAL_URL="http://${CODER_INTERNAL_HOST}:${CODER_INTERNAL_PORT}"
+
+              ensure_psql() {
+                if command -v psql >/dev/null 2>&1; then
+                  return 0
+                fi
+                if command -v apt-get >/dev/null 2>&1; then
+                  export DEBIAN_FRONTEND=noninteractive
+                  apt-get update
+                  apt-get install -y --no-install-recommends postgresql-client ca-certificates
+                  rm -rf /var/lib/apt/lists/*
+                  return 0
+                fi
+                if command -v apk >/dev/null 2>&1; then
+                  apk add --no-cache postgresql-client ca-certificates
+                  return 0
+                fi
+                echo "[coder-admin-bootstrap] unable to install psql" >&2
+                exit 1
+              }
+
               echo "[coder-admin-bootstrap] waiting for coder..."
               for i in $(seq 1 120); do
-                if curl -fsS http://coder:7080/healthz >/dev/null; then
+                if curl -fsS "${CODER_INTERNAL_URL}/healthz" >/dev/null; then
                   break
                 fi
                 sleep 2
               done
 
-              code="$(curl -sS -o /tmp/first.json -w '%{http_code}' http://coder:7080/api/v2/users/first || true)"
-              if [ "$code" != "404" ]; then
-                echo "[coder-admin-bootstrap] first user already exists (status=$code); nothing to do"
-                exit 0
+              code="$(curl -sS -o /tmp/first.json -w '%{http_code}' "${CODER_INTERNAL_URL}/api/v2/users/first" || true)"
+              if [ "$code" = "404" ]; then
+                echo "[coder-admin-bootstrap] creating initial admin user: ${CODER_BOOTSTRAP_USERNAME}"
+                /opt/coder server create-admin-user \
+                  --postgres-url "${CODER_PG_CONNECTION_URL}" \
+                  --username "${CODER_BOOTSTRAP_USERNAME}" \
+                  --email "${CODER_BOOTSTRAP_EMAIL}" \
+                  --password "${CODER_BOOTSTRAP_PASSWORD}"
+              else
+                echo "[coder-admin-bootstrap] first user already exists (status=$code)"
               fi
 
-              echo "[coder-admin-bootstrap] creating initial admin user: ${CODER_BOOTSTRAP_USERNAME}"
-              /opt/coder server create-admin-user \
-                --postgres-url "${CODER_PG_CONNECTION_URL}" \
-                --username "${CODER_BOOTSTRAP_USERNAME}" \
-                --email "${CODER_BOOTSTRAP_EMAIL}" \
-                --password "${CODER_BOOTSTRAP_PASSWORD}"
+              ensure_psql
+
+              OWNER_ID="$(psql "${CODER_PG_CONNECTION_URL}" -At -c "select id from users where username = '${CODER_BOOTSTRAP_USERNAME}' limit 1;")"
+              if [ -z "${OWNER_ID}" ]; then
+                echo "[coder-admin-bootstrap] owner user ${CODER_BOOTSTRAP_USERNAME} not found" >&2
+                exit 1
+              fi
+
+              TOKEN_ID="${CODER_AUTOMATION_TOKEN%%-*}"
+              TOKEN_SECRET="${CODER_AUTOMATION_TOKEN#*-}"
+              TOKEN_HASH="$(printf '%s' "${TOKEN_SECRET}" | sha256sum | awk '{print $1}')"
+
+              psql "${CODER_PG_CONNECTION_URL}" -c "
+              delete from api_keys
+              where user_id = '${OWNER_ID}'
+                and token_name = '${CODER_AUTOMATION_TOKEN_NAME}'
+                and id <> '${TOKEN_ID}';
+
+              insert into api_keys (
+                id,
+                hashed_secret,
+                user_id,
+                last_used,
+                expires_at,
+                created_at,
+                updated_at,
+                login_type,
+                lifetime_seconds,
+                ip_address,
+                token_name,
+                scopes,
+                allow_list
+              ) values (
+                '${TOKEN_ID}',
+                decode('${TOKEN_HASH}', 'hex'),
+                '${OWNER_ID}',
+                '1970-01-01 00:00:00+00',
+                now() + interval '87600 hours',
+                now(),
+                now(),
+                'token',
+                315360000,
+                '0.0.0.0',
+                '${CODER_AUTOMATION_TOKEN_NAME}',
+                '{coder:all}',
+                '{*:*}'
+              )
+              on conflict (id) do update set
+                hashed_secret = excluded.hashed_secret,
+                user_id = excluded.user_id,
+                expires_at = excluded.expires_at,
+                updated_at = excluded.updated_at,
+                login_type = excluded.login_type,
+                lifetime_seconds = excluded.lifetime_seconds,
+                ip_address = excluded.ip_address,
+                token_name = excluded.token_name,
+                scopes = excluded.scopes,
+                allow_list = excluded.allow_list;"
+
+              export CODER_URL="${CODER_INTERNAL_URL}"
+              export CODER_SESSION_TOKEN="${CODER_AUTOMATION_TOKEN}"
+              export CODER_ORGANIZATION="${CODER_ORGANIZATION}"
+              export CODER_USE_KEYRING="false"
+              export HOME="/tmp"
+              export CODER_CONFIG_DIR="/tmp/coder-config"
+              export XDG_CONFIG_HOME="${CODER_CONFIG_DIR}"
+              export XDG_CACHE_HOME="/tmp/coder-cache"
+              export CODER_TEMPLATE_DIR="/tmp/coder-template"
+              mkdir -p "${CODER_CONFIG_DIR}" "${XDG_CACHE_HOME}" "${CODER_TEMPLATE_DIR}"
+              cp -LR /template/. "${CODER_TEMPLATE_DIR}/"
+
+              echo "[coder-admin-bootstrap] syncing managed template ${CODER_TEMPLATE_NAME}"
+              /opt/coder templates push \
+                --global-config "${CODER_CONFIG_DIR}" \
+                --yes \
+                --ignore-lockfile \
+                --directory "${CODER_TEMPLATE_DIR}" \
+                --message "skyforge managed personal workspace" \
+                "${CODER_TEMPLATE_NAME}"
+
               echo "[coder-admin-bootstrap] done"
           env:
             - name: CODER_PG_CONNECTION_URL
@@ -71,4 +180,23 @@ spec:
                 secretKeyRef:
                   name: {{ $secretName | quote }}
                   key: {{ $secretKey | quote }}
+            - name: CODER_AUTOMATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $automationSecretName | quote }}
+                  key: {{ $automationTokenKey | quote }}
+            - name: CODER_AUTOMATION_TOKEN_NAME
+              value: {{ default "skyforge-automation" .Values.skyforge.coder.automation.tokenName | quote }}
+            - name: CODER_ORGANIZATION
+              value: {{ default "coder" .Values.skyforge.coder.organization | quote }}
+            - name: CODER_TEMPLATE_NAME
+              value: {{ default "personal-vscode" .Values.skyforge.coder.personalWorkspace.templateName | quote }}
+          volumeMounts:
+            - name: coder-personal-workspace-template
+              mountPath: /template
+              readOnly: true
+      volumes:
+        - name: coder-personal-workspace-template
+          configMap:
+            name: coder-personal-workspace-template
 {{- end }}
