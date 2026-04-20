@@ -97,7 +97,7 @@ skyforge:
     enabled: true
     baseUrl: https://fwd-appserver.forward.svc:8443
   forwardImages:
-    tag: 26.4.0-13
+    tag: 26.4.0-14
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:

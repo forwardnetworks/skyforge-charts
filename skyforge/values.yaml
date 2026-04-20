@@ -1209,7 +1209,7 @@ skyforge:
     # `skyforge.forwardImages.{registry,tag}`. If neither is set, Skyforge will
     # not deploy a collector Pod (Collector page will show "not configured").
     # Example:
-    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.3.3-02"
+    # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-14"
     image: ""
     pullPolicy: "IfNotPresent"
     heapSizeGB: 0

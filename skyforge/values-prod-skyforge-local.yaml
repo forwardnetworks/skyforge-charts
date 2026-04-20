@@ -96,12 +96,12 @@ skyforge:
         virtctlVersion: v1.7.2
         licenseChoice: "2"
   jira:
-    enabled: true
+    enabled: false
     managed: false
     storage:
       storageClassName: "longhorn"
   rapid7:
-    enabled: true
+    enabled: false
     managed: false
     storage:
       storageClassName: "longhorn"
@@ -133,7 +133,7 @@ skyforge:
   forward:
     baseUrl: https://fwd-appserver.forward.svc:8443
   forwardImages:
-    tag: 26.4.0-13
+    tag: 26.4.0-14
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   kubernetes:
@@ -246,5 +246,5 @@ secrets:
   validatePrecreated: true
 
 images:
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-personal-workspace-r1"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-personal-workspace-r1-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-reset-worker-r1"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-reset-worker-r1-worker"
