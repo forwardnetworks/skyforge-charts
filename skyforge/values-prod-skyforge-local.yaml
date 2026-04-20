@@ -1,208 +1,115 @@
 skyforge:
-  backups:
-    localSpread:
-      enabled: true
-    offsiteRaw:
-      enabled: true
-    forwardRaw:
-      enabled: true
+  platformData:
+    storage:
+      storageClassName: "longhorn"
+      accessMode: "ReadWriteOnce"
+  skyforgeServerData:
+    storage:
+      storageClassName: "longhorn"
+      accessMode: "ReadWriteOnce"
   hooks:
     authRuntimeSync:
       runOnUpgrade: false
-    gatewayNodePortsReconcile:
-      runOnUpgrade: false
-    coderAdminBootstrap:
-      runOnUpgrade: false
     giteaActionsRunnerTokenReconcile:
       runOnUpgrade: true
-    dbProvision:
-      runOnUpgrade: false
-  priorityClasses:
-    create: true
-    core:
-      name: "skyforge-core"
-      value: 100000
-    integrations:
-      name: "skyforge-integrations"
-      value: -100
-    labs:
-      name: "skyforge-lab"
-      value: -1000
-  corePriorityClassName: "skyforge-core"
-  integrationsPriorityClassName: "skyforge-integrations"
-  labPriorityClassName: "skyforge-lab"
-  apiPriorityAndFairness:
-    create: true
   auth:
     mode: oidc
-  db:
-    storage:
-      size: "50Gi"
-  hostname: skyforge.local.forwardnetworks.com
-  domain: forwardnetworks.com
-  publicUrl: ""
-  gateway:
-    # Local Skyforge exposure uses the LB-IPAM/L2-announced VIP path.
-    # Keep addresses empty so Cilium assigns the reserved Gateway VIP.
-    addresses: []
-    localNodePorts:
-      enabled: false
   dex:
+    authMode: oidc
     replicas: 2
-    pdb:
-      enabled: true
-      minAvailable: 1
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 0
     placement:
       requiredAntiAffinity: true
-    manageConfig: true
-    authMode: oidc
+      nodeSelector:
+        skyforge.forwardnetworks.com/egress-okta: "true"
     oidc:
       issuer: "https://fn-prod.okta.com"
       clientID: "0oa108ytsjzRXoJw3698"
-      insecureSkipEmailVerified: true
-      # Secret remains pre-created in-cluster.
       clientSecretSecretName: "dex-oidc-client-secret"
       clientSecretSecretKey: "dex-oidc-client-secret"
       redirectURI: "https://skyforge.local.forwardnetworks.com/dex/callback"
+      insecureSkipEmailVerified: true
+  adminUsers: "skyforge,craigjohnson"
   oidc:
     discoveryUrl: "http://dex:5556/dex"
     issuerUrl: "https://skyforge.local.forwardnetworks.com/dex"
     redirectUrl: "https://skyforge.local.forwardnetworks.com/api/auth/oidc/callback"
-  awsSsoRegion: "us-east-1"
-  awsSsoStartUrl: "https://d-9067d98db1.awsapps.com/start/#"
-
-  # Comma-separated usernames/emails that should see admin-only UI + APIs.
-  # NOTE: Server-side admin checks are exact-match (no wildcards).
-  adminUsers: "skyforge,craigjohnson"
-
-  encoreCfg:
-    # Manage the API service typed config secret via Helm so feature flags and
-    # defaults reliably propagate into the running pods.
-    create: true
-
-  # Provide ENCORE_RUNTIME_CONFIG from the chart's `files/infra.config.json`.
-  # This keeps Skyforge server images portable (no baked-in infra config).
-  encoreRuntimeConfig:
-    # Deprecated: prefer `ENCORE_INFRA_CONFIG_PATH` which points at the mounted
-    # `infra.config.json` ConfigMap. Leave these disabled to avoid version skew
-    # and base64 encoding pitfalls across Encore runtime versions.
-    create: false
-    workerCreate: false
-
-  netbox:
-    enabled: true
-    bootstrap:
-      enabled: false
-  netboxUrl: /netbox
-  netboxSsoUrl: /netbox
-
-  nautobot:
-    enabled: true
-  nautobotUrl: /nautobot
-  nautobotSsoUrl: /nautobot
-
-  # ReDoc image pulls can be rate-limited; keep this disabled
-  # in production unless you pin a mirrored image.
-  redoc:
-    enabled: true
-
-  # Keep registry integration enabled for GHCR-backed workflows.
-  registry:
-    url: https://ghcr.io
-
-  # Staged integrations must be explicit in prod-shaped values.
-  # They remain disabled until promoted.
+  db:
+    storage:
+      storageClassName: "longhorn"
+  edition: enterprise
   infoblox:
     enabled: true
     managed: true
     image: ghcr.io/forwardnetworks/kubevirt/infoblox-vnios:9.0.3-50212
+    pullPolicy: IfNotPresent
     internalUrl: https://infoblox:443
-    oidc:
-      # Keep native appliance login/session flow. The OIDC sidecar path causes
-      # Infoblox "Session Expired" behavior behind this route.
+    serviceName: infoblox
+    servicePort: 443
+    routeServiceName: ""
+    routeServicePort: 0
+    rewritePrefixToRoot: true
+    serviceAlias:
       enabled: false
-    lifecycle:
-      # Pin lifecycle controller tooling image in prod for deterministic reconcile behavior.
-      image: public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1
-      # Local VM QA uses a non-production virtctl path; keep license bootstrap
-      # disabled until a pinned, validated virtctl image is available.
-      license:
-        enabled: false
-      autoStop:
-        enabled: true
-        # Keep Infoblox subordinate to core lab/platform workloads by
-        # shrinking idle/runtime windows.
-        maxIdleMinutes: 30
-        maxRunMinutes: 240
+    proxyEnabled: false
     vm:
-      cpuCores: 2
-      memory: "8Gi"
-      cpuModel: host-passthrough
+      cpuCores: 4
+      memory: 32Gi
+      managementMacAddress: "02:00:00:ab:cd:01"
       dedicatedCpuPlacement: false
       isolateEmulatorThread: false
-      ioThreadsPolicy: auto
-      networkInterfaceMultiqueue: true
-      hugepages:
-        enabled: false
-        pageSize: 2Mi
       managementInterfaceModel: virtio
-      managementMacAddress: "52:54:00:10:00:01"
-      auxiliaryInterfaceModel: e1000
-      # Avoid co-locating Infoblox VM with Forward worker pool by preference.
-      # This keeps Forward cold-start/reboots from contending with a 32Gi VM.
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              preference:
-                matchExpressions:
-                  - key: forwardnetworks.com/role
-                    operator: DoesNotExist
+      auxiliaryInterfaceModel: virtio
+      podNetworkBinding: masquerade
       multus:
         enabled: true
         createNADs: true
         lan1:
-          macAddress: "52:54:00:10:01:01"
-          # DHCP plugin is not present on prod worker nodes yet; keep LAN1
-          # host-local so VM networking converges reliably.
-          ipamType: "host-local"
-          isGateway: false
-          ipMasq: false
-          subnet: "169.254.101.0/24"
+          macAddress: "02:00:00:ab:cd:11"
         ha:
-          macAddress: "52:54:00:10:02:01"
+          macAddress: "02:00:00:ab:cd:12"
         lan2:
-          macAddress: "52:54:00:10:03:01"
+          macAddress: "02:00:00:ab:cd:13"
+    lifecycle:
+      enabled: true
+      autoStop:
+        enabled: false
+        schedule: "*/15 * * * *"
+        maxIdleMinutes: 45
+        maxRunMinutes: 180
+      reseed:
+        enabled: true
+        schedule: "17 */6 * * *"
+        resetAfterDays: 60
+        haltWaitSeconds: 30
+      license:
+        enabled: true
+        schedule: "*/20 * * * *"
+        maxAttempts: 3
+        attemptSleepSeconds: 60
+        promptWaitSeconds: 600
+        consoleTimeoutSeconds: 420
+        virtctlVersion: v1.7.2
+        licenseChoice: "2"
   jira:
     enabled: true
-    managed: true
+    managed: false
+    storage:
+      storageClassName: "longhorn"
   rapid7:
     enabled: true
-    managed: true
-    image: "ghcr.io/forwardnetworks/rapid7:20260317-r11"
-    pullPolicy: "IfNotPresent"
-    progressDeadlineSeconds: 3600
-    priorityClassName: "skyforge-integrations"
-    backendTLS:
-      enabled: false
-      hostname: "rapid7"
-      caConfigMapName: "rapid7-ca"
+    managed: false
+    storage:
+      storageClassName: "longhorn"
   elk:
     enabled: false
-    managed: true
-    priorityClassName: "skyforge-integrations"
-    env:
-      ELASTICSEARCH_START: "1"
-      LOGSTASH_START: "1"
-      KIBANA_START: "1"
-      SERVER_BASEPATH: "/elk"
-      SERVER_REWRITEBASEPATH: "true"
-      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m"
-      LS_JAVA_OPTS: "-Xms256m -Xmx256m"
-      NODE_OPTIONS: "--max-old-space-size=512"
+    managed: false
   keda:
     enabled: true
-    requireCRD: true
     worker:
       enabled: true
       pollingInterval: 15
@@ -212,363 +119,132 @@ skyforge:
       query: "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'"
       activationTargetQueryValue: "1"
       targetQueryValue: "5"
-    # Keep heavyweight integrations subordinate and cap at one replica.
-    # Scale from zero based on activity signals. For services without native
-    # request metrics in this stack, we keep an explicit Wake control in UI/API.
-    netbox:
-      enabled: true
-      pollingInterval: 30
-      cooldownPeriod: 3600
-      minReplicaCount: 0
-      maxReplicaCount: 1
-      triggers:
-        - type: prometheus
-          metadata:
-            serverAddress: "http://skyforge-prometheus.skyforge.svc.cluster.local:9090/prometheus"
-            metricName: "netbox_manual_wake"
-            query: "vector(0)"
-            activationThreshold: "0.01"
-            threshold: "0.1"
-    nautobot:
-      enabled: true
-      pollingInterval: 30
-      cooldownPeriod: 3600
-      minReplicaCount: 0
-      maxReplicaCount: 1
-      triggers:
-        - type: prometheus
-          metadata:
-            serverAddress: "http://skyforge-prometheus.skyforge.svc.cluster.local:9090/prometheus"
-            metricName: "nautobot_manual_wake"
-            query: "vector(0)"
-            activationThreshold: "0.01"
-            threshold: "0.1"
-    rapid7:
-      enabled: true
-      pollingInterval: 30
-      cooldownPeriod: 300
-      minReplicaCount: 0
-      maxReplicaCount: 1
-      triggers:
-        - type: prometheus
-          metadata:
-            serverAddress: "http://skyforge-prometheus.skyforge.svc.cluster.local:9090/prometheus"
-            metricName: "rapid7_proxy_rps"
-            query: "sum(rate(envoy_http_downstream_rq_total{envoy_http_conn_manager_prefix='ingress_http',pod=~'rapid7-sso-proxy-.*'}[2m]))"
-            activationThreshold: "0.01"
-            threshold: "0.1"
-    elkProxy:
-      enabled: true
-      pollingInterval: 30
-      cooldownPeriod: 300
-      minReplicaCount: 0
-      maxReplicaCount: 1
-      triggers:
-        - type: prometheus
-          metadata:
-            serverAddress: "http://skyforge-prometheus.skyforge.svc.cluster.local:9090/prometheus"
-            metricName: "elk_proxy_rps"
-            query: "sum(rate(envoy_http_downstream_rq_total{envoy_http_conn_manager_prefix='ingress_http',pod=~'elk-sso-proxy-.*'}[2m]))"
-            activationThreshold: "0.01"
-            threshold: "0.1"
   burst:
     hetzner:
-      enabled: true
-      provisioningEnabled: true
-      apiTokenSecretName: "skyforge-hetzner-burst"
-      apiTokenSecretKey: "api-token"
-      hubPublicKeySecretName: "skyforge-hetzner-wireguard"
-      hubPublicKeySecretKey: "public-key"
-      k3sTokenSecretName: "skyforge-hetzner-k3s"
-      k3sTokenSecretKey: "token"
-      providerLabel: "hetzner"
-      poolClass: "burst"
-      location: "hil"
-      networkZone: "us-west"
-      networkCIDR: "10.30.0.0/16"
-      workerSubnetCIDR: "10.30.0.0/24"
-      serverType: "cpx11"
-      image: "wireguard"
-      minReplicas: 0
-      maxReplicas: 4
-      scaleDownCooldownMinutes: 30
-      k3s:
-        serverUrl: "https://10.128.16.73:6443"
-      wireguard:
-        mode: "outbound-to-gateway"
-        endpointHost: "5.78.94.119"
-        endpointPort: 51820
-        listenPort: 51820
-        interfaceName: "wg-burst0"
-        tunnelCIDR: "10.31.0.0/24"
-        localAddressCIDR: "10.31.0.1/24"
-        gatewayNodeIP: "10.128.16.73"
-        mtu: 1420
-        allowedIPs:
-          - "10.128.16.0/24"
-          - "10.42.0.0/16"
-          - "10.43.0.0/16"
-          - "192.168.1.0/24"
-        burstNodeCIDRs:
-          - "10.30.0.0/24"
-          - "192.168.1.0/24"
-        hub:
-          enabled: true
-          image: "docker.io/linuxserver/wireguard:latest"
-          imagePullPolicy: "IfNotPresent"
-          privateKeySecretName: "skyforge-hetzner-wireguard"
-          privateKeySecretKey: "private-key"
-          peerConfigSecretName: "skyforge-hetzner-wireguard"
-          peerConfigSecretKey: "peers.conf"
-          intervalSeconds: 60
-          enableIPv4Forwarding: true
-          nodeSelector:
-            skyforge-role: "control"
-          tolerations:
-            - key: "node-role.kubernetes.io/control-plane"
-              operator: "Exists"
-              effect: "NoSchedule"
-          affinity: {}
-      routeReconciler:
-        enabled: true
-        image: "docker.io/nicolaka/netshoot:v0.13"
-        imagePullPolicy: "IfNotPresent"
-        intervalSeconds: 60
-        via: "10.128.16.73"
-        dev: ""
-        destinations:
-          - "10.30.0.0/24"
-          - "10.31.0.0/24"
-          - "192.168.1.0/24"
-        nodeSelector: {}
-        tolerations:
-          - key: "skyforge.forwardnetworks.com/disabled"
-            operator: "Exists"
-            effect: "NoSchedule"
-        affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-                - matchExpressions:
-                    - key: "node-role.kubernetes.io/control-plane"
-                      operator: "DoesNotExist"
-
-
-  # Forward in-cluster collector image + pull credentials.
-  # Pin to a concrete tag to avoid drifting when `latest` is retagged.
+      apiTokenSecretName: skyforge-hetzner-burst
+      apiTokenSecretKey: api-token
+      hubPublicKeySecretName: skyforge-hetzner-burst
+      hubPublicKeySecretKey: public-key
+      k3sTokenSecretName: skyforge-hetzner-burst
+      k3sTokenSecretKey: token
+  netlab:
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260418-netlab-snmpfix-r2-fe0107a
+    pullPolicy: IfNotPresent
   forward:
-    enabled: true
-    baseUrl: "https://fwd-appserver.forward.svc:8443"
-    demoReset:
-      schedule: "17 3 * * *"
-      timeZone: "America/Chicago"
-    demoSeedRepair:
-      schedule: "*/30 * * * *"
-      timeZone: "America/Chicago"
+    baseUrl: https://fwd-appserver.forward.svc:8443
   forwardImages:
-    tag: 26.4.0-11
+    tag: 26.4.0-13
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
+  kubernetes:
+    apiHostOverride: "10.128.16.82"
+    apiPortOverride: "6443"
+  waitForNsq:
+    host: "nsq.skyforge.svc.cluster.local"
+    port: 4150
+    attempts: 90
+    sleepSeconds: 2
+    connectTimeoutSeconds: 2
   forwardCluster:
     enabled: true
-    appserverProfiles: "K8S"
-    hostname: "skyforge-fwd.local.forwardnetworks.com"
-    tlsSecretName: "proxy-tls-fwd"
-    serviceName: "fwd-appserver"
-    serviceNamespace: "forward"
+    hostname: skyforge-fwd.local.forwardnetworks.com
+    serviceNamespace: forward
+    serviceName: fwd-appserver
     servicePort: 8080
-    # Keep the production profile on upstream worker ownership until the
-    # rollout path stops the upstream Forward release from rendering the same
-    # worker object names. The Skyforge-owned takeover profile lives in
-    # values-prod-skyforge-local-forward-workers-skyforge.yaml.
-    workers:
-      owner: "upstream"
-      adoptionAcknowledged: false
-    upstreamWorkerRuntime:
-      compute:
-        memoryProfile: "ISOLATED_WORKER"
-        javaToolOptions: ""
-        memoryLimitMB: 16384
-        podMemoryRequest: "8Gi"
-        podMemoryLimit: "24Gi"
-      search:
-        memoryProfile: "ISOLATED_WORKER"
-        javaToolOptions: ""
-        memoryLimitMB: 8192
-        podMemoryRequest: "4Gi"
-        podMemoryLimit: "12Gi"
-    nodeRoleReconciler:
-      enabled: true
-      schedule: "*/1 * * * *"
-      # Local-path Forward state is pinned onto this master set. Keep every node
-      # that owns critical Forward PVCs in `master`, and avoid shrinking this
-      # set without first moving the underlying PVs.
-      # `skyforge-worker-0` is still intentionally part of the app pool for
-      # compute/search fanout even though it also carries k3s control-plane
-      # roles. If it drops out of the app pool, Forward worker replicas will
-      # cap at 4/5 because of required anti-affinity.
-      managedNodes:
-        - "skyforge-worker-0"
-        - "skyforge-worker-2"
-        - "skyforge-worker-3"
-        - "skyforge-worker-4"
-        - "skyforge-worker-5"
-      nodeRoles:
-        master:
-          - "skyforge-worker-0"
-          - "skyforge-worker-2"
-          - "skyforge-worker-3"
-          - "skyforge-worker-4"
-          - "skyforge-worker-5"
-        monitoring:
-          - "skyforge-worker-2"
-        compute:
-          - "skyforge-worker-0"
-          - "skyforge-worker-2"
-          - "skyforge-worker-3"
-          - "skyforge-worker-4"
-          - "skyforge-worker-5"
-        search:
-          - "skyforge-worker-0"
-          - "skyforge-worker-2"
-          - "skyforge-worker-3"
-          - "skyforge-worker-4"
-          - "skyforge-worker-5"
-        forward:
-          - "skyforge-worker-0"
-          - "skyforge-worker-2"
-          - "skyforge-worker-3"
-          - "skyforge-worker-4"
-          - "skyforge-worker-5"
-      nodePools:
-        control: []
-        app:
-          - "skyforge-worker-0"
-          - "skyforge-worker-2"
-          - "skyforge-worker-3"
-          - "skyforge-worker-4"
-          - "skyforge-worker-5"
-        lab: []
-  observability:
-    enabled: true
-    managed:
-      enabled: true
-    dashboards:
-      enabled: true
-
-  # Enable Gitea provisioning for blueprint-backed workflows.
-  # Skyforge uses the routed /git API path so blueprint/LFS reads work from the
-  # application pods and from browser-driven flows the same way.
-  gitea:
-    apiUrl: http://gitea.skyforge.svc.cluster.local:3000/api/v1
-    url: https://skyforge.local.forwardnetworks.com/git
-
-  # Pin the single netlab runtime image used by both create/apply phases.
-  netlab:
-    image: "ghcr.io/forwardnetworks/skyforge-netlab:20260417-kne-persistence-r1"
-    pullPolicy: "IfNotPresent"
-    runtimePrepull:
-      enabled: true
-
-  # Skyforge deploys in-cluster topologies through KNE.
+    tlsSecretName: proxy-tls-fwd
   kne:
     enabled: true
-    meshnetMode: grpc
+    meshnetMode: vxlan
+    meshnet:
+      image: "ghcr.io/forwardnetworks/meshnet:20260419-meshnet-vni-scope-r4"
+      imagePullPolicy: "IfNotPresent"
     controllers:
       enabled: true
       ceoslab:
         enabled: true
-        image: "ghcr.io/forwardnetworks/arista-ceoslab-operator:20260417-kne-persistence-r1"
+        image: ghcr.io/forwardnetworks/arista-ceoslab-operator:20260417-kne-persistence-r1
       cdnos:
         enabled: false
       srlinux:
         enabled: false
       lemming:
         enabled: false
-
-  worker:
-    priorityClassName: "skyforge-core"
-    replicas: 2
-    placement:
-      poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
-      preferredPoolClass: "app"
-      pools:
-        - control
-        - app
-        - lab
-      poolWeight: 100
-      requiredPoolClass: "app"
-      requiredAntiAffinity: true
-      nodeSelector: {}
-      tolerations: []
-      affinity: {}
-    autoscaling:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 6
-      targetCPUUtilizationPercentage: 70
-    pdb:
-      enabled: true
-      minAvailable: 1
-    tuning:
-      interactiveConcurrency: 12
-      interactiveQueueSize: 128
-      backgroundConcurrency: 8
-      backgroundQueueSize: 128
-      heartbeatIntervalSeconds: 30
-      reconcileQueuedIntervalSeconds: 30
-      reconcileRunningIntervalSeconds: 300
-      activationIntervalSeconds: 5
-      activationMinQueuedAgeSeconds: 5
-      activationBatchSize: 200
-      diagStaleHeartbeatSeconds: 120
-      diagOldestQueuedSeconds: 300
-
-  server:
-    priorityClassName: "skyforge-core"
-    placement:
-      poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
-      pools:
-        - app
-      poolWeight: 100
-      requiredPoolClass: "app"
-      requiredAntiAffinity: true
-      nodeSelector: {}
-      tolerations: []
-      affinity: {}
-
-nsq:
-  enabled: true
-  replicas: 1
-  pdb:
-    enabled: true
-    minAvailable: 1
-  placement:
-    poolLabelKey: "skyforge.forwardnetworks.com/pool-class"
-    pools:
-      - app
-    poolWeight: 100
-    requiredPoolClass: "app"
-    requiredAntiAffinity: false
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
-
-images:
-  # Pin images in prod so upgrades are repeatable (avoid implicit "latest").
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260417-kne-ready-demo-seed-r3"
-  # Keep the worker image explicit so IaC matches live even when worker and API
-  # roll on different tags during incident-driven fixes.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260417-kne-ready-demo-seed-r3-worker"
-  atlas: "arigaio/atlas:latest-alpine"
-  # Shared kubectl image pin used by lifecycle jobs when integration-specific image is unset.
-  kubectl: "public.ecr.aws/bitnami/kubectl:1.35.2-debian-12-r1"
-
-kubernetes:
-  # Ensure private GHCR images can be pulled in the release namespace.
-  imagePullSecrets: ["ghcr-pull"]
-
+  gitea:
+    storage:
+      storageClassName: "longhorn"
+    apiUrl: http://gitea.skyforge.svc.cluster.local:3000/api/v1
+    url: /git
+  redis:
+    storage:
+      storageClassName: "longhorn"
+  coder:
+    basePath: "/coder"
+    internalUrl: "http://coder:7080"
+    organization: "coder"
+    nodeSelector:
+      skyforge.forwardnetworks.com/egress-okta: "true"
+    storage:
+      storageClassName: "longhorn"
+    personalWorkspace:
+      nodeSelector:
+        skyforge.forwardnetworks.com/egress-okta: "true"
+      publicCA:
+        secretName: "coder-workspace-public-ca"
+        secretKey: "ca.crt"
+        pem: |
+          -----BEGIN CERTIFICATE-----
+          MIIGxDCCBKygAwIBAgIJAILIpbFz1JlnMA0GCSqGSIb3DQEBCwUAMIHOMQswCQYD
+          VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTESMBAGA1UEBwwJUGFsbyBBbHRv
+          MRkwFwYDVQQKDBBGb3J3YXJkIE5ldHdvcmtzMS8wLQYDVQQLDCZGb3J3YXJkIE5l
+          dHdvcmtzIENlcnRpZmljYXRlIEF1dGhvcml0eTEhMB8GA1UEAwwYRm9yd2FyZCBO
+          ZXR3b3JrcyBSb290IENBMScwJQYJKoZIhvcNAQkBFhhpbmZvQGZvcndhcmRuZXR3
+          b3Jrcy5jb20wHhcNMTkxMTE2MDIxMjM5WhcNMzkxMTExMDIxMjM5WjCBzjELMAkG
+          A1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExEjAQBgNVBAcMCVBhbG8gQWx0
+          bzEZMBcGA1UECgwQRm9yd2FyZCBOZXR3b3JrczEvMC0GA1UECwwmRm9yd2FyZCBO
+          ZXR3b3JrcyBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkxITAfBgNVBAMMGEZvcndhcmQg
+          TmV0d29ya3MgUm9vdCBDQTEnMCUGCSqGSIb3DQEJARYYaW5mb0Bmb3J3YXJkbmV0
+          d29ya3MuY29tMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2rKpHJHb
+          +pnu+eW4x4bJoq8BmC1xgY4oFaZK3DetWwwtaJ2PdTe3O5CXpMFb6LLRsI5ANIzb
+          +UtJO0m4bnCUg0Drn4NQJBHkCU06MMmppQfAv6UFtaqLtlli2QMhismB+a2RSqq7
+          kaPvT9xpFS2pULMtyJWjJIFxbLdXt2zjpCgn14/PPQMJloLQOhwkfY/O7HuIuqMh
+          pUk2DXxFf8a14IXe7s1N2l/fOZEp9cbs1OLgeCOxtJuGgLudzBq4Weq86ye+yxPl
+          igKc3/w11cfXWCvauurSybAfsFwQnAsFLodp/8TtxHFiMt9WwdgHFxfAEuplHP0s
+          sTsFGot/J9DBvGw0rl4XBC5i8v09mckIXcMzSmRCxx/h2sYX7O2hLFq56lLeyAq7
+          uWMm2tVBrPSng4Bild/7jWJChBWv0KYKXOIkBcj1WAYaQd0prvjsvxqPdNG+H5eI
+          eiHHzL8ocnntZ4yCQ8O6anrzyhZ9cmkPNvzw/3IrdPPhS0IQLZBxPu5kiF38GTKz
+          opikZ9zW7GcANJgxqvoPMyOwZkysJfmiquK4LywaRQo8QUJk6XGgfACbrH74CSIr
+          K11WKUr0RT4+a7GxvfdK5PlhX+Qie2fVVdBAoc2LuPLO17sH/eijv3WbTeZWdnGK
+          rFYCQqtbpUdHnQqsSUEM8m479+qvBrcQgx8CAwEAAaOBojCBnzAdBgNVHQ4EFgQU
+          4NkraeKoXWy8v2tfxAVdcNB0yJQwHwYDVR0jBBgwFoAU4NkraeKoXWy8v2tfxAVd
+          cNB0yJQwDgYDVR0PAQH/BAQDAgGGMA8GA1UdEwEB/wQFMAMBAf8wPAYDVR0fBDUw
+          MzAxoC+gLYYraHR0cDovL3BraS5mb3J3YXJkbmV0d29ya3MuY29tL2NybC9yb290
+          LmNybDANBgkqhkiG9w0BAQsFAAOCAgEAkW6Y5LWjJBzm7n5re2KTyKdlNpK0idGr
+          0OYerkmwHk+rMpok4+ML52hYmLRJLEHLcDcMFtb46GhQELxvMatcl80ON82srF13
+          X1zm4gRRoqjwXjeiaxULKJWFi7Xc2PzqW4zH8W1a3QW6T4wz3vSGlFKwnQe4xI0A
+          d7W2kW73xSzSSSl8gFpiVl2zUWcZc3Z+tbf+A3lSafH247mrVNtBYN1pTiD7OJjj
+          5MUWG8xTEcjUaFKYEYwcLlrZthPA7IgetEW0kdt1Pwlv5cq6J72Py2dfvGA5gzpc
+          w5Bt16Zw6EKbBCSUcBTlxaQsEMeeZnZv8Ut/NiRQF5VNMj6lT2pYld88BoqkT21E
+          XDqbVybAwur1icw6Wl6nB3wVqjLrM2x5RVaXI2Kk8+50UcoBmSRtMBvSnspy/zYp
+          e5zQsnVeL0UF+kMzNZP3v/F3jOPiytDO+VA8i/ic55Oo4w5KjZq71gi7NCWvkoTC
+          BieXsdgznfRe85kUkg1c+tGjElHTEY8VtK9/8hLTGg+qr74kDUYe+X6L6nbZkw6U
+          eqplD12f43K+g8IlD3ez/9I7btQd/ajZVfO2XXVPyDm3FMW0FFG2E1qQw6YzjMlq
+          ew2WEl7XFd2FyXzNQVyFK7O6h0GoJ7fdR3noPsQWOcDLigXRGHjym2vHoRtGesdn
+          PY55hpDs+SQ=
+          -----END CERTIFICATE-----
+      storageClassName: "longhorn"
+  netbox:
+    storage:
+      storageClassName: "longhorn"
+  yaade:
+    storage:
+      storageClassName: "longhorn"
+  s3gw:
+    persistence:
+      storageClassName: "longhorn"
 secrets:
-  # Production/OSS baseline: secrets are pre-created in-cluster.
   create: false
   validatePrecreated: true
+
+images:
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-personal-workspace-r1"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-personal-workspace-r1-worker"

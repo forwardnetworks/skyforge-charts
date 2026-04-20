@@ -6,7 +6,10 @@ metadata:
   name: platform-data
 spec:
   accessModes:
-    - ReadWriteOnce
+    - {{ default "ReadWriteOnce" .Values.skyforge.platformData.storage.accessMode | quote }}
+{{ with .Values.skyforge.platformData.storage.storageClassName }}
+  storageClassName: {{ . | quote }}
+{{ end }}
   resources:
     requests:
-      storage: 5Gi
+      storage: {{ default "5Gi" .Values.skyforge.platformData.storage.size | quote }}

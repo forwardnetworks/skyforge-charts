@@ -36,6 +36,8 @@ data:
 {{- end }}
   SKYFORGE_OBJECT_STORAGE_ENDPOINT: {{ .Values.skyforge.objectStorage.endpoint | quote }}
   SKYFORGE_OBJECT_STORAGE_USE_SSL: {{ .Values.skyforge.objectStorage.useSsl | quote }}
+  SKYFORGE_KUBE_API_HOST: {{ .Values.skyforge.kubernetes.apiHostOverride | quote }}
+  SKYFORGE_KUBE_API_PORT: {{ .Values.skyforge.kubernetes.apiPortOverride | quote }}
   SKYFORGE_OBJECT_STORAGE_FILES_BUCKET: {{ .Values.skyforge.objectStorage.filesBucket | quote }}
   SKYFORGE_NETLAB_SSH_USER: {{ .Values.skyforge.netlab.sshUser | quote }}
   SKYFORGE_NETLAB_STATE_ROOT: {{ .Values.skyforge.netlab.stateRoot | quote }}

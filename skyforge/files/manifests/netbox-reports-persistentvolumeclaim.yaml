@@ -7,6 +7,9 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+{{ with .Values.skyforge.netbox.storage.storageClassName }}
+  storageClassName: {{ . | quote }}
+{{ end }}
   resources:
     requests:
       storage: 5Gi

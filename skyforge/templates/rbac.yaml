@@ -107,7 +107,7 @@ rules:
     resources: ["configmaps"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
   - apiGroups: [""]
-    resources: ["pods", "pods/log"]
+    resources: ["events", "pods", "pods/log"]
     verbs: ["get", "list", "watch", "create", "patch", "update", "delete", "deletecollection"]
   - apiGroups: [""]
     resources: ["pods/exec"]

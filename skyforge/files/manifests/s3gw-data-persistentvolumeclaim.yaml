@@ -6,7 +6,10 @@ metadata:
   name: s3gw-data
 spec:
   accessModes:
-    - ReadWriteOnce
+    - {{ default "ReadWriteOnce" .Values.skyforge.s3gw.persistence.accessMode | quote }}
+{{ with .Values.skyforge.s3gw.persistence.storageClassName }}
+  storageClassName: {{ . | quote }}
+{{ end }}
   resources:
     requests:
       storage: {{ .Values.skyforge.s3gw.persistence.size | quote }}

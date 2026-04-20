@@ -6,7 +6,10 @@ metadata:
   name: db-data
 spec:
   accessModes:
-    - ReadWriteOnce
+    - {{ default "ReadWriteOnce" .Values.skyforge.db.storage.accessMode | quote }}
+{{ with .Values.skyforge.db.storage.storageClassName }}
+  storageClassName: {{ . | quote }}
+{{ end }}
   resources:
     requests:
       storage: {{ default "50Gi" .Values.skyforge.db.storage.size | quote }}

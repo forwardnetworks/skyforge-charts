@@ -6,7 +6,10 @@ metadata:
   name: redis-data
 spec:
   accessModes:
-    - ReadWriteOnce
+    - {{ default "ReadWriteOnce" .Values.skyforge.redis.storage.accessMode | quote }}
+{{ with .Values.skyforge.redis.storage.storageClassName }}
+  storageClassName: {{ . | quote }}
+{{ end }}
   resources:
     requests:
-      storage: 5Gi
+      storage: {{ default "5Gi" .Values.skyforge.redis.storage.size | quote }}

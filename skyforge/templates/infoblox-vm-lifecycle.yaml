@@ -425,6 +425,8 @@ spec:
                   value: {{ default "admin" $license.consoleUsername | quote }}
                 - name: CONSOLE_PASSWORD
                   value: {{ default "infoblox" $license.consolePassword | quote }}
+                - name: LICENSE_CHOICE
+                  value: {{ default "2" $license.licenseChoice | quote }}
               command:
                 - /bin/sh
                 - -ec
@@ -487,62 +489,114 @@ spec:
                   }
 
                   run_bootstrap_once() {
-                    input_file="/tmp/ibx-console.input"
-                    output_file="/tmp/ibx-console.output"
+                    prompt_output="/tmp/ibx-console.prompt"
+                    bootstrap_output="/tmp/ibx-console.output"
+                    prompt_fifo="/tmp/ibx-console.prompt.fifo"
+                    bootstrap_fifo="/tmp/ibx-console.bootstrap.fifo"
+
+                    rm -f "${prompt_fifo}" "${bootstrap_fifo}"
+                    mkfifo "${prompt_fifo}" "${bootstrap_fifo}"
+                    : >"${prompt_output}"
+
+                    {
+                      while true; do
+                        printf '\n'
+                        sleep 1
+                      done
+                    } >"${prompt_fifo}" &
+                    prompt_feeder_pid="$!"
+
+                    sh -c "cat \"${prompt_fifo}\" | \"${VIRTCTL_BIN}\" --namespace \"${POD_NAMESPACE}\" console \"${VM_NAME}\" >\"${prompt_output}\" 2>&1" &
+                    prompt_console_pid="$!"
+
+                    deadline_epoch="$(( $(date -u +%s) + PROMPT_WAIT_SECONDS ))"
+                    prompt_seen="false"
+                    while [ "$(date -u +%s)" -lt "${deadline_epoch}" ]; do
+                      if grep -Eiq 'login:|[Pp]assword:|[>#] ' "${prompt_output}"; then
+                        prompt_seen="true"
+                        break
+                      fi
+                      if ! kill -0 "${prompt_console_pid}" 2>/dev/null; then
+                        break
+                      fi
+                      sleep 2
+                    done
+
+                    kill "${prompt_console_pid}" 2>/dev/null || true
+                    kill "${prompt_feeder_pid}" 2>/dev/null || true
+                    wait "${prompt_console_pid}" 2>/dev/null || true
+                    wait "${prompt_feeder_pid}" 2>/dev/null || true
+                    rm -f "${prompt_fifo}"
+
+                    if [ "${prompt_seen}" != "true" ] && ! grep -Eiq 'login:|[Pp]assword:|[>#] ' "${prompt_output}"; then
+                      log "console did not present an interactive prompt"
+                      tail -n 60 "${prompt_output}" >&2 || true
+                      return 1
+                    fi
 
                     {
                       i=0
                       while [ "${i}" -lt "${INITIAL_WAIT_SECONDS}" ]; do
                         printf '\n'
+                        sleep 1
                         i="$((i + 1))"
                       done
                       printf '%s\n' "${CONSOLE_USERNAME}"
+                      sleep 1
                       printf '%s\n' "${CONSOLE_PASSWORD}"
-                      printf 'set network\n'
-                      i=0
-                      while [ "${i}" -lt 12 ]; do
-                        printf 'y\n'
-                        i="$((i + 1))"
-                      done
+                      sleep 1
                       printf 'set temp_license\n'
+                      sleep 1
+                      printf '%s\n' "${LICENSE_CHOICE}"
+                      sleep 1
                       i=0
                       while [ "${i}" -lt 24 ]; do
                         printf 'y\n'
+                        sleep 1
                         i="$((i + 1))"
                       done
                       printf 'save config\n'
+                      sleep 1
                       i=0
                       while [ "${i}" -lt 10 ]; do
                         printf 'y\n'
+                        sleep 1
                         i="$((i + 1))"
                       done
                       printf 'exit\n'
-                    } >"${input_file}"
+                      sleep "${POST_BOOTSTRAP_WAIT_SECONDS}"
+                    } >"${bootstrap_fifo}" &
+                    bootstrap_feeder_pid="$!"
 
                     if command -v timeout >/dev/null 2>&1; then
-                      if ! timeout "${CONSOLE_TIMEOUT_SECONDS}"s sh -c "cat \"${input_file}\" | \"${VIRTCTL_BIN}\" --namespace \"${POD_NAMESPACE}\" console \"${VM_NAME}\" >\"${output_file}\" 2>&1"; then
+                      if ! timeout "$((CONSOLE_TIMEOUT_SECONDS + POST_BOOTSTRAP_WAIT_SECONDS + 10))"s sh -c "cat \"${bootstrap_fifo}\" | \"${VIRTCTL_BIN}\" --namespace \"${POD_NAMESPACE}\" console \"${VM_NAME}\" >\"${bootstrap_output}\" 2>&1"; then
                         log "virtctl console/bootstrap command failed"
-                        tail -n 60 "${output_file}" >&2 || true
+                        tail -n 60 "${bootstrap_output}" >&2 || true
+                        wait "${bootstrap_feeder_pid}" || true
+                        rm -f "${bootstrap_fifo}"
                         return 1
                       fi
                     else
-                      if ! cat "${input_file}" | "${VIRTCTL_BIN}" --namespace "${POD_NAMESPACE}" console "${VM_NAME}" >"${output_file}" 2>&1; then
+                      if ! cat "${bootstrap_fifo}" | "${VIRTCTL_BIN}" --namespace "${POD_NAMESPACE}" console "${VM_NAME}" >"${bootstrap_output}" 2>&1; then
                         log "virtctl console/bootstrap command failed"
-                        tail -n 60 "${output_file}" >&2 || true
+                        tail -n 60 "${bootstrap_output}" >&2 || true
+                        wait "${bootstrap_feeder_pid}" || true
+                        rm -f "${bootstrap_fifo}"
                         return 1
                       fi
                     fi
 
-                    # Guard against false-positive console success where virtctl
-                    # connects but the appliance never presents a login/prompt.
-                    if ! grep -Eiq 'login:|[Pp]assword:|[>#] ' "${output_file}"; then
-                      log "console did not present an interactive prompt"
-                      tail -n 60 "${output_file}" >&2 || true
+                    wait "${bootstrap_feeder_pid}" || true
+                    rm -f "${bootstrap_fifo}"
+
+                    if grep -Eq '(^|\n)ERROR:|Enter IP address:' "${bootstrap_output}"; then
+                      log "bootstrap command stream returned appliance errors"
+                      tail -n 60 "${bootstrap_output}" >&2 || true
                       return 1
                     fi
 
                     log "virtctl console/bootstrap command completed"
-                    tail -n 40 "${output_file}" >&2 || true
+                    tail -n 40 "${bootstrap_output}" >&2 || true
                   }
 
                   ensure_state_configmap

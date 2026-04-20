@@ -1,6 +1,6 @@
 skyforge:
   forwardImages:
-    tag: "26.4.0-11"
+    tag: "26.4.0-13"
   forwardCluster:
     appserverProfiles: "K8S"
     workers:

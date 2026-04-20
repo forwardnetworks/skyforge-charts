@@ -6,7 +6,10 @@ metadata:
   name: gitea-data
 spec:
   accessModes:
-    - ReadWriteOnce
+    - {{ default "ReadWriteOnce" .Values.skyforge.gitea.storage.accessMode | quote }}
+{{ with .Values.skyforge.gitea.storage.storageClassName }}
+  storageClassName: {{ . | quote }}
+{{ end }}
   resources:
     requests:
-      storage: 5Gi
+      storage: {{ default "5Gi" .Values.skyforge.gitea.storage.size | quote }}

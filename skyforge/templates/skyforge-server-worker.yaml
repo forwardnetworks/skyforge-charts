@@ -406,14 +406,29 @@ spec:
             - -c
             - |
               set -eu
-              host="nsq"
-              for i in $(seq 1 90); do
-                if nc -z "${host}" 4150 >/dev/null 2>&1; then
+              host={{ .Values.skyforge.waitForNsq.host | quote }}
+              port={{ .Values.skyforge.waitForNsq.port }}
+              attempts={{ .Values.skyforge.waitForNsq.attempts }}
+              sleep_s={{ .Values.skyforge.waitForNsq.sleepSeconds }}
+              connect_timeout={{ .Values.skyforge.waitForNsq.connectTimeoutSeconds }}
+              resolve_target() {
+                case "$1" in
+                  '' ) return 1 ;;
+                  *[!0-9.]* ) ;;
+                  * ) echo "$1"; return 0 ;;
+                esac
+                nslookup "$1" 2>/dev/null \
+                  | awk '/^Address[[:space:]]*[0-9]*: / { print $3 } /^Address: / { print $2 }' \
+                  | tail -n 1
+              }
+              for i in $(seq 1 "${attempts}"); do
+                target="$(resolve_target "${host}" || true)"
+                if [ -n "${target}" ] && nc -z -w "${connect_timeout}" "${target}" "${port}" >/dev/null 2>&1; then
                   exit 0
                 fi
-                sleep 2
+                sleep "${sleep_s}"
               done
-              echo "nsq did not become reachable in time" >&2
+              echo "nsq did not become reachable in time (host=${host})" >&2
               exit 1
         - name: terraform-bin
           image: {{ .Values.images.terraform | quote }}

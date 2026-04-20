@@ -26,14 +26,13 @@ spec:
 {{- end }}
       containers:
         - name: backup-forward-raw
-          image: {{ default "alpine:3.20" $forwardRaw.image | quote }}
+          image: {{ default "public.ecr.aws/docker/library/busybox:1.36" $forwardRaw.image | quote }}
           command:
             - /bin/sh
             - -lc
           args:
             - |
               set -euo pipefail
-              apk add --no-cache rsync >/dev/null
               src_root="/source"
               dst_root="/dest/${POD_NODE_NAME}"
               mkdir -p "${src_root}" "${dst_root}"
@@ -44,9 +43,10 @@ spec:
                 src="$(find "${src_root}" -maxdepth 1 -mindepth 1 -type d -name "*_forward_${claim}" | head -n1 || true)"
                 if [ -n "${src}" ] && [ -d "${src}" ]; then
                   dst="${dst_root}/${claim}"
-                  mkdir -p "${dst}"
                   echo "forward-raw: syncing ${src} -> ${dst}"
-                  rsync -a --delete "${src}/" "${dst}/"
+                  rm -rf "${dst}"
+                  mkdir -p "${dst}"
+                  cp -a "${src}/." "${dst}/"
                   copied=$((copied + 1))
                 else
                   echo "forward-raw: claim ${claim} not present on node ${POD_NODE_NAME}, skipping"

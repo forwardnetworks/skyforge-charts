@@ -1,4 +1,9 @@
 {{- if .Values.skyforge.coder.enabled -}}
+{{- $coderBasePath := default "/coder" .Values.skyforge.coder.basePath | trim -}}
+{{- if eq $coderBasePath "" }}{{- $coderBasePath = "/coder" -}}{{- end }}
+{{- if not (hasPrefix "/" $coderBasePath) }}{{- $coderBasePath = printf "/%s" $coderBasePath -}}{{- end }}
+{{- if and (ne $coderBasePath "/") (hasSuffix "/" $coderBasePath) }}{{- $coderBasePath = trimSuffix "/" $coderBasePath -}}{{- end }}
+{{- $coderAccessURL := printf "https://%s%s" .Values.skyforge.hostname $coderBasePath -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,24 +22,13 @@ spec:
       labels:
         app.kubernetes.io/name: coder
     spec:
-      automountServiceAccountToken: false
+      automountServiceAccountToken: true
       serviceAccountName: coder
+{{- with .Values.skyforge.coder.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
       initContainers:
-        - name: skyforge-ca-bundle
-          image: public.ecr.aws/docker/library/alpine:latest
-          command:
-            - sh
-            - -c
-            - cat /etc/ssl/certs/ca-certificates.crt /etc/skyforge/skyforge-ca-cert /etc/proxy/tls.crt > /work/ca-certificates.crt
-          volumeMounts:
-            - name: skyforge-ca-cert
-              mountPath: /etc/skyforge
-              readOnly: true
-            - name: proxy-tls
-              mountPath: /etc/proxy
-              readOnly: true
-            - name: skyforge-ca-bundle
-              mountPath: /work
         - name: wait-for-dex
           image: public.ecr.aws/docker/library/alpine:latest
           command:
@@ -57,9 +51,9 @@ spec:
             - name: CODER_HTTP_ADDRESS
               value: "0.0.0.0:7080"
             - name: CODER_BASE_PATH
-              value: "/"
+              value: {{ $coderBasePath | quote }}
             - name: CODER_ACCESS_URL
-              value: "https://{{ .Values.skyforge.hostname }}"
+              value: {{ $coderAccessURL | quote }}
             - name: CODER_PG_CONNECTION_URL
               valueFrom:
                 secretKeyRef:
@@ -88,8 +82,6 @@ spec:
               value: {{ .Values.skyforge.coder.disablePasswordAuth | quote }}
             - name: CODER_OAUTH2_GITHUB_DEFAULT_PROVIDER_ENABLE
               value: "false"
-            - name: SSL_CERT_FILE
-              value: "/etc/skyforge/ca/ca-certificates.crt"
           ports:
             - containerPort: 7080
           livenessProbe:
@@ -111,21 +103,10 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/coder
               name: coder-data
-            - mountPath: /etc/skyforge/ca
-              name: skyforge-ca-bundle
-              readOnly: true
       volumes:
         - name: coder-data
           persistentVolumeClaim:
             claimName: coder-data
-        - name: skyforge-ca-cert
-          secret:
-            secretName: skyforge-ca-cert
-        - name: proxy-tls
-          secret:
-            secretName: proxy-tls
-        - name: skyforge-ca-bundle
-          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -150,6 +131,9 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  {{- with .Values.skyforge.coder.storage.storageClassName }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
   resources:
     requests:
       storage: 5Gi

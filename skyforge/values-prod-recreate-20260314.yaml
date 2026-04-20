@@ -6,6 +6,14 @@ skyforge:
       enabled: true
     forwardRaw:
       enabled: true
+  platformData:
+    storage:
+      storageClassName: "longhorn"
+      accessMode: "ReadWriteOnce"
+  skyforgeServerData:
+    storage:
+      storageClassName: "longhorn"
+      accessMode: "ReadWriteOnce"
   priorityClasses:
     create: true
     core:
@@ -24,6 +32,9 @@ skyforge:
     create: true
   auth:
     mode: oidc
+  db:
+    storage:
+      storageClassName: "longhorn"
   hostname: skyforge.local.forwardnetworks.com
   domain: forwardnetworks.com
   publicUrl: https://skyforge.local.forwardnetworks.com
@@ -86,7 +97,7 @@ skyforge:
     enabled: true
     baseUrl: https://fwd-appserver.forward.svc:8443
   forwardImages:
-    tag: 26.4.0-11
+    tag: 26.4.0-13
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   forwardCluster:
@@ -100,19 +111,33 @@ skyforge:
     enabled: true
     managed:
       enabled: true
+      prometheus:
+        persistence:
+          storageClassName: "longhorn"
     dashboards:
       enabled: true
+  redis:
+    storage:
+      storageClassName: "longhorn"
   gitea:
+    storage:
+      storageClassName: "longhorn"
     apiUrl: http://gitea.skyforge.svc.cluster.local:3000/api/v1
     url: https://skyforge.local.forwardnetworks.com/git
     actionsRunner:
       enabled: false
+  s3gw:
+    persistence:
+      storageClassName: "longhorn"
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260417-kne-persistence-r1
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260418-netlab-snmpfix-r2-fe0107a
     pullPolicy: IfNotPresent
   kne:
     enabled: true
-    meshnetMode: grpc
+    meshnetMode: vxlan
+    meshnet:
+      image: "ghcr.io/forwardnetworks/meshnet:20260419-meshnet-vni-scope-r4"
+      imagePullPolicy: "IfNotPresent"
     controllers:
       enabled: true
       ceoslab:
@@ -144,10 +169,12 @@ skyforge:
       diagStaleHeartbeatSeconds: 120
       diagOldestQueuedSeconds: 300
 images:
-  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-public-login-r19
-  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260415-gitea-reauth-r11-worker
+  skyforgeServer: ghcr.io/forwardnetworks/skyforge-server:20260419-meshnet-overlap-r3
+  skyforgeServerWorker: ghcr.io/forwardnetworks/skyforge-server:20260419-meshnet-overlap-r3-worker
   atlas: arigaio/atlas:latest-alpine
 kubernetes:
+  apiHostOverride: 10.128.16.82
+  apiPortOverride: "6443"
   imagePullSecrets:
   - ghcr-pull
 secrets:
@@ -277,7 +304,7 @@ secrets:
     db-nautobot-password:
       db-nautobot-password: ee243c322b272f245b78732e11c57eba4a14c3263788906b
     db-forward-app-password:
-      db-forward-app-password: 71ccd5f4076acc06665ebed8c79ff45c9e8e8268092aa789
+      db-forward-app-password: 77UP1UGrufgrLYvS4nghp6q1yPOHroqEemvnwnnu4PbVaPKd56uDJM49YzCuAWKb
     db-forward-fdb-password:
       db-forward-fdb-password: aa72e6a1c46a84dae5aea5e2bcfcef7548d21e1c3ddfe4e9
     gitea-secret-key:
