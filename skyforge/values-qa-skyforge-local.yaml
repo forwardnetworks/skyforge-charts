@@ -354,7 +354,7 @@ skyforge:
         requiredAntiAffinity: false
         requiredPoolClass: "app"
         reservedMemoryOverride: ""
-        memoryLimitMB: 0
+        memoryLimitMB: 8192
         memoryPctOverride: ""
         resources:
           requests:
@@ -365,16 +365,16 @@ skyforge:
             memory: "18Gi"
         probes:
           initialDelaySeconds: 10
-          periodSeconds: 60
+          periodSeconds: 10
           failureThreshold: 180
-          timeoutSeconds: 3
+          timeoutSeconds: 2
       search:
         replicas: 1
         port: 30050
         requiredAntiAffinity: false
         requiredPoolClass: "app"
         reservedMemoryOverride: ""
-        memoryLimitMB: 0
+        memoryLimitMB: 8192
         memoryPctOverride: ""
         ioexecThreadsPerCore: ""
         fdbJdbcMaxPoolSize: 30
@@ -387,9 +387,9 @@ skyforge:
             memory: "14Gi"
         probes:
           initialDelaySeconds: 10
-          periodSeconds: 60
+          periodSeconds: 10
           failureThreshold: 180
-          timeoutSeconds: 3
+          timeoutSeconds: 2
     nodeRoleReconciler:
       enabled: true
       managedNodes:
