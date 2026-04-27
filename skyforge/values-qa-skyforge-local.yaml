@@ -31,7 +31,7 @@ skyforge:
     coderAdminBootstrap:
       runOnUpgrade: false
     giteaActionsRunnerTokenReconcile:
-      runOnUpgrade: true
+      runOnUpgrade: false
   auth:
     mode: oidc
   dex:
