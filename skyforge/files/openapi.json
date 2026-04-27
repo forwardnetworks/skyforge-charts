@@ -22455,6 +22455,12 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "authorizedSshPublicKey": {
+                      "type": "string"
+                    },
+                    "hasAuthorizedSshKey": {
+                      "type": "boolean"
+                    },
                     "hasHttpsToken": {
                       "type": "boolean"
                     },
@@ -22474,9 +22480,11 @@
                   "required": [
                     "username",
                     "sshPublicKey",
+                    "authorizedSshPublicKey",
                     "hasHttpsToken",
                     "httpsUsername",
-                    "hasSshKey"
+                    "hasSshKey",
+                    "hasAuthorizedSshKey"
                   ],
                   "type": "object"
                 }
@@ -22488,7 +22496,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "GetCurrentUserCredentials returns the current user's deploy key (public) and\nHTTPS token status.\n"
+        "summary": "GetCurrentUserCredentials returns the current user's SSH keys and HTTPS token\nstatus.\n"
       },
       "put": {
         "operationId": "PUT:gitcredentials.UpdateCurrentUserCredentials",
@@ -22497,6 +22505,9 @@
             "application/json": {
               "schema": {
                 "properties": {
+                  "authorizedSshPublicKey": {
+                    "type": "string"
+                  },
                   "clearToken": {
                     "type": "boolean"
                   },
@@ -22510,7 +22521,8 @@
                 "required": [
                   "httpsUsername",
                   "httpsToken",
-                  "clearToken"
+                  "clearToken",
+                  "authorizedSshPublicKey"
                 ],
                 "type": "object"
               }
@@ -22523,6 +22535,12 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "authorizedSshPublicKey": {
+                      "type": "string"
+                    },
+                    "hasAuthorizedSshKey": {
+                      "type": "boolean"
+                    },
                     "hasHttpsToken": {
                       "type": "boolean"
                     },
@@ -22542,9 +22560,11 @@
                   "required": [
                     "username",
                     "sshPublicKey",
+                    "authorizedSshPublicKey",
                     "hasHttpsToken",
                     "httpsUsername",
-                    "hasSshKey"
+                    "hasSshKey",
+                    "hasAuthorizedSshKey"
                   ],
                   "type": "object"
                 }
@@ -22556,7 +22576,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "UpdateCurrentUserCredentials sets (or clears) the user's HTTPS git token.\n"
+        "summary": "UpdateCurrentUserCredentials updates per-user Git and SSH credentials.\n"
       }
     },
     "/api/git-credentials/rotate": {
@@ -22568,6 +22588,12 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "authorizedSshPublicKey": {
+                      "type": "string"
+                    },
+                    "hasAuthorizedSshKey": {
+                      "type": "boolean"
+                    },
                     "hasHttpsToken": {
                       "type": "boolean"
                     },
@@ -22587,9 +22613,11 @@
                   "required": [
                     "username",
                     "sshPublicKey",
+                    "authorizedSshPublicKey",
                     "hasHttpsToken",
                     "httpsUsername",
-                    "hasSshKey"
+                    "hasSshKey",
+                    "hasAuthorizedSshKey"
                   ],
                   "type": "object"
                 }
@@ -42943,6 +42971,12 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "authorizedSshPublicKey": {
+                      "type": "string"
+                    },
+                    "hasAuthorizedSshKey": {
+                      "type": "boolean"
+                    },
                     "hasHttpsToken": {
                       "type": "boolean"
                     },
@@ -42962,9 +42996,11 @@
                   "required": [
                     "username",
                     "sshPublicKey",
+                    "authorizedSshPublicKey",
                     "hasHttpsToken",
                     "httpsUsername",
-                    "hasSshKey"
+                    "hasSshKey",
+                    "hasAuthorizedSshKey"
                   ],
                   "type": "object"
                 }
@@ -43008,6 +43044,12 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "authorizedSshPublicKey": {
+                      "type": "string"
+                    },
+                    "hasAuthorizedSshKey": {
+                      "type": "boolean"
+                    },
                     "hasHttpsToken": {
                       "type": "boolean"
                     },
@@ -43027,9 +43069,11 @@
                   "required": [
                     "username",
                     "sshPublicKey",
+                    "authorizedSshPublicKey",
                     "hasHttpsToken",
                     "httpsUsername",
-                    "hasSshKey"
+                    "hasSshKey",
+                    "hasAuthorizedSshKey"
                   ],
                   "type": "object"
                 }
@@ -43051,6 +43095,9 @@
             "application/json": {
               "schema": {
                 "properties": {
+                  "authorizedSshPublicKey": {
+                    "type": "string"
+                  },
                   "clearToken": {
                     "type": "boolean"
                   },
@@ -43072,7 +43119,8 @@
                   "sessionSecret",
                   "httpsUsername",
                   "httpsToken",
-                  "clearToken"
+                  "clearToken",
+                  "authorizedSshPublicKey"
                 ],
                 "type": "object"
               }
@@ -43085,6 +43133,12 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "authorizedSshPublicKey": {
+                      "type": "string"
+                    },
+                    "hasAuthorizedSshKey": {
+                      "type": "boolean"
+                    },
                     "hasHttpsToken": {
                       "type": "boolean"
                     },
@@ -43104,9 +43158,11 @@
                   "required": [
                     "username",
                     "sshPublicKey",
+                    "authorizedSshPublicKey",
                     "hasHttpsToken",
                     "httpsUsername",
-                    "hasSshKey"
+                    "hasSshKey",
+                    "hasAuthorizedSshKey"
                   ],
                   "type": "object"
                 }

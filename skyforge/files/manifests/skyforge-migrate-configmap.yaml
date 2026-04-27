@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:sHa7Q+XC2TOZAFNMc/JzqKVU+IlTzAi50RDcGbipjRU=
+    h1:yfLZrVRk35GyY57fVSTrmnsKLSs4a4Sl5P/vSW/l2jI=
     20260222170000_user_scope_baseline.up.sql h1:HfGY06u+cqowMWsvJbj9T0u/unus+5At31uUGJcGY88=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:3FAKn5+UMGrrSZoN7XWmYGsOVdS/uNw94GcvZwVmbvQ=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:rDG5i289QUNJBFmi1cNM2pv7InZZwmp/Xmu1PhPJFrw=
@@ -82,6 +82,7 @@ data:
     20260424183000_forward_testdrive_provision_status.up.sql h1:IKpsAUjif+Dz5POeOIZCBCouruuZSDi7GuXrrWwIuCI=
     20260425120000_role_profile_definitions.up.sql h1:1kdeJgXCoVAlIztG7GefWkA9SARtAjEvWQUSPmStv2E=
     20260427152000_forward_org_shares.up.sql h1:CMMA1T/RLPxwXWVzO4wwBRhxwjgUP74tj3/X+9ELdFY=
+    20260427192000_user_authorized_ssh_public_key.up.sql h1:H0qa7vd+dlnGyg1mBLs9AO0g97QcQ4XAT0q8pftwj9E=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -5231,3 +5232,7 @@ data:
         END IF;
     END
     $$;
+
+  20260427192000_user_authorized_ssh_public_key.up.sql: |
+    ALTER TABLE sf_user_git_credentials
+      ADD COLUMN IF NOT EXISTS ssh_authorized_public_key text;
