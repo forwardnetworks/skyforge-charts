@@ -208,16 +208,26 @@ skyforge:
             port: 24224
       appserver:
         profiles: "K8S"
+        memoryProfile: "SINGLE_BOX"
+        memoryLimitMB: 16384
         pvc:
           storageClassName: "longhorn"
         resources:
           requests:
-            cpu: "2"
-            memory: "8Gi"
+            cpu: "4"
+            memory: "24Gi"
           limits:
-            cpu: "2"
-            memory: "8Gi"
+            cpu: "8"
+            memory: "32Gi"
+        probes:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 180
+          timeoutSeconds: 2
       backend:
+        profiles: "K8S,BACKEND_MASTER,ON_PREM"
+        memoryProfile: "SINGLE_BOX"
+        memoryLimitMB: 4096
         pvc:
           storageClassName: "longhorn"
         resources:
@@ -227,6 +237,11 @@ skyforge:
           limits:
             cpu: "2"
             memory: "8Gi"
+        probes:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 180
+          timeoutSeconds: 2
       logAggregation:
         enabled: true
         replicas: 1
