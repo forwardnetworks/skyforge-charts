@@ -575,5 +575,5 @@ secrets:
   validatePrecreated: true
 
 images:
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260427-quickdeploy-tags-r1"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260427-quickdeploy-tags-r1-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260427-quickdeploy-react185-r1"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260427-quickdeploy-react185-r1-worker"
