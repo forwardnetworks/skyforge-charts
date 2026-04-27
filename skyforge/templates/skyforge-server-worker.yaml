@@ -104,9 +104,11 @@ spec:
             - name: SKYFORGE_ROLE
               value: "worker"
             - name: SKYFORGE_FORWARD_DEMO_SEED_REPLAY_TIMEOUT
-              value: {{ default "45m" .Values.skyforge.forwardDemoSeed.replayTimeout | quote }}
+              value: {{ default "90m" .Values.skyforge.forwardDemoSeed.replayTimeout | quote }}
             - name: SKYFORGE_FORWARD_DEMO_SEED_SNAPSHOT_PROCESS_TIMEOUT
               value: {{ default "20m" .Values.skyforge.forwardDemoSeed.snapshotProcessTimeout | quote }}
+            - name: SKYFORGE_FORWARD_TENANT_RESET_ACTIVE_MAX_AGE
+              value: {{ default "3h" .Values.skyforge.forwardTenantReset.activeMaxAge | quote }}
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:

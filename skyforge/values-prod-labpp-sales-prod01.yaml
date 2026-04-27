@@ -194,6 +194,8 @@ skyforge:
   forwardDemoSeed:
     replayTimeout: "90m"
     snapshotProcessTimeout: "30m"
+  forwardTenantReset:
+    activeMaxAge: "3h"
   forwardCluster:
     enabled: true
     hostname: skyforge-fwd.dc.forwardnetworks.com
@@ -573,5 +575,5 @@ secrets:
   validatePrecreated: true
 
 images:
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260427-host-arp-r1"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260427-host-arp-r1-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260427-host-arp-r2"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260427-host-arp-r2-worker"

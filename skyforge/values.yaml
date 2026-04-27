@@ -205,8 +205,12 @@ skyforge:
   # Single-node prod-style clusters can take materially longer to process
   # uploaded snapshots under load, so defaults are intentionally generous.
   forwardDemoSeed:
-    replayTimeout: "45m"
+    replayTimeout: "90m"
     snapshotProcessTimeout: "20m"
+  # Must be longer than the worst-case demo seed replay window. A reset that is
+  # still processing Forward snapshots is active, not stale.
+  forwardTenantReset:
+    activeMaxAge: "3h"
   domain: "forwardnetworks.com"
   gateway:
     # Optional explicit Gateway addresses.
