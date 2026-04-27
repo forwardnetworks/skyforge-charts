@@ -28,6 +28,8 @@ skyforge:
   hooks:
     authRuntimeSync:
       runOnUpgrade: false
+    coderAdminBootstrap:
+      runOnUpgrade: false
     giteaActionsRunnerTokenReconcile:
       runOnUpgrade: true
   auth:
@@ -158,7 +160,7 @@ skyforge:
       k3sTokenSecretName: skyforge-hetzner-burst
       k3sTokenSecretKey: token
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260418-netlab-snmpfix-r2-fe0107a
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260427-eos-kne-initial-r4
     pullPolicy: IfNotPresent
   forward:
     baseUrl: https://fwd-appserver.forward.svc:8443
@@ -429,7 +431,7 @@ skyforge:
     nodeSelector:
       skyforge.forwardnetworks.com/pool-class: "app"
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
     personalWorkspace:
       nodeSelector:
         skyforge.forwardnetworks.com/pool-class: "app"
