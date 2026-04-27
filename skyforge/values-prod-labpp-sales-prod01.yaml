@@ -575,5 +575,5 @@ secrets:
   validatePrecreated: true
 
 images:
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260427-host-arp-r2"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260427-host-arp-r2-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260427-predict-ai-warning-r1"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260427-predict-ai-warning-r1-worker"
