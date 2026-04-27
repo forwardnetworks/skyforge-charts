@@ -174,7 +174,7 @@ skyforge:
       k3sTokenSecretName: skyforge-hetzner-burst
       k3sTokenSecretKey: token
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260427-eos-ip-routing-r3
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260427-eos-kne-initial-r4
     pullPolicy: IfNotPresent
   forward:
     baseUrl: https://skyforge-fwd.dc.forwardnetworks.com
