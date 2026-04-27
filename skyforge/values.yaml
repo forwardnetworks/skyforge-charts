@@ -994,6 +994,18 @@ skyforge:
           cpu: "10m"
           memory: "32Mi"
         limits: {}
+  managementAccess:
+    ssh:
+      enabled: false
+      listenPort: 2222
+      externalHost: ""
+      externalPort: 22
+      service:
+        enabled: false
+        type: LoadBalancer
+        port: 22
+        annotations: {}
+        loadBalancerIP: ""
   dns:
     enabled: false
     adminUsername: "admin"

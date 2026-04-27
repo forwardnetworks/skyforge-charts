@@ -1,6 +1,10 @@
 {{- $giteaSSH := default (dict) .Values.skyforge.gitea.ssh -}}
 {{- $lbipam := default (dict) .Values.skyforge.gateway.ciliumLBIPAM -}}
-{{- if and .Values.skyforge.gitea.enabled (default true $giteaSSH.enabled) (ne (trim (default "skyforge-gateway" $lbipam.sharingKey)) "") }}
+{{- $giteaSSHConfiguredEnabled := true -}}
+{{- if hasKey $giteaSSH "enabled" -}}
+  {{- $giteaSSHConfiguredEnabled = $giteaSSH.enabled -}}
+{{- end -}}
+{{- if and .Values.skyforge.gitea.enabled $giteaSSHConfiguredEnabled (ne (trim (default "skyforge-gateway" $lbipam.sharingKey)) "") }}
 {{- $hookEvents := list "post-install" -}}
 {{- if .Values.skyforge.hooks.gatewayLBIPAMShareReconcile.runOnUpgrade -}}
 {{- $hookEvents = append $hookEvents "post-upgrade" -}}

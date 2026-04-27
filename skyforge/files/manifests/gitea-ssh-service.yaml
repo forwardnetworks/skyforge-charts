@@ -2,6 +2,10 @@
 {{- $giteaSSH := default (dict) .Values.skyforge.gitea.ssh -}}
 {{- $lbipam := default (dict) .Values.skyforge.gateway.ciliumLBIPAM -}}
 {{- $sharedIP := default "" $lbipam.sharedIP -}}
+{{- $giteaSSHConfiguredEnabled := true -}}
+{{- if hasKey $giteaSSH "enabled" -}}
+  {{- $giteaSSHConfiguredEnabled = $giteaSSH.enabled -}}
+{{- end -}}
 {{- if eq (trim $sharedIP) "" -}}
   {{- range $addr := $gatewayAddresses -}}
     {{- if and (eq (default "" $addr.type) "IPAddress") (ne (trim (default "" $addr.value)) "") -}}
@@ -9,7 +13,7 @@
     {{- end -}}
   {{- end -}}
 {{- end -}}
-{{- if and .Values.skyforge.gitea.enabled (default true $giteaSSH.enabled) }}
+{{- if and .Values.skyforge.gitea.enabled $giteaSSHConfiguredEnabled }}
 apiVersion: v1
 kind: Service
 metadata:

@@ -3705,6 +3705,15 @@
           "sshConfig": {
             "type": "string"
           },
+          "sshExample": {
+            "type": "string"
+          },
+          "sshHostPattern": {
+            "type": "string"
+          },
+          "sshJumpHost": {
+            "type": "string"
+          },
           "tokenEnvVarName": {
             "type": "string"
           },
@@ -3716,6 +3725,9 @@
           "tunnel",
           "proxyCommand",
           "sshConfig",
+          "sshJumpHost",
+          "sshHostPattern",
+          "sshExample",
           "ansibleSshArgs",
           "tokenEnvVarName"
         ],
@@ -3738,6 +3750,12 @@
           "podName": {
             "type": "string"
           },
+          "sshCommand": {
+            "type": "string"
+          },
+          "sshHost": {
+            "type": "string"
+          },
           "status": {
             "type": "string"
           },
@@ -3752,6 +3770,8 @@
           "mgmtIp",
           "status",
           "podName",
+          "sshHost",
+          "sshCommand",
           "tunnelPath"
         ],
         "type": "object"

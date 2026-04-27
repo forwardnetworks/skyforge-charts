@@ -469,6 +469,20 @@ skyforge:
       storageClassName: "local-path"
     apiUrl: http://gitea.skyforge.svc.cluster.local:3000/api/v1
     url: /git
+    ssh:
+      # Prod Cato access only permits an external SSH listener on TCP/22.
+      # Reserve that listener for deployment management access; keep Gitea on HTTPS.
+      enabled: false
+  managementAccess:
+    ssh:
+      enabled: true
+      listenPort: 2222
+      externalHost: skyforge-fwd.dc.forwardnetworks.com
+      externalPort: 22
+      service:
+        enabled: true
+        type: LoadBalancer
+        port: 22
   redis:
     storage:
       storageClassName: "local-path"

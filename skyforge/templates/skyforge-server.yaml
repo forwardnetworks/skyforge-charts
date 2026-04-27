@@ -560,6 +560,10 @@ spec:
         ports:
         - containerPort: 8085
           protocol: TCP
+        {{- if .Values.skyforge.managementAccess.ssh.enabled }}
+        - containerPort: {{ default 2222 .Values.skyforge.managementAccess.ssh.listenPort }}
+          protocol: TCP
+        {{- end }}
         volumeMounts:
         - mountPath: /encore/infra.config.json
           name: skyforge-server-infra-config

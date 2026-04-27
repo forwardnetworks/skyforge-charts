@@ -1,0 +1,45 @@
+{{- $ssh := default (dict) .Values.skyforge.managementAccess.ssh -}}
+{{- $svc := default (dict) $ssh.service -}}
+{{- $annotations := default (dict) $svc.annotations -}}
+{{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
+{{- $lbipam := default (dict) .Values.skyforge.gateway.ciliumLBIPAM -}}
+{{- $sharedIP := default "" $lbipam.sharedIP -}}
+{{- if eq (trim $sharedIP) "" -}}
+  {{- range $addr := $gatewayAddresses -}}
+    {{- if and (eq (default "" $addr.type) "IPAddress") (ne (trim (default "" $addr.value)) "") -}}
+      {{- $sharedIP = $addr.value -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if and (default false $ssh.enabled) (default false $svc.enabled) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: skyforge-management-ssh
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: skyforge-server
+  annotations:
+    {{- if not (hasKey $annotations "lbipam.cilium.io/sharing-key") }}
+    lbipam.cilium.io/sharing-key: {{ default "skyforge-gateway" $lbipam.sharingKey | quote }}
+    {{- end }}
+    {{- if and (ne (trim $sharedIP) "") (not (hasKey $annotations "lbipam.cilium.io/ips")) }}
+    lbipam.cilium.io/ips: {{ $sharedIP | quote }}
+    {{- end }}
+    {{- with $annotations }}
+{{ toYaml $annotations | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ default "LoadBalancer" $svc.type }}
+  externalTrafficPolicy: Cluster
+  {{- if $svc.loadBalancerIP }}
+  loadBalancerIP: {{ $svc.loadBalancerIP | quote }}
+  {{- end }}
+  ports:
+    - name: ssh
+      port: {{ default 2222 $svc.port }}
+      targetPort: {{ default 2222 $ssh.listenPort }}
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: skyforge-server
+{{- end }}

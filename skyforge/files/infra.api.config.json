@@ -14,6 +14,9 @@
     "authn": {
       "base_url": "http://skyforge-server:8085"
     },
+    "apitokens": {
+      "base_url": "http://skyforge-server:8085"
+    },
     "forwardregistry": {
       "base_url": "http://skyforge-server:8085"
     },

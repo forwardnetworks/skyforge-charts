@@ -9,7 +9,11 @@
 {{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
 {{- $gatewayAdditionalHostnames := .Values.skyforge.gateway.additionalHostnames | default (list) -}}
 {{- $gatewayAdditionalToolHostnames := .Values.skyforge.gateway.additionalToolHostnames | default (list) -}}
-{{- $giteaSSHEnabled := and $giteaEnabled (default true $giteaSSH.enabled) -}}
+{{- $giteaSSHConfiguredEnabled := true -}}
+{{- if hasKey $giteaSSH "enabled" -}}
+  {{- $giteaSSHConfiguredEnabled = $giteaSSH.enabled -}}
+{{- end -}}
+{{- $giteaSSHEnabled := and $giteaEnabled $giteaSSHConfiguredEnabled -}}
 {{- $giteaSSHServicePort := default 22 $giteaSSH.servicePort -}}
 {{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}

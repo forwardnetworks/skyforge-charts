@@ -9,5 +9,8 @@ spec:
     - name: "8085"
       port: 8085
       targetPort: 8085
+    - name: "ssh-management"
+      port: 2222
+      targetPort: 2222
   selector:
     app.kubernetes.io/name: skyforge-server

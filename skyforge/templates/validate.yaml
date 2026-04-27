@@ -39,8 +39,40 @@ early when required configuration is missing.
 {{- $obsGrafanaOIDCEnabled := true -}}
 {{- $edition := lower (trim (default "enterprise" .Values.skyforge.edition)) -}}
 {{- $forwardEnabled := and (ne $edition "oss") .Values.skyforge.forward.enabled -}}
+{{- $giteaSSH := default (dict) .Values.skyforge.gitea.ssh -}}
+{{- $giteaSSHConfiguredEnabled := true -}}
+{{- if hasKey $giteaSSH "enabled" -}}
+  {{- $giteaSSHConfiguredEnabled = $giteaSSH.enabled -}}
+{{- end -}}
+{{- $giteaSSHEnabled := and .Values.skyforge.gitea.enabled $giteaSSHConfiguredEnabled -}}
+{{- $giteaSSHServicePort := int (default 22 $giteaSSH.servicePort) -}}
+{{- $managementSSH := default (dict) .Values.skyforge.managementAccess.ssh -}}
+{{- $managementSSHService := default (dict) $managementSSH.service -}}
+{{- $managementSSHServiceEnabled := and (default false $managementSSH.enabled) (default false $managementSSHService.enabled) -}}
+{{- $managementSSHServicePort := int (default 22 $managementSSHService.port) -}}
+{{- $gatewayAddressesForSSH := .Values.skyforge.gateway.addresses | default (list) -}}
+{{- $gatewayLBIPAMForSSH := default (dict) .Values.skyforge.gateway.ciliumLBIPAM -}}
+{{- $sharedSSHIP := default "" $gatewayLBIPAMForSSH.sharedIP -}}
+{{- if eq (trim $sharedSSHIP) "" -}}
+  {{- range $addr := $gatewayAddressesForSSH -}}
+    {{- if and (eq (default "" $addr.type) "IPAddress") (ne (trim (default "" $addr.value)) "") -}}
+      {{- $sharedSSHIP = $addr.value -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
 {{- if hasKey $obsGrafanaOIDC "enabled" -}}
   {{- $obsGrafanaOIDCEnabled = (index $obsGrafanaOIDC "enabled") -}}
+{{- end -}}
+
+{{- if and $giteaSSHEnabled $managementSSHServiceEnabled (eq $giteaSSHServicePort $managementSSHServicePort) -}}
+  {{- $managementAnnotations := default (dict) $managementSSHService.annotations -}}
+  {{- $managementExplicitIP := trim (default "" $managementSSHService.loadBalancerIP) -}}
+  {{- if eq $managementExplicitIP "" -}}
+    {{- $managementExplicitIP = trim (default "" (index $managementAnnotations "lbipam.cilium.io/ips")) -}}
+  {{- end -}}
+  {{- if or (eq $managementExplicitIP "") (and (ne (trim $sharedSSHIP) "") (eq $managementExplicitIP (trim $sharedSSHIP))) -}}
+    {{- fail (printf "skyforge.managementAccess.ssh.service.port=%d conflicts with enabled Gitea SSH on the same external port; disable skyforge.gitea.ssh.enabled or assign management access a distinct LoadBalancer IP" $managementSSHServicePort) -}}
+  {{- end -}}
 {{- end -}}
 
 {{- if default false $kedaForwardWorkers.enabled -}}
