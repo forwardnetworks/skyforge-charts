@@ -44,6 +44,8 @@ skyforge:
   hooks:
     authRuntimeSync:
       runOnUpgrade: false
+    coderAdminBootstrap:
+      runOnUpgrade: false
     giteaActionsRunnerTokenReconcile:
       runOnUpgrade: true
   auth:
