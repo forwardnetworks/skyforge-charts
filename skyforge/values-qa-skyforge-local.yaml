@@ -208,6 +208,8 @@ skyforge:
             port: 24224
       appserver:
         profiles: "K8S"
+        pvc:
+          storageClassName: "longhorn"
         resources:
           requests:
             cpu: "2"
@@ -216,6 +218,8 @@ skyforge:
             cpu: "2"
             memory: "8Gi"
       backend:
+        pvc:
+          storageClassName: "longhorn"
         resources:
           requests:
             cpu: "2"
@@ -226,20 +230,25 @@ skyforge:
       logAggregation:
         enabled: true
         replicas: 1
+        pvc:
+          storageClassName: "longhorn"
       cbr:
         enabled: true
         server:
           pvc:
             size: "20Gi"
+            storageClassName: "longhorn"
         agent:
           replicas: 1
           pvc:
             size: "20Gi"
+            storageClassName: "longhorn"
         s3Agent:
           enabled: true
           replicas: 1
           pvc:
             size: "20Gi"
+            storageClassName: "longhorn"
         s3Backup:
           enabled: true
           bucketName: "forward-platform-backups"
