@@ -73,6 +73,10 @@ spec:
             configMapKeyRef:
               name: skyforge-config
               key: SKYFORGE_ADMIN_USERS
+        - name: SKYFORGE_FORWARD_DEMO_SEED_REPLAY_TIMEOUT
+          value: {{ default "45m" .Values.skyforge.forwardDemoSeed.replayTimeout | quote }}
+        - name: SKYFORGE_FORWARD_DEMO_SEED_SNAPSHOT_PROCESS_TIMEOUT
+          value: {{ default "20m" .Values.skyforge.forwardDemoSeed.snapshotProcessTimeout | quote }}
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -321,7 +325,19 @@ spec:
               name: skyforge-config
               key: SKYFORGE_OBJECT_STORAGE_USE_SSL
         - name: SKYFORGE_FORWARD_BACKUP_BUCKET
-          value: {{ default "forward-cbr-backups" .Values.skyforge.backups.forward.bucket | quote }}
+          value: {{ default "forward-platform-backups" .Values.skyforge.backups.forward.bucket | quote }}
+        - name: SKYFORGE_FORWARD_BACKUP_ENGINE
+          value: {{ default "longhorn" .Values.skyforge.backups.forward.engine | quote }}
+        - name: SKYFORGE_FORWARD_BACKUP_SCHEDULE
+          value: {{ default "30 1 * * *" .Values.skyforge.backups.forward.schedule | quote }}
+        - name: SKYFORGE_FORWARD_BACKUP_RETENTION_DAYS
+          value: {{ printf "%v" (default 30 .Values.skyforge.backups.forward.retentionDays) | quote }}
+        - name: SKYFORGE_FORWARD_BACKUP_TARGET_NAMESPACE
+          value: {{ default "longhorn-system" .Values.skyforge.backups.forward.targetNamespace | quote }}
+        - name: SKYFORGE_FORWARD_BACKUP_RECURRING_JOB
+          value: {{ default "forward-platform-backup-daily" .Values.skyforge.backups.forward.recurringJobName | quote }}
+        - name: SKYFORGE_FORWARD_BACKUP_PROTECTED_PVCS
+          value: {{ join "," (default (list) .Values.skyforge.backups.forward.protectedPVCs) | quote }}
         - name: SKYFORGE_OBJECT_MIRROR_BUCKET
           value: {{ default "" .Values.skyforge.backups.mirror.bucket | quote }}
         - name: SKYFORGE_OBJECT_MIRROR_ENDPOINT

@@ -48,6 +48,12 @@ spec:
       {{- if $priorityClass }}
       priorityClassName: {{ $priorityClass | quote }}
       {{- end }}
+      {{- with .Values.kubernetes.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range . }}
+        - name: {{ . | quote }}
+      {{- end }}
+      {{- end }}
       containers:
         - name: rapid7
           image: {{ required "skyforge.rapid7.image is required when rapid7.managed=true" .Values.skyforge.rapid7.image | quote }}

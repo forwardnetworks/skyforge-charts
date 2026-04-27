@@ -24,7 +24,7 @@ data:
     
 
   atlas.sum: |
-    h1:FSZSYo/lSlajLWY8+1WDLG/p5A4ofkqJ/IkNH1Vc8Z0=
+    h1:sHa7Q+XC2TOZAFNMc/JzqKVU+IlTzAi50RDcGbipjRU=
     20260222170000_user_scope_baseline.up.sql h1:HfGY06u+cqowMWsvJbj9T0u/unus+5At31uUGJcGY88=
     20260225113000_servicenow_zero_touch_setup.up.sql h1:3FAKn5+UMGrrSZoN7XWmYGsOVdS/uNw94GcvZwVmbvQ=
     20260226183000_deployment_lease_key_hard_cut.up.sql h1:rDG5i289QUNJBFmi1cNM2pv7InZZwmp/Xmu1PhPJFrw=
@@ -76,6 +76,12 @@ data:
     20260412121500_user_scope_forward_credentials_api_token.up.sql h1:thgg2SCyTk3frYgk+kpEA52DSWZwyUFiHJLcd+NyTX8=
     20260413190000_runtime_execution_and_deployment_cleanup.up.sql h1:c4CdzhmdSHNg1T5sk//bRzP1QYuJaygTN6xTC83q70A=
     20260415101500_platform_inventory_snapshots.up.sql h1:iWuBHqHl3BAgZkV3n/AN2ZiUs3FFTZNZ+oAdwyq7/7I=
+    20260417123000_drop_deployment_name_uniqueness.up.sql h1:7Q/2bdBPpdhaxpGK5mTjty24LMiKn7a5HOTlO77KIYs=
+    20260422143000_observability_request_rollups.up.sql h1:7YrUnIb6M4VdQw1dEOdo11rq2MKyMBO813qO0PGDW/s=
+    20260424170000_forward_testdrive_scope.up.sql h1:0fo991j2EOr9xlHmlFgU3xOcsRHGhIe0CzghExlqwCc=
+    20260424183000_forward_testdrive_provision_status.up.sql h1:IKpsAUjif+Dz5POeOIZCBCouruuZSDi7GuXrrWwIuCI=
+    20260425120000_role_profile_definitions.up.sql h1:1kdeJgXCoVAlIztG7GefWkA9SARtAjEvWQUSPmStv2E=
+    20260427152000_forward_org_shares.up.sql h1:CMMA1T/RLPxwXWVzO4wwBRhxwjgUP74tj3/X+9ELdFY=
 
   20260222170000_user_scope_baseline.up.sql: |
     --
@@ -4878,3 +4884,350 @@ data:
 
   20260417123000_drop_deployment_name_uniqueness.up.sql: |
     DROP INDEX IF EXISTS public.sf_deployments_user_scope_name_uq;
+
+  20260422143000_observability_request_rollups.up.sql: |
+    CREATE TABLE IF NOT EXISTS sf_obs_request_samples (
+        id bigserial PRIMARY KEY,
+        collected_at timestamp with time zone NOT NULL DEFAULT now(),
+        endpoint_key text NOT NULL,
+        method text NOT NULL,
+        status_code integer NOT NULL,
+        scope_type text NOT NULL DEFAULT 'user',
+        user_id text,
+        total_ms integer NOT NULL DEFAULT 0,
+        phase_auth_ms integer NOT NULL DEFAULT 0,
+        phase_db_ms integer NOT NULL DEFAULT 0,
+        phase_enrich_ms integer NOT NULL DEFAULT 0,
+        phase_compute_ms integer NOT NULL DEFAULT 0,
+        phase_serialize_ms integer NOT NULL DEFAULT 0,
+        queue_queued integer NOT NULL DEFAULT 0,
+        queue_running integer NOT NULL DEFAULT 0,
+        queue_oldest_sec integer NOT NULL DEFAULT 0,
+        worker_heartbeat_sec integer NOT NULL DEFAULT 0,
+        cause_code text NOT NULL DEFAULT 'unknown',
+        metadata jsonb NOT NULL DEFAULT '{}'::jsonb
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_obs_request_samples_collected_at
+        ON sf_obs_request_samples (collected_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_obs_request_samples_endpoint
+        ON sf_obs_request_samples (endpoint_key, collected_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_obs_request_samples_cause
+        ON sf_obs_request_samples (cause_code, collected_at DESC);
+    
+    CREATE TABLE IF NOT EXISTS sf_obs_request_rollups_hourly (
+        endpoint_key text NOT NULL,
+        hour_start timestamp with time zone NOT NULL,
+        sample_count integer NOT NULL DEFAULT 0,
+        error_count integer NOT NULL DEFAULT 0,
+        p50_ms numeric NOT NULL DEFAULT 0,
+        p95_ms numeric NOT NULL DEFAULT 0,
+        p99_ms numeric NOT NULL DEFAULT 0,
+        top_cause text NOT NULL DEFAULT 'unknown',
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        PRIMARY KEY (endpoint_key, hour_start)
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_sf_obs_request_rollups_hourly_hour
+        ON sf_obs_request_rollups_hourly (hour_start DESC);
+
+  20260424170000_forward_testdrive_scope.up.sql: |
+    ALTER TABLE public.sf_user_forward_tenants
+        ADD COLUMN IF NOT EXISTS tenant_scope text NOT NULL DEFAULT ''::text;
+    
+    UPDATE public.sf_user_forward_tenants
+    SET tenant_scope = ''
+    WHERE tenant_scope IS NULL;
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        DROP CONSTRAINT IF EXISTS sf_user_forward_tenants_pkey;
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        ADD CONSTRAINT sf_user_forward_tenants_pkey PRIMARY KEY (username, tenant_kind, tenant_scope);
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        DROP CONSTRAINT IF EXISTS sf_user_forward_tenants_tenant_kind_check;
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        ADD CONSTRAINT sf_user_forward_tenants_tenant_kind_check
+        CHECK (tenant_kind = ANY (ARRAY['primary'::text, 'demo'::text, 'customer'::text, 'testdrive'::text]));
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        DROP CONSTRAINT IF EXISTS sf_user_forward_tenants_scope_check;
+    
+    ALTER TABLE public.sf_user_forward_tenants
+        ADD CONSTRAINT sf_user_forward_tenants_scope_check
+        CHECK (
+          (tenant_kind = 'testdrive'::text AND length(trim(tenant_scope)) > 0)
+          OR (tenant_kind <> 'testdrive'::text AND trim(tenant_scope) = ''::text)
+        );
+    
+    CREATE INDEX IF NOT EXISTS sf_user_forward_tenants_username_kind_scope_idx
+        ON public.sf_user_forward_tenants (username, tenant_kind, tenant_scope);
+    
+    ALTER TABLE public.sf_forward_tenant_reset_runs
+        DROP CONSTRAINT IF EXISTS sf_forward_tenant_reset_runs_tenant_kind_check;
+    
+    ALTER TABLE public.sf_forward_tenant_reset_runs
+        ADD CONSTRAINT sf_forward_tenant_reset_runs_tenant_kind_check
+        CHECK (tenant_kind = ANY (ARRAY['primary'::text, 'demo'::text, 'customer'::text, 'testdrive'::text]));
+    
+    CREATE TABLE IF NOT EXISTS public.sf_forward_testdrives (
+        owner_username text NOT NULL,
+        testdrive_id text NOT NULL,
+        customer_name text NOT NULL,
+        status text NOT NULL DEFAULT 'active',
+        created_by text NOT NULL,
+        created_at timestamp with time zone DEFAULT now() NOT NULL,
+        updated_at timestamp with time zone DEFAULT now() NOT NULL,
+        last_seeded_at timestamp with time zone,
+        last_reset_at timestamp with time zone,
+        deleted_at timestamp with time zone,
+        CONSTRAINT sf_forward_testdrives_pkey PRIMARY KEY (owner_username, testdrive_id),
+        CONSTRAINT sf_forward_testdrives_owner_username_fkey FOREIGN KEY (owner_username) REFERENCES public.sf_users(username) ON DELETE CASCADE,
+        CONSTRAINT sf_forward_testdrives_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE RESTRICT,
+        CONSTRAINT sf_forward_testdrives_status_check CHECK (status = ANY (ARRAY['active'::text, 'deleted'::text]))
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_forward_testdrives_owner_status_idx
+        ON public.sf_forward_testdrives (owner_username, status, updated_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS sf_forward_testdrives_status_idx
+        ON public.sf_forward_testdrives (status, updated_at DESC);
+
+  20260424183000_forward_testdrive_provision_status.up.sql: |
+    ALTER TABLE public.sf_forward_testdrives
+        ADD COLUMN IF NOT EXISTS provisioning_status text NOT NULL DEFAULT 'ready',
+        ADD COLUMN IF NOT EXISTS provisioning_step text NOT NULL DEFAULT '',
+        ADD COLUMN IF NOT EXISTS provisioning_error text NOT NULL DEFAULT '';
+    
+    UPDATE public.sf_forward_testdrives
+    SET provisioning_status = 'ready',
+        provisioning_step = 'ready',
+        provisioning_error = ''
+    WHERE COALESCE(trim(provisioning_status), '') = '';
+    
+    ALTER TABLE public.sf_forward_testdrives
+        DROP CONSTRAINT IF EXISTS sf_forward_testdrives_provisioning_status_check;
+    
+    ALTER TABLE public.sf_forward_testdrives
+        ADD CONSTRAINT sf_forward_testdrives_provisioning_status_check
+            CHECK (provisioning_status = ANY (ARRAY['queued'::text, 'running'::text, 'ready'::text, 'failed'::text]));
+
+  20260425120000_role_profile_definitions.up.sql: |
+    ALTER TABLE public.sf_user_role_profiles
+        DROP CONSTRAINT IF EXISTS sf_user_role_profiles_profile_check;
+    
+    ALTER TABLE public.sf_user_role_profiles
+        ADD CONSTRAINT sf_user_role_profiles_profile_check CHECK (profile = ANY (ARRAY[
+            'viewer'::text,
+            'demo-user'::text,
+            'lab-user'::text,
+            'sandbox-user'::text,
+            'trainer'::text,
+            'integration-user'::text,
+            'admin'::text
+        ]));
+    
+    CREATE TABLE IF NOT EXISTS public.sf_role_profiles (
+        profile text NOT NULL PRIMARY KEY,
+        display_name text NOT NULL,
+        description text NOT NULL DEFAULT '',
+        enabled boolean NOT NULL DEFAULT true,
+        system boolean NOT NULL DEFAULT true,
+        default_for_new_users boolean NOT NULL DEFAULT false,
+        sort_order integer NOT NULL DEFAULT 100,
+        max_concurrent_labs integer NOT NULL DEFAULT 0,
+        max_persistent_labs integer NOT NULL DEFAULT 0,
+        max_persistent_hours integer NOT NULL DEFAULT 0,
+        max_resource_class text NOT NULL DEFAULT 'small',
+        updated_by text,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT sf_role_profiles_profile_check CHECK (profile = ANY (ARRAY[
+            'viewer'::text,
+            'demo-user'::text,
+            'lab-user'::text,
+            'sandbox-user'::text,
+            'trainer'::text,
+            'integration-user'::text,
+            'admin'::text
+        ])),
+        CONSTRAINT sf_role_profiles_resource_class_check CHECK (max_resource_class = ANY (ARRAY[
+            'small'::text,
+            'standard'::text,
+            'heavy'::text,
+            'demo-foundry'::text
+        ])),
+        CONSTRAINT sf_role_profiles_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL
+    );
+    
+    CREATE TABLE IF NOT EXISTS public.sf_role_profile_capabilities (
+        profile text NOT NULL,
+        capability text NOT NULL,
+        CONSTRAINT sf_role_profile_capabilities_pkey PRIMARY KEY (profile, capability),
+        CONSTRAINT sf_role_profile_capabilities_profile_fkey FOREIGN KEY (profile) REFERENCES public.sf_role_profiles(profile) ON DELETE CASCADE
+    );
+    
+    CREATE TABLE IF NOT EXISTS public.sf_role_profile_operating_modes (
+        profile text NOT NULL,
+        operating_mode text NOT NULL,
+        CONSTRAINT sf_role_profile_operating_modes_pkey PRIMARY KEY (profile, operating_mode),
+        CONSTRAINT sf_role_profile_operating_modes_profile_fkey FOREIGN KEY (profile) REFERENCES public.sf_role_profiles(profile) ON DELETE CASCADE
+    );
+    
+    CREATE TABLE IF NOT EXISTS public.sf_role_profile_api_permissions (
+        profile text NOT NULL,
+        service text NOT NULL,
+        endpoint text NOT NULL,
+        method text NOT NULL,
+        decision text NOT NULL,
+        granted_by text,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT sf_role_profile_api_permissions_pkey PRIMARY KEY (profile, service, endpoint, method),
+        CONSTRAINT sf_role_profile_api_permissions_profile_fkey FOREIGN KEY (profile) REFERENCES public.sf_role_profiles(profile) ON DELETE CASCADE,
+        CONSTRAINT sf_role_profile_api_permissions_granted_by_fkey FOREIGN KEY (granted_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL,
+        CONSTRAINT sf_role_profile_api_permissions_decision_check CHECK (decision = ANY (ARRAY['allow'::text, 'deny'::text]))
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_role_profiles_default_idx
+        ON public.sf_role_profiles(default_for_new_users)
+        WHERE default_for_new_users;
+    
+    CREATE INDEX IF NOT EXISTS sf_role_profile_api_permissions_endpoint_idx
+        ON public.sf_role_profile_api_permissions(service, endpoint, method);
+    
+    INSERT INTO public.sf_role_profiles (
+        profile, display_name, description, enabled, system, default_for_new_users, sort_order,
+        max_concurrent_labs, max_persistent_labs, max_persistent_hours, max_resource_class
+    ) VALUES
+        ('viewer', 'Viewer', 'Read-only access to curated platform surfaces.', true, true, false, 10, 0, 0, 0, 'small'),
+        ('demo-user', 'Demo user', 'Constrained demo profile for read-only-style access.', true, true, false, 20, 0, 0, 0, 'standard'),
+        ('lab-user', 'Lab user', 'Default user profile for scheduling and running curated labs.', true, true, true, 30, 2, 0, 0, 'standard'),
+        ('sandbox-user', 'Sandbox user', 'Custom lab creation with limited persistence.', true, true, false, 40, 3, 1, 72, 'standard'),
+        ('trainer', 'Trainer', 'Training delivery profile with broader scheduled capacity.', true, true, false, 50, 5, 2, 168, 'standard'),
+        ('integration-user', 'Integration user', 'Integration and TestDrive operations without full platform administration.', true, true, false, 60, 4, 2, 168, 'heavy'),
+        ('admin', 'Admin', 'Full platform policy and operational control.', true, true, false, 70, 50, 50, 720, 'demo-foundry')
+    ON CONFLICT (profile) DO NOTHING;
+    
+    INSERT INTO public.sf_role_profile_capabilities (profile, capability) VALUES
+        ('viewer', 'view_curated_catalog'),
+        ('demo-user', 'view_curated_catalog'),
+        ('lab-user', 'view_curated_catalog'),
+        ('lab-user', 'launch_curated_templates'),
+        ('lab-user', 'reserve_future_capacity'),
+        ('lab-user', 'reset_own_forward_tenant'),
+        ('sandbox-user', 'view_curated_catalog'),
+        ('sandbox-user', 'launch_curated_templates'),
+        ('sandbox-user', 'launch_custom_templates'),
+        ('sandbox-user', 'persist_lab_state'),
+        ('sandbox-user', 'reserve_future_capacity'),
+        ('sandbox-user', 'reset_own_forward_tenant'),
+        ('trainer', 'view_curated_catalog'),
+        ('trainer', 'launch_curated_templates'),
+        ('trainer', 'reserve_future_capacity'),
+        ('integration-user', 'view_curated_catalog'),
+        ('integration-user', 'launch_curated_templates'),
+        ('integration-user', 'launch_custom_templates'),
+        ('integration-user', 'persist_lab_state'),
+        ('integration-user', 'reserve_future_capacity'),
+        ('integration-user', 'manage_integrations'),
+        ('integration-user', 'reset_own_forward_tenant'),
+        ('integration-user', 'manage_testdrive_tenants'),
+        ('admin', 'view_curated_catalog'),
+        ('admin', 'launch_curated_templates'),
+        ('admin', 'launch_custom_templates'),
+        ('admin', 'persist_lab_state'),
+        ('admin', 'reserve_future_capacity'),
+        ('admin', 'manage_integrations'),
+        ('admin', 'manage_platform_operations'),
+        ('admin', 'impersonate_users'),
+        ('admin', 'manage_users_roles'),
+        ('admin', 'override_reservations'),
+        ('admin', 'reset_own_forward_tenant'),
+        ('admin', 'reset_curated_forward_tenant'),
+        ('admin', 'manage_testdrive_tenants')
+    ON CONFLICT DO NOTHING;
+    
+    INSERT INTO public.sf_role_profile_operating_modes (profile, operating_mode) VALUES
+        ('viewer', 'curated-demo'),
+        ('demo-user', 'curated-demo'),
+        ('lab-user', 'curated-demo'),
+        ('sandbox-user', 'curated-demo'),
+        ('sandbox-user', 'sandbox'),
+        ('trainer', 'curated-demo'),
+        ('trainer', 'training'),
+        ('integration-user', 'curated-demo'),
+        ('integration-user', 'sandbox'),
+        ('integration-user', 'persistent-integration'),
+        ('admin', 'curated-demo'),
+        ('admin', 'training'),
+        ('admin', 'sandbox'),
+        ('admin', 'persistent-integration'),
+        ('admin', 'admin-advanced')
+    ON CONFLICT DO NOTHING;
+    
+    INSERT INTO public.sf_user_role_profiles (username, profile, assigned_by, created_at)
+    SELECT username, 'lab-user', assigned_by, now()
+    FROM public.sf_user_role_profiles
+    WHERE profile = 'demo-user'
+    ON CONFLICT (username, profile) DO NOTHING;
+
+  20260427152000_forward_org_shares.up.sql: |
+    CREATE TABLE IF NOT EXISTS public.sf_forward_org_shares (
+        owner_username text NOT NULL,
+        tenant_kind text NOT NULL,
+        tenant_scope text NOT NULL DEFAULT ''::text,
+        grantee_username text NOT NULL,
+        access text NOT NULL DEFAULT 'impersonate',
+        created_by text,
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL DEFAULT now(),
+        PRIMARY KEY (owner_username, tenant_kind, tenant_scope, grantee_username),
+        CONSTRAINT sf_forward_org_shares_tenant_kind_check CHECK (tenant_kind = ANY (ARRAY['primary'::text, 'customer'::text])),
+        CONSTRAINT sf_forward_org_shares_access_check CHECK (access = 'impersonate'::text),
+        CONSTRAINT sf_forward_org_shares_scope_check CHECK (trim(tenant_scope) = ''::text)
+    );
+    
+    CREATE INDEX IF NOT EXISTS sf_forward_org_shares_grantee_idx
+        ON public.sf_forward_org_shares (grantee_username, updated_at DESC);
+    
+    CREATE INDEX IF NOT EXISTS sf_forward_org_shares_owner_idx
+        ON public.sf_forward_org_shares (owner_username, tenant_kind, tenant_scope, updated_at DESC);
+    
+    DO $$
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_forward_org_shares_owner_fkey'
+        ) THEN
+            ALTER TABLE public.sf_forward_org_shares
+                ADD CONSTRAINT sf_forward_org_shares_owner_fkey
+                FOREIGN KEY (owner_username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_forward_org_shares_grantee_fkey'
+        ) THEN
+            ALTER TABLE public.sf_forward_org_shares
+                ADD CONSTRAINT sf_forward_org_shares_grantee_fkey
+                FOREIGN KEY (grantee_username) REFERENCES public.sf_users(username) ON DELETE CASCADE;
+        END IF;
+    
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'sf_forward_org_shares_created_by_fkey'
+        ) THEN
+            ALTER TABLE public.sf_forward_org_shares
+                ADD CONSTRAINT sf_forward_org_shares_created_by_fkey
+                FOREIGN KEY (created_by) REFERENCES public.sf_users(username) ON UPDATE CASCADE ON DELETE SET NULL;
+        END IF;
+    END
+    $$;

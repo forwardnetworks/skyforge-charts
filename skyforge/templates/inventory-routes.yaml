@@ -1,0 +1,76 @@
+{{- if or .Values.skyforge.netbox.enabled .Values.skyforge.nautobot.enabled }}
+{{- $host := .Values.skyforge.hostname | default "skyforge.local.forwardnetworks.com" -}}
+{{- $gatewayAdditionalToolHostnames := .Values.skyforge.gateway.additionalToolHostnames | default (list) -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: skyforge-inventory
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: skyforge
+  hostnames:
+    - {{ $host | quote }}
+    {{- range $name := $gatewayAdditionalToolHostnames }}
+    - {{ $name | quote }}
+    {{- end }}
+  rules:
+{{- if .Values.skyforge.netbox.enabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /netbox/static/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /static/
+      backendRefs:
+        - name: netbox
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /netbox/media/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /media/
+      backendRefs:
+        - name: netbox
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /netbox
+      backendRefs:
+        - name: netbox
+          port: 8080
+{{- end }}
+{{- if .Values.skyforge.nautobot.enabled }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /nautobot
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Forwarded-Prefix
+                value: /nautobot
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: nautobot
+          port: 8080
+{{- end }}
+{{- end }}

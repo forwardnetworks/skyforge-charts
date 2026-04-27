@@ -20,16 +20,22 @@
 {{- $monitoringNodes := default (list) $roles.monitoring -}}
 {{- $computeNodes := default (list) $roles.compute -}}
 {{- $searchNodes := default (list) $roles.search -}}
+{{- $nqeAssistNodes := default (list) $roles.nqeAssist -}}
 {{- $forwardNodes := default (list) $roles.forward -}}
 {{- $nodePools := default dict $reconciler.nodePools -}}
 {{- $controlPoolNodes := default (list) $nodePools.control -}}
 {{- $appPoolNodes := default (list) $nodePools.app -}}
 {{- $labPoolNodes := default (list) $nodePools.lab -}}
+{{- $controlPlaneTaint := default dict $reconciler.controlPlaneTaint -}}
+{{- $controlPlaneTaintEnabled := default false $controlPlaneTaint.enabled -}}
+{{- $controlPlaneTaintKey := default "node-role.kubernetes.io/control-plane" $controlPlaneTaint.key -}}
+{{- $controlPlaneTaintValue := default "" $controlPlaneTaint.value -}}
+{{- $controlPlaneTaintEffect := default "NoSchedule" $controlPlaneTaint.effect -}}
 {{- $configuredManagedNodes := default (list) $reconciler.managedNodes -}}
 {{- if eq (len $masterNodes) 0 -}}
 {{- fail "skyforge.forwardCluster.nodeRoleReconciler.enabled=true requires at least one master node in skyforge.forwardCluster.nodeRoleReconciler.nodeRoles.master" -}}
 {{- end -}}
-{{- $managedNodes := uniq (concat $configuredManagedNodes $masterNodes $monitoringNodes $computeNodes $searchNodes $forwardNodes) -}}
+{{- $managedNodes := uniq (concat $configuredManagedNodes $masterNodes $monitoringNodes $computeNodes $searchNodes $nqeAssistNodes $forwardNodes) -}}
 {{- if eq (len $managedNodes) 0 -}}
 {{- fail "skyforge.forwardCluster.nodeRoleReconciler.enabled=true requires at least one managed node in skyforge.forwardCluster.nodeRoleReconciler.nodeRoles" -}}
 {{- end -}}
@@ -135,32 +141,60 @@ data:
       contains_node "$node" ${CONTROL_POOL_NODES}
     }
 
+    reconcile_control_plane_taint() {
+      node="$1"
+      if [ "${CONTROL_PLANE_TAINT_ENABLED}" != "true" ]; then
+        return 0
+      fi
+      if is_control_node "$node"; then
+        kubectl taint node "$node" "${CONTROL_PLANE_TAINT_KEY}=${CONTROL_PLANE_TAINT_VALUE}:${CONTROL_PLANE_TAINT_EFFECT}" --overwrite >/dev/null
+      else
+        kubectl taint node "$node" "${CONTROL_PLANE_TAINT_KEY}:${CONTROL_PLANE_TAINT_EFFECT}-" >/dev/null 2>&1 || true
+      fi
+    }
+
     MASTER_NODES="{{ join " " $masterNodes }}"
     MONITORING_NODES="{{ join " " $monitoringNodes }}"
     COMPUTE_NODES="{{ join " " $computeNodes }}"
     SEARCH_NODES="{{ join " " $searchNodes }}"
+    NQE_ASSIST_NODES="{{ join " " $nqeAssistNodes }}"
     FORWARD_NODES="{{ join " " $forwardNodes }}"
     MANAGED_NODES="{{ join " " $managedNodes }}"
     CONTROL_POOL_NODES="{{ join " " $controlPoolNodes }}"
     APP_POOL_NODES="{{ join " " $appPoolNodes }}"
     LAB_POOL_NODES="{{ join " " $labPoolNodes }}"
+    CONTROL_PLANE_TAINT_ENABLED="{{ ternary "true" "false" $controlPlaneTaintEnabled }}"
+    CONTROL_PLANE_TAINT_KEY="{{ $controlPlaneTaintKey }}"
+    CONTROL_PLANE_TAINT_VALUE="{{ $controlPlaneTaintValue }}"
+    CONTROL_PLANE_TAINT_EFFECT="{{ $controlPlaneTaintEffect }}"
 
     for node in ${MANAGED_NODES}; do
       reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-master" ${MASTER_NODES}
       reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-monitoring" ${MONITORING_NODES}
       reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-compute-worker" ${COMPUTE_NODES}
       reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-search-worker" ${SEARCH_NODES}
+      reconcile_presence_label "$node" "node-role.kubernetes.io/fwd-nqe_assist" ${NQE_ASSIST_NODES}
+      reconcile_label "$node" "forwardnetworks.com/fwd-master" "true" ${MASTER_NODES}
+      reconcile_label "$node" "forwardnetworks.com/fwd-monitoring" "true" ${MONITORING_NODES}
+      reconcile_label "$node" "forwardnetworks.com/fwd-compute-worker" "true" ${COMPUTE_NODES}
+      reconcile_label "$node" "forwardnetworks.com/fwd-search-worker" "true" ${SEARCH_NODES}
+      reconcile_label "$node" "forwardnetworks.com/fwd-nqe_assist" "true" ${NQE_ASSIST_NODES}
       if is_control_node "$node"; then
         kubectl label node "$node" "node-role.kubernetes.io/fwd-compute-worker-" >/dev/null 2>&1 || true
         kubectl label node "$node" "node-role.kubernetes.io/fwd-search-worker-" >/dev/null 2>&1 || true
+        kubectl label node "$node" "node-role.kubernetes.io/fwd-nqe_assist-" >/dev/null 2>&1 || true
+        kubectl label node "$node" "forwardnetworks.com/fwd-compute-worker-" >/dev/null 2>&1 || true
+        kubectl label node "$node" "forwardnetworks.com/fwd-search-worker-" >/dev/null 2>&1 || true
+        kubectl label node "$node" "forwardnetworks.com/fwd-nqe_assist-" >/dev/null 2>&1 || true
       fi
       reconcile_label "$node" "{{ $roleLabel }}" "{{ $roleValue }}" ${FORWARD_NODES}
-      if contains_node "$node" ${MASTER_NODES} ${MONITORING_NODES} ${COMPUTE_NODES} ${SEARCH_NODES}; then
+      if contains_node "$node" ${MASTER_NODES} ${MONITORING_NODES} ${COMPUTE_NODES} ${SEARCH_NODES} ${NQE_ASSIST_NODES}; then
         kubectl label node "$node" "{{ $scratchGroupLabel }}={{ $scratchGroupValue }}" --overwrite >/dev/null
       else
         kubectl label node "$node" "{{ $scratchGroupLabel }}-" >/dev/null 2>&1 || true
       fi
       reconcile_pool_label "$node" "{{ $poolLabelKey }}"
+      reconcile_control_plane_taint "$node"
     done
 ---
 apiVersion: batch/v1

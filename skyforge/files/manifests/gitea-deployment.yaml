@@ -97,6 +97,10 @@ spec:
           value: {{ default 22 $giteaSSH.servicePort | quote }}
         - name: GITEA__server__START_SSH_SERVER
           value: {{ ternary "true" "false" (default true $giteaSSH.enabled) | quote }}
+        {{- if (default "" $giteaSSH.serverKeyExchanges) }}
+        - name: GITEA__server__SSH_SERVER_KEY_EXCHANGES
+          value: {{ $giteaSSH.serverKeyExchanges | quote }}
+        {{- end }}
         - name: GITEA__actions__ENABLED
           value: 'true'
         - name: GITEA__service__DISABLE_REGISTRATION
@@ -120,7 +124,7 @@ spec:
         - name: GITEA__picture__ENABLE_FEDERATED_AVATAR
           value: {{ ternary "true" "false" (default false $giteaPicture.enableFederatedAvatar) | quote }}
         - name: GITEA__service__REQUIRE_SIGNIN_VIEW
-          value: 'true'
+          value: {{ ternary "true" "false" (default false .Values.skyforge.gitea.requireSigninView) | quote }}
         - name: GITEA__service__RESERVED_USERNAMES
           value: ''
         - name: GITEA__user__RESERVED_USERNAMES
@@ -191,7 +195,7 @@ spec:
           value: '1000'
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
-        image: ghcr.io/go-gitea/gitea:1.24.6-rootless
+        image: ghcr.io/go-gitea/gitea:1.26.0-rootless
         livenessProbe:
           httpGet:
             path: /
@@ -284,7 +288,7 @@ spec:
         - sh
         - -lc
         - |
-          set -euo pipefail
+          set -eu
           ini="/var/lib/gitea/custom/conf/app.ini"
           mkdir -p "$(dirname "$ini")"
           touch "$ini"
@@ -322,7 +326,7 @@ spec:
         - name: gitea-data
           mountPath: /var/lib/gitea
       - name: gitea-migrate
-        image: ghcr.io/go-gitea/gitea:1.24.6-rootless
+        image: ghcr.io/go-gitea/gitea:1.26.0-rootless
         command:
           - /bin/sh
           - -c
@@ -333,7 +337,7 @@ spec:
             export GITEA__security__SECRET_KEY="$(cat /run/secrets/gitea-secret-key)"
             export GITEA__database__PASSWD="$(cat /run/secrets/db-gitea-password)"
             export GITEA__security__INSTALL_LOCK=true
-            /usr/local/bin/environment-to-ini >/dev/null
+            /usr/local/bin/environment-to-ini --config "${GITEA_APP_INI}" --apply-env --in-place >/dev/null
             # Gitea's --config flag is a *global* flag (must be before the subcommand).
             /usr/local/bin/gitea --config "${GITEA_APP_INI}" migrate
         env:

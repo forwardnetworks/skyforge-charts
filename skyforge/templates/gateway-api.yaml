@@ -8,10 +8,12 @@
 {{- $filesBucket := .Values.skyforge.objectStorage.filesBucket | default "skyforge-files" -}}
 {{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
 {{- $gatewayAdditionalHostnames := .Values.skyforge.gateway.additionalHostnames | default (list) -}}
+{{- $gatewayAdditionalToolHostnames := .Values.skyforge.gateway.additionalToolHostnames | default (list) -}}
 {{- $giteaSSHEnabled := and $giteaEnabled (default true $giteaSSH.enabled) -}}
 {{- $giteaSSHServicePort := default 22 $giteaSSH.servicePort -}}
 {{- $forwardClusterEnabled := .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardHost := default $host .Values.skyforge.forwardCluster.hostname -}}
+{{- $forwardAdditionalHostnames := .Values.skyforge.forwardCluster.additionalHostnames | default (list) -}}
 {{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
 {{- $forwardSvcName := default "fwd-appserver" .Values.skyforge.forwardCluster.serviceName -}}
 {{- $forwardSvcNamespace := default "forward" .Values.skyforge.forwardCluster.serviceNamespace -}}
@@ -102,6 +104,24 @@ spec:
           {{- else }}
           from: Same
           {{- end }}
+    {{- range $index, $name := $forwardAdditionalHostnames }}
+    - name: https-forward-alt-{{ $index }}
+      hostname: {{ $name | quote }}
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: {{ $forwardTlsSecretName }}
+      allowedRoutes:
+        namespaces:
+          {{- if $forwardCrossNamespace }}
+          from: All
+          {{- else }}
+          from: Same
+          {{- end }}
+    {{- end }}
     {{- else }}
     - name: https
       protocol: HTTPS
@@ -253,6 +273,9 @@ spec:
       namespace: {{ .Release.Namespace }}
   hostnames:
     - {{ $forwardHost | quote }}
+    {{- range $name := $forwardAdditionalHostnames }}
+    - {{ $name | quote }}
+    {{- end }}
   rules:
     - matches:
         - path:
@@ -285,7 +308,7 @@ spec:
       namespace: {{ .Release.Namespace }}
   hostnames:
     - {{ $host | quote }}
-    {{- range $name := $gatewayAdditionalHostnames }}
+    {{- range $name := $gatewayAdditionalToolHostnames }}
     - {{ $name | quote }}
     {{- end }}
   rules:
@@ -300,6 +323,7 @@ spec:
         - type: RequestRedirect
           requestRedirect:
             statusCode: 302
+            scheme: https
             path:
               type: ReplaceFullPath
               replaceFullPath: {{ printf "%s/d/skyforge-signals/skyforge-signals" (trimSuffix "/" $obsGrafanaPrefix) | quote }}
@@ -339,6 +363,7 @@ spec:
         - type: RequestRedirect
           requestRedirect:
             statusCode: 302
+            scheme: https
             path:
               type: ReplaceFullPath
               replaceFullPath: {{ printf "%s/graph" (trimSuffix "/" $obsPromPrefix) | quote }}
@@ -377,7 +402,7 @@ spec:
     - name: skyforge
   hostnames:
     - {{ $host | quote }}
-    {{- range $name := $gatewayAdditionalHostnames }}
+    {{- range $name := $gatewayAdditionalToolHostnames }}
     - {{ $name | quote }}
     {{- end }}
   rules:
@@ -421,65 +446,6 @@ spec:
       backendRefs:
         - name: yaade
           port: 80
-{{- end }}
-
-{{- if .Values.skyforge.netbox.enabled }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /netbox/static/
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /static/
-      backendRefs:
-        - name: netbox
-          port: 8080
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /netbox/media/
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /media/
-      backendRefs:
-        - name: netbox
-          port: 8080
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /netbox
-      backendRefs:
-        - name: netbox
-          port: 8080
-{{- end }}
-
-{{- if .Values.skyforge.nautobot.enabled }}
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /nautobot
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Proto
-                value: https
-              - name: X-Forwarded-Prefix
-                value: /nautobot
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
-      backendRefs:
-        - name: nautobot
-          port: 8080
 {{- end }}
 
 {{- if $giteaEnabled }}
@@ -624,6 +590,9 @@ spec:
     - name: skyforge
   hostnames:
     - {{ $host | quote }}
+    {{- range $name := $gatewayAdditionalToolHostnames }}
+    - {{ $name | quote }}
+    {{- end }}
   rules:
 {{- if .Values.skyforge.infoblox.enabled }}
     {{- $infobloxPrefix := default "/infoblox" .Values.skyforge.infoblox.externalPrefix }}

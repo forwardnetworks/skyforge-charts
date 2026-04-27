@@ -1,21 +1,37 @@
+kubernetes:
+  imagePullSecrets:
+    - ghcr-pull
 skyforge:
   priorityClasses:
     create: true
   corePriorityClassName: "skyforge-core"
-  hostname: skyforge.local.forwardnetworks.com
+  hostname: skyforge.dc.forwardnetworks.com
   gateway:
     addresses:
       - type: IPAddress
-        value: "10.128.16.80"
+        value: "10.128.65.100"
+    additionalHostnames:
+      - skyforge.craigjohnson.org
     ciliumLBIPAM:
-      sharedIP: "10.128.16.80"
+      sharedIP: "10.128.65.100"
+  cloudflareTunnel:
+    enabled: true
+    tokenSecretName: "skyforge-cloudflared-tunnel"
+    tokenSecretKey: "token"
+    replicas: 1
+  observability:
+    enabled: true
+    managed:
+      enabled: true
+    dashboards:
+      enabled: true
   platformData:
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
       accessMode: "ReadWriteOnce"
   skyforgeServerData:
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
       accessMode: "ReadWriteOnce"
   server:
     placement:
@@ -46,19 +62,20 @@ skyforge:
       nodeSelector: {}
     oidc:
       issuer: "https://fn-prod.okta.com"
-      clientID: "0oa108ytsjzRXoJw3698"
+      clientID: "0oa127d1wd8JoI14f698"
       clientSecretSecretName: "dex-oidc-client-secret"
       clientSecretSecretKey: "dex-oidc-client-secret"
-      redirectURI: "https://skyforge.local.forwardnetworks.com/dex/callback"
+      redirectURI: "https://skyforge.dc.forwardnetworks.com/dex/callback"
       insecureSkipEmailVerified: true
   adminUsers: "skyforge,craigjohnson"
   oidc:
     discoveryUrl: "http://dex:5556/dex"
-    issuerUrl: "https://skyforge.local.forwardnetworks.com/dex"
-    redirectUrl: "https://skyforge.local.forwardnetworks.com/api/auth/oidc/callback"
+    issuerUrl: "https://skyforge.dc.forwardnetworks.com/dex"
+    redirectUrl: "https://skyforge.dc.forwardnetworks.com/api/auth/oidc/callback"
   db:
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
+    maxConnections: 1200
   edition: enterprise
   infoblox:
     enabled: true
@@ -117,12 +134,22 @@ skyforge:
     enabled: false
     managed: false
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
   rapid7:
-    enabled: false
-    managed: false
+    enabled: true
+    managed: true
+    image: ghcr.io/forwardnetworks/rapid7:20260307-r33
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+      limits:
+        cpu: "4"
+        memory: "8Gi"
     storage:
-      storageClassName: "longhorn"
+      size: "100Gi"
+      storageClassName: "local-path"
+  rapid7Url: "https://skyforge.dc.forwardnetworks.com/rapid7"
   elk:
     enabled: false
     managed: false
@@ -132,13 +159,14 @@ skyforge:
       enabled: true
       pollingInterval: 15
       cooldownPeriod: 120
-      minReplicaCount: 2
-      maxReplicaCount: 4
+      minReplicaCount: 1
+      maxReplicaCount: 1
       query: "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'"
       activationTargetQueryValue: "1"
       targetQueryValue: "5"
   burst:
     hetzner:
+      enabled: false
       apiTokenSecretName: skyforge-hetzner-burst
       apiTokenSecretKey: api-token
       hubPublicKeySecretName: skyforge-hetzner-burst
@@ -146,16 +174,16 @@ skyforge:
       k3sTokenSecretName: skyforge-hetzner-burst
       k3sTokenSecretKey: token
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260418-netlab-snmpfix-r2-fe0107a
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260427-host-arp-r1
     pullPolicy: IfNotPresent
   forward:
-    baseUrl: https://fwd-appserver.forward.svc:8443
+    baseUrl: https://skyforge-fwd.dc.forwardnetworks.com
   forwardImages:
-    tag: 26.4.0-15
+    tag: 26.4.1-02
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   kubernetes:
-    apiHostOverride: "10.128.16.82"
+    apiHostOverride: "10.128.65.203"
     apiPortOverride: "6443"
   waitForNsq:
     host: "nsq.skyforge.svc.cluster.local"
@@ -163,9 +191,14 @@ skyforge:
     attempts: 90
     sleepSeconds: 2
     connectTimeoutSeconds: 2
+  forwardDemoSeed:
+    replayTimeout: "90m"
+    snapshotProcessTimeout: "30m"
   forwardCluster:
     enabled: true
-    hostname: skyforge-fwd.local.forwardnetworks.com
+    hostname: skyforge-fwd.dc.forwardnetworks.com
+    additionalHostnames:
+      - skyforge-fwd.craigjohnson.org
     serviceNamespace: forward
     serviceName: fwd-appserver
     servicePort: 8080
@@ -182,6 +215,8 @@ skyforge:
         hostPath: "/mnt/forward/extended/scratch/pods"
         restoreHostPath: "/mnt/forward/restore"
         backupsHostPath: "/mnt/forward/backups"
+      rollout:
+        strategyType: "Recreate"
       logForwarding:
         enabled: true
         fluentBitImage: "quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3"
@@ -191,14 +226,24 @@ skyforge:
             port: 24224
       appserver:
         profiles: "K8S"
+        memoryProfile: "SINGLE_BOX"
+        memoryLimitMB: 16384
         resources:
           requests:
-            cpu: "2"
-            memory: "8Gi"
+            cpu: "4"
+            memory: "24Gi"
           limits:
-            cpu: "2"
-            memory: "8Gi"
+            cpu: "8"
+            memory: "32Gi"
+        probes:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 180
+          timeoutSeconds: 2
       backend:
+        profiles: "K8S,BACKEND_MASTER,ON_PREM"
+        memoryProfile: "SINGLE_BOX"
+        memoryLimitMB: 4096
         resources:
           requests:
             cpu: "2"
@@ -206,6 +251,11 @@ skyforge:
           limits:
             cpu: "2"
             memory: "8Gi"
+        probes:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 180
+          timeoutSeconds: 2
       logAggregation:
         enabled: true
         replicas: 1
@@ -235,6 +285,26 @@ skyforge:
       nqeAssist:
         enabled: true
         appCredentialsSecretName: "fwd-app-creds-for-nqe-assist"
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "2Gi"
+          limits:
+            cpu: "500m"
+            memory: "2Gi"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+      aiCredentials:
+        secretName: "fwd-aws-bedrock"
+        accessKeyIDKey: "AWS_ACCESS_KEY_ID"
+        secretAccessKeyKey: "AWS_SECRET_ACCESS_KEY"
+        sessionTokenKey: "AWS_SESSION_TOKEN"
+        defaultRegionKey: "AWS_DEFAULT_REGION"
       ai:
         baml:
           enabled: true
@@ -256,8 +326,8 @@ skyforge:
       memoryProfileConfigMapName: "fwd-memory-profile-overrides"
       rollout:
         strategyType: "RollingUpdate"
-        maxUnavailable: 0
-        maxSurge: 1
+        maxUnavailable: 1
+        maxSurge: 0
         minReadySeconds: 10
         progressDeadlineSeconds: 600
         terminationGracePeriodSeconds: 90
@@ -301,68 +371,68 @@ skyforge:
         fdbInternalPartition1SecretName: "postgres.fwd-pg-fdb-1.credentials"
         fdbPartitionPasswordKey: "password"
       compute:
-        replicas: 6
+        replicas: 1
         port: 30060
         requiredAntiAffinity: false
         requiredPoolClass: "app"
         reservedMemoryOverride: ""
-        memoryLimitMB: 0
+        memoryLimitMB: 8192
         memoryPctOverride: ""
         resources:
           requests:
-            cpu: "4"
-            memory: "12Gi"
+            cpu: "500m"
+            memory: "14Gi"
           limits:
-            cpu: "4"
-            memory: "12Gi"
+            cpu: "256"
+            memory: "18Gi"
         probes:
           initialDelaySeconds: 10
-          periodSeconds: 60
-          failureThreshold: 10
-          timeoutSeconds: 3
+          periodSeconds: 10
+          failureThreshold: 180
+          timeoutSeconds: 2
       search:
-        replicas: 6
+        replicas: 1
         port: 30050
         requiredAntiAffinity: false
         requiredPoolClass: "app"
         reservedMemoryOverride: ""
-        memoryLimitMB: 0
+        memoryLimitMB: 8192
         memoryPctOverride: ""
         ioexecThreadsPerCore: ""
-        fdbJdbcMaxPoolSize: 10
+        fdbJdbcMaxPoolSize: 30
         resources:
           requests:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "500m"
+            memory: "10Gi"
           limits:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "256"
+            memory: "14Gi"
         probes:
           initialDelaySeconds: 10
-          periodSeconds: 60
-          failureThreshold: 10
-          timeoutSeconds: 3
+          periodSeconds: 10
+          failureThreshold: 180
+          timeoutSeconds: 2
     nodeRoleReconciler:
       enabled: true
       managedNodes:
-        - "skyforge-worker-0"
+        - "labpp-sales-prod01.dc.forwardnetworks.com"
       nodeRoles:
         master:
-          - "skyforge-worker-0"
+          - "labpp-sales-prod01.dc.forwardnetworks.com"
         monitoring:
-          - "skyforge-worker-0"
+          - "labpp-sales-prod01.dc.forwardnetworks.com"
         compute:
-          - "skyforge-worker-0"
+          - "labpp-sales-prod01.dc.forwardnetworks.com"
         search:
-          - "skyforge-worker-0"
+          - "labpp-sales-prod01.dc.forwardnetworks.com"
         nqeAssist:
-          - "skyforge-worker-0"
+          - "labpp-sales-prod01.dc.forwardnetworks.com"
         forward:
-          - "skyforge-worker-0"
+          - "labpp-sales-prod01.dc.forwardnetworks.com"
       nodePools:
         control: []
         app:
-          - "skyforge-worker-0"
+          - "labpp-sales-prod01.dc.forwardnetworks.com"
       controlPlaneTaint:
         enabled: false
         key: "node-role.kubernetes.io/control-plane"
@@ -394,12 +464,12 @@ skyforge:
         enabled: false
   gitea:
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
     apiUrl: http://gitea.skyforge.svc.cluster.local:3000/api/v1
     url: /git
   redis:
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
   coder:
     basePath: "/coder"
     internalUrl: "http://coder:7080"
@@ -407,7 +477,7 @@ skyforge:
     nodeSelector:
       skyforge.forwardnetworks.com/pool-class: "app"
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
     personalWorkspace:
       nodeSelector:
         skyforge.forwardnetworks.com/pool-class: "app"
@@ -454,26 +524,41 @@ skyforge:
           ew2WEl7XFd2FyXzNQVyFK7O6h0GoJ7fdR3noPsQWOcDLigXRGHjym2vHoRtGesdn
           PY55hpDs+SQ=
           -----END CERTIFICATE-----
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
   backups:
     forward:
-      engine: "longhorn"
+      engine: "local-path"
       bucket: "forward-platform-backups"
       schedule: "30 1 * * *"
       retentionDays: 30
-      targetNamespace: "longhorn-system"
+      targetNamespace: "skyforge"
       recurringJobName: "forward-platform-backup-daily"
     localSpread:
       enabled: false
   netbox:
+    enabled: true
+    forwardPlugin:
+      enabled: true
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
+  netboxUrl: "https://skyforge.dc.forwardnetworks.com/netbox"
+  nautobot:
+    enabled: true
+    bootstrap:
+      enabled: false
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "3Gi"
+      limits:
+        memory: "3Gi"
+  nautobotUrl: "https://skyforge.dc.forwardnetworks.com/nautobot"
   yaade:
     storage:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
   s3gw:
     persistence:
-      storageClassName: "longhorn"
+      storageClassName: "local-path"
   redoc:
     placement:
       requiredPoolClass: "app"
@@ -488,5 +573,5 @@ secrets:
   validatePrecreated: true
 
 images:
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260422-prod-local-auth-r2"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260422-prod-local-auth-r2-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260427-host-arp-r1"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260427-host-arp-r1-worker"

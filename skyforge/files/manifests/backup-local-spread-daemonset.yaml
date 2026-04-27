@@ -32,7 +32,7 @@ spec:
             - -lc
           args:
             - |
-              set -euo pipefail
+              set -eu
               endpoint="http://{{ .Values.skyforge.s3gw.serviceName }}:{{ .Values.skyforge.s3gw.service.port }}"
               if [[ "{{ ternary "true" "false" .Values.skyforge.objectStorage.useSsl }}" == "true" ]]; then
                 endpoint="https://{{ .Values.skyforge.s3gw.serviceName }}:{{ .Values.skyforge.s3gw.service.port }}"
@@ -46,7 +46,7 @@ spec:
               aws configure set default.s3.multipart_chunksize 32MB
               while true; do
                 mkdir -p /var/local-backups
-{{- range (default (list "skyforge-backups" "forward-cbr-backups") $localSpread.includeBuckets) }}
+{{- range (default (list "skyforge-backups" "forward-platform-backups") $localSpread.includeBuckets) }}
                 mkdir -p "/var/local-backups/{{ . }}"
                 aws --no-progress --only-show-errors --endpoint-url "${endpoint}" s3 sync "s3://{{ . }}/" "/var/local-backups/{{ . }}/" --delete || true
 {{- end }}

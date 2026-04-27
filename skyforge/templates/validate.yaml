@@ -10,17 +10,46 @@ early when required configuration is missing.
 {{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
 {{- $forwardWorkers := default (dict) .Values.skyforge.forwardCluster.workers -}}
 {{- $forwardWorkerOwner := lower (trim (default "upstream" $forwardWorkers.owner)) -}}
+{{- $forwardCore := default (dict) .Values.skyforge.forwardCluster.core -}}
+{{- $forwardCoreOwner := lower (trim (default "upstream" $forwardCore.owner)) -}}
 {{- $forwardCollectorImage := include "skyforge.forwardCollector.image" . -}}
+{{- $forwardCoreAppserverImage := include "skyforge.forwardCore.appserverImage" . -}}
+{{- $forwardCoreBackendImage := include "skyforge.forwardCore.backendMasterImage" . -}}
+{{- $forwardCoreLogserverImage := include "skyforge.forwardCore.logserverImage" . -}}
+{{- $forwardCoreCbrServerImage := include "skyforge.forwardCore.cbrServerImage" . -}}
+{{- $forwardCoreCbrAgentImage := include "skyforge.forwardCore.cbrAgentImage" . -}}
+{{- $forwardCoreCbrS3AgentImage := include "skyforge.forwardCore.cbrS3AgentImage" . -}}
+{{- $forwardCoreNqeAssist := default (dict) $forwardCore.nqeAssist -}}
+{{- $forwardCoreNqeAssistImage := include "skyforge.forwardCore.nqeAssistImage" . -}}
+{{- $forwardCoreBaml := default (dict) (default (dict) $forwardCore.ai).baml -}}
+{{- $forwardCoreBamlImage := include "skyforge.forwardCore.bamlImage" . -}}
+{{- $forwardCoreAICredentials := default (dict) $forwardCore.aiCredentials -}}
+{{- $forwardCoreAICredentialsSecretName := trim (default "" $forwardCoreAICredentials.secretName) -}}
+{{- $forwardCoreAICredentialsAccessKeyIDKey := trim (default "" $forwardCoreAICredentials.accessKeyIDKey) -}}
+{{- $forwardCoreAICredentialsSecretAccessKeyKey := trim (default "" $forwardCoreAICredentials.secretAccessKeyKey) -}}
 {{- $forwardComputeImage := include "skyforge.forwardWorker.computeImage" . -}}
 {{- $forwardSearchImage := include "skyforge.forwardWorker.searchImage" . -}}
 {{- $obsEnabled := default false .Values.skyforge.observability.enabled -}}
 {{- $obsManagedEnabled := default false .Values.skyforge.observability.managed.enabled -}}
 {{- $obsGrafanaOIDC := default (dict) .Values.skyforge.observability.grafana.oidc -}}
+{{- $kedaCfg := default (dict) .Values.skyforge.keda -}}
+{{- $kedaEnabled := default false $kedaCfg.enabled -}}
+{{- $kedaForwardWorkers := default (dict) $kedaCfg.forwardWorkers -}}
+{{- $cloudflareTunnel := default (dict) .Values.skyforge.cloudflareTunnel -}}
 {{- $obsGrafanaOIDCEnabled := true -}}
 {{- $edition := lower (trim (default "enterprise" .Values.skyforge.edition)) -}}
 {{- $forwardEnabled := and (ne $edition "oss") .Values.skyforge.forward.enabled -}}
 {{- if hasKey $obsGrafanaOIDC "enabled" -}}
   {{- $obsGrafanaOIDCEnabled = (index $obsGrafanaOIDC "enabled") -}}
+{{- end -}}
+
+{{- if default false $kedaForwardWorkers.enabled -}}
+  {{- if not $kedaEnabled -}}
+    {{- fail "skyforge.keda.forwardWorkers.enabled=true requires skyforge.keda.enabled=true" -}}
+  {{- end -}}
+  {{- if not $forwardClusterEnabled -}}
+    {{- fail "skyforge.keda.forwardWorkers.enabled=true requires skyforge.forwardCluster.enabled=true" -}}
+  {{- end -}}
 {{- end -}}
 
 {{- if .Values.skyforge.encoreCfg.create -}}
@@ -63,6 +92,11 @@ early when required configuration is missing.
 {{- if and (eq $uiAuthMode "oidc") (not .Values.skyforge.dex.enabled) -}}
   {{- fail "skyforge.auth.mode=oidc requires skyforge.dex.enabled=true; supported browser OIDC topology is Skyforge -> Dex -> IdP" -}}
 {{- end -}}
+{{- if (default false $cloudflareTunnel.enabled) -}}
+  {{- if not (trim (default "" $cloudflareTunnel.tokenSecretName)) -}}
+    {{- fail "skyforge.cloudflareTunnel.enabled=true requires skyforge.cloudflareTunnel.tokenSecretName" -}}
+  {{- end -}}
+{{- end -}}
 {{- if and (ne $edition "enterprise") (ne $edition "oss") -}}
   {{- fail (printf "skyforge.edition must be one of enterprise or oss (got %q)" $edition) -}}
 {{- end -}}
@@ -104,6 +138,9 @@ early when required configuration is missing.
 {{- if and (ne $forwardWorkerOwner "upstream") (ne $forwardWorkerOwner "skyforge") -}}
   {{- fail (printf "skyforge.forwardCluster.workers.owner must be one of upstream or skyforge (got %q)" $forwardWorkerOwner) -}}
 {{- end -}}
+{{- if and (ne $forwardCoreOwner "upstream") (ne $forwardCoreOwner "skyforge") -}}
+  {{- fail (printf "skyforge.forwardCluster.core.owner must be one of upstream or skyforge (got %q)" $forwardCoreOwner) -}}
+{{- end -}}
 {{- if eq $forwardWorkerOwner "skyforge" -}}
   {{- if not $forwardClusterEnabled -}}
     {{- fail "skyforge.forwardCluster.workers.owner=skyforge requires skyforge.forwardCluster.enabled=true" -}}
@@ -128,8 +165,67 @@ early when required configuration is missing.
     {{- fail "skyforge.forwardCluster.workers.owner=skyforge with log forwarding enabled requires at least one skyforge.forwardCluster.workers.logForwarding.outputs entry" -}}
   {{- end -}}
 {{- end -}}
+{{- if eq $forwardCoreOwner "skyforge" -}}
+  {{- if not $forwardClusterEnabled -}}
+    {{- fail "skyforge.forwardCluster.core.owner=skyforge requires skyforge.forwardCluster.enabled=true" -}}
+  {{- end -}}
+  {{- if not (default false $forwardCore.adoptionAcknowledged) -}}
+    {{- fail "skyforge.forwardCluster.core.owner=skyforge requires skyforge.forwardCluster.core.adoptionAcknowledged=true because the upstream Forward release must stop managing the same core resource names first" -}}
+  {{- end -}}
+  {{- if ne $forwardWorkerOwner "skyforge" -}}
+    {{- fail "skyforge.forwardCluster.core.owner=skyforge requires skyforge.forwardCluster.workers.owner=skyforge so the native Forward stack has a single owner" -}}
+  {{- end -}}
+  {{- $dbMode := lower (trim (default "external" (default (dict) $forwardWorkers.database).mode)) -}}
+  {{- if ne $dbMode "external" -}}
+    {{- fail "skyforge.forwardCluster.core.owner=skyforge currently supports only skyforge.forwardCluster.workers.database.mode=external" -}}
+  {{- end -}}
+  {{- if not (trim $forwardCoreAppserverImage) -}}
+    {{- fail "skyforge.forwardCluster.core.owner=skyforge requires skyforge.forwardCluster.core.appserver.image or skyforge.forwardImages.tag" -}}
+  {{- end -}}
+  {{- if not (trim $forwardCoreBackendImage) -}}
+    {{- fail "skyforge.forwardCluster.core.owner=skyforge requires skyforge.forwardCluster.core.backend.image or skyforge.forwardImages.tag" -}}
+  {{- end -}}
+  {{- if default true (default true (default (dict) $forwardCore.logAggregation).enabled) -}}
+    {{- if not (trim $forwardCoreLogserverImage) -}}
+      {{- fail "skyforge.forwardCluster.core.owner=skyforge with log aggregation enabled requires skyforge.forwardCluster.core.logAggregation.image or skyforge.forwardImages.tag" -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $cbr := default (dict) $forwardCore.cbr -}}
+  {{- if and (default false $cbr.enabled) (not (trim $forwardCoreCbrServerImage)) -}}
+    {{- fail "skyforge.forwardCluster.core.cbr.enabled=true requires skyforge.forwardCluster.core.cbr.server.image or skyforge.forwardImages.tag" -}}
+  {{- end -}}
+  {{- if and (default false $cbr.enabled) (not (trim $forwardCoreCbrAgentImage)) -}}
+    {{- fail "skyforge.forwardCluster.core.cbr.enabled=true requires skyforge.forwardCluster.core.cbr.agent.image or skyforge.forwardImages.tag" -}}
+  {{- end -}}
+  {{- if and (default false (default (dict) $cbr.s3Agent).enabled) (not (trim $forwardCoreCbrS3AgentImage)) -}}
+    {{- fail "skyforge.forwardCluster.core.cbr.s3Agent.enabled=true requires skyforge.forwardCluster.core.cbr.s3Agent.image or skyforge.forwardImages.tag" -}}
+  {{- end -}}
+  {{- if and (default false $forwardCoreNqeAssist.enabled) (not (trim $forwardCoreNqeAssistImage)) -}}
+    {{- fail "skyforge.forwardCluster.core.nqeAssist.enabled=true requires skyforge.forwardCluster.core.nqeAssist.image or skyforge.forwardImages.tag" -}}
+  {{- end -}}
+  {{- if and (default false $forwardCoreBaml.enabled) (not (trim $forwardCoreBamlImage)) -}}
+    {{- fail "skyforge.forwardCluster.core.ai.baml.enabled=true requires skyforge.forwardCluster.core.ai.baml.image" -}}
+  {{- end -}}
+  {{- if or (default false $forwardCoreNqeAssist.enabled) (default false $forwardCoreBaml.enabled) -}}
+    {{- if not $forwardCoreAICredentialsSecretName -}}
+      {{- fail "Forward AI runtime requires skyforge.forwardCluster.core.aiCredentials.secretName when nqe-assist or baml is enabled" -}}
+    {{- end -}}
+    {{- if not $forwardCoreAICredentialsAccessKeyIDKey -}}
+      {{- fail "Forward AI runtime requires skyforge.forwardCluster.core.aiCredentials.accessKeyIDKey when nqe-assist or baml is enabled" -}}
+    {{- end -}}
+    {{- if not $forwardCoreAICredentialsSecretAccessKeyKey -}}
+      {{- fail "Forward AI runtime requires skyforge.forwardCluster.core.aiCredentials.secretAccessKeyKey when nqe-assist or baml is enabled" -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if and (default true (default (dict) $forwardCore.logForwarding).enabled) (eq (len (default (list) (default (dict) $forwardCore.logForwarding).outputs)) 0) -}}
+    {{- fail "skyforge.forwardCluster.core.owner=skyforge with log forwarding enabled requires at least one skyforge.forwardCluster.core.logForwarding.outputs entry" -}}
+  {{- end -}}
+{{- end -}}
 {{- $hetznerBurst := default (dict) .Values.skyforge.burst.hetzner -}}
 {{- $hetznerBurstEnabled := default false $hetznerBurst.enabled -}}
+{{- $hetznerWireguard := default (dict) $hetznerBurst.wireguard -}}
+{{- $hetznerWireguardHub := default (dict) $hetznerWireguard.hub -}}
+{{- $hetznerRouteReconciler := default (dict) $hetznerBurst.routeReconciler -}}
 {{- if and (eq $edition "oss") $hetznerBurstEnabled -}}
   {{- fail "skyforge.edition=oss does not support skyforge.burst.hetzner.enabled=true" -}}
 {{- end -}}
@@ -173,21 +269,21 @@ early when required configuration is missing.
   {{- if not (trim (default "" $hetznerBurst.wireguard.gatewayNodeIP)) -}}
     {{- fail "skyforge.burst.hetzner.enabled=true requires skyforge.burst.hetzner.wireguard.gatewayNodeIP" -}}
   {{- end -}}
-  {{- if and (default false $hetznerBurst.wireguard.hub.enabled) (not (trim (default "" $hetznerBurst.wireguard.hub.privateKeySecretName))) -}}
-    {{- fail "skyforge.burst.hetzner.wireguard.hub.enabled=true requires skyforge.burst.hetzner.wireguard.hub.privateKeySecretName" -}}
-  {{- end -}}
-  {{- if and (default false $hetznerBurst.wireguard.hub.enabled) (not (trim (default "" $hetznerBurst.wireguard.localAddressCIDR))) -}}
-    {{- fail "skyforge.burst.hetzner.wireguard.hub.enabled=true requires skyforge.burst.hetzner.wireguard.localAddressCIDR" -}}
-  {{- end -}}
-  {{- if and (default false $hetznerBurst.wireguard.hub.enabled) (eq (len (default (dict) $hetznerBurst.wireguard.hub.nodeSelector)) 0) -}}
-    {{- fail "skyforge.burst.hetzner.wireguard.hub.enabled=true requires skyforge.burst.hetzner.wireguard.hub.nodeSelector" -}}
-  {{- end -}}
-  {{- if and (default false $hetznerBurst.routeReconciler.enabled) (not (trim (default "" $hetznerBurst.routeReconciler.via))) -}}
-    {{- fail "skyforge.burst.hetzner.routeReconciler.enabled=true requires skyforge.burst.hetzner.routeReconciler.via" -}}
-  {{- end -}}
-  {{- if and (default false $hetznerBurst.routeReconciler.enabled) (eq (len (default (list) $hetznerBurst.routeReconciler.destinations)) 0) -}}
-    {{- fail "skyforge.burst.hetzner.routeReconciler.enabled=true requires skyforge.burst.hetzner.routeReconciler.destinations" -}}
-  {{- end -}}
+{{- end -}}
+{{- if and (default false $hetznerWireguardHub.enabled) (not (trim (default "" $hetznerWireguardHub.privateKeySecretName))) -}}
+  {{- fail "skyforge.burst.hetzner.wireguard.hub.enabled=true requires skyforge.burst.hetzner.wireguard.hub.privateKeySecretName" -}}
+{{- end -}}
+{{- if and (default false $hetznerWireguardHub.enabled) (not (trim (default "" $hetznerWireguard.localAddressCIDR))) -}}
+  {{- fail "skyforge.burst.hetzner.wireguard.hub.enabled=true requires skyforge.burst.hetzner.wireguard.localAddressCIDR" -}}
+{{- end -}}
+{{- if and (default false $hetznerWireguardHub.enabled) (eq (len (default (dict) $hetznerWireguardHub.nodeSelector)) 0) -}}
+  {{- fail "skyforge.burst.hetzner.wireguard.hub.enabled=true requires skyforge.burst.hetzner.wireguard.hub.nodeSelector" -}}
+{{- end -}}
+{{- if and (default false $hetznerRouteReconciler.enabled) (not (trim (default "" $hetznerRouteReconciler.via))) -}}
+  {{- fail "skyforge.burst.hetzner.routeReconciler.enabled=true requires skyforge.burst.hetzner.routeReconciler.via" -}}
+{{- end -}}
+{{- if and (default false $hetznerRouteReconciler.enabled) (eq (len (default (list) $hetznerRouteReconciler.destinations)) 0) -}}
+  {{- fail "skyforge.burst.hetzner.routeReconciler.enabled=true requires skyforge.burst.hetzner.routeReconciler.destinations" -}}
 {{- end -}}
 {{- if and .Values.skyforge.netbox.enabled (not .Values.skyforge.dex.enabled) -}}
   {{- fail "skyforge.netbox.enabled=true requires skyforge.dex.enabled=true (native OIDC login path)" -}}
@@ -254,6 +350,9 @@ early when required configuration is missing.
   {{- $expectedRoleValue := default "forward" $forwardContract.expectedForwardRoleValue -}}
   {{- $expectedPoolClass := default "app" $forwardContract.expectedForwardPoolClass -}}
   {{- $minimumForwardNodeCount := int (default 1 $forwardContract.minimumForwardNodeCount) -}}
+  {{- $expectedComputeReplicaCount := int (default 0 $forwardContract.expectedComputeReplicaCount) -}}
+  {{- $expectedSearchReplicaCount := int (default 0 $forwardContract.expectedSearchReplicaCount) -}}
+  {{- $allowForwardOnControlPlane := default false $forwardContract.allowForwardOnControlPlane -}}
   {{- $nodes := lookup "v1" "Node" "" "" -}}
   {{- if not $nodes -}}
     {{- fail "skyforge.forwardCluster.contractValidation.enabled=true requires Node list access" -}}
@@ -268,13 +367,25 @@ early when required configuration is missing.
       {{- if ne (default "" (index $labels "skyforge.forwardnetworks.com/pool-class")) $expectedPoolClass -}}
         {{- fail (printf "Forward contract violation: node %q has %s=%q; expected %q" $nodeName "skyforge.forwardnetworks.com/pool-class" (default "" (index $labels "skyforge.forwardnetworks.com/pool-class")) $expectedPoolClass) -}}
       {{- end -}}
-      {{- if hasKey $labels "node-role.kubernetes.io/control-plane" -}}
+      {{- if and (not $allowForwardOnControlPlane) (hasKey $labels "node-role.kubernetes.io/control-plane") -}}
         {{- fail (printf "Forward contract violation: node %q is control-plane but labeled %s=%s" $nodeName $expectedRoleLabel $expectedRoleValue) -}}
       {{- end -}}
     {{- end -}}
   {{- end -}}
   {{- if lt (len $forwardNodeNames) $minimumForwardNodeCount -}}
     {{- fail (printf "skyforge.forwardCluster.contractValidation.enabled=true found %d nodes labeled %s=%s (minimum required: %d)" (len $forwardNodeNames) $expectedRoleLabel $expectedRoleValue $minimumForwardNodeCount) -}}
+  {{- end -}}
+  {{- if gt $expectedComputeReplicaCount 0 -}}
+    {{- $computeReplicas := int (default 0 (default (dict) $forwardWorkers.compute).replicas) -}}
+    {{- if ne $computeReplicas $expectedComputeReplicaCount -}}
+      {{- fail (printf "Forward contract violation: skyforge.forwardCluster.workers.compute.replicas=%d (expected %d)" $computeReplicas $expectedComputeReplicaCount) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if gt $expectedSearchReplicaCount 0 -}}
+    {{- $searchReplicas := int (default 0 (default (dict) $forwardWorkers.search).replicas) -}}
+    {{- if ne $searchReplicas $expectedSearchReplicaCount -}}
+      {{- fail (printf "Forward contract violation: skyforge.forwardCluster.workers.search.replicas=%d (expected %d)" $searchReplicas $expectedSearchReplicaCount) -}}
+    {{- end -}}
   {{- end -}}
 {{- end -}}
 

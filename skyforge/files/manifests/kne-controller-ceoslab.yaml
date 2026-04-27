@@ -220,6 +220,12 @@ kind: ServiceAccount
 metadata:
   name: arista-ceoslab-operator-controller-manager
   namespace: arista-ceoslab-operator-system
+{{- with .Values.kubernetes.imagePullSecrets }}
+imagePullSecrets:
+{{- range $name := . }}
+  - name: {{ $name | quote }}
+{{- end }}
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -477,6 +483,12 @@ spec:
       labels:
         control-plane: controller-manager
     spec:
+      {{- with .Values.kubernetes.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range $name := . }}
+        - name: {{ $name | quote }}
+      {{- end }}
+      {{- end }}
       containers:
       - args:
         - --secure-listen-address=0.0.0.0:8443

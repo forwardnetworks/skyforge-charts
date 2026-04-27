@@ -2,7 +2,7 @@
 {{- $hetzner := default dict $burst.hetzner -}}
 {{- $wireguard := default dict $hetzner.wireguard -}}
 {{- $hub := default dict $wireguard.hub -}}
-{{- if and $hetzner.enabled (default false $hub.enabled) -}}
+{{- if (default false $hub.enabled) -}}
 {{- $name := default "hetzner-burst-wireguard-hub" $hub.name -}}
 {{- $image := default "docker.io/linuxserver/wireguard:latest" $hub.image -}}
 {{- $pullPolicy := default "IfNotPresent" $hub.imagePullPolicy -}}
@@ -22,7 +22,7 @@ metadata:
 data:
   reconcile.sh: |
     #!/bin/bash
-    set -euo pipefail
+    set -eu
 
     WG_IFACE="{{ $interfaceName }}"
     WG_ADDR="{{ $localAddressCIDR }}"

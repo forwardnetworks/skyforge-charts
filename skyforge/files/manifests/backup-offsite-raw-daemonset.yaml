@@ -32,7 +32,7 @@ spec:
             - -lc
           args:
             - |
-              set -euo pipefail
+              set -eu
               src="/source"
               dst="/dest/${POD_NODE_NAME}"
               mkdir -p "${src}" "${dst}"

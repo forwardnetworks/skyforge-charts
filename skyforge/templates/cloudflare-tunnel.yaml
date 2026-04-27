@@ -1,0 +1,40 @@
+{{- $cfg := default (dict) .Values.skyforge.cloudflareTunnel -}}
+{{- if (default false $cfg.enabled) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skyforge-cloudflared
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: skyforge-cloudflared
+    app.kubernetes.io/part-of: skyforge
+spec:
+  replicas: {{ default 1 $cfg.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: skyforge-cloudflared
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: skyforge-cloudflared
+        app.kubernetes.io/part-of: skyforge
+    spec:
+      containers:
+        - name: cloudflared
+          image: {{ default "cloudflare/cloudflared:2024.11.0" $cfg.image | quote }}
+          imagePullPolicy: {{ default "IfNotPresent" $cfg.pullPolicy }}
+          args:
+            - tunnel
+            - --no-autoupdate
+            - run
+            - --token
+            - $(TUNNEL_TOKEN)
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $cfg.tokenSecretName | quote }}
+                  key: {{ default "token" $cfg.tokenSecretKey | quote }}
+          resources:
+{{ toYaml (default (dict) $cfg.resources) | nindent 12 }}
+{{- end }}

@@ -12,6 +12,30 @@
 {{- if not (contains "." $workerDBHost) -}}
 {{- $workerDBHost = printf "%s.%s.svc.cluster.local" $workerDBHost .Release.Namespace -}}
 {{- end -}}
+{{- $workerCfg := default (dict) .Values.skyforge.keda.worker -}}
+{{- $labAware := default (dict) $workerCfg.labAware -}}
+{{- $labAwareEnabled := default false $labAware.enabled -}}
+{{- $labTaskTypes := default (list "netlab-run" "netlab-kne-run" "kne-run" "composite-run" "eve-ng-run") $labAware.taskTypes -}}
+{{- $quotedTaskTypes := list -}}
+{{- range $taskType := $labTaskTypes -}}
+{{- $quotedTaskTypes = append $quotedTaskTypes (printf "'%s'" (replace "'" "''" (toString $taskType))) -}}
+{{- end -}}
+{{- $taskTypeSQLList := join ", " $quotedTaskTypes -}}
+{{- $queuedWeight := int (default 3 $labAware.queuedWeight) -}}
+{{- $runningWeight := int (default 1 $labAware.runningWeight) -}}
+{{- $otherQueuedWeight := int (default 1 $labAware.otherQueuedWeight) -}}
+{{- $reservationWindowMinutes := int (default 20 $labAware.reservationPrewarmMinutes) -}}
+{{- $reservationClassWeights := default (dict "heavy" 3 "standard" 2 "default" 1) $labAware.reservationClassWeights -}}
+{{- $reservationHeavyWeight := int (default 3 (index $reservationClassWeights "heavy")) -}}
+{{- $reservationStandardWeight := int (default 2 (index $reservationClassWeights "standard")) -}}
+{{- $reservationDefaultWeight := int (default 1 (index $reservationClassWeights "default")) -}}
+{{- $workerQuery := trim (default "" $workerCfg.query) -}}
+{{- if and (eq $workerQuery "") $labAwareEnabled -}}
+{{- $workerQuery = printf "SELECT COALESCE(SUM(CASE WHEN status='queued' AND task_type IN (%s) THEN %d WHEN status='running' AND task_type IN (%s) THEN %d WHEN status='queued' THEN %d ELSE 0 END),0) + COALESCE((SELECT SUM(CASE resource_class WHEN 'heavy' THEN %d WHEN 'standard' THEN %d ELSE %d END) FROM sf_reservations r WHERE r.status='approved' AND r.type IN ('scheduled-future','immediate-interactive','persistent-sandbox') AND r.start_at <= now() + interval '%d minutes' AND r.end_at > now()),0) AS demand_score FROM sf_tasks WHERE status IN ('queued','running')" $taskTypeSQLList $queuedWeight $taskTypeSQLList $runningWeight $otherQueuedWeight $reservationHeavyWeight $reservationStandardWeight $reservationDefaultWeight $reservationWindowMinutes -}}
+{{- end -}}
+{{- if eq $workerQuery "" -}}
+{{- $workerQuery = "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'" -}}
+{{- end -}}
 ---
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
@@ -46,12 +70,59 @@ spec:
         dbName: {{ default "skyforge_server" .Values.skyforge.db.name | quote }}
         userName: {{ default "skyforge_server" .Values.skyforge.db.user | quote }}
         sslmode: {{ default "disable" .Values.skyforge.db.sslmode | quote }}
-        query: {{ default "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'" .Values.skyforge.keda.worker.query | quote }}
+        query: {{ $workerQuery | quote }}
         targetQueryValue: {{ printf "%v" (default "5" .Values.skyforge.keda.worker.targetQueryValue) | quote }}
         activationTargetQueryValue: {{ printf "%v" (default (default "1" .Values.skyforge.keda.worker.activationQueryValue) .Values.skyforge.keda.worker.activationTargetQueryValue) | quote }}
       authenticationRef:
         name: skyforge-worker-postgresql-auth
 {{ end }}
+
+{{- $forwardWorkersKeda := default (dict) .Values.skyforge.keda.forwardWorkers -}}
+{{- if and .Values.skyforge.keda.enabled (default false $forwardWorkersKeda.enabled) }}
+{{- $forwardNs := trim (default (default "forward" .Values.skyforge.forwardCluster.serviceNamespace) $forwardWorkersKeda.namespace) -}}
+{{- $forwardCompute := default (dict) $forwardWorkersKeda.compute -}}
+{{- $forwardSearch := default (dict) $forwardWorkersKeda.search -}}
+{{- if default true $forwardCompute.enabled }}
+{{- $computeTriggers := default (list (dict "type" "cpu" "metricType" "Utilization" "metadata" (dict "value" "70")) (dict "type" "memory" "metricType" "Utilization" "metadata" (dict "value" "80"))) $forwardCompute.triggers -}}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: fwd-compute-worker
+  namespace: {{ $forwardNs }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ default "fwd-compute-worker" $forwardCompute.targetName | quote }}
+  pollingInterval: {{ default 30 $forwardCompute.pollingInterval }}
+  cooldownPeriod: {{ default 300 $forwardCompute.cooldownPeriod }}
+  minReplicaCount: {{ default 1 $forwardCompute.minReplicaCount }}
+  maxReplicaCount: {{ default 3 $forwardCompute.maxReplicaCount }}
+  triggers:
+{{ toYaml $computeTriggers | indent 4 }}
+{{- end }}
+{{- if default true $forwardSearch.enabled }}
+{{- $searchTriggers := default (list (dict "type" "cpu" "metricType" "Utilization" "metadata" (dict "value" "70")) (dict "type" "memory" "metricType" "Utilization" "metadata" (dict "value" "80"))) $forwardSearch.triggers -}}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: fwd-search-worker
+  namespace: {{ $forwardNs }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ default "fwd-search-worker" $forwardSearch.targetName | quote }}
+  pollingInterval: {{ default 30 $forwardSearch.pollingInterval }}
+  cooldownPeriod: {{ default 300 $forwardSearch.cooldownPeriod }}
+  minReplicaCount: {{ default 1 $forwardSearch.minReplicaCount }}
+  maxReplicaCount: {{ default 2 $forwardSearch.maxReplicaCount }}
+  triggers:
+{{ toYaml $searchTriggers | indent 4 }}
+{{- end }}
+{{- end }}
 
 {{- if and .Values.skyforge.jira.enabled .Values.skyforge.jira.managed .Values.skyforge.keda.jira.enabled }}
 {{- $triggers := default (list) .Values.skyforge.keda.jira.triggers -}}

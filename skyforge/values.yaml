@@ -13,6 +13,10 @@ skyforge:
       runOnUpgrade: false
       backoffLimit: 1
       activeDeadlineSeconds: 300
+    gatewayLBIPAMShareReconcile:
+      runOnUpgrade: true
+      backoffLimit: 1
+      activeDeadlineSeconds: 300
     coderAdminBootstrap:
       # Run on upgrade too so an existing deployment with no first Coder user
       # can self-heal into normal OIDC onboarding on the next rollout.
@@ -197,6 +201,12 @@ skyforge:
     attempts: 90
     sleepSeconds: 2
     connectTimeoutSeconds: 2
+  # Demo-seed replay timeout knobs for Forward tutorial/demo network rebuilds.
+  # Single-node prod-style clusters can take materially longer to process
+  # uploaded snapshots under load, so defaults are intentionally generous.
+  forwardDemoSeed:
+    replayTimeout: "45m"
+    snapshotProcessTimeout: "20m"
   domain: "forwardnetworks.com"
   gateway:
     # Optional explicit Gateway addresses.
@@ -207,7 +217,22 @@ skyforge:
     #   - type: IPAddress
     #     value: "10.128.16.60"
     addresses: []
+    # Alternate hostnames for the core Skyforge app/API route only.
     additionalHostnames: []
+    # Alternate hostnames for bundled tool routes such as Gitea, Coder,
+    # observability, inventory, and integration UIs. Keep this empty for
+    # public aliases that should expose only Skyforge itself.
+    additionalToolHostnames: []
+    ciliumLBIPAM:
+      # Cilium Gateway API owns the HTTP/HTTPS LoadBalancer service, but the
+      # embedded Gitea SSH endpoint needs a separate LoadBalancer service for
+      # port 22. Use a shared LB-IPAM key so both services keep the same VIP.
+      gatewayServiceName: cilium-gateway-skyforge
+      sharingKey: skyforge-gateway
+      # Optional explicit VIP for both the generated Gateway service and the
+      # Gitea SSH LoadBalancer. If empty, the first gateway.addresses IPAddress
+      # value is used when present; otherwise Cilium keeps the allocated VIP.
+      sharedIP: ""
     # Local k3s can pin the generated cilium-gateway-* Service nodePorts to
     # stable values so host port bindings stay deterministic without adding a
     # separate ingress implementation.
@@ -216,6 +241,22 @@ skyforge:
       serviceName: cilium-gateway-skyforge
       http: 30080
       https: 30443
+  cloudflareTunnel:
+    # Optional Cloudflare Tunnel workload for exposing selected in-cluster
+    # services (for example Forward) without directly exposing gateway listeners.
+    enabled: false
+    image: "cloudflare/cloudflared:2024.11.0"
+    pullPolicy: IfNotPresent
+    replicas: 1
+    tokenSecretName: ""
+    tokenSecretKey: "token"
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
   # Skyforge uses Cilium Gateway API for ingress (no Traefik).
   kne:
     # Enable Kubernetes Network Emulation (KNE) meshnet components.
@@ -342,12 +383,19 @@ skyforge:
       # Service/Gateway publish standard port 22 externally.
       listenPort: 2222
       servicePort: 22
+      # Prefer the OpenSSH 10+ post-quantum hybrid KEX when supported by
+      # Gitea's built-in Go SSH server, with classic algorithms as fallbacks
+      # for older clients and images.
+      serverKeyExchanges: "mlkem768x25519-sha256,curve25519-sha256,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group14-sha256"
     # Keep server-side Gitea API traffic in-cluster. Browser links can remain
     # same-origin via `url`, but workers and backend jobs should not hairpin
     # through the external Gateway VIP for API/raw/LFS fetches.
     apiUrl: "http://gitea.skyforge.svc.cluster.local:3000/api/v1"
     url: "/git"
     username: "skyforge"
+    # Allow unauthenticated browser access to repositories explicitly marked public.
+    # Private repositories still require a valid Gitea/Skyforge-backed session.
+    requireSigninView: false
     repoPrivate: true
     adminUsername: "skyforge"
     allowedDomains: ""
@@ -432,6 +480,14 @@ skyforge:
   netbox:
     enabled: false
     internalUrl: ""
+    forwardPlugin:
+      enabled: false
+      installerImage: "public.ecr.aws/docker/library/python:3.12-slim"
+      packageUrl: "https://github.com/forwardnetworks/forward-netbox/releases/download/v0.2.0/forward_netbox-0.2.0-py3-none-any.whl"
+      plugins:
+        - "forward_netbox"
+        - "netbox_branching"
+      installTarget: "/opt/skyforge/netbox-plugins"
     storage:
       enabled: true
       storageClassName: ""
@@ -749,6 +805,10 @@ skyforge:
     # Requires KEDA CRDs to be installed cluster-wide.
     enabled: false
     requireCRD: true
+    observability:
+      # Scrape KEDA operator metrics into the managed Prometheus stack.
+      enabled: true
+      namespace: "keda"
     worker:
       enabled: false
       pollingInterval: 15
@@ -756,9 +816,69 @@ skyforge:
       minReplicaCount: 2
       maxReplicaCount: 6
       # Queue pressure query against Skyforge task state.
+      # Leave empty to use the built-in lab-aware weighted query when
+      # `labAware.enabled=true`.
       query: "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'"
       activationTargetQueryValue: "1"
       targetQueryValue: "5"
+      labAware:
+        # Enables a weighted demand query that combines queued/running lab task
+        # pressure with reservation pre-warm signals.
+        enabled: false
+        # These task types receive lab-specific weighting.
+        taskTypes:
+          - "netlab-run"
+          - "netlab-kne-run"
+          - "kne-run"
+          - "composite-run"
+          - "eve-ng-run"
+        queuedWeight: 3
+        runningWeight: 1
+        otherQueuedWeight: 1
+        # Include approved reservations that begin within this pre-warm window.
+        reservationPrewarmMinutes: 20
+        reservationClassWeights:
+          heavy: 3
+          standard: 2
+          default: 1
+    forwardWorkers:
+      # Optional KEDA autoscaling for upstream/skyforge-managed Forward
+      # compute/search worker Deployments in the Forward namespace.
+      enabled: false
+      # Defaults to skyforge.forwardCluster.serviceNamespace when empty.
+      namespace: ""
+      compute:
+        enabled: true
+        targetName: "fwd-compute-worker"
+        pollingInterval: 30
+        cooldownPeriod: 300
+        minReplicaCount: 1
+        maxReplicaCount: 3
+        triggers:
+          - type: cpu
+            metricType: Utilization
+            metadata:
+              value: "70"
+          - type: memory
+            metricType: Utilization
+            metadata:
+              value: "80"
+      search:
+        enabled: true
+        targetName: "fwd-search-worker"
+        pollingInterval: 30
+        cooldownPeriod: 300
+        minReplicaCount: 1
+        maxReplicaCount: 2
+        triggers:
+          - type: cpu
+            metricType: Utilization
+            metadata:
+              value: "70"
+          - type: memory
+            metricType: Utilization
+            metadata:
+              value: "80"
     jira:
       enabled: false
       pollingInterval: 30
@@ -925,6 +1045,7 @@ skyforge:
       excludedUsers:
         - "admin"
         - "skyforge"
+        - "skyforge-user-bootstrap"
     demoSeedRepair:
       enabled: true
       baseUrl: "http://skyforge-server:8085"
@@ -948,6 +1069,8 @@ skyforge:
     # Optional dedicated hostname for Forward Cluster wildcard routing.
     # Example: skyforge-fwd.local.forwardnetworks.com
     hostname: ""
+    # Optional alternate hostnames for the Forward UI route.
+    additionalHostnames: []
     # TLS secret used for the dedicated Forward hostname listener when
     # forwardCluster.hostname differs from skyforge.hostname.
     tlsSecretName: "proxy-tls-fwd"
@@ -955,6 +1078,226 @@ skyforge:
     serviceName: "fwd-appserver"
     serviceNamespace: "forward"
     servicePort: 8080
+    core:
+      # Ownership model for the main Forward control-plane workloads.
+      #
+      # "upstream": a separate Forward chart/release owns the core Forward
+      #             resources in the target namespace.
+      # "skyforge": this chart owns the core Forward Services, RBAC, PVCs, and
+      #             Deployments/StatefulSets directly in the Forward namespace.
+      #
+      # The Skyforge-owned path is intentionally explicit and targets the
+      # shared-cluster/on-prem contract used by Skyforge local production.
+      owner: "upstream"
+      # Explicit acknowledgment that owner=skyforge transfers ownership of the
+      # main Forward resource names into this chart. Do not enable until any
+      # other release has stopped managing the same objects.
+      adoptionAcknowledged: false
+      namespace: ""
+      imagePullPolicy: "IfNotPresent"
+      priorityClassName: ""
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      usePVCs: true
+      alpineImage: "quay.io/forwardnetworks/docker:alpine_3.18.3"
+      memoryProfileConfigMapName: "fwd-memory-profile-overrides"
+      rollout:
+        strategyType: "RollingUpdate"
+        maxUnavailable: 0
+        maxSurge: 1
+        minReadySeconds: 10
+        progressDeadlineSeconds: 600
+        terminationGracePeriodSeconds: 90
+        preStopSleepSeconds: 20
+      containerMounts:
+        logs: "/var/log/forward"
+        scratchDataDir: "/scratch/data"
+        aggregatedLogs: "/mnt/aggregated-logs"
+      scratch:
+        hostPath: "/mnt/forward/extended/scratch/pods"
+        restoreHostPath: "/mnt/forward/restore"
+        backupsHostPath: "/mnt/forward/backups"
+      logForwarding:
+        enabled: true
+        fluentBitImage: "quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3"
+        httpPort: 2020
+        outputs:
+          - host: "fwd-log-aggregator-0"
+            port: 24224
+          - host: "fwd-log-aggregator-1"
+            port: 24224
+      appserver:
+        image: ""
+        profiles: "K8S"
+        memoryProfile: ""
+        memoryLimitMB: 0
+        memoryPctOverride: ""
+        service:
+          httpPort: 8080
+          httpsPort: 8443
+        pvc:
+          size: "20Gi"
+          storageClassName: ""
+        resources:
+          requests:
+            cpu: "2"
+            memory: "8Gi"
+          limits:
+            cpu: "2"
+            memory: "8Gi"
+        probes:
+          initialDelaySeconds: 10
+          periodSeconds: 60
+          failureThreshold: 10
+          timeoutSeconds: 3
+      backend:
+        image: ""
+        profiles: ""
+        memoryProfile: ""
+        memoryLimitMB: 0
+        memoryPctOverride: ""
+        miscParams: ""
+        service:
+          port: 30040
+        pvc:
+          size: "20Gi"
+          storageClassName: ""
+        resources:
+          requests:
+            cpu: "2"
+            memory: "8Gi"
+          limits:
+            cpu: "2"
+            memory: "8Gi"
+        probes:
+          initialDelaySeconds: 10
+          periodSeconds: 60
+          failureThreshold: 10
+          timeoutSeconds: 3
+      logAggregation:
+        enabled: true
+        image: ""
+        replicas: 2
+        service:
+          port: 24224
+        pvc:
+          size: "20Gi"
+          storageClassName: ""
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "250m"
+            memory: "512Mi"
+      cbr:
+        enabled: false
+        settingsConfigMapName: "backup-restore-configmap"
+        server:
+          image: ""
+          service:
+            httpPort: 40099
+            grpcPort: 40100
+          pvc:
+            size: "20Gi"
+            storageClassName: ""
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "500m"
+              memory: "2Gi"
+        agent:
+          image: ""
+          replicas: 1
+          service:
+            grpcPort: 40101
+          pvc:
+            size: "20Gi"
+            storageClassName: ""
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "500m"
+              memory: "2Gi"
+        s3Agent:
+          enabled: false
+          image: ""
+          replicas: 1
+          bucketPrefix: "forward/backups"
+          service:
+            grpcPort: 40101
+          pvc:
+            size: "20Gi"
+            storageClassName: ""
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "500m"
+              memory: "2Gi"
+        s3Backup:
+          enabled: false
+          backupTime: "01:30"
+          numDaysToRetain: 30
+          includeSnapshots: false
+          bucketName: "forward-platform-backups"
+          serviceEndpoint: "http://s3gw.skyforge.svc.cluster.local:7480"
+          disableSslValidation: false
+          disableChecksumValidation: false
+          writeOnly: false
+          sourceSecretNamespace: "skyforge"
+          accessKeySecretName: "object-storage-root-user"
+          accessKeySecretKey: "object-storage-root-user"
+          secretKeySecretName: "object-storage-root-password"
+          secretKeySecretKey: "object-storage-root-password"
+      nqeAssist:
+        enabled: false
+        image: ""
+        port: 9988
+        awsRegion: "us-west-2"
+        # Secret mounted via envFrom into fwd-nqe-assist. Keep this separate
+        # from appserver.ai_bedrock.secret_name; the Harbor image expects
+        # Forward API credentials plus model runtime env in this secret.
+        appCredentialsSecretName: "fwd-app-creds-for-nqe-assist"
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "250m"
+            memory: "512Mi"
+      aiCredentials:
+        # Shared Bedrock runtime credentials mounted into Forward AI services
+        # (nqe-assist and baml). Keep this secret in the Forward namespace.
+        secretName: "forward-ai-bedrock-credentials"
+        accessKeyIDKey: "AWS_ACCESS_KEY_ID"
+        secretAccessKeyKey: "AWS_SECRET_ACCESS_KEY"
+        sessionTokenKey: "AWS_SESSION_TOKEN"
+        defaultRegionKey: "AWS_DEFAULT_REGION"
+      placement:
+        requiredPoolClass: ""
+        nodeSelector: {}
+        tolerations: []
+        topologySpreadConstraints: []
+      ai:
+        baml:
+          enabled: false
+          image: ""
+          port: 2024
+          awsRegion: "us-west-2"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
     workers:
       # Ownership model for Forward compute/search worker manifests.
       #
@@ -998,7 +1341,8 @@ skyforge:
       discovery:
         # The Forward backend worker discovery path expects a node-agent
         # headless service in this deployment contract. Keep this alias mapped
-        # to search worker pods to avoid stale/unresolvable worker endpoints.
+        # to compute worker pods so NodeAgent/GetNodeInfo resolves to a worker
+        # endpoint that implements the node-agent gRPC surface.
         nodeAgentHeadlessAlias:
           enabled: true
           serviceName: "fwd-node-agent-headless"
@@ -1039,6 +1383,8 @@ skyforge:
         replicas: 2
         image: ""
         port: 30060
+        requiredAntiAffinity: true
+        requiredPoolClass: ""
         reservedMemoryOverride: ""
         javaToolOptions: ""
         memoryLimitMB: 0
@@ -1059,12 +1405,14 @@ skyforge:
         replicas: 2
         image: ""
         port: 30050
+        requiredAntiAffinity: true
+        requiredPoolClass: ""
         reservedMemoryOverride: ""
         javaToolOptions: ""
         memoryLimitMB: 0
         memoryPctOverride: ""
         ioexecThreadsPerCore: ""
-        fdbJdbcMaxPoolSize: 30
+        fdbJdbcMaxPoolSize: 10
         resources:
           requests:
             cpu: "4"
@@ -1114,11 +1462,21 @@ skyforge:
         monitoring: []
         compute: []
         search: []
+        nqeAssist: []
         forward: []
       nodePools:
         control: []
         app: []
         lab: []
+      controlPlaneTaint:
+        # When enabled, control-pool nodes get this NoSchedule taint and
+        # non-control managed nodes have it removed. This protects k3s
+        # server/etcd nodes from generic lab pods that do not carry app-pool
+        # placement.
+        enabled: false
+        key: "node-role.kubernetes.io/control-plane"
+        value: ""
+        effect: "NoSchedule"
     contractValidation:
       # Fail Helm rendering when Forward node-role contracts drift from the
       # expected production topology.
@@ -1127,12 +1485,17 @@ skyforge:
       expectedForwardRoleLabel: "forwardnetworks.com/role"
       expectedForwardRoleValue: "forward"
       minimumForwardNodeCount: 1
+      expectedComputeReplicaCount: 0
+      expectedSearchReplicaCount: 0
+      allowForwardOnControlPlane: false
   forwardImages:
     # Shared Harbor release tag for Skyforge-owned Forward images. Set this to
     # the same value as the upstream Forward `app.image_version` so collector
     # and optional Skyforge-owned worker images move together.
     registry: "harbor.local.forwardnetworks.com/forward"
     tag: ""
+    imagePullSecretName: ""
+    imagePullSecretNamespace: ""
   observability:
     # Global browser-facing observability UIs used by Skyforge platform
     # operations and capacity workflows.
@@ -1204,10 +1567,14 @@ skyforge:
         serviceName: "skyforge-node-exporter"
         image: "prom/node-exporter:v1.8.2"
   forwardCollector:
-    # Optional: enable the in-cluster Forward collector by configuring the image.
-    # When empty, Skyforge derives the collector image from
-    # `skyforge.forwardImages.{registry,tag}`. If neither is set, Skyforge will
-    # not deploy a collector Pod (Collector page will show "not configured").
+    # Image contract for Skyforge-managed user collectors.
+    #
+    # This does not render a shared in-cluster Forward collector Deployment.
+    # Skyforge uses this image when launching per-user collector workloads.
+    #
+    # When empty, Skyforge derives the image from
+    # `skyforge.forwardImages.{registry,tag}`. If neither is set, the Collector
+    # page will report that user collectors are not configured.
     # Example:
     # image: "harbor.local.forwardnetworks.com/forward/fwd_collector:26.4.0-14"
     image: ""
@@ -1249,7 +1616,21 @@ skyforge:
       accessMode: "ReadWriteOnce"
   backups:
     forward:
-      bucket: "forward-cbr-backups"
+      engine: "longhorn"
+      bucket: "forward-platform-backups"
+      schedule: "30 1 * * *"
+      retentionDays: 30
+      targetNamespace: "longhorn-system"
+      recurringJobName: "forward-platform-backup-daily"
+      credentialSecretName: "forward-platform-backup-s3gw"
+      protectedPVCs:
+        - "pvc-fwd-appserver"
+        - "pvc-fwd-backend-master"
+        - "aggregated-logs-fwd-log-aggregator-0"
+        - "aggregated-logs-fwd-log-aggregator-1"
+        - "pgdata-fwd-pg-app-0"
+        - "pgdata-fwd-pg-app-1"
+        - "pgdata-fwd-pg-app-2"
     postgres:
       enabled: true
       schedule: "17 3 * * *"
@@ -1273,7 +1654,7 @@ skyforge:
         accessKeyIdKey: "aws_access_key_id"
         secretAccessKeyKey: "aws_secret_access_key"
     localSpread:
-      enabled: true
+      enabled: false
       intervalSeconds: 1800
       retentionDays: 7
       hostPath: "/var/lib/skyforge/local-backups"
@@ -1286,7 +1667,7 @@ skyforge:
           memory: "1Gi"
       includeBuckets:
         - "skyforge-backups"
-        - "forward-cbr-backups"
+        - "forward-platform-backups"
       placement:
         requiredPoolClass: "app"
         nodeSelector: {}
@@ -1372,7 +1753,7 @@ skyforge:
       accessMode: "ReadWriteOnce"
     # Forward services can open many idle JDBC sessions; keep headroom so
     # platform integrations (Dex/NetBox/Nautobot/Coder) are not starved.
-    maxConnections: 600
+    maxConnections: 1200
   redis:
     storage:
       enabled: true
@@ -1534,6 +1915,11 @@ skyforge:
         memory: 512Mi
   redoc:
     enabled: true
+    placement:
+      requiredPoolClass: ""
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
     resources:
       requests:
         cpu: 25m
@@ -1541,10 +1927,16 @@ skyforge:
       limits:
         cpu: 250m
         memory: 256Mi
+  ssoProxy:
+    placement:
+      requiredPoolClass: ""
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
 images:
   # Use non-DockerHub registries for common base images to avoid Docker Hub pull rate limits.
   alpine: "public.ecr.aws/docker/library/alpine:latest"
-  kubectl: "public.ecr.aws/bitnami/kubectl:1.35.3"
+  kubectl: "public.ecr.aws/bitnami/kubectl:1.35.4"
   envoy: "envoyproxy/envoy:v1.31.2"
   python: "ghcr.io/forwardnetworks/skyforge-python:3.12-alpine"
   # Vector publishes official images under `timberio/vector` (Docker Hub).
@@ -1553,7 +1945,7 @@ images:
   telegraf: "ghcr.io/forwardnetworks/skyforge-telegraf:1.33-alpine"
   freeradius: "ghcr.io/freeradius/freeradius-server:3.2.5"
   # Prefer GHCR (Docker Hub rate limits are painful in-cluster).
-  gitea: "ghcr.io/go-gitea/gitea:1.24.6-rootless"
+  gitea: "ghcr.io/go-gitea/gitea:1.26.0-rootless"
   giteaActRunner: "ghcr.io/forwardnetworks/act_runner:0.2.12"
   coder: "ghcr.io/coder/coder:latest"
   yaade: "ghcr.io/esperotech/yaade:latest"
@@ -1567,11 +1959,11 @@ images:
   terraform: "hashicorp/terraform:1.11.4"
   skyforgeNautobot: "ghcr.io/forwardnetworks/skyforge-nautobot:20260127-1253-277c9dc4"
   skyforgeNetbox: "ghcr.io/forwardnetworks/skyforge-netbox:4.5.0"
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-reset-worker-r1"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260422-prod-local-auth-r2"
   # Optional dedicated task worker image (build-tagged to include the PubSub
   # subscription). Pin this separately when worker-only or API-only fixes are
   # rolled at different times.
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260419-coder-reset-worker-r1-worker"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260422-prod-local-auth-r2-worker"
   nsq: "ghcr.io/forwardnetworks/skyforge-nsqd:v1.2.1"
 nsq:
   enabled: true

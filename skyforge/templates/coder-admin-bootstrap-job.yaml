@@ -39,7 +39,7 @@ spec:
           command: ["/bin/sh", "-lc"]
           args:
             - |
-              set -euo pipefail
+              set -eu
 
               CODER_INTERNAL_HOST="${CODER_SERVICE_HOST:-coder.skyforge.svc.cluster.local}"
               CODER_INTERNAL_PORT="${CODER_SERVICE_PORT_HTTP:-7080}"

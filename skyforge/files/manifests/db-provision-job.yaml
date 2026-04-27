@@ -33,7 +33,7 @@ spec:
             - -lc
           args:
             - |
-              set -euo pipefail
+              set -eu
               export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password)"
 
               echo "Waiting for Postgres..."
@@ -118,8 +118,15 @@ spec:
               ${psql_base} -c "ALTER ROLE fwd_app_non_admin WITH CREATEROLE CREATEDB;"
               ${psql_base} -c "ALTER ROLE fwd_fdb WITH CREATEROLE CREATEDB;"
               ${psql_base} -c "ALTER ROLE fwd_fdb_non_admin WITH CREATEROLE CREATEDB;"
+              # Keep non-admin roles inheriting from their corresponding admin roles.
+              # This is required for large-object access paths used by NQE tutorial runs.
+              ${psql_base} -c "REVOKE fwd_app_non_admin FROM fwd_app;"
+              ${psql_base} -c "REVOKE fwd_fdb_non_admin FROM fwd_fdb;"
+              ${psql_base} -c "GRANT fwd_app TO fwd_app_non_admin;"
+              ${psql_base} -c "GRANT fwd_fdb TO fwd_fdb_non_admin;"
 
               create_db netbox netbox
+              ${psql_base} -c "GRANT CREATE ON DATABASE netbox TO netbox;"
               create_db nautobot nautobot
               create_db gitea gitea
               create_db coder coder

@@ -29,11 +29,12 @@ data:
     import urllib.error
     import urllib.parse
     import urllib.request
-    from http.cookiejar import CookieJar
+    from http.cookies import SimpleCookie
 
     BASE_URL = os.environ.get("SKYFORGE_BASE_URL", "http://skyforge-server:8085").rstrip("/")
     USERNAME = os.environ.get("SKYFORGE_ADMIN_USERNAME", "skyforge").strip()
     PASSWORD = os.environ.get("SKYFORGE_ADMIN_PASSWORD", "").strip()
+    SESSION_COOKIE = ""
     EXCLUDED_USERS = {
         item.strip().lower()
         for item in os.environ.get("SKYFORGE_EXCLUDED_USERS", "admin,skyforge,skyforge-user-bootstrap").split(",")
@@ -47,22 +48,40 @@ data:
     if not USERNAME or not PASSWORD:
         fail("forward demo seed repair cron: missing admin credentials")
 
-    cookie_jar = CookieJar()
-    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
+    def remember_set_cookie(raw: str):
+        global SESSION_COOKIE
+        raw = str(raw or "").strip()
+        if not raw:
+            return
+        parsed = SimpleCookie()
+        parsed.load(raw)
+        pairs = [f"{morsel.key}={morsel.value}" for morsel in parsed.values()]
+        if pairs:
+            SESSION_COOKIE = "; ".join(pairs)
+
+    def remember_session_cookie(payload):
+        if isinstance(payload, dict):
+            remember_set_cookie(str(payload.get("setCookie") or ""))
 
     def request_json(method: str, path: str, payload=None):
         url = BASE_URL + path
         data = None
         headers = {}
+        if SESSION_COOKIE:
+            headers["Cookie"] = SESSION_COOKIE
         if payload is not None:
             data = json.dumps(payload).encode("utf-8")
             headers["Content-Type"] = "application/json"
         req = urllib.request.Request(url, data=data, headers=headers, method=method)
-        with opener.open(req, timeout=60) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            for raw_cookie in resp.headers.get_all("Set-Cookie", []):
+                remember_set_cookie(raw_cookie)
             raw = resp.read().decode("utf-8")
             if not raw:
                 return {}
-            return json.loads(raw)
+            parsed = json.loads(raw)
+            remember_session_cookie(parsed)
+            return parsed
 
     def parse_http_error(err: urllib.error.HTTPError):
         body = err.read().decode("utf-8", errors="replace")

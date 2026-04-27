@@ -140,6 +140,29 @@ spec:
         properties:
           spec:
             properties:
+              deployment:
+                description: Skyforge deployment contract metadata.
+                properties:
+                  filesFromConfigMap:
+                    additionalProperties:
+                      items:
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                      type: array
+                    type: object
+                  hostNetwork:
+                    type: boolean
+                  nativeMode:
+                    type: boolean
+                  resources:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  runtimeBackend:
+                    type: string
+                  scheduling:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                type: object
               links:
                 items:
                   description: A complete definition of a p2p link
@@ -330,7 +353,7 @@ spec:
         {{- end }}
       {{- end }}
       nodeSelector:
-        beta.kubernetes.io/arch: amd64
+        kubernetes.io/arch: amd64
       serviceAccountName: meshnet
       terminationGracePeriodSeconds: 30
       volumes:

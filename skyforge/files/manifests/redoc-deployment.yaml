@@ -1,3 +1,4 @@
+{{- $redocPlacement := default (dict) .Values.skyforge.redoc.placement }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,6 +33,12 @@ spec:
               labelSelector:
                 matchLabels:
                   app.kubernetes.io/name: redoc
+{{- with include "skyforge.workloadNodeAffinity" (list $redocPlacement) }}
+{{ . | indent 8 }}
+{{- end }}
+{{- with include "skyforge.workloadPlacementSpec" (list $redocPlacement) }}
+{{ . | indent 6 }}
+{{- end }}
       automountServiceAccountToken: false
       containers:
       - name: redoc

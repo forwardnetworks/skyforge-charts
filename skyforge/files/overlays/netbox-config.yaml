@@ -21,6 +21,32 @@ data:
     def truthy(value: str) -> bool:
         return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
 
+    raw_plugins = os.getenv("SKYFORGE_NETBOX_PLUGINS", "").strip()
+    if raw_plugins:
+        existing_plugins = list(globals().get("PLUGINS", []))
+        for plugin in [value.strip() for value in raw_plugins.split(",") if value.strip()]:
+            if plugin not in existing_plugins:
+                existing_plugins.append(plugin)
+        PLUGINS = existing_plugins
+        if "netbox_branching" in PLUGINS:
+            from netbox_branching.utilities import DynamicSchemaDict
+
+            default_database = {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": os.getenv("DB_NAME", "netbox"),
+                "USER": os.getenv("DB_USER", "netbox"),
+                "PASSWORD": os.getenv("DB_PASSWORD", ""),
+                "HOST": os.getenv("DB_HOST", "db"),
+                "PORT": os.getenv("DB_PORT", "5432"),
+                "CONN_MAX_AGE": 300,
+            }
+            DATABASES = DynamicSchemaDict({"default": default_database})
+            existing_routers = list(globals().get("DATABASE_ROUTERS", []))
+            branch_router = "netbox_branching.database.BranchAwareRouter"
+            if branch_router not in existing_routers:
+                existing_routers.append(branch_router)
+            DATABASE_ROUTERS = existing_routers
+
     raw_base_path = os.getenv("SKYFORGE_NETBOX_BASE_PATH", "netbox/").strip()
     if raw_base_path:
         BASE_PATH = raw_base_path if raw_base_path.endswith("/") else f"{raw_base_path}/"

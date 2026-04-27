@@ -47,40 +47,43 @@ helm upgrade --install skyforge oci://ghcr.io/forwardnetworks/charts/skyforge \
 - `skyforge.gitea.url`: Browser-facing Gitea base URL. Keeping this at `/git` preserves same-origin browser links while allowing `skyforge.gitea.apiUrl` to stay internal-only.
 - `skyforge.forwardCluster.hostname`: Optional dedicated Forward UI hostname (for example `skyforge-fwd.local.forwardnetworks.com`).
 - `skyforge.forwardCluster.tlsSecretName`: TLS Secret used for the dedicated Forward hostname listener when `forwardCluster.hostname` differs from `skyforge.hostname` (default `proxy-tls-fwd`).
-- `skyforge.forwardImages.tag`: Shared Harbor release tag for Skyforge-owned Forward images. Set this to the same value as the upstream Forward `app.image_version` so the collector and optional Skyforge-owned compute/search workers do not drift from the main Forward release.
+- `skyforge.forwardImages.tag`: Shared Harbor release tag for Skyforge-owned Forward images. Set this once in the Skyforge values contract so appserver, backend, log aggregation, CBR, NQE Assist, and Skyforge-managed user collectors move together. Auxiliary services with intentionally different tags, such as BAML, should use explicit per-component image overrides.
 - `skyforge.forwardCluster.nodeRoleReconciler.*`: Optional in-cluster reconciler that continuously enforces the desired Forward node-role labels (`fwd-master`, `fwd-monitoring`, `fwd-compute-worker`, `fwd-search-worker`, plus `forwardnetworks.com/role` and scratch-group labels) from chart values so node re-registration does not strand Forward master pods. In production, keep more than one worker in the `master` set so `fwd-appserver` and `fwd-backend-master` can reattach their RWO scratch PVCs onto a healthy node after a reboot.
+- `skyforge.forwardCluster.core.*`: Skyforge-native Forward core ownership contract. This path renders the main Forward appserver/backend/log aggregation/CBR/NQE Assist/BAML resources directly from the Skyforge chart and is the supported single-source-of-truth path for shared-cluster Forward installs.
+- `skyforge.forwardCluster.core.aiCredentials.*`: Shared Forward AI runtime credential contract (Bedrock chain) used by both `fwd-nqe-assist` and `fwd-baml-server`. Set `secretName` in the `forward` namespace with at least `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` keys; optional `AWS_SESSION_TOKEN` and `AWS_DEFAULT_REGION` keys are supported.
+- `skyforge.forwardCluster.core.owner`: Core manifest owner. Use `upstream` to keep a separate Forward chart in control, or `skyforge` to move the full shared-cluster core into this chart.
+- `skyforge.forwardCluster.core.adoptionAcknowledged=true`: Required when `core.owner=skyforge`. This is the explicit guard that prevents accidental same-name ownership overlap with any other Forward release.
 - `skyforge.forwardCluster.workers.*`: Optional Skyforge-owned compute/search worker manifest set for the current on-prem/shared-cluster Forward deployment contract. This path renders the worker headless Services, fluent-bit ConfigMaps, and Deployments directly in the Forward namespace using Harbor image refs, explicit CPU/memory resources, and optional per-worker runtime flags such as `JAVA_TOOL_OPTIONS`. It stays disabled until `skyforge.forwardCluster.workers.owner=skyforge`.
 - `skyforge.forwardCluster.workers.owner`: Worker manifest owner. Use `upstream` to keep the upstream Forward Helm chart in control, or `skyforge` to move ownership into this chart.
 - `skyforge.forwardCluster.workers.adoptionAcknowledged=true`: Required when `owner=skyforge`. This is an explicit ownership transfer guard: the upstream Forward release must stop managing `fwd-compute-worker` and `fwd-search-worker` before rollout claims them here.
+- `skyforge.forwardCollector.*`: User-collector image contract only. The native Skyforge Forward stack does not render a shared `fwd-collector` deployment; only Skyforge-managed per-user collector workloads consume this image setting.
 - `skyforge.forwardCluster.upstreamWorkerRuntime.*`: Post-Helm runtime patches for upstream-owned Forward compute/search workers. Use these to enforce the upstream worker `MEMORY_PROFILE`, explicit JVM heap caps, optional `JAVA_TOOL_OPTIONS`, and pod memory request/limit values when the upstream Forward chart does not expose first-class knobs for those pods. For large-snapshot local runs, prefer `ISOLATED_WORKER` plus explicit memory caps over `SHARED_CLUSTER`; otherwise the hardcoded shared-cluster reservation can shrink worker heap down to roughly 1 GiB.
 - `skyforge.forwardCluster.workers.rollout.*`: Worker rollout safety settings (rolling update shape, readiness window, and termination drain sleep) used to avoid worker-store endpoint gaps during pod replacement.
 - `skyforge.forwardCluster.workers.pdb.*`: Worker PodDisruptionBudget settings to prevent voluntary disruption from dropping all compute/search worker endpoints.
 - `skyforge.forwardCluster.workers.discovery.nodeAgentHeadlessAlias.*`: Optional alias Service (`fwd-node-agent-headless` by default) mapped to search workers for backend worker-discovery compatibility, rendered whenever `skyforge.forwardCluster.enabled=true` so discovery remains stable across worker ownership modes.
-- `values-prod-skyforge-local-forward-workers-skyforge.yaml`: Explicit takeover overlay for the Skyforge-owned worker path. This file is intentionally separate from the main production profile because the upstream Forward release still needs its own rollout-path change to stop rendering the worker objects first.
 - Forward compute/search scale is bounded by the number of nodes labeled for each worker role because both the upstream and Skyforge-owned worker manifests use required pod anti-affinity against the same worker app name. If you want five compute workers and five search workers, label five eligible nodes for each role and set the worker replica count to `5` in the owning config surface.
 
-### Forward worker ownership handoff
+### Forward native ownership handoff
 
-The handoff is two-step on purpose:
+The supported steady-state model is one source of truth in `deploy/skyforge-values.yaml`:
 
-1. Stop the upstream Forward release from rendering `fwd-compute-worker` and
-   `fwd-search-worker`.
-2. Add `values-prod-skyforge-local-forward-workers-skyforge.yaml` to the
-   Skyforge chart rollout so this chart takes ownership of those names.
+1. Stop any separate Forward release from rendering the core or worker names
+   that Skyforge will own.
+2. Set `skyforge.forwardCluster.core.owner=skyforge`,
+   `skyforge.forwardCluster.core.adoptionAcknowledged=true`,
+   `skyforge.forwardCluster.workers.owner=skyforge`, and
+   `skyforge.forwardCluster.workers.adoptionAcknowledged=true` in
+   `deploy/skyforge-values.yaml`.
 
-Do not flip the main production profile directly. The upstream Forward chart has
-no worker-disable hook today, so a same-name ownership transfer must be staged
-deliberately at the rollout boundary rather than hidden in defaults.
+Do not keep a second takeover overlay for this path. The production values file
+is the canonical contract, and chart validation now fails closed if the core
+and worker owners drift apart.
 
 For the local/prod Forward bootstrap script, the matching rollout-path toggle is:
 
 ```bash
 SKYFORGE_FORWARD_WORKER_MANIFEST_OWNER=skyforge
 ```
-
-That script now stages a temporary copy of the upstream Forward chart with the
-compute/search worker templates removed before Helm runs. Keep the default as
-`upstream` until the Skyforge takeover overlay is part of the same rollout.
 - `skyforge.burst.hetzner.*`: Optional Hetzner burst-capacity contract. This is disabled by default. The supported gateway baseline is Hetzner's built-in WireGuard app (`image=wireguard`) on `cx23`, with Skyforge initiating outbound to that gateway and local route reconciliation carrying the burst CIDRs. Use `skyforge.burst.hetzner.provisioningEnabled=false` to keep the scaffold configured but disarmed.
 - `skyforge.burst.hetzner.wireguard.hub.*`: Optional host-network deployment that owns the local WireGuard interface on one selected node. In the supported model, this node initiates outbound to a dedicated Hetzner gateway listener using peer config fragments stored out of band.
 - `skyforge.burst.hetzner.routeReconciler.*`: Optional privileged host-network DaemonSet that continuously enforces return routes on selected worker nodes for Hetzner burst CIDRs carried behind a local WireGuard gateway.
@@ -90,6 +93,8 @@ compute/search worker templates removed before Helm runs. Keep the default as
 - `skyforge.kne.controllers.*`: Installs the KNE vendor controller stack used by this workflow (`ceoslab` only). Cisco (`iol`, `ios-xrd`) and kubevirt paths use native KNE runtime support and do not require additional vendor controllers.
 - Dedicated worker deployment is always enabled and should run at least two replicas in production-style installs so queue execution survives worker rollouts/restarts without waiting on the queued-task rescue loop.
 - When `skyforge.keda.worker.enabled=true`, keep `skyforge.keda.worker.minReplicaCount` at `2` or higher so autoscaling does not collapse the queue path back to a singleton worker during idle periods.
+- `skyforge.keda.forwardWorkers.*`: Optional KEDA autoscaling for `fwd-compute-worker` and `fwd-search-worker` in the Forward namespace. This lets Forward processing scale horizontally under concurrent user load without changing upstream Forward code.
+- `skyforge.keda.observability.*`: Controls scraping of KEDA operator metrics into the managed Prometheus stack so Forward worker scaler activity is visible on the built-in Grafana operations dashboard.
 - `skyforge.auth.mode`: Skyforge browser auth mode (`local` or `oidc`).
 - `skyforge.dex.authMode`: Dex connector profile (`google`, `local`, `oidc`).
 - `skyforge.redoc.enabled`: Enable the ReDoc API docs UI.
@@ -106,6 +111,9 @@ compute/search worker templates removed before Helm runs. Keep the default as
   NetBox and Nautobot.
 - `skyforge.gitea.oidc.*`: Controls Gitea's native Dex-backed onboarding behavior (auto-registration,
   account linking, username claim selection) so first-time SSO users do not need to manually register/link.
+- `skyforge.gitea.requireSigninView`: Controls Gitea's anonymous read behavior. The default `false`
+  allows unauthenticated users to browse repositories that are explicitly marked public while private
+  repositories still require a valid Gitea/Skyforge-backed session.
 - `skyforge.coder.oidcUsernameField`: Coder OIDC username claim (default: `preferred_username`).
 - `skyforge.coder.oidcAllowSignups`: Keeps first-time Dex-authenticated users on the normal Coder sign-in path once the owner exists (default: `true`).
 - `skyforge.coder.bootstrap.*`: First-owner bootstrap for Coder. By default the chart creates a `skyforge` owner using the shared admin password so users do not hit Coder's first-user setup screen.

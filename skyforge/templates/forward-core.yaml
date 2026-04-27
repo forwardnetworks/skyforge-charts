@@ -1,0 +1,1556 @@
+{{- $fc := .Values.skyforge.forwardCluster -}}
+{{- $core := default (dict) $fc.core -}}
+{{- $owner := lower (trim (default "upstream" $core.owner)) -}}
+{{- if and $fc.enabled (eq $owner "skyforge") -}}
+{{- $ns := include "skyforge.forwardCore.namespace" . -}}
+{{- $corePlacement := default (dict) $core.placement -}}
+{{- $pullPolicy := default "IfNotPresent" $core.imagePullPolicy -}}
+{{- $priorityClassName := default "" $core.priorityClassName -}}
+{{- $runAsUser := default 1000 $core.securityContext.runAsUser -}}
+{{- $fsGroup := default 1000 $core.securityContext.fsGroup -}}
+{{- $usePVCs := default true $core.usePVCs -}}
+{{- $alpineImage := default "quay.io/forwardnetworks/docker:alpine_3.18.3" $core.alpineImage -}}
+{{- $rollout := default (dict) $core.rollout -}}
+{{- $strategyType := default "" $rollout.strategyType -}}
+{{- if eq $strategyType "" -}}
+{{- if $usePVCs -}}
+{{- $strategyType = "Recreate" -}}
+{{- else -}}
+{{- $strategyType = "RollingUpdate" -}}
+{{- end -}}
+{{- end -}}
+{{- $mounts := default (dict) $core.containerMounts -}}
+{{- $logsDir := default "/var/log/forward" $mounts.logs -}}
+{{- $scratchDataDir := default "/scratch/data" $mounts.scratchDataDir -}}
+{{- $aggregatedLogsDir := default "/mnt/aggregated-logs" $mounts.aggregatedLogs -}}
+{{- $scratch := default (dict) $core.scratch -}}
+{{- $scratchHostPath := default "/mnt/forward/extended/scratch/pods" $scratch.hostPath -}}
+{{- $restoreHostPath := default "/mnt/forward/restore" $scratch.restoreHostPath -}}
+{{- $backupsHostPath := default "/mnt/forward/backups" $scratch.backupsHostPath -}}
+{{- $logForwarding := default (dict) $core.logForwarding -}}
+{{- $logForwardingEnabled := default true $logForwarding.enabled -}}
+{{- $fluentBitImage := default "quay.io/forwardnetworks/docker:fluent_fluent-bit_1.9.3" $logForwarding.fluentBitImage -}}
+{{- $fluentBitHTTPPort := default 2020 $logForwarding.httpPort -}}
+{{- $fluentBitOutputs := default (list) $logForwarding.outputs -}}
+{{- $db := default (dict) .Values.skyforge.forwardCluster.workers.database -}}
+{{- $dbMode := lower (trim (default "external" $db.mode)) -}}
+{{- $dbCert := default "" $db.certificate -}}
+{{- $memoryProfileConfigMapName := default "fwd-memory-profile-overrides" $core.memoryProfileConfigMapName -}}
+{{- $app := default (dict) $core.appserver -}}
+{{- $backend := default (dict) $core.backend -}}
+{{- $logs := default (dict) $core.logAggregation -}}
+{{- $logsEnabled := default true $logs.enabled -}}
+{{- $cbr := default (dict) $core.cbr -}}
+{{- $cbrEnabled := default false $cbr.enabled -}}
+{{- $cbrServer := default (dict) $cbr.server -}}
+{{- $cbrAgent := default (dict) $cbr.agent -}}
+{{- $cbrS3Agent := default (dict) $cbr.s3Agent -}}
+{{- $cbrS3Backup := default (dict) $cbr.s3Backup -}}
+{{- $nqeAssist := default (dict) $core.nqeAssist -}}
+{{- $baml := default (dict) (default (dict) $core.ai).baml -}}
+{{- $aiCreds := default (dict) $core.aiCredentials -}}
+{{- $aiCredsSecretName := default "forward-ai-bedrock-credentials" $aiCreds.secretName -}}
+{{- $aiCredsAccessKeyIDKey := default "AWS_ACCESS_KEY_ID" $aiCreds.accessKeyIDKey -}}
+{{- $aiCredsSecretAccessKeyKey := default "AWS_SECRET_ACCESS_KEY" $aiCreds.secretAccessKeyKey -}}
+{{- $aiCredsSessionTokenKey := default "AWS_SESSION_TOKEN" $aiCreds.sessionTokenKey -}}
+{{- $appserverImage := include "skyforge.forwardCore.appserverImage" . -}}
+{{- $backendImage := include "skyforge.forwardCore.backendMasterImage" . -}}
+{{- $logserverImage := include "skyforge.forwardCore.logserverImage" . -}}
+{{- $cbrServerImage := include "skyforge.forwardCore.cbrServerImage" . -}}
+{{- $cbrAgentImage := include "skyforge.forwardCore.cbrAgentImage" . -}}
+{{- $cbrS3AgentImage := include "skyforge.forwardCore.cbrS3AgentImage" . -}}
+{{- $nqeAssistImage := include "skyforge.forwardCore.nqeAssistImage" . -}}
+{{- $bamlImage := include "skyforge.forwardCore.bamlImage" . -}}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $memoryProfileConfigMapName | quote }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-memory-profile-overrides
+data: {}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fwd-appserver-user
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-appserver
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fwd-appserver-user-role
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods","configmaps","secrets","endpoints"]
+    verbs: ["get","list","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fwd-appserver-user-role-binding
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: fwd-appserver-user
+    namespace: {{ $ns }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fwd-appserver-user-role
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fwd-appserver-user-cluster-role
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get","list","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fwd-appserver-user-cluster-role-binding
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: fwd-appserver-user
+    namespace: {{ $ns }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fwd-appserver-user-cluster-role
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fwd-backend-master-user
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-backend-master
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fwd-backend-master-user-cluster-role
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints","nodes"]
+    verbs: ["get","list","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fwd-backend-master-user-cluster-role-binding
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: fwd-backend-master-user
+    namespace: {{ $ns }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fwd-backend-master-user-cluster-role
+{{- if $logsEnabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fwd-log-aggregator-user
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-log-aggregator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fwd-log-aggregator-user-cluster-role
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["create","get","list","update","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fwd-log-aggregator-user-cluster-role-binding
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: fwd-log-aggregator-user
+    namespace: {{ $ns }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fwd-log-aggregator-user-cluster-role
+{{- end }}
+{{- if $cbrEnabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fwd-cbr-settings-user
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-server
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fwd-cbr-settings-role
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps","secrets"]
+    verbs: ["create","get","list","update","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fwd-cbr-settings-role-binding
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: fwd-cbr-settings-user
+    namespace: {{ $ns }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fwd-cbr-settings-role
+{{- if default false $cbrS3Backup.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-s3-backup-settings
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-server
+data:
+  enabled: "true"
+  backupTime: {{ default "01:30" $cbrS3Backup.backupTime | quote }}
+  numDaysToRetain: {{ printf "%v" (default 30 $cbrS3Backup.numDaysToRetain) | quote }}
+  includeSnapshots: {{ ternary "true" "false" (default false $cbrS3Backup.includeSnapshots) | quote }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fwd-cbr-s3-settings-sync
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-server
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-cbr-s3-settings-sync
+    spec:
+      serviceAccountName: fwd-cbr-settings-user
+      restartPolicy: Never
+      containers:
+        - name: sync
+          image: {{ .Values.images.kubectl | quote }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SOURCE_NAMESPACE
+              value: {{ default .Release.Namespace $cbrS3Backup.sourceSecretNamespace | quote }}
+            - name: ACCESS_KEY_SECRET_NAME
+              value: {{ required "skyforge.forwardCluster.core.cbr.s3Backup.accessKeySecretName is required when cbr.s3Backup.enabled=true" $cbrS3Backup.accessKeySecretName | quote }}
+            - name: ACCESS_KEY_SECRET_KEY
+              value: {{ required "skyforge.forwardCluster.core.cbr.s3Backup.accessKeySecretKey is required when cbr.s3Backup.enabled=true" $cbrS3Backup.accessKeySecretKey | quote }}
+            - name: SECRET_KEY_SECRET_NAME
+              value: {{ required "skyforge.forwardCluster.core.cbr.s3Backup.secretKeySecretName is required when cbr.s3Backup.enabled=true" $cbrS3Backup.secretKeySecretName | quote }}
+            - name: SECRET_KEY_SECRET_KEY
+              value: {{ required "skyforge.forwardCluster.core.cbr.s3Backup.secretKeySecretKey is required when cbr.s3Backup.enabled=true" $cbrS3Backup.secretKeySecretKey | quote }}
+            - name: BUCKET_NAME
+              value: {{ default "forward-platform-backups" $cbrS3Backup.bucketName | quote }}
+            - name: SERVICE_ENDPOINT
+              value: {{ required "skyforge.forwardCluster.core.cbr.s3Backup.serviceEndpoint is required when cbr.s3Backup.enabled=true" $cbrS3Backup.serviceEndpoint | quote }}
+            - name: DISABLE_SSL_VALIDATION
+              value: {{ ternary "true" "false" (default false $cbrS3Backup.disableSslValidation) | quote }}
+            - name: DISABLE_CHECKSUM_VALIDATION
+              value: {{ ternary "true" "false" (default false $cbrS3Backup.disableChecksumValidation) | quote }}
+            - name: WRITE_ONLY
+              value: {{ ternary "true" "false" (default false $cbrS3Backup.writeOnly) | quote }}
+          command: ["/bin/sh","-c"]
+          args:
+            - |
+              set -eu
+              KUBECTL_BIN="/opt/bitnami/kubectl/bin/kubectl"
+              if [ ! -x "${KUBECTL_BIN}" ]; then
+                KUBECTL_BIN="$(command -v kubectl)"
+              fi
+              secret_value() {
+                "${KUBECTL_BIN}" -n "${SOURCE_NAMESPACE}" get secret "$1" -o "jsonpath={.data['$2']}" | base64 -d
+              }
+              access_key="$(secret_value "${ACCESS_KEY_SECRET_NAME}" "${ACCESS_KEY_SECRET_KEY}")"
+              secret_key="$(secret_value "${SECRET_KEY_SECRET_NAME}" "${SECRET_KEY_SECRET_KEY}")"
+              "${KUBECTL_BIN}" -n {{ $ns | quote }} create secret generic fwd-s3-backup-settings \
+                --from-literal=accessKey="${access_key}" \
+                --from-literal=secretKey="${secret_key}" \
+                --from-literal=bucketName="${BUCKET_NAME}" \
+                --from-literal=serviceEndpoint="${SERVICE_ENDPOINT}" \
+                --from-literal=disableSslValidation="${DISABLE_SSL_VALIDATION}" \
+                --from-literal=certificate="" \
+                --from-literal=writeOnly="${WRITE_ONLY}" \
+                --from-literal=disableChecksumValidation="${DISABLE_CHECKSUM_VALIDATION}" \
+                --dry-run=client -o yaml | "${KUBECTL_BIN}" apply -f -
+{{- end }}
+{{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-appserver
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-appserver
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-appserver
+  ports:
+    - name: http
+      port: {{ default 8080 (default (dict) $app.service).httpPort }}
+      targetPort: {{ default 8080 (default (dict) $app.service).httpPort }}
+    - name: https
+      port: {{ default 8443 (default (dict) $app.service).httpsPort }}
+      targetPort: {{ default 8443 (default (dict) $app.service).httpsPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-backend-master
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-backend-master
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-backend-master
+  ports:
+    - name: grpc
+      port: {{ default 30040 (default (dict) $backend.service).port }}
+      targetPort: {{ default 30040 (default (dict) $backend.service).port }}
+{{- if $logsEnabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-log-aggregator
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-log-aggregator
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: fwd-log-aggregator
+  ports:
+    - name: forward
+      port: {{ default 24224 (default (dict) $logs.service).port }}
+      targetPort: {{ default 24224 (default (dict) $logs.service).port }}
+{{- range $i, $_ := until (int (default 2 $logs.replicas)) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-log-aggregator-{{ $i }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" $ | nindent 4 }}
+    app.kubernetes.io/name: fwd-log-aggregator
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: fwd-log-aggregator-{{ $i }}
+  ports:
+    - name: forward
+      port: {{ default 24224 (default (dict) $logs.service).port }}
+      targetPort: {{ default 24224 (default (dict) $logs.service).port }}
+{{- end }}
+{{- end }}
+{{- if $cbrEnabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-cbr-server
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-server
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-cbr-server
+  ports:
+    - name: http
+      port: {{ default 40099 (default (dict) $cbrServer.service).httpPort }}
+      targetPort: {{ default 40099 (default (dict) $cbrServer.service).httpPort }}
+    - name: grpc
+      port: {{ default 40100 (default (dict) $cbrServer.service).grpcPort }}
+      targetPort: {{ default 40100 (default (dict) $cbrServer.service).grpcPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-cbr-agent-headless
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-agent
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: fwd-cbr-agent
+  ports:
+    - name: grpc
+      port: {{ default 40101 (default (dict) $cbrAgent.service).grpcPort }}
+      targetPort: {{ default 40101 (default (dict) $cbrAgent.service).grpcPort }}
+{{- if default false $cbrS3Agent.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-cbr-s3-agent-headless
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-s3-agent
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: fwd-cbr-s3-agent
+  ports:
+    - name: grpc
+      port: {{ default 40101 (default (dict) $cbrS3Agent.service).grpcPort }}
+      targetPort: {{ default 40101 (default (dict) $cbrS3Agent.service).grpcPort }}
+{{- end }}
+{{- end }}
+{{- if default false $nqeAssist.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-nqe-assist
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-nqe-assist
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-nqe-assist
+  ports:
+    - name: http
+      port: {{ default 9988 $nqeAssist.port }}
+      targetPort: http
+{{- end }}
+{{- if default false $baml.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fwd-baml-server
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-baml-server
+spec:
+  selector:
+    app.kubernetes.io/name: fwd-baml-server
+  ports:
+    - name: http
+      port: {{ default 2024 $baml.port }}
+      targetPort: http
+{{- end }}
+
+{{- if $logForwardingEnabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-appserver-fluent-bit-config
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-appserver
+data:
+  {{- include "skyforge.forwardCore.appserverLogForwarderConfig" (dict "enabled" true "logsDir" $logsDir "outputs" $fluentBitOutputs) | nindent 2 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-backend-master-fluent-bit-config
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-backend-master
+data:
+  {{- include "skyforge.forwardWorker.logForwarderConfig" (dict
+      "enabled" true
+      "serviceTag" "backend_master"
+      "serviceLogFile" "backend_master"
+      "logsDir" $logsDir
+      "outputs" $fluentBitOutputs
+    ) | nindent 2 }}
+{{- if $cbrEnabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-cbr-server-fluent-bit-config
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-server
+data:
+  {{- include "skyforge.forwardWorker.logForwarderConfig" (dict
+      "enabled" true
+      "serviceTag" "cbr_server"
+      "serviceLogFile" "cbr_server"
+      "logsDir" $logsDir
+      "outputs" $fluentBitOutputs
+    ) | nindent 2 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-cbr-agent-fluent-bit-config
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-agent
+data:
+  {{- include "skyforge.forwardWorker.logForwarderConfig" (dict
+      "enabled" true
+      "serviceTag" "cbr_agent"
+      "serviceLogFile" "cbr_agent"
+      "logsDir" $logsDir
+      "outputs" $fluentBitOutputs
+    ) | nindent 2 }}
+{{- if default false $cbrS3Agent.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fwd-cbr-s3-agent-fluent-bit-config
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-s3-agent
+data:
+  {{- include "skyforge.forwardWorker.logForwarderConfig" (dict
+      "enabled" true
+      "serviceTag" "cbr_s3_agent"
+      "serviceLogFile" "cbr_s3_agent"
+      "logsDir" $logsDir
+      "outputs" $fluentBitOutputs
+    ) | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $logsEnabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-aggregator-config
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-log-aggregator
+data:
+  fluent.conf: |
+    <source>
+      @type forward
+      port {{ default 24224 (default (dict) $logs.service).port }}
+      bind 0.0.0.0
+    </source>
+    <match **>
+      @type file
+      path {{ $aggregatedLogsDir }}/aggregated
+      append true
+      <buffer>
+        flush_mode interval
+        flush_interval 5s
+      </buffer>
+    </match>
+{{- end }}
+
+{{- if and $usePVCs $appserverImage }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-fwd-appserver
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ default "20Gi" (default (dict) $app.pvc).size }}
+  {{- with (default "" (default (dict) $app.pvc).storageClassName) }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+{{- end }}
+{{- if and $usePVCs $backendImage }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-fwd-backend-master
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ default "20Gi" (default (dict) $backend.pvc).size }}
+  {{- with (default "" (default (dict) $backend.pvc).storageClassName) }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+{{- end }}
+{{- if and $usePVCs $cbrEnabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-fwd-cbr-server
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ default "20Gi" (default (dict) $cbrServer.pvc).size }}
+  {{- with (default "" (default (dict) $cbrServer.pvc).storageClassName) }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-fwd-cbr-agent
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ default "20Gi" (default (dict) $cbrAgent.pvc).size }}
+  {{- with (default "" (default (dict) $cbrAgent.pvc).storageClassName) }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+{{- if default false $cbrS3Agent.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-fwd-cbr-s3-agent
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ default "20Gi" (default (dict) $cbrS3Agent.pvc).size }}
+  {{- with (default "" (default (dict) $cbrS3Agent.pvc).storageClassName) }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-appserver
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-appserver
+spec:
+  replicas: 1
+  strategy:
+    type: {{ $strategyType }}
+    {{- if eq $strategyType "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ default 0 $rollout.maxUnavailable }}
+      maxSurge: {{ default 1 $rollout.maxSurge }}
+    {{- end }}
+  minReadySeconds: {{ default 10 $rollout.minReadySeconds }}
+  progressDeadlineSeconds: {{ default 600 $rollout.progressDeadlineSeconds }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-appserver
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-appserver
+    spec:
+      serviceAccountName: fwd-appserver-user
+      terminationGracePeriodSeconds: {{ default 90 $rollout.terminationGracePeriodSeconds }}
+      automountServiceAccountToken: true
+      securityContext:
+        fsGroup: {{ $fsGroup }}
+      {{- if $priorityClassName }}
+      priorityClassName: {{ $priorityClassName | quote }}
+      {{- end }}
+      {{- include "skyforge.forwardCore.imagePullSecrets" . | nindent 6 }}
+      {{- with include "skyforge.workloadPlacementSpec" (list $corePlacement) }}
+{{ . | nindent 6 }}
+      {{- end }}
+      initContainers:
+        - name: fix-permissions
+          image: {{ $alpineImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command: ["/bin/sh","-c"]
+          args:
+            - >-
+              mkdir -p /mnt/scratch/tmp /mnt/scratch/logs /mnt/scratch/scratch-data &&
+              chown {{ $runAsUser }}:{{ $fsGroup }} -R /mnt/scratch
+          volumeMounts:
+            - name: scratch
+              mountPath: /mnt/scratch
+      containers:
+        - name: appserver
+          image: {{ required "skyforge.forwardCluster.core.appserver.image or skyforge.forwardImages.tag is required when core.owner=skyforge" $appserverImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            runAsUser: {{ $runAsUser }}
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+          resources:
+{{ toYaml $app.resources | nindent 12 }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","sleep {{ default 20 $rollout.preStopSleepSeconds }}"]
+          ports:
+            - name: http
+              containerPort: {{ default 8080 (default (dict) $app.service).httpPort }}
+            - name: https
+              containerPort: {{ default 8443 (default (dict) $app.service).httpsPort }}
+          volumeMounts:
+            - name: scratch
+              mountPath: {{ $logsDir }}
+              subPath: fwd-appserver/logs
+            - name: scratch
+              mountPath: {{ $scratchDataDir }}
+              subPath: fwd-appserver/scratch-data
+            - name: scratch
+              mountPath: /tmp
+              subPath: fwd-appserver/tmp
+            {{- include "skyforge.forwardWorker.dbVolumeMounts" (dict "mode" $dbMode "certificate" $dbCert) | nindent 12 }}
+          {{- include "skyforge.forwardWorker.probes" (dict
+              "port" (default 8080 (default (dict) $app.service).httpPort)
+              "initialDelaySeconds" (default 10 $app.probes.initialDelaySeconds)
+              "periodSeconds" (default 60 $app.probes.periodSeconds)
+              "failureThreshold" (default 10 $app.probes.failureThreshold)
+              "timeoutSeconds" (default 3 $app.probes.timeoutSeconds)
+            ) | nindent 10 }}
+          envFrom:
+            - configMapRef:
+                name: {{ $memoryProfileConfigMapName | quote }}
+          env:
+            - name: NAMESPACE
+              value: {{ $ns | quote }}
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: APP_SERVER_PROFILES
+              value: {{ default "K8S" $app.profiles | quote }}
+            - name: MEMORY_PROFILE
+              value: {{ default "" $app.memoryProfile | quote }}
+            - name: APPSERVER_SETTINGS
+              value: {{ include "skyforge.forwardCore.appserverSettings" . | quote }}
+            - name: COLLECTOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: collector.credentials
+                  key: password
+            {{- if default false $nqeAssist.enabled }}
+            - name: NQE_ASSIST_PARAMS
+              value: {{ printf "-Dnqe_assist.url=http://fwd-nqe-assist.%s.svc.cluster.local:%v" $ns (default 9988 $nqeAssist.port) | quote }}
+            {{- end }}
+            {{- if default false $baml.enabled }}
+            - name: AI_CHAT_PARAMS
+              value: {{ printf "-Dai.chats.baml_url=http://fwd-baml-server.%s.svc.cluster.local:%v" $ns (default 2024 $baml.port) | quote }}
+            {{- end }}
+            {{- if gt (int (default 0 $app.memoryLimitMB)) 0 }}
+            - name: APP_SERVER_MEMORY_LIMIT_MB
+              value: {{ printf "%v" $app.memoryLimitMB | quote }}
+            {{- end }}
+            {{- if (default "" $app.memoryPctOverride) }}
+            - name: APPSERVER_MEMORY_PCT_OVERRIDE
+              value: {{ $app.memoryPctOverride | quote }}
+            {{- end }}
+            {{- include "skyforge.forwardWorker.postgresEnv" (dict "db" $db "mode" $dbMode) | nindent 12 }}
+        {{- include "skyforge.forwardWorker.logForwarderContainer" (dict
+            "enabled" $logForwardingEnabled
+            "image" $fluentBitImage
+            "pullPolicy" $pullPolicy
+            "runAsUser" $runAsUser
+            "httpPort" $fluentBitHTTPPort
+            "logsDir" $logsDir
+            "serviceName" "fwd-appserver"
+            "configMapVolumeName" "log-forwarder-config"
+          ) | nindent 8 }}
+      volumes:
+        - name: scratch
+          {{- if $usePVCs }}
+          persistentVolumeClaim:
+            claimName: pvc-fwd-appserver
+          {{- else }}
+          hostPath:
+            path: {{ $scratchHostPath | quote }}
+            type: DirectoryOrCreate
+          {{- end }}
+        {{- if $logForwardingEnabled }}
+        - name: log-forwarder-config
+          configMap:
+            name: fwd-appserver-fluent-bit-config
+        {{- end }}
+        {{- include "skyforge.forwardWorker.dbVolumes" (dict "mode" $dbMode "certificate" $dbCert) | nindent 8 }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-backend-master
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-backend-master
+spec:
+  replicas: 1
+  strategy:
+    type: {{ $strategyType }}
+    {{- if eq $strategyType "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ default 0 $rollout.maxUnavailable }}
+      maxSurge: {{ default 1 $rollout.maxSurge }}
+    {{- end }}
+  minReadySeconds: {{ default 10 $rollout.minReadySeconds }}
+  progressDeadlineSeconds: {{ default 600 $rollout.progressDeadlineSeconds }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-backend-master
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-backend-master
+    spec:
+      serviceAccountName: fwd-backend-master-user
+      terminationGracePeriodSeconds: {{ default 90 $rollout.terminationGracePeriodSeconds }}
+      automountServiceAccountToken: true
+      securityContext:
+        fsGroup: {{ $fsGroup }}
+      {{- if $priorityClassName }}
+      priorityClassName: {{ $priorityClassName | quote }}
+      {{- end }}
+      {{- include "skyforge.forwardCore.imagePullSecrets" . | nindent 6 }}
+      {{- with include "skyforge.workloadPlacementSpec" (list $corePlacement) }}
+{{ . | nindent 6 }}
+      {{- end }}
+      initContainers:
+        - name: fix-permissions
+          image: {{ $alpineImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command: ["/bin/sh","-c"]
+          args:
+            - >-
+              mkdir -p /mnt/scratch/tmp /mnt/scratch/logs /mnt/scratch/scratch-data &&
+              chown {{ $runAsUser }}:{{ $fsGroup }} -R /mnt/scratch
+          volumeMounts:
+            - name: scratch
+              mountPath: /mnt/scratch
+      containers:
+        - name: backend-master
+          image: {{ required "skyforge.forwardCluster.core.backend.image or skyforge.forwardImages.tag is required when core.owner=skyforge" $backendImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            runAsUser: {{ $runAsUser }}
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+          resources:
+{{ toYaml $backend.resources | nindent 12 }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","sleep {{ default 20 $rollout.preStopSleepSeconds }}"]
+          ports:
+            - name: grpc
+              containerPort: {{ default 30040 (default (dict) $backend.service).port }}
+          volumeMounts:
+            - name: scratch
+              mountPath: {{ $logsDir }}
+              subPath: fwd-backend-master/logs
+            - name: scratch
+              mountPath: {{ $scratchDataDir }}
+              subPath: fwd-backend-master/scratch-data
+            - name: scratch
+              mountPath: /tmp
+              subPath: fwd-backend-master/tmp
+            {{- include "skyforge.forwardWorker.dbVolumeMounts" (dict "mode" $dbMode "certificate" $dbCert) | nindent 12 }}
+          {{- include "skyforge.forwardWorker.probes" (dict
+              "port" (default 30040 (default (dict) $backend.service).port)
+              "initialDelaySeconds" (default 10 $backend.probes.initialDelaySeconds)
+              "periodSeconds" (default 60 $backend.probes.periodSeconds)
+              "failureThreshold" (default 10 $backend.probes.failureThreshold)
+              "timeoutSeconds" (default 3 $backend.probes.timeoutSeconds)
+            ) | nindent 10 }}
+          envFrom:
+            - configMapRef:
+                name: {{ $memoryProfileConfigMapName | quote }}
+          env:
+            - name: NAMESPACE
+              value: {{ $ns | quote }}
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: BACKEND_MASTER_PROFILES
+              value: {{ default "" $backend.profiles | quote }}
+            - name: MEMORY_PROFILE
+              value: {{ default "" $backend.memoryProfile | quote }}
+            - name: FWD_COMPUTE_WORKER_PORT
+              value: {{ printf "%v" (default 30060 (default (dict) (default (dict) $fc.workers).compute).port) | quote }}
+            - name: FWD_SEARCH_WORKER_PORT
+              value: {{ printf "%v" (default 30050 (default (dict) (default (dict) $fc.workers).search).port) | quote }}
+            {{- if gt (int (default 0 $backend.memoryLimitMB)) 0 }}
+            - name: BACKEND_MASTER_MEMORY_LIMIT_MB
+              value: {{ printf "%v" $backend.memoryLimitMB | quote }}
+            {{- end }}
+            {{- if (default "" $backend.memoryPctOverride) }}
+            - name: BACKEND_MASTER_MEMORY_PCT_OVERRIDE
+              value: {{ $backend.memoryPctOverride | quote }}
+            {{- end }}
+            {{- if (default "" $backend.miscParams) }}
+            - name: BACKEND_MASTER_MISC_PARAMS
+              value: {{ $backend.miscParams | quote }}
+            {{- end }}
+            {{- include "skyforge.forwardWorker.postgresEnv" (dict "db" $db "mode" $dbMode) | nindent 12 }}
+        {{- include "skyforge.forwardWorker.logForwarderContainer" (dict
+            "enabled" $logForwardingEnabled
+            "image" $fluentBitImage
+            "pullPolicy" $pullPolicy
+            "runAsUser" $runAsUser
+            "httpPort" $fluentBitHTTPPort
+            "logsDir" $logsDir
+            "serviceName" "fwd-backend-master"
+            "configMapVolumeName" "log-forwarder-config"
+          ) | nindent 8 }}
+      volumes:
+        - name: scratch
+          {{- if $usePVCs }}
+          persistentVolumeClaim:
+            claimName: pvc-fwd-backend-master
+          {{- else }}
+          hostPath:
+            path: {{ $scratchHostPath | quote }}
+            type: DirectoryOrCreate
+          {{- end }}
+        {{- if $logForwardingEnabled }}
+        - name: log-forwarder-config
+          configMap:
+            name: fwd-backend-master-fluent-bit-config
+        {{- end }}
+        {{- include "skyforge.forwardWorker.dbVolumes" (dict "mode" $dbMode "certificate" $dbCert) | nindent 8 }}
+
+{{- if $logsEnabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fwd-log-aggregator
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-log-aggregator
+spec:
+  serviceName: fwd-log-aggregator
+  replicas: {{ default 2 $logs.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-log-aggregator
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-log-aggregator
+    spec:
+      serviceAccountName: fwd-log-aggregator-user
+      securityContext:
+        fsGroup: {{ $fsGroup }}
+      {{- if $priorityClassName }}
+      priorityClassName: {{ $priorityClassName | quote }}
+      {{- end }}
+      {{- include "skyforge.forwardCore.imagePullSecrets" . | nindent 6 }}
+      {{- with include "skyforge.workloadPlacementSpec" (list $corePlacement) }}
+{{ . | nindent 6 }}
+      {{- end }}
+      containers:
+        - name: logserver
+          image: {{ required "skyforge.forwardCluster.core.logAggregation.image or skyforge.forwardImages.tag is required when core.owner=skyforge" $logserverImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            runAsUser: {{ $runAsUser }}
+            runAsNonRoot: true
+          resources:
+{{ toYaml $logs.resources | nindent 12 }}
+          ports:
+            - name: forward
+              containerPort: {{ default 24224 (default (dict) $logs.service).port }}
+          volumeMounts:
+            - name: scratch
+              mountPath: {{ $aggregatedLogsDir }}
+              subPath: logs
+            - name: fluentd-config
+              mountPath: /etc/fluent
+      volumes:
+        - name: fluentd-config
+          configMap:
+            name: fluentd-aggregator-config
+        {{- if not $usePVCs }}
+        - name: scratch
+          hostPath:
+            path: {{ $scratchHostPath | quote }}
+            type: DirectoryOrCreate
+        {{- end }}
+  {{- if $usePVCs }}
+  volumeClaimTemplates:
+    - metadata:
+        name: scratch
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ default "20Gi" (default (dict) $logs.pvc).size }}
+        {{- with (default "" (default (dict) $logs.pvc).storageClassName) }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- if $cbrEnabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-cbr-server
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-cbr-server
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-cbr-server
+    spec:
+      serviceAccountName: fwd-cbr-settings-user
+      securityContext:
+        fsGroup: {{ $fsGroup }}
+      {{- if $priorityClassName }}
+      priorityClassName: {{ $priorityClassName | quote }}
+      {{- end }}
+      {{- include "skyforge.forwardCore.imagePullSecrets" . | nindent 6 }}
+      {{- with include "skyforge.workloadPlacementSpec" (list $corePlacement) }}
+{{ . | nindent 6 }}
+      {{- end }}
+      initContainers:
+        - name: fix-permissions
+          image: {{ $alpineImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command: ["/bin/sh","-c"]
+          args:
+            - >-
+              mkdir -p /mnt/scratch/tmp /mnt/scratch/logs /mnt/scratch/scratch-data &&
+              chown {{ $runAsUser }}:{{ $fsGroup }} -R /mnt/scratch
+          volumeMounts:
+            - name: scratch
+              mountPath: /mnt/scratch
+      containers:
+        - name: cbr-server
+          image: {{ required "skyforge.forwardCluster.core.cbr.server.image or skyforge.forwardImages.tag is required when cbr.enabled=true" $cbrServerImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            runAsUser: {{ $runAsUser }}
+            runAsNonRoot: true
+          resources:
+{{ toYaml $cbrServer.resources | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ default 40099 (default (dict) $cbrServer.service).httpPort }}
+            - name: grpc
+              containerPort: {{ default 40100 (default (dict) $cbrServer.service).grpcPort }}
+          env:
+            - name: NAMESPACE
+              value: {{ $ns | quote }}
+            - name: CBR_CONFIGMAP_NAME
+              value: {{ default "backup-restore-configmap" $cbr.settingsConfigMapName | quote }}
+            - name: CBR_AGENT_GRPC_PORT
+              value: {{ printf "%v" (default 40101 (default (dict) $cbrAgent.service).grpcPort) | quote }}
+          volumeMounts:
+            - name: scratch
+              mountPath: {{ $logsDir }}
+              subPath: fwd-cbr-server/logs
+            - name: scratch
+              mountPath: {{ $scratchDataDir }}
+              subPath: fwd-cbr-server/scratch-data
+            - name: scratch
+              mountPath: /tmp
+              subPath: fwd-cbr-server/tmp
+            - name: restore
+              mountPath: /mnt/restore
+        {{- include "skyforge.forwardWorker.logForwarderContainer" (dict
+            "enabled" $logForwardingEnabled
+            "image" $fluentBitImage
+            "pullPolicy" $pullPolicy
+            "runAsUser" $runAsUser
+            "httpPort" $fluentBitHTTPPort
+            "logsDir" $logsDir
+            "serviceName" "fwd-cbr-server"
+            "configMapVolumeName" "log-forwarder-config"
+          ) | nindent 8 }}
+      volumes:
+        - name: scratch
+          {{- if $usePVCs }}
+          persistentVolumeClaim:
+            claimName: pvc-fwd-cbr-server
+          {{- else }}
+          hostPath:
+            path: {{ $scratchHostPath | quote }}
+            type: DirectoryOrCreate
+          {{- end }}
+        - name: restore
+          hostPath:
+            path: {{ $restoreHostPath | quote }}
+            type: DirectoryOrCreate
+        {{- if $logForwardingEnabled }}
+        - name: log-forwarder-config
+          configMap:
+            name: fwd-cbr-server-fluent-bit-config
+        {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-cbr-agent
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-agent
+spec:
+  replicas: {{ default 1 $cbrAgent.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-cbr-agent
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-cbr-agent
+    spec:
+      securityContext:
+        fsGroup: {{ $fsGroup }}
+      {{- if $priorityClassName }}
+      priorityClassName: {{ $priorityClassName | quote }}
+      {{- end }}
+      {{- include "skyforge.forwardCore.imagePullSecrets" . | nindent 6 }}
+      {{- with include "skyforge.workloadPlacementSpec" (list $corePlacement) }}
+{{ . | nindent 6 }}
+      {{- end }}
+      initContainers:
+        - name: fix-permissions
+          image: {{ $alpineImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command: ["/bin/sh","-c"]
+          args:
+            - >-
+              mkdir -p /mnt/scratch/tmp /mnt/scratch/logs /mnt/scratch/scratch-data &&
+              chown {{ $runAsUser }}:{{ $fsGroup }} -R /mnt/scratch
+          volumeMounts:
+            - name: scratch
+              mountPath: /mnt/scratch
+      containers:
+        - name: cbr-agent
+          image: {{ required "skyforge.forwardCluster.core.cbr.agent.image or skyforge.forwardImages.tag is required when cbr.enabled=true" $cbrAgentImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            runAsUser: {{ $runAsUser }}
+            runAsNonRoot: true
+          resources:
+{{ toYaml $cbrAgent.resources | nindent 12 }}
+          ports:
+            - name: grpc
+              containerPort: {{ default 40101 (default (dict) $cbrAgent.service).grpcPort }}
+          env:
+            - name: NAMESPACE
+              value: {{ $ns | quote }}
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CBR_AGENT_TYPE
+              value: "INTERNAL"
+          volumeMounts:
+            - name: scratch
+              mountPath: {{ $logsDir }}
+              subPath: fwd-cbr-agent/logs
+            - name: scratch
+              mountPath: {{ $scratchDataDir }}
+              subPath: fwd-cbr-agent/scratch-data
+            - name: scratch
+              mountPath: /tmp
+              subPath: fwd-cbr-agent/tmp
+            - name: backups
+              mountPath: /mnt/backups
+        {{- include "skyforge.forwardWorker.logForwarderContainer" (dict
+            "enabled" $logForwardingEnabled
+            "image" $fluentBitImage
+            "pullPolicy" $pullPolicy
+            "runAsUser" $runAsUser
+            "httpPort" $fluentBitHTTPPort
+            "logsDir" $logsDir
+            "serviceName" "fwd-cbr-agent"
+            "configMapVolumeName" "log-forwarder-config"
+          ) | nindent 8 }}
+      volumes:
+        - name: scratch
+          {{- if $usePVCs }}
+          persistentVolumeClaim:
+            claimName: pvc-fwd-cbr-agent
+          {{- else }}
+          hostPath:
+            path: {{ $scratchHostPath | quote }}
+            type: DirectoryOrCreate
+          {{- end }}
+        - name: backups
+          hostPath:
+            path: {{ $backupsHostPath | quote }}
+            type: DirectoryOrCreate
+        {{- if $logForwardingEnabled }}
+        - name: log-forwarder-config
+          configMap:
+            name: fwd-cbr-agent-fluent-bit-config
+        {{- end }}
+{{- if default false $cbrS3Agent.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-cbr-s3-agent
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-cbr-s3-agent
+spec:
+  replicas: {{ default 1 $cbrS3Agent.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-cbr-s3-agent
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-cbr-s3-agent
+    spec:
+      securityContext:
+        fsGroup: {{ $fsGroup }}
+      {{- if $priorityClassName }}
+      priorityClassName: {{ $priorityClassName | quote }}
+      {{- end }}
+      {{- include "skyforge.forwardCore.imagePullSecrets" . | nindent 6 }}
+      {{- with include "skyforge.workloadPlacementSpec" (list $corePlacement) }}
+{{ . | nindent 6 }}
+      {{- end }}
+      initContainers:
+        - name: fix-permissions
+          image: {{ $alpineImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command: ["/bin/sh","-c"]
+          args:
+            - >-
+              mkdir -p /mnt/scratch/tmp /mnt/scratch/logs /mnt/scratch/scratch-data &&
+              chown {{ $runAsUser }}:{{ $fsGroup }} -R /mnt/scratch
+          volumeMounts:
+            - name: scratch
+              mountPath: /mnt/scratch
+      containers:
+        - name: cbr-s3-agent
+          image: {{ required "skyforge.forwardCluster.core.cbr.s3Agent.image or skyforge.forwardImages.tag is required when cbr.s3Agent.enabled=true" $cbrS3AgentImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          securityContext:
+            runAsUser: {{ $runAsUser }}
+            runAsNonRoot: true
+          resources:
+{{ toYaml $cbrS3Agent.resources | nindent 12 }}
+          ports:
+            - name: grpc
+              containerPort: {{ default 40101 (default (dict) $cbrS3Agent.service).grpcPort }}
+          env:
+            - name: NAMESPACE
+              value: {{ $ns | quote }}
+            - name: CBR_AGENT_TYPE
+              value: "S3"
+            - name: CBR_S3_BUCKET_PREFIX
+              value: {{ default "forward/backups" $cbrS3Agent.bucketPrefix | quote }}
+          volumeMounts:
+            - name: scratch
+              mountPath: {{ $logsDir }}
+              subPath: fwd-cbr-s3-agent/logs
+            - name: scratch
+              mountPath: {{ $scratchDataDir }}
+              subPath: fwd-cbr-s3-agent/scratch-data
+            - name: scratch
+              mountPath: /tmp
+              subPath: fwd-cbr-s3-agent/tmp
+        {{- include "skyforge.forwardWorker.logForwarderContainer" (dict
+            "enabled" $logForwardingEnabled
+            "image" $fluentBitImage
+            "pullPolicy" $pullPolicy
+            "runAsUser" $runAsUser
+            "httpPort" $fluentBitHTTPPort
+            "logsDir" $logsDir
+            "serviceName" "fwd-cbr-s3-agent"
+            "configMapVolumeName" "log-forwarder-config"
+          ) | nindent 8 }}
+      volumes:
+        - name: scratch
+          {{- if $usePVCs }}
+          persistentVolumeClaim:
+            claimName: pvc-fwd-cbr-s3-agent
+          {{- else }}
+          hostPath:
+            path: {{ $scratchHostPath | quote }}
+            type: DirectoryOrCreate
+          {{- end }}
+        {{- if $logForwardingEnabled }}
+        - name: log-forwarder-config
+          configMap:
+            name: fwd-cbr-s3-agent-fluent-bit-config
+        {{- end }}
+{{- end }}
+{{- end }}
+
+{{- if default false $nqeAssist.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-nqe-assist
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-nqe-assist
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-nqe-assist
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-nqe-assist
+    spec:
+      {{- include "skyforge.forwardCore.imagePullSecrets" . | nindent 6 }}
+      {{- with include "skyforge.workloadPlacementSpec" (list $corePlacement) }}
+{{ . | nindent 6 }}
+      {{- end }}
+      initContainers:
+        - name: ai-credentials-contract-check
+          image: {{ $alpineImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command: ["/bin/sh","-c"]
+          args:
+            - |
+              set -eu
+              [ -n "${AWS_ACCESS_KEY_ID:-}" ] || { echo "missing AWS_ACCESS_KEY_ID"; exit 1; }
+              [ -n "${AWS_SECRET_ACCESS_KEY:-}" ] || { echo "missing AWS_SECRET_ACCESS_KEY"; exit 1; }
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsAccessKeyIDKey | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsSecretAccessKeyKey | quote }}
+      containers:
+        - name: nqe-assist
+          image: {{ required "skyforge.forwardCluster.core.nqeAssist.image or skyforge.forwardImages.tag is required when nqeAssist.enabled=true" $nqeAssistImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          resources:
+{{ toYaml $nqeAssist.resources | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ default 9988 $nqeAssist.port }}
+          env:
+            - name: FWD_URL
+              value: {{ printf "https://fwd-appserver.%s.svc.cluster.local:8443" $ns | quote }}
+            - name: AWS_REGION
+              value: {{ default "us-west-2" $nqeAssist.awsRegion | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsAccessKeyIDKey | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsSecretAccessKeyKey | quote }}
+            - name: AWS_SESSION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsSessionTokenKey | quote }}
+                  optional: true
+            - name: AWS_DEFAULT_REGION
+              value: {{ default "us-west-2" $nqeAssist.awsRegion | quote }}
+          envFrom:
+            - secretRef:
+                name: {{ default "fwd-app-creds-for-nqe-assist" $nqeAssist.appCredentialsSecretName | quote }}
+{{- end }}
+
+{{- if default false $baml.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fwd-baml-server
+  namespace: {{ $ns }}
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/name: fwd-baml-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fwd-baml-server
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+        app.kubernetes.io/name: fwd-baml-server
+    spec:
+      {{- include "skyforge.forwardCore.imagePullSecrets" . | nindent 6 }}
+      {{- with include "skyforge.workloadPlacementSpec" (list $corePlacement) }}
+{{ . | nindent 6 }}
+      {{- end }}
+      initContainers:
+        - name: ai-credentials-contract-check
+          image: {{ $alpineImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          command: ["/bin/sh","-c"]
+          args:
+            - |
+              set -eu
+              [ -n "${AWS_ACCESS_KEY_ID:-}" ] || { echo "missing AWS_ACCESS_KEY_ID"; exit 1; }
+              [ -n "${AWS_SECRET_ACCESS_KEY:-}" ] || { echo "missing AWS_SECRET_ACCESS_KEY"; exit 1; }
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsAccessKeyIDKey | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsSecretAccessKeyKey | quote }}
+      containers:
+        - name: baml-server
+          image: {{ required "skyforge.forwardCluster.core.ai.baml.image is required when ai.baml.enabled=true" $bamlImage | quote }}
+          imagePullPolicy: {{ $pullPolicy | quote }}
+          resources:
+{{ toYaml $baml.resources | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ default 2024 $baml.port }}
+          env:
+            - name: BAML_LOG
+              value: "error"
+            - name: AWS_REGION
+              value: {{ default "us-west-2" $baml.awsRegion | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsAccessKeyIDKey | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsSecretAccessKeyKey | quote }}
+            - name: AWS_SESSION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $aiCredsSecretName | quote }}
+                  key: {{ $aiCredsSessionTokenKey | quote }}
+                  optional: true
+            - name: AWS_DEFAULT_REGION
+              value: {{ default "us-west-2" $baml.awsRegion | quote }}
+{{- end }}
+{{- end }}

@@ -1375,6 +1375,9 @@
       "forwardtenant.TenantKind": {
         "type": "string"
       },
+      "platform.Capability": {
+        "type": "string"
+      },
       "platform.ForwardTenantResetBaseline": {
         "properties": {
           "capturedAt": {
@@ -1469,6 +1472,9 @@
           "metadata"
         ],
         "type": "object"
+      },
+      "platform.OperatingMode": {
+        "type": "string"
       },
       "platform.PlatformAvailabilityByClass": {
         "properties": {
@@ -2029,6 +2035,63 @@
       "platform.ResourceClass": {
         "type": "string"
       },
+      "platform.RoleProfile": {
+        "type": "string"
+      },
+      "platform.RoleProfileDefinition": {
+        "properties": {
+          "capabilities": {
+            "items": {
+              "$ref": "#/components/schemas/platform.Capability"
+            },
+            "type": "array"
+          },
+          "defaultForNewUsers": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "operatingModes": {
+            "items": {
+              "$ref": "#/components/schemas/platform.OperatingMode"
+            },
+            "type": "array"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/platform.RoleProfile"
+          },
+          "quota": {
+            "$ref": "#/components/schemas/platform.UserQuota"
+          },
+          "sortOrder": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "system": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "profile",
+          "displayName",
+          "description",
+          "enabled",
+          "system",
+          "defaultForNewUsers",
+          "sortOrder",
+          "quota",
+          "capabilities",
+          "operatingModes"
+        ],
+        "type": "object"
+      },
       "platform.UserPolicy": {
         "properties": {
           "capabilities": {
@@ -2382,6 +2445,69 @@
           "topologies",
           "virtualMachines",
           "virtualMachineInstances"
+        ],
+        "type": "object"
+      },
+      "skyforge.AdminForwardBackupPlatformSettings": {
+        "properties": {
+          "backupTime": {
+            "type": "string"
+          },
+          "bucket": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string"
+          },
+          "includeSnapshots": {
+            "type": "boolean"
+          },
+          "numDaysToRetain": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "protectedPVCs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "recurringJobName": {
+            "type": "string"
+          },
+          "runBackupNowPath": {
+            "type": "string"
+          },
+          "runBackupSupported": {
+            "type": "boolean"
+          },
+          "schedule": {
+            "type": "string"
+          },
+          "targetNamespace": {
+            "type": "string"
+          },
+          "useSSL": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "engine",
+          "bucket",
+          "endpoint",
+          "useSSL",
+          "backupTime",
+          "schedule",
+          "numDaysToRetain",
+          "includeSnapshots",
+          "targetNamespace",
+          "recurringJobName",
+          "protectedPVCs",
+          "runBackupNowPath",
+          "runBackupSupported"
         ],
         "type": "object"
       },
@@ -3256,6 +3382,66 @@
         ],
         "type": "object"
       },
+      "skyforge.CleanupAdminWorkspaceNamespaceResult": {
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "matched": {
+            "type": "boolean"
+          },
+          "namespace": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "namespace",
+          "matched",
+          "deleted",
+          "errors"
+        ],
+        "type": "object"
+      },
+      "skyforge.CleanupAdminWorkspaceResult": {
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "matched": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "matched",
+          "deleted",
+          "errors"
+        ],
+        "type": "object"
+      },
       "skyforge.CompositePlanPreviewBinding": {
         "properties": {
           "as": {
@@ -3505,6 +3691,68 @@
           "stdout",
           "stderr",
           "error"
+        ],
+        "type": "object"
+      },
+      "skyforge.DeploymentManagementAccessCommands": {
+        "properties": {
+          "ansibleSshArgs": {
+            "type": "string"
+          },
+          "proxyCommand": {
+            "type": "string"
+          },
+          "sshConfig": {
+            "type": "string"
+          },
+          "tokenEnvVarName": {
+            "type": "string"
+          },
+          "tunnel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tunnel",
+          "proxyCommand",
+          "sshConfig",
+          "ansibleSshArgs",
+          "tokenEnvVarName"
+        ],
+        "type": "object"
+      },
+      "skyforge.DeploymentManagementAccessNode": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "mgmtIp": {
+            "type": "string"
+          },
+          "podName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "tunnelPath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "kind",
+          "mgmtIp",
+          "status",
+          "podName",
+          "tunnelPath"
         ],
         "type": "object"
       },
@@ -3838,11 +4086,17 @@
             "format": "int64",
             "type": "integer"
           },
+          "capacityPreflightAvailable": {
+            "type": "boolean"
+          },
           "degraded": {
             "type": "boolean"
           },
           "generatedAt": {
             "type": "string"
+          },
+          "inventorySnapshotAvailable": {
+            "type": "boolean"
           },
           "metadata": {
             "additionalProperties": {
@@ -3894,6 +4148,8 @@
           "availablePoolClasses",
           "actualPoolClasses",
           "actualNodes",
+          "inventorySnapshotAvailable",
+          "capacityPreflightAvailable",
           "actualNodeCount",
           "readyPodCount",
           "candidateNodeCount",
@@ -4407,6 +4663,12 @@
           "sourceStatus": {
             "title": "ok|degraded|missing\n",
             "type": "string"
+          },
+          "targetJobs": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.ForwardPrometheusTargetJobHealth"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -4417,8 +4679,48 @@
           "prometheusReachable",
           "prometheusUpSum",
           "prometheusTargetCount",
+          "targetJobs",
           "error",
           "checkedAt"
+        ],
+        "type": "object"
+      },
+      "skyforge.ForwardOrgShare": {
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "granteeUsername": {
+            "type": "string"
+          },
+          "ownerUsername": {
+            "type": "string"
+          },
+          "tenantKind": {
+            "type": "string"
+          },
+          "tenantScope": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ownerUsername",
+          "tenantKind",
+          "tenantScope",
+          "granteeUsername",
+          "access",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
         ],
         "type": "object"
       },
@@ -4520,6 +4822,87 @@
         ],
         "type": "object"
       },
+      "skyforge.ForwardPrometheusTargetJobHealth": {
+        "properties": {
+          "downTargets": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "job": {
+            "type": "string"
+          },
+          "totalTargets": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "upTargets": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "job",
+          "totalTargets",
+          "upTargets",
+          "downTargets"
+        ],
+        "type": "object"
+      },
+      "skyforge.ForwardTenantCredentialResponse": {
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "string"
+          },
+          "hasPassword": {
+            "type": "boolean"
+          },
+          "lastRotatedAt": {
+            "type": "string"
+          },
+          "orgId": {
+            "type": "string"
+          },
+          "orgName": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "tenantKind": {
+            "type": "string"
+          },
+          "tenantScope": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenantKind",
+          "tenantScope",
+          "configured",
+          "orgId",
+          "orgName",
+          "username",
+          "email",
+          "hasPassword",
+          "password",
+          "updatedAt",
+          "lastRotatedAt",
+          "source"
+        ],
+        "type": "object"
+      },
       "skyforge.ForwardTenantFeatureFlags": {
         "properties": {
           "aiAllowed": {
@@ -4560,6 +4943,154 @@
           "aiAllowed",
           "predictAiAssist",
           "aiChats"
+        ],
+        "type": "object"
+      },
+      "skyforge.ForwardTestDriveRecord": {
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "lastResetAt": {
+            "type": "string"
+          },
+          "lastSeededAt": {
+            "type": "string"
+          },
+          "provisioningError": {
+            "type": "string"
+          },
+          "provisioningStatus": {
+            "type": "string"
+          },
+          "provisioningStep": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "testDriveId": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "testDriveId",
+          "customerName",
+          "status",
+          "provisioningStatus",
+          "provisioningStep",
+          "provisioningError",
+          "createdAt",
+          "updatedAt",
+          "lastSeededAt",
+          "lastResetAt"
+        ],
+        "type": "object"
+      },
+      "skyforge.ForwardTestDriveSummary": {
+        "properties": {
+          "credential": {
+            "$ref": "#/components/schemas/skyforge.ForwardTenantCredentialResponse"
+          },
+          "record": {
+            "$ref": "#/components/schemas/skyforge.ForwardTestDriveRecord"
+          }
+        },
+        "required": [
+          "record",
+          "credential"
+        ],
+        "type": "object"
+      },
+      "skyforge.ImportTopologyImageMapping": {
+        "properties": {
+          "matched": {
+            "type": "boolean"
+          },
+          "node": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "resolved": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "node",
+          "source",
+          "resolved",
+          "matched",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "skyforge.ImportTopologyIssue": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "severity": {
+            "title": "error|warning|info\n",
+            "type": "string"
+          }
+        },
+        "required": [
+          "severity",
+          "code",
+          "message",
+          "path"
+        ],
+        "type": "object"
+      },
+      "skyforge.ImportTopologySource": {
+        "type": "string"
+      },
+      "skyforge.ImportTopologyStats": {
+        "properties": {
+          "errors": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "links": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "nodes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "placeholderNodes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "warnings": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nodes",
+          "links",
+          "placeholderNodes",
+          "warnings",
+          "errors"
         ],
         "type": "object"
       },
@@ -4889,12 +5420,6 @@
           "node": {
             "type": "string"
           },
-          "raw": {
-            "additionalProperties": {
-              "type": "object"
-            },
-            "type": "object"
-          },
           "updatedAt": {
             "type": "string"
           }
@@ -4904,8 +5429,7 @@
           "updatedAt",
           "cpuActive",
           "memUsed",
-          "diskUsed",
-          "raw"
+          "diskUsed"
         ],
         "type": "object"
       },
@@ -5214,6 +5738,60 @@
           "persistentLabs",
           "remainingConcurrentLabs",
           "remainingPersistentLabs"
+        ],
+        "type": "object"
+      },
+      "skyforge.RegistryCatalogImageEntry": {
+        "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "defaultTag": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "nos": {
+            "type": "string"
+          },
+          "repository": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "vendor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "nos",
+          "vendor",
+          "model",
+          "kind",
+          "role",
+          "repository",
+          "defaultTag",
+          "aliases",
+          "enabled"
         ],
         "type": "object"
       },
@@ -5572,6 +6150,79 @@
           "owner",
           "label",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "skyforge.TaskQueueOffender": {
+        "properties": {
+          "ageSeconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "capacityRequeues": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "deploymentId": {
+            "type": "string"
+          },
+          "latestEventAt": {
+            "type": "string"
+          },
+          "latestEventType": {
+            "type": "string"
+          },
+          "priority": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "publishFailures": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "taskId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "taskType": {
+            "type": "string"
+          },
+          "userScopeId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "taskId",
+          "userScopeId",
+          "deploymentId",
+          "taskType",
+          "priority",
+          "ageSeconds",
+          "publishFailures",
+          "capacityRequeues",
+          "latestEventType",
+          "latestEventAt"
+        ],
+        "type": "object"
+      },
+      "skyforge.TaskQueueTypeCount": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "oldestAgeSec": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "taskType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "taskType",
+          "count",
+          "oldestAgeSec"
         ],
         "type": "object"
       },
@@ -6471,8 +7122,21 @@
           "activeTaskStatus": {
             "type": "string"
           },
+          "activeTaskType": {
+            "type": "string"
+          },
           "autoSyncOnBringUp": {
             "type": "boolean"
+          },
+          "cleanupError": {
+            "type": "string"
+          },
+          "cleanupState": {
+            "type": "string"
+          },
+          "cleanupTaskId": {
+            "format": "int64",
+            "type": "integer"
           },
           "config": {
             "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -6534,6 +7198,9 @@
           "syncState": {
             "type": "string"
           },
+          "tombstoned": {
+            "type": "boolean"
+          },
           "updatedAt": {
             "type": "string"
           },
@@ -6566,7 +7233,12 @@
           "lastFinishedAt",
           "activeTaskId",
           "activeTaskStatus",
-          "queueDepth"
+          "activeTaskType",
+          "queueDepth",
+          "tombstoned",
+          "cleanupState",
+          "cleanupTaskId",
+          "cleanupError"
         ],
         "type": "object"
       },
@@ -6639,6 +7311,63 @@
           "id",
           "name",
           "username"
+        ],
+        "type": "object"
+      },
+      "skyforge.UserScopeNetlabValidationDiagnostic": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "suggestion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "severity",
+          "code",
+          "message",
+          "suggestion"
+        ],
+        "type": "object"
+      },
+      "skyforge.UserScopeNetlabValidationResult": {
+        "properties": {
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/skyforge.UserScopeNetlabValidationDiagnostic"
+            },
+            "type": "array"
+          },
+          "infrastructureFailure": {
+            "type": "boolean"
+          },
+          "rawLogTail": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "topologyPath": {
+            "type": "string"
+          },
+          "valid": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "valid",
+          "infrastructureFailure",
+          "summary",
+          "topologyPath",
+          "diagnostics",
+          "rawLogTail"
         ],
         "type": "object"
       },
@@ -6993,7 +7722,22 @@
           "resourceClass": {
             "type": "string"
           },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "template": {
+            "type": "string"
+          },
+          "templateRepo": {
+            "type": "string"
+          },
+          "templateSource": {
+            "type": "string"
+          },
+          "templatesDir": {
             "type": "string"
           }
         },
@@ -7002,6 +7746,10 @@
           "name",
           "description",
           "template",
+          "templateSource",
+          "templateRepo",
+          "templatesDir",
+          "tags",
           "owner",
           "operatingModes",
           "resourceClass",
@@ -7265,6 +8013,79 @@
           "output",
           "time",
           "stream"
+        ],
+        "type": "object"
+      },
+      "taskruns.TaskQueueOffender": {
+        "properties": {
+          "ageSeconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "capacityRequeues": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "deploymentId": {
+            "type": "string"
+          },
+          "latestEventAt": {
+            "type": "string"
+          },
+          "latestEventType": {
+            "type": "string"
+          },
+          "priority": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "publishFailures": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "taskId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "taskType": {
+            "type": "string"
+          },
+          "userScopeId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "taskId",
+          "userScopeId",
+          "deploymentId",
+          "taskType",
+          "priority",
+          "ageSeconds",
+          "publishFailures",
+          "capacityRequeues",
+          "latestEventType",
+          "latestEventAt"
+        ],
+        "type": "object"
+      },
+      "taskruns.TaskQueueTypeCount": {
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "oldestAgeSec": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "taskType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "taskType",
+          "count",
+          "oldestAgeSec"
         ],
         "type": "object"
       },
@@ -9511,6 +10332,16 @@
               "type": "string"
             },
             "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "tenantKind",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
           }
         ],
         "responses": {
@@ -9674,6 +10505,185 @@
             "$ref": "#/components/responses/APIError"
           }
         }
+      }
+    },
+    "/api/admin/integrations/forward/backups/mirror-now": {
+      "post": {
+        "operationId": "POST:skyforge.TriggerAdminObjectStoreMirrorNow",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "bucketsScanned": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "objectsCopied": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "objectsScanned": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "objectsSkipped": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "bucketsScanned",
+                    "objectsScanned",
+                    "objectsCopied",
+                    "objectsSkipped"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "TriggerAdminObjectStoreMirrorNow triggers an immediate object-store mirror run.\n"
+      }
+    },
+    "/api/admin/integrations/forward/backups/status": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminForwardBackupStatus",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "awsMirrorBucket": {
+                      "type": "string"
+                    },
+                    "awsMirrorConfigured": {
+                      "type": "boolean"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "mirrorBucket": {
+                      "type": "string"
+                    },
+                    "mirrorConfigured": {
+                      "type": "boolean"
+                    },
+                    "platformSettings": {
+                      "$ref": "#/components/schemas/skyforge.AdminForwardBackupPlatformSettings"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "platformSettings",
+                    "mirrorConfigured",
+                    "mirrorBucket",
+                    "awsMirrorConfigured",
+                    "awsMirrorBucket"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminForwardBackupStatus returns the current managed Forward backup posture.\n"
+      }
+    },
+    "/api/admin/integrations/forward/customer-banner/reconcile": {
+      "post": {
+        "description": "banner is applied across all shareable users' customer-org Forward networks.\n",
+        "operationId": "POST:skyforge.ReconcileAdminForwardCustomerBannerAllUsers",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "bannerId": {
+                      "type": "string"
+                    },
+                    "failedUsernames": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "failedUsers": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "networkCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "networkIds": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "processedUsers": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "skippedUsers": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "succeededUsers": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tenantKind",
+                    "username",
+                    "bannerId",
+                    "networkIds",
+                    "networkCount",
+                    "processedUsers",
+                    "succeededUsers",
+                    "skippedUsers",
+                    "failedUsers",
+                    "failedUsernames",
+                    "requestedBy"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ReconcileAdminForwardCustomerBannerAllUsers ensures the CUSTOMER CONFIDENTIAL\n"
       }
     },
     "/api/admin/integrations/forward/demo-seed-config": {
@@ -10585,7 +11595,7 @@
     },
     "/api/admin/node-metrics": {
       "get": {
-        "description": "Data is a short-lived snapshot stored in Redis by Telegraf.\n",
+        "description": "Data is sourced from Prometheus/node-exporter rather than Telegraf snapshots.\n",
         "operationId": "GET:skyforge.ListNodeMetrics",
         "responses": {
           "200": {
@@ -11698,6 +12708,187 @@
         "summary": "UpdateAdminPlatformReservationStatus approves, rejects, or cancels a\nreservation.\n"
       }
     },
+    "/api/admin/platform/role-profiles": {
+      "get": {
+        "operationId": "GET:skyforge.ListAdminPlatformRoleProfiles",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "profiles": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.RoleProfileDefinition"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "profiles"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListAdminPlatformRoleProfiles returns editable role profile definitions.\n"
+      }
+    },
+    "/api/admin/platform/role-profiles/{profile}": {
+      "put": {
+        "operationId": "PUT:skyforge.PutAdminPlatformRoleProfile",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "profile",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "assignedBy": {
+                    "type": "string"
+                  },
+                  "capabilities": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "defaultForNewUsers": {
+                    "type": "boolean"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "operatingModes": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "profile": {
+                    "type": "string"
+                  },
+                  "quota": {
+                    "$ref": "#/components/schemas/platform.UserQuota"
+                  },
+                  "sortOrder": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "system": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "profile",
+                  "displayName",
+                  "description",
+                  "enabled",
+                  "system",
+                  "defaultForNewUsers",
+                  "sortOrder",
+                  "quota",
+                  "capabilities",
+                  "operatingModes",
+                  "assignedBy"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capabilities": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.Capability"
+                      },
+                      "type": "array"
+                    },
+                    "defaultForNewUsers": {
+                      "type": "boolean"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "operatingModes": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.OperatingMode"
+                      },
+                      "type": "array"
+                    },
+                    "profile": {
+                      "$ref": "#/components/schemas/platform.RoleProfile"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/platform.UserQuota"
+                    },
+                    "sortOrder": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "system": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "profile",
+                    "displayName",
+                    "description",
+                    "enabled",
+                    "system",
+                    "defaultForNewUsers",
+                    "sortOrder",
+                    "quota",
+                    "capabilities",
+                    "operatingModes"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutAdminPlatformRoleProfile updates an editable role profile definition.\n"
+      }
+    },
     "/api/admin/platform/runtime-policy": {
       "get": {
         "operationId": "GET:skyforge.GetAdminPlatformRuntimePolicy",
@@ -12224,6 +13415,75 @@
         "summary": "UpdateAdminQuickDeployCatalog updates the quick deploy catalog (admin only).\n"
       }
     },
+    "/api/admin/quick-deploy/repo": {
+      "put": {
+        "operationId": "PUT:skyforge.UpdateAdminQuickDeployRepo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "repo": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "repo"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "branch": {
+                      "type": "string"
+                    },
+                    "dir": {
+                      "type": "string"
+                    },
+                    "repo": {
+                      "type": "string"
+                    },
+                    "retrievedAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "templates": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "repo",
+                    "branch",
+                    "dir",
+                    "templates",
+                    "retrievedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UpdateAdminQuickDeployRepo updates the quick deploy template repo (admin only).\n"
+      }
+    },
     "/api/admin/quick-deploy/template-options": {
       "get": {
         "operationId": "GET:skyforge.GetAdminQuickDeployTemplateOptions",
@@ -12306,6 +13566,130 @@
           }
         },
         "summary": "ListAdminAPICatalog returns the discoverable API catalog for RBAC policy\nmanagement.\n"
+      }
+    },
+    "/api/admin/rbac/role-profiles/{profile}/api-permissions": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminRoleAPIPermissions",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "profile",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "permissions": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminUserAPIPermission"
+                      },
+                      "type": "array"
+                    },
+                    "profile": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "profile",
+                    "permissions",
+                    "generatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminRoleAPIPermissions returns explicit per-role API permissions.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.PutAdminRoleAPIPermissions",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "profile",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "permissions": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.AdminUserAPIPermission"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "permissions"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "permissions": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.AdminUserAPIPermission"
+                      },
+                      "type": "array"
+                    },
+                    "profile": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "profile",
+                    "permissions",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutAdminRoleAPIPermissions replaces explicit per-role API permissions.\n"
       }
     },
     "/api/admin/rbac/users": {
@@ -12591,6 +13975,251 @@
         "summary": "DeleteAdminUserRole revokes a direct RBAC role from a user.\n"
       }
     },
+    "/api/admin/registry/catalog": {
+      "get": {
+        "operationId": "GET:skyforge.GetAdminRegistryCatalog",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseUrl": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "images": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.RegistryCatalogImageEntry"
+                      },
+                      "type": "array"
+                    },
+                    "prepullWorkerNodes": {
+                      "type": "boolean"
+                    },
+                    "repoPrefixes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "retrievedAt": {
+                      "type": "string"
+                    },
+                    "skipTlsVerify": {
+                      "type": "boolean"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "baseUrl",
+                    "skipTlsVerify",
+                    "repoPrefixes",
+                    "username",
+                    "hasPassword",
+                    "prepullWorkerNodes",
+                    "images",
+                    "updatedAt",
+                    "retrievedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetAdminRegistryCatalog returns the admin-managed registry + image catalog.\n"
+      },
+      "put": {
+        "operationId": "PUT:skyforge.PutAdminRegistryCatalog",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "baseUrl": {
+                    "type": "string"
+                  },
+                  "images": {
+                    "items": {
+                      "$ref": "#/components/schemas/skyforge.RegistryCatalogImageEntry"
+                    },
+                    "type": "array"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "prepullWorkerNodes": {
+                    "type": "boolean"
+                  },
+                  "repoPrefixes": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "skipTlsVerify": {
+                    "type": "boolean"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "baseUrl",
+                  "skipTlsVerify",
+                  "repoPrefixes",
+                  "username",
+                  "password",
+                  "prepullWorkerNodes",
+                  "images"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseUrl": {
+                      "type": "string"
+                    },
+                    "hasPassword": {
+                      "type": "boolean"
+                    },
+                    "images": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.RegistryCatalogImageEntry"
+                      },
+                      "type": "array"
+                    },
+                    "prepullWorkerNodes": {
+                      "type": "boolean"
+                    },
+                    "repoPrefixes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "retrievedAt": {
+                      "type": "string"
+                    },
+                    "skipTlsVerify": {
+                      "type": "boolean"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "baseUrl",
+                    "skipTlsVerify",
+                    "repoPrefixes",
+                    "username",
+                    "hasPassword",
+                    "prepullWorkerNodes",
+                    "images",
+                    "updatedAt",
+                    "retrievedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutAdminRegistryCatalog updates the admin-managed registry + image catalog.\n"
+      }
+    },
+    "/api/admin/registry/catalog/prepull": {
+      "post": {
+        "description": "all enabled catalog images to worker node caches (best effort).\n",
+        "operationId": "POST:skyforge.TriggerAdminRegistryCatalogPrepull",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "appliedAt": {
+                      "type": "string"
+                    },
+                    "catalogFrom": {
+                      "type": "string"
+                    },
+                    "daemonSet": {
+                      "type": "string"
+                    },
+                    "imageCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "images": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "namespace": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "namespace",
+                    "daemonSet",
+                    "imageCount",
+                    "images",
+                    "appliedAt",
+                    "catalogFrom"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "TriggerAdminRegistryCatalogPrepull applies a worker-only daemonset that pulls\n"
+      }
+    },
     "/api/admin/smoke-runs": {
       "get": {
         "operationId": "GET:skyforge.ListAdminSmokeRuns",
@@ -12776,9 +14405,33 @@
                       "format": "int64",
                       "type": "integer"
                     },
+                    "queuedByType": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.TaskQueueTypeCount"
+                      },
+                      "type": "array"
+                    },
+                    "queuedOffenders": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.TaskQueueOffender"
+                      },
+                      "type": "array"
+                    },
                     "running": {
                       "format": "int64",
                       "type": "integer"
+                    },
+                    "runningByType": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.TaskQueueTypeCount"
+                      },
+                      "type": "array"
+                    },
+                    "signals": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
                     },
                     "status": {
                       "type": "string"
@@ -12806,7 +14459,11 @@
                     "publishFailuresLatest",
                     "stuckQueuedCandidates",
                     "diagStaleHeartbeatSec",
-                    "diagOldestQueuedSec"
+                    "diagOldestQueuedSec",
+                    "queuedByType",
+                    "runningByType",
+                    "queuedOffenders",
+                    "signals"
                   ],
                   "type": "object"
                 }
@@ -13322,6 +14979,119 @@
           }
         },
         "summary": "CleanupWorkspacePods force-cleans kne topology pods/resources from workspace\nnamespaces (admin only).\n"
+      }
+    },
+    "/api/admin/tasks/workspaces/cleanup": {
+      "post": {
+        "operationId": "POST:skyforge.CleanupAdminWorkspaces",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "dryRun": {
+                    "type": "boolean"
+                  },
+                  "includeK8s": {
+                    "type": "boolean"
+                  },
+                  "prefixes": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "prefixes",
+                  "includeK8s",
+                  "dryRun"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "dryRun": {
+                      "type": "boolean"
+                    },
+                    "errors": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "includeK8s": {
+                      "type": "boolean"
+                    },
+                    "namespaceResults": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CleanupAdminWorkspaceNamespaceResult"
+                      },
+                      "type": "array"
+                    },
+                    "namespacesDeleted": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "namespacesMatched": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "prefixes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "scopesDeleted": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "scopesMatched": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "workspaceResults": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.CleanupAdminWorkspaceResult"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "dryRun",
+                    "includeK8s",
+                    "prefixes",
+                    "scopesMatched",
+                    "scopesDeleted",
+                    "namespacesMatched",
+                    "namespacesDeleted",
+                    "workspaceResults",
+                    "namespaceResults",
+                    "errors"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CleanupAdminWorkspaces deletes matching user scopes and optionally matching\nKubernetes namespaces (admin only).\n"
       }
     },
     "/api/admin/users": {
@@ -16259,6 +18029,21 @@
         "summary": "PutCurrentUserIBMCredentials saves IBM Cloud credentials for the authenticated\nuser.\n"
       }
     },
+    "/api/coder/session": {
+      "get": {
+        "description": "redirects the browser into the code-server app for that workspace.\n",
+        "operationId": "GET:skyforge.CoderSessionStart",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CoderSessionStart ensures the current user has a personal workspace and then\n"
+      }
+    },
     "/api/config-changes": {
       "get": {
         "operationId": "GET:skyforge.ListCurrentConfigChangeRuns",
@@ -16918,6 +18703,64 @@
         "summary": "DashboardSnapshot returns the latest dashboard snapshot.\n"
       }
     },
+    "/api/dashboard/summary": {
+      "get": {
+        "operationId": "GET:skyforge.DashboardSummary",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "awsSsoStatus": {
+                      "$ref": "#/components/schemas/skyforge.dashboardAwsSsoStatus"
+                    },
+                    "deployments": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
+                      },
+                      "type": "array"
+                    },
+                    "refreshedAt": {
+                      "type": "string"
+                    },
+                    "runs": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.JSONMap"
+                      },
+                      "type": "array"
+                    },
+                    "templatesIndexUpdatedAt": {
+                      "type": "string"
+                    },
+                    "userScopes": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.UserScope"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "refreshedAt",
+                    "userScopes",
+                    "deployments",
+                    "runs",
+                    "templatesIndexUpdatedAt",
+                    "awsSsoStatus"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DashboardSummary returns a lightweight, cached dashboard summary for overview\npages.\n"
+      }
+    },
     "/api/deployment-lifetime/policy": {
       "get": {
         "operationId": "GET:skyforge.GetDeploymentLifetimePolicy",
@@ -16977,6 +18820,96 @@
           }
         },
         "summary": "GetDeploymentLifetimePolicy returns deployment lifetime policy used by the UI.\n"
+      }
+    },
+    "/api/deployments/by-id/{deploymentID}/info": {
+      "get": {
+        "operationId": "GET:skyforge.GetDeploymentInfo",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deployment": {
+                      "$ref": "#/components/schemas/skyforge.UserScopeDeployment"
+                    },
+                    "forwardNetworkId": {
+                      "type": "string"
+                    },
+                    "forwardSnapshotUrl": {
+                      "type": "string"
+                    },
+                    "kne": {
+                      "$ref": "#/components/schemas/skyforge.KneInfo"
+                    },
+                    "log": {
+                      "type": "string"
+                    },
+                    "netlab": {
+                      "$ref": "#/components/schemas/skyforge.NetlabInfo"
+                    },
+                    "note": {
+                      "type": "string"
+                    },
+                    "provider": {
+                      "type": "string"
+                    },
+                    "retrievedAt": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "topologySourceDeploymentId": {
+                      "type": "string"
+                    },
+                    "topologySourceUserId": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deployment",
+                    "provider",
+                    "retrievedAt",
+                    "status",
+                    "log",
+                    "note",
+                    "topologySourceUserId",
+                    "topologySourceDeploymentId",
+                    "forwardNetworkId",
+                    "forwardSnapshotUrl",
+                    "netlab",
+                    "kne"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetDeploymentInfo returns provider-specific info for a deployment by ID when the\ncaller has access.\n"
       }
     },
     "/api/deployments/shared-sources": {
@@ -17795,6 +19728,9 @@
                     "tenantKind": {
                       "type": "string"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -17804,6 +19740,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "configured",
                     "orgId",
                     "orgName",
@@ -17864,6 +19801,9 @@
                     "tenantKind": {
                       "type": "string"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -17873,6 +19813,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "configured",
                     "orgId",
                     "orgName",
@@ -17934,6 +19875,9 @@
                     "tenantKind": {
                       "type": "string"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -17943,6 +19887,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "configured",
                     "orgId",
                     "orgName",
@@ -18046,6 +19991,87 @@
           }
         },
         "summary": "PutCurrentUserForwardCustomerTenantFeatures upserts per-user experimental\nForward customer-org feature flags.\n"
+      }
+    },
+    "/api/forward/customer-org/banner/reconcile": {
+      "post": {
+        "description": "banner is applied across all current customer-org Forward networks.\n",
+        "operationId": "POST:skyforge.ReconcileCurrentUserForwardCustomerBanner",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "bannerId": {
+                      "type": "string"
+                    },
+                    "failedUsernames": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "failedUsers": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "networkCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "networkIds": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "processedUsers": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "requestedBy": {
+                      "type": "string"
+                    },
+                    "skippedUsers": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "succeededUsers": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "tenantKind",
+                    "username",
+                    "bannerId",
+                    "networkIds",
+                    "networkCount",
+                    "processedUsers",
+                    "succeededUsers",
+                    "skippedUsers",
+                    "failedUsers",
+                    "failedUsernames",
+                    "requestedBy"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ReconcileCurrentUserForwardCustomerBanner ensures the CUSTOMER CONFIDENTIAL\n"
       }
     },
     "/api/forward/customer-org/performance-networks": {
@@ -18371,13 +20397,9 @@
                   },
                   "reason": {
                     "type": "string"
-                  },
-                  "tenantKind": {
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "tenantKind",
                   "mode",
                   "reason",
                   "metadata"
@@ -18524,6 +20546,9 @@
                     "tenantKind": {
                       "type": "string"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -18533,6 +20558,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "configured",
                     "orgId",
                     "orgName",
@@ -18593,6 +20619,9 @@
                     "tenantKind": {
                       "type": "string"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -18602,6 +20631,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "configured",
                     "orgId",
                     "orgName",
@@ -18663,6 +20693,9 @@
                     "tenantKind": {
                       "type": "string"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -18672,6 +20705,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "configured",
                     "orgId",
                     "orgName",
@@ -19019,13 +21053,9 @@
                   },
                   "reason": {
                     "type": "string"
-                  },
-                  "tenantKind": {
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "tenantKind",
                   "mode",
                   "reason",
                   "metadata"
@@ -19200,6 +21230,9 @@
                     "tenantKind": {
                       "type": "string"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -19209,6 +21242,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "configured",
                     "orgId",
                     "orgName",
@@ -19269,6 +21303,9 @@
                     "tenantKind": {
                       "type": "string"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -19278,6 +21315,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "configured",
                     "orgId",
                     "orgName",
@@ -19339,6 +21377,9 @@
                     "tenantKind": {
                       "type": "string"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -19348,6 +21389,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "configured",
                     "orgId",
                     "orgName",
@@ -19451,6 +21493,188 @@
           }
         },
         "summary": "PutCurrentUserForwardTenantFeatures upserts per-user experimental Forward\ndeployment-org feature flags.\n"
+      }
+    },
+    "/api/forward/org-shares": {
+      "get": {
+        "operationId": "GET:skyforge.ListForwardOrgShares",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "sharedWithMe": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForwardOrgShare"
+                      },
+                      "type": "array"
+                    },
+                    "shares": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForwardOrgShare"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "shares",
+                    "sharedWithMe"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListForwardOrgShares lists managed Forward org access grants owned by or\navailable to the current user.\n"
+      },
+      "post": {
+        "operationId": "POST:skyforge.PutForwardOrgShare",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "access": {
+                    "type": "string"
+                  },
+                  "tenantKind": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tenantKind",
+                  "username",
+                  "access"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "access": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "createdBy": {
+                      "type": "string"
+                    },
+                    "granteeUsername": {
+                      "type": "string"
+                    },
+                    "ownerUsername": {
+                      "type": "string"
+                    },
+                    "tenantKind": {
+                      "type": "string"
+                    },
+                    "tenantScope": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ownerUsername",
+                    "tenantKind",
+                    "tenantScope",
+                    "granteeUsername",
+                    "access",
+                    "createdBy",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "PutForwardOrgShare grants another SE access to open one of the current user's\nshareable Forward orgs.\n"
+      }
+    },
+    "/api/forward/org-shares/{tenantKind}/{username}": {
+      "delete": {
+        "operationId": "DELETE:skyforge.DeleteForwardOrgShare",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "tenantKind",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "sharedWithMe": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForwardOrgShare"
+                      },
+                      "type": "array"
+                    },
+                    "shares": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForwardOrgShare"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "shares",
+                    "sharedWithMe"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteForwardOrgShare revokes another SE's access to one of the current user's\nshareable Forward orgs.\n"
       }
     },
     "/api/forward/org/performance-networks": {
@@ -19776,13 +22000,9 @@
                   },
                   "reason": {
                     "type": "string"
-                  },
-                  "tenantKind": {
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "tenantKind",
                   "mode",
                   "reason",
                   "metadata"
@@ -19921,6 +22141,275 @@
           }
         },
         "summary": "ForwardSessionStart mints a short-lived bridge token on the authenticated\n"
+      }
+    },
+    "/api/forward/testdrives": {
+      "get": {
+        "operationId": "GET:skyforge.ListForwardTestDrives",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ForwardTestDriveSummary"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ListForwardTestDrives returns active Forward TestDrives owned by the current\nuser.\n"
+      },
+      "post": {
+        "description": "it with the fixed demo topology.\n",
+        "operationId": "POST:skyforge.CreateForwardTestDrive",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "customerName": {
+                    "type": "string"
+                  },
+                  "testDriveId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "testDriveId",
+                  "customerName"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "credential": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTenantCredentialResponse"
+                    },
+                    "record": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTestDriveRecord"
+                    }
+                  },
+                  "required": [
+                    "record",
+                    "credential"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CreateForwardTestDrive provisions a managed Forward testdrive org and seeds\n"
+      }
+    },
+    "/api/forward/testdrives/{testDriveID}": {
+      "delete": {
+        "description": "removes the local testdrive record.\n",
+        "operationId": "DELETE:skyforge.DeleteForwardTestDrive",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "testDriveID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "deleted": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "deleted"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeleteForwardTestDrive hard-deletes the managed Forward testdrive org and\n"
+      }
+    },
+    "/api/forward/testdrives/{testDriveID}/credential/reset": {
+      "post": {
+        "description": "specified testdrive.\n",
+        "operationId": "POST:skyforge.ResetForwardTestDriveCredential",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "testDriveID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "credential": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTenantCredentialResponse"
+                    },
+                    "record": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTestDriveRecord"
+                    }
+                  },
+                  "required": [
+                    "record",
+                    "credential"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ResetForwardTestDriveCredential rotates the managed Forward password for the\n"
+      }
+    },
+    "/api/forward/testdrives/{testDriveID}/credential/reveal": {
+      "post": {
+        "description": "specific testdrive with password included.\n",
+        "operationId": "POST:skyforge.RevealForwardTestDriveCredential",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "testDriveID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "credential": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTenantCredentialResponse"
+                    },
+                    "record": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTestDriveRecord"
+                    }
+                  },
+                  "required": [
+                    "record",
+                    "credential"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "RevealForwardTestDriveCredential returns the managed Forward credential for a\n"
+      }
+    },
+    "/api/forward/testdrives/{testDriveID}/reset": {
+      "post": {
+        "description": "specified testdrive org while preserving credentials.\n",
+        "operationId": "POST:skyforge.ResetForwardTestDriveTopology",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "testDriveID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "credential": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTenantCredentialResponse"
+                    },
+                    "record": {
+                      "$ref": "#/components/schemas/skyforge.ForwardTestDriveRecord"
+                    }
+                  },
+                  "required": [
+                    "record",
+                    "credential"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ResetForwardTestDriveTopology replays the fixed demo seed catalog into the\n"
       }
     },
     "/api/gcp/console": {
@@ -20093,6 +22582,21 @@
           }
         },
         "summary": "RotateCurrentUserDeployKey rotates the user's SSH deploy key.\n"
+      }
+    },
+    "/api/git/sso": {
+      "get": {
+        "description": "redirects to the requested Git URL. This avoids stale browser OIDC sessions landing the user in the wrong Gitea account.\n",
+        "operationId": "GET:skyforge.GitSSO",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GitSSO performs a Skyforge-controlled Gitea login for the current user and\n"
       }
     },
     "/api/health": {
@@ -21978,10 +24482,22 @@
                   },
                   "template": {
                     "type": "string"
+                  },
+                  "templateRepo": {
+                    "type": "string"
+                  },
+                  "templateSource": {
+                    "type": "string"
+                  },
+                  "templatesDir": {
+                    "type": "string"
                   }
                 },
                 "required": [
                   "template",
+                  "templateSource",
+                  "templateRepo",
+                  "templatesDir",
                   "leaseHours",
                   "name"
                 ],
@@ -22030,6 +24546,98 @@
           }
         },
         "summary": "RunQuickDeploy provisions a curated kne deployment with managed in-cluster\nForward sync.\n"
+      }
+    },
+    "/api/recent-runs": {
+      "get": {
+        "operationId": "GET:skyforge.GetRecentRuns",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "tasks": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.JSONMap"
+                      },
+                      "type": "array"
+                    },
+                    "user": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "user",
+                    "tasks"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetRecentRuns returns recent runs across all accessible user scopes.\n"
+      }
+    },
+    "/api/registry/catalog": {
+      "get": {
+        "operationId": "GET:skyforge.GetRegistryCatalog",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "baseUrl": {
+                      "type": "string"
+                    },
+                    "images": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.RegistryCatalogImageEntry"
+                      },
+                      "type": "array"
+                    },
+                    "retrievedAt": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "baseUrl",
+                    "images",
+                    "retrievedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetRegistryCatalog returns the curated registry image catalog for authenticated\nusers.\n"
       }
     },
     "/api/registry/repos": {
@@ -22242,6 +24850,62 @@
           }
         },
         "summary": "CreateRun is a reserved endpoint for admin-triggered native tasks.\n"
+      }
+    },
+    "/api/runs/{id}": {
+      "get": {
+        "operationId": "GET:skyforge.GetRun",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "task_id": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "user": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "task_id",
+                    "userId",
+                    "task",
+                    "user"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetRun returns a specific native task.\n"
       }
     },
     "/api/runs/{id}/cancel": {
@@ -25666,8 +28330,21 @@
                     "activeTaskStatus": {
                       "type": "string"
                     },
+                    "activeTaskType": {
+                      "type": "string"
+                    },
                     "autoSyncOnBringUp": {
                       "type": "boolean"
+                    },
+                    "cleanupError": {
+                      "type": "string"
+                    },
+                    "cleanupState": {
+                      "type": "string"
+                    },
+                    "cleanupTaskId": {
+                      "format": "int64",
+                      "type": "integer"
                     },
                     "config": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -25729,6 +28406,9 @@
                     "syncState": {
                       "type": "string"
                     },
+                    "tombstoned": {
+                      "type": "boolean"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -25761,7 +28441,12 @@
                     "lastFinishedAt",
                     "activeTaskId",
                     "activeTaskStatus",
-                    "queueDepth"
+                    "activeTaskType",
+                    "queueDepth",
+                    "tombstoned",
+                    "cleanupState",
+                    "cleanupTaskId",
+                    "cleanupError"
                   ],
                   "type": "object"
                 }
@@ -25874,7 +28559,7 @@
     },
     "/api/users/{id}/deployments-designer/kne/from-yaml": {
       "post": {
-        "description": "creates a \"kne\" deployment referencing that template, and (optionally) queues an initial deploy.\n\nThis is the first-class in-cluster mode (no netlab server required).\n",
+        "description": "creates a \"kne\" deployment referencing that template, and (optionally) queues an initial deploy.\n\nThis is the first-class in-cluster mode.\n",
         "operationId": "POST:skyforge.CreateKneDeploymentFromYAML",
         "parameters": [
           {
@@ -25914,7 +28599,7 @@
                     "type": "string"
                   },
                   "topologyYAML": {
-                    "title": "TopologyYAML is the raw netlab/KNE topology YAML.\n",
+                    "title": "TopologyYAML is the raw KNE topology YAML.\n",
                     "type": "string"
                   }
                 },
@@ -25965,7 +28650,126 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "CreateKneDeploymentFromYAML persists a netlab/KNE topology YAML into the\nuser-scope repo,\n"
+        "summary": "CreateKneDeploymentFromYAML persists a KNE topology YAML into the user-scope\nrepo,\n"
+      }
+    },
+    "/api/users/{id}/deployments-designer/kne/import": {
+      "post": {
+        "operationId": "POST:skyforge.ImportTopology",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "filename": {
+                    "type": "string"
+                  },
+                  "sidecarFiles": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  },
+                  "source": {
+                    "$ref": "#/components/schemas/skyforge.ImportTopologySource"
+                  },
+                  "topologyYAML": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "source",
+                  "topologyYAML",
+                  "filename",
+                  "sidecarFiles"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "blocking": {
+                      "type": "boolean"
+                    },
+                    "canImport": {
+                      "type": "boolean"
+                    },
+                    "convertedYAML": {
+                      "type": "string"
+                    },
+                    "detectedSource": {
+                      "$ref": "#/components/schemas/skyforge.ImportTopologySource"
+                    },
+                    "imageMappings": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ImportTopologyImageMapping"
+                      },
+                      "type": "array"
+                    },
+                    "issues": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.ImportTopologyIssue"
+                      },
+                      "type": "array"
+                    },
+                    "source": {
+                      "$ref": "#/components/schemas/skyforge.ImportTopologySource"
+                    },
+                    "stats": {
+                      "$ref": "#/components/schemas/skyforge.ImportTopologyStats"
+                    },
+                    "unsupportedFeatures": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "source",
+                    "detectedSource",
+                    "convertedYAML",
+                    "issues",
+                    "imageMappings",
+                    "unsupportedFeatures",
+                    "blocking",
+                    "canImport",
+                    "stats"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ImportTopology converts external topology sources into canonical KNE Designer\nYAML.\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}": {
@@ -26139,8 +28943,21 @@
                     "activeTaskStatus": {
                       "type": "string"
                     },
+                    "activeTaskType": {
+                      "type": "string"
+                    },
                     "autoSyncOnBringUp": {
                       "type": "boolean"
+                    },
+                    "cleanupError": {
+                      "type": "string"
+                    },
+                    "cleanupState": {
+                      "type": "string"
+                    },
+                    "cleanupTaskId": {
+                      "format": "int64",
+                      "type": "integer"
                     },
                     "config": {
                       "$ref": "#/components/schemas/skyforge.JSONMap"
@@ -26202,6 +29019,9 @@
                     "syncState": {
                       "type": "string"
                     },
+                    "tombstoned": {
+                      "type": "boolean"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -26234,7 +29054,12 @@
                     "lastFinishedAt",
                     "activeTaskId",
                     "activeTaskStatus",
-                    "queueDepth"
+                    "activeTaskType",
+                    "queueDepth",
+                    "tombstoned",
+                    "cleanupState",
+                    "cleanupTaskId",
+                    "cleanupError"
                   ],
                   "type": "object"
                 }
@@ -28080,6 +30905,7 @@
     },
     "/api/users/{id}/deployments/{deploymentID}/forward/sync": {
       "post": {
+        "description": "\\`mode=metadata-only\\` creates/updates Forward network + device sources without starting collection.\n",
         "operationId": "POST:skyforge.SyncUserScopeDeploymentForward",
         "parameters": [
           {
@@ -28105,6 +30931,23 @@
             "style": "simple"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "mode": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "mode"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "content": {
@@ -28952,6 +31795,249 @@
           }
         },
         "summary": "GetUserScopeDeploymentLinkStatsEvents streams link stats snapshots as SSE.\n"
+      }
+    },
+    "/api/users/{id}/deployments/{deploymentID}/management-access": {
+      "get": {
+        "description": "authenticated local automation. The endpoint is intentionally descriptive: the raw tunnel endpoint owns the actual TCP bridge.\n",
+        "operationId": "GET:skyforge.GetDeploymentManagementAccess",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "commands": {
+                      "$ref": "#/components/schemas/skyforge.DeploymentManagementAccessCommands"
+                    },
+                    "defaultPort": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "deploymentId": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "namespace": {
+                      "type": "string"
+                    },
+                    "nodes": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.DeploymentManagementAccessNode"
+                      },
+                      "type": "array"
+                    },
+                    "ready": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "topologyName": {
+                      "type": "string"
+                    },
+                    "tunnelPath": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deploymentId",
+                    "enabled",
+                    "ready",
+                    "status",
+                    "message",
+                    "namespace",
+                    "topologyName",
+                    "defaultPort",
+                    "tunnelPath",
+                    "nodes",
+                    "commands"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetDeploymentManagementAccess returns the per-deployment access contract for\n"
+      }
+    },
+    "/api/users/{id}/deployments/{deploymentID}/management-access/reconcile": {
+      "post": {
+        "description": "contract. V1 does not expose a public LoadBalancer or long-lived bastion; it verifies the KNE runtime metadata and returns the current tunnel contract.\n",
+        "operationId": "POST:skyforge.ReconcileDeploymentManagementAccess",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "commands": {
+                      "$ref": "#/components/schemas/skyforge.DeploymentManagementAccessCommands"
+                    },
+                    "defaultPort": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "deploymentId": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "namespace": {
+                      "type": "string"
+                    },
+                    "nodes": {
+                      "items": {
+                        "$ref": "#/components/schemas/skyforge.DeploymentManagementAccessNode"
+                      },
+                      "type": "array"
+                    },
+                    "ready": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "topologyName": {
+                      "type": "string"
+                    },
+                    "tunnelPath": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "deploymentId",
+                    "enabled",
+                    "ready",
+                    "status",
+                    "message",
+                    "namespace",
+                    "topologyName",
+                    "defaultPort",
+                    "tunnelPath",
+                    "nodes",
+                    "commands"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ReconcileDeploymentManagementAccess validates the current management-access\n"
+      }
+    },
+    "/api/users/{id}/deployments/{deploymentID}/management-access/tunnel": {
+      "get": {
+        "description": "a KNE node's in-cluster management service. It is intended for SSH ProxyCommand-style local automation, not browser terminal rendering.\n\nQuery params: - node: required KNE topology node ID or label - port: optional, currently restricted to 22\n",
+        "operationId": "GET:skyforge.DeploymentManagementAccessTunnel",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "deploymentID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "DeploymentManagementAccessTunnel bridges a single authenticated WebSocket to\n"
       }
     },
     "/api/users/{id}/deployments/{deploymentID}/map": {
@@ -32834,6 +35920,318 @@
         "summary": "CreateUserScopeForwardCollector creates a Forward collector for the user scope.\n"
       }
     },
+    "/api/users/{id}/kne/designer-sidecar": {
+      "get": {
+        "description": "topology template in the user-scope repo.\n",
+        "operationId": "GET:skyforge.GetKneDesignerSidecar",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "description": "TemplatesDir is where the topology template lives. Default: \"kne/designer\".\n",
+            "explode": true,
+            "in": "query",
+            "name": "dir",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "description": "Template is the topology filename (for example \"lab.kne.yml\").\n",
+            "explode": true,
+            "in": "query",
+            "name": "file",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "branch": {
+                      "type": "string"
+                    },
+                    "designerSidecarPath": {
+                      "type": "string"
+                    },
+                    "designerState": {
+                      "$ref": "#/components/schemas/skyforge.JSONMap"
+                    },
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "found": {
+                      "type": "boolean"
+                    },
+                    "template": {
+                      "type": "string"
+                    },
+                    "templatesDir": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "branch",
+                    "templatesDir",
+                    "template",
+                    "filePath",
+                    "designerSidecarPath",
+                    "found",
+                    "designerState"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetKneDesignerSidecar returns optional designer metadata sidecar for a KNE\n"
+      }
+    },
+    "/api/users/{id}/kne/template": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserScopeKNETemplate",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "dir",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "description": "user (default), blueprints, external, custom\n",
+            "explode": true,
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "description": "external/custom selector (id or repo ref)\n",
+            "explode": true,
+            "in": "query",
+            "name": "repo",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "description": "repo-relative file within Dir (may include subdirs)\n",
+            "explode": true,
+            "in": "query",
+            "name": "file",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "branch": {
+                      "type": "string"
+                    },
+                    "dir": {
+                      "type": "string"
+                    },
+                    "file": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "repo": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    },
+                    "yaml": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "source",
+                    "repo",
+                    "branch",
+                    "dir",
+                    "file",
+                    "path",
+                    "yaml"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserScopeKNETemplate reads a KNE designer template from a\nuser-scope/blueprints/external repo.\n"
+      }
+    },
+    "/api/users/{id}/kne/templates": {
+      "get": {
+        "operationId": "GET:skyforge.GetUserScopeKNETemplates",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          },
+          {
+            "allowEmptyValue": true,
+            "explode": true,
+            "in": "query",
+            "name": "dir",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "description": "user (default), blueprints, external, custom\n",
+            "explode": true,
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "allowEmptyValue": true,
+            "description": "external/custom selector (id or repo ref)\n",
+            "explode": true,
+            "in": "query",
+            "name": "repo",
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "branch": {
+                      "type": "string"
+                    },
+                    "cached": {
+                      "type": "boolean"
+                    },
+                    "dir": {
+                      "type": "string"
+                    },
+                    "headSha": {
+                      "type": "string"
+                    },
+                    "repo": {
+                      "type": "string"
+                    },
+                    "templates": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "repo",
+                    "branch",
+                    "dir",
+                    "templates",
+                    "headSha",
+                    "cached",
+                    "updatedAt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "GetUserScopeKNETemplates lists KNE designer templates for a user scope.\n"
+      }
+    },
     "/api/users/{id}/kne/topologies": {
       "post": {
         "description": "deployed later (e.g. by creating a deployment referencing the file).\n",
@@ -32856,6 +36254,9 @@
             "application/json": {
               "schema": {
                 "properties": {
+                  "designerState": {
+                    "$ref": "#/components/schemas/skyforge.JSONMap"
+                  },
                   "name": {
                     "title": "Name drives the default filename.\n",
                     "type": "string"
@@ -32871,7 +36272,7 @@
                     "type": "string"
                   },
                   "topologyYAML": {
-                    "title": "TopologyYAML is the raw netlab/KNE topology YAML.\n",
+                    "title": "TopologyYAML is the raw KNE topology YAML.\n",
                     "type": "string"
                   }
                 },
@@ -32879,7 +36280,8 @@
                   "name",
                   "topologyYAML",
                   "templatesDir",
-                  "template"
+                  "template",
+                  "designerState"
                 ],
                 "type": "object"
               }
@@ -32893,6 +36295,10 @@
                 "schema": {
                   "properties": {
                     "branch": {
+                      "type": "string"
+                    },
+                    "designerSidecarPath": {
+                      "title": "DesignerSidecarPath is present when a sidecar was written.\n",
                       "type": "string"
                     },
                     "filePath": {
@@ -32913,7 +36319,8 @@
                     "branch",
                     "templatesDir",
                     "template",
-                    "filePath"
+                    "filePath",
+                    "designerSidecarPath"
                   ],
                   "type": "object"
                 }
@@ -32925,7 +36332,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "SaveKneTopologyYAML writes a netlab/KNE topology YAML into the user's user-scope\nrepo so it can be\n"
+        "summary": "SaveKneTopologyYAML writes a KNE topology YAML into the user's user-scope repo\nso it can be\n"
       }
     },
     "/api/users/{id}/kne/topologies/validate": {
@@ -32954,7 +36361,7 @@
                     "type": "string"
                   },
                   "topologyYAML": {
-                    "title": "TopologyYAML is the raw netlab/KNE topology YAML.\n",
+                    "title": "TopologyYAML is the raw KNE topology YAML.\n",
                     "type": "string"
                   }
                 },
@@ -33012,7 +36419,7 @@
             "$ref": "#/components/responses/APIError"
           }
         },
-        "summary": "ValidateKneTopologyYAML validates netlab/KNE topology YAML for the lab designer.\n"
+        "summary": "ValidateKneTopologyYAML validates KNE topology YAML for the lab designer.\n"
       }
     },
     "/api/users/{id}/members": {
@@ -33544,6 +36951,98 @@
         "summary": "GetUserScopeNetlabTemplates lists Netlab templates for a user scope.\n"
       }
     },
+    "/api/users/{id}/netlab/templates/upload": {
+      "post": {
+        "operationId": "POST:skyforge.UploadUserScopeNetlabTemplateArchive",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "environment": {
+                    "$ref": "#/components/schemas/skyforge.JSONMap"
+                  },
+                  "fileBase64": {
+                    "type": "string"
+                  },
+                  "filename": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "filename",
+                  "fileBase64",
+                  "environment"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "commitMessage": {
+                      "type": "string"
+                    },
+                    "dir": {
+                      "type": "string"
+                    },
+                    "repo": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "$ref": "#/components/schemas/skyforge.UserScopeNetlabValidationResult"
+                    },
+                    "template": {
+                      "type": "string"
+                    },
+                    "uploadedFiles": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "repo",
+                    "dir",
+                    "template",
+                    "uploadedFiles",
+                    "commitMessage",
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "UploadUserScopeNetlabTemplateArchive expands a zip archive into the user's repo\nand validates it.\n"
+      }
+    },
     "/api/users/{id}/netlab/validate": {
       "post": {
         "description": "This catches missing images, invalid attributes, and missing required plugins/templates.\n",
@@ -33630,6 +37129,105 @@
           }
         },
         "summary": "ValidateUserScopeNetlabTemplate runs `netlab create` against a selected template\nbundle without deploying it.\n"
+      }
+    },
+    "/api/users/{id}/netlab/validate-sync": {
+      "post": {
+        "operationId": "POST:skyforge.ValidateUserScopeNetlabTemplateSync",
+        "parameters": [
+          {
+            "allowEmptyValue": true,
+            "explode": false,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "dir": {
+                    "title": "repo-relative dir\n",
+                    "type": "string"
+                  },
+                  "environment": {
+                    "$ref": "#/components/schemas/skyforge.JSONMap"
+                  },
+                  "repo": {
+                    "title": "owner/repo or URL (custom only)\n",
+                    "type": "string"
+                  },
+                  "source": {
+                    "title": "user|blueprints|external|custom\n",
+                    "type": "string"
+                  },
+                  "template": {
+                    "title": "repo-relative file within Dir (may include subdirs)\n",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "source",
+                  "repo",
+                  "dir",
+                  "template",
+                  "environment"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "dir": {
+                      "type": "string"
+                    },
+                    "repo": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "$ref": "#/components/schemas/skyforge.UserScopeNetlabValidationResult"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "template": {
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "source",
+                    "repo",
+                    "dir",
+                    "template",
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ValidateUserScopeNetlabTemplateSync runs netlab validation immediately and\nreturns structured diagnostics.\n"
       }
     },
     "/api/users/{id}/runs/ansible-run": {
@@ -37713,13 +41311,17 @@
                   "deploymentId": {
                     "type": "string"
                   },
+                  "includeTombstoned": {
+                    "type": "boolean"
+                  },
                   "userScopeId": {
                     "type": "string"
                   }
                 },
                 "required": [
                   "userScopeId",
-                  "deploymentId"
+                  "deploymentId",
+                  "includeTombstoned"
                 ],
                 "type": "object"
               }
@@ -37732,6 +41334,22 @@
               "application/json": {
                 "schema": {
                   "properties": {
+                    "cleanupError": {
+                      "type": "string"
+                    },
+                    "cleanupRequestedAt": {
+                      "type": "string"
+                    },
+                    "cleanupState": {
+                      "type": "string"
+                    },
+                    "cleanupTaskId": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "cleanupUpdatedAt": {
+                      "type": "string"
+                    },
                     "configJson": {
                       "type": "string"
                     },
@@ -37767,6 +41385,9 @@
                     "storedFamily": {
                       "type": "string"
                     },
+                    "tombstoned": {
+                      "type": "boolean"
+                    },
                     "updatedAt": {
                       "type": "string"
                     },
@@ -37787,7 +41408,13 @@
                     "lastTaskId",
                     "lastStatus",
                     "lastStartedAt",
-                    "lastFinishedAt"
+                    "lastFinishedAt",
+                    "tombstoned",
+                    "cleanupState",
+                    "cleanupTaskId",
+                    "cleanupError",
+                    "cleanupRequestedAt",
+                    "cleanupUpdatedAt"
                   ],
                   "type": "object"
                 }
@@ -38927,12 +42554,16 @@
                   "tenantKind": {
                     "$ref": "#/components/schemas/forwardtenant.TenantKind"
                   },
+                  "tenantScope": {
+                    "type": "string"
+                  },
                   "username": {
                     "type": "string"
                   }
                 },
                 "required": [
                   "tenantKind",
+                  "tenantScope",
                   "username",
                   "mode",
                   "forwardEnabled",
@@ -38999,12 +42630,16 @@
                   "tenantKind": {
                     "$ref": "#/components/schemas/forwardtenant.TenantKind"
                   },
+                  "tenantScope": {
+                    "type": "string"
+                  },
                   "username": {
                     "type": "string"
                   }
                 },
                 "required": [
                   "tenantKind",
+                  "tenantScope",
                   "username",
                   "displayName",
                   "email",
@@ -39046,6 +42681,9 @@
                     "tenantKind": {
                       "$ref": "#/components/schemas/forwardtenant.TenantKind"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "format": "date-time",
                       "type": "string"
@@ -39056,6 +42694,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "orgId",
                     "orgName",
                     "username",
@@ -39106,12 +42745,16 @@
                   "tenantKind": {
                     "$ref": "#/components/schemas/forwardtenant.TenantKind"
                   },
+                  "tenantScope": {
+                    "type": "string"
+                  },
                   "username": {
                     "type": "string"
                   }
                 },
                 "required": [
                   "tenantKind",
+                  "tenantScope",
                   "username",
                   "forwardEnabled",
                   "sessionSecret",
@@ -39150,6 +42793,9 @@
                     "tenantKind": {
                       "$ref": "#/components/schemas/forwardtenant.TenantKind"
                     },
+                    "tenantScope": {
+                      "type": "string"
+                    },
                     "updatedAt": {
                       "format": "date-time",
                       "type": "string"
@@ -39160,6 +42806,7 @@
                   },
                   "required": [
                     "tenantKind",
+                    "tenantScope",
                     "orgId",
                     "orgName",
                     "username",
@@ -39555,7 +43202,7 @@
     },
     "/ingest/metrics/node": {
       "post": {
-        "description": "This is used to build a lightweight \"live node metrics\" view without deploying a full monitoring stack. Data is stored as a short-lived snapshot in Redis.\n",
+        "description": "This legacy ingestion path is retired. Skyforge now sources node metrics from Prometheus/node-exporter instead of Telegraf snapshots stored in Postgres.\n",
         "operationId": "POST:skyforge.IngestNodeMetric",
         "requestBody": {
           "content": {
@@ -39880,6 +43527,20 @@
         }
       }
     },
+    "/internal/cron/forward/backups/configure": {
+      "post": {
+        "operationId": "POST:skyforge.CronForwardBackupsConfigure",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CronForwardBackupsConfigure ensures the Forward platform backup contract remains\nvalid.\n"
+      }
+    },
     "/internal/cron/forward/collectors/idle": {
       "post": {
         "operationId": "POST:skyforge.CronScaleIdleForwardCollectors",
@@ -39905,6 +43566,21 @@
           }
         },
         "summary": "CronForwardDemoOrgNightlyReset queues nightly demo-org rebuilds for all known\nusers.\n"
+      }
+    },
+    "/internal/cron/forward/demo-org/seed-repair": {
+      "post": {
+        "description": "demo org exists but does not yet have the seeded snapshot.\n",
+        "operationId": "POST:skyforge.CronForwardDemoOrgSeedRepair",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CronForwardDemoOrgSeedRepair queues curated demo-org seeding for users whose\n"
       }
     },
     "/internal/cron/hetzner/burst/reconcile": {
@@ -39933,6 +43609,20 @@
           }
         },
         "summary": "KNE orphan runtime namespace cleanup\n"
+      }
+    },
+    "/internal/cron/object-store/mirror/aws": {
+      "post": {
+        "operationId": "POST:skyforge.CronMirrorObjectStoreToTarget",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CronMirrorObjectStoreToTarget mirrors the in-cluster S3 object store to an\noffsite object store target.\n"
       }
     },
     "/internal/cron/observability/cleanup": {
@@ -40013,6 +43703,21 @@
           }
         },
         "summary": "CronWorkerHeartbeat upserts a task worker heartbeat for this worker instance.\n"
+      }
+    },
+    "/internal/worker/platform/inventory-snapshot": {
+      "post": {
+        "description": "into a Postgres snapshot so overview paths never perform cluster-wide list calls in the request path.\n",
+        "operationId": "POST:worker.CronRefreshClusterInventorySnapshot",
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "CronRefreshClusterInventorySnapshot materializes Kubernetes node/pod inventory\n"
       }
     },
     "/internal/worker/platform/usage-snapshots": {
@@ -40691,6 +44396,9 @@
                       "format": "int64",
                       "type": "integer"
                     },
+                    "capacityPreflightAvailable": {
+                      "type": "boolean"
+                    },
                     "degraded": {
                       "type": "boolean"
                     },
@@ -40699,6 +44407,9 @@
                     },
                     "generatedAt": {
                       "type": "string"
+                    },
+                    "inventorySnapshotAvailable": {
+                      "type": "boolean"
                     },
                     "metadata": {
                       "additionalProperties": {
@@ -40763,6 +44474,8 @@
                     "availablePoolClasses",
                     "actualPoolClasses",
                     "actualNodes",
+                    "inventorySnapshotAvailable",
+                    "capacityPreflightAvailable",
                     "actualNodeCount",
                     "readyPodCount",
                     "candidateNodeCount",
@@ -40926,6 +44639,13 @@
                     "infraComparison": {
                       "$ref": "#/components/schemas/platform.PlatformInfraComparison"
                     },
+                    "inventoryAgeSeconds": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "inventoryRecordedAt": {
+                      "type": "string"
+                    },
                     "marginalCostByClass": {
                       "items": {
                         "$ref": "#/components/schemas/platform.PlatformMarginalCostByClass"
@@ -41007,7 +44727,9 @@
                     "warnings",
                     "baselineMonthlyCostCents",
                     "forwardResetRunCount",
-                    "forwardResetRunsByStatus"
+                    "forwardResetRunsByStatus",
+                    "inventoryRecordedAt",
+                    "inventoryAgeSeconds"
                   ],
                   "type": "object"
                 }
@@ -41073,6 +44795,13 @@
                     "infraComparison": {
                       "$ref": "#/components/schemas/platform.PlatformInfraComparison"
                     },
+                    "inventoryAgeSeconds": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "inventoryRecordedAt": {
+                      "type": "string"
+                    },
                     "marginalCostByClass": {
                       "items": {
                         "$ref": "#/components/schemas/platform.PlatformMarginalCostByClass"
@@ -41154,7 +44883,9 @@
                     "warnings",
                     "baselineMonthlyCostCents",
                     "forwardResetRunCount",
-                    "forwardResetRunsByStatus"
+                    "forwardResetRunsByStatus",
+                    "inventoryRecordedAt",
+                    "inventoryAgeSeconds"
                   ],
                   "type": "object"
                 }
@@ -41377,6 +45108,13 @@
                     "infraComparison": {
                       "$ref": "#/components/schemas/platform.PlatformInfraComparison"
                     },
+                    "inventoryAgeSeconds": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "inventoryRecordedAt": {
+                      "type": "string"
+                    },
                     "policy": {
                       "$ref": "#/components/schemas/platform.UserPolicy"
                     },
@@ -41403,7 +45141,9 @@
                     "availabilityByClass",
                     "reservationGuidance",
                     "infraComparison",
-                    "warnings"
+                    "warnings",
+                    "inventoryRecordedAt",
+                    "inventoryAgeSeconds"
                   ],
                   "type": "object"
                 }
@@ -41606,6 +45346,66 @@
         }
       }
     },
+    "/platform.ListRoleProfileDefinitions": {
+      "get": {
+        "operationId": "GET:platform.ListRoleProfileDefinitions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "profiles": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.RoleProfileDefinition"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "profiles"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "post": {
+        "operationId": "POST:platform.ListRoleProfileDefinitions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "profiles": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.RoleProfileDefinition"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "profiles"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
     "/platform.PreflightReservation": {
       "post": {
         "operationId": "POST:platform.PreflightReservation",
@@ -41743,6 +45543,141 @@
                     "protectedCuratedBlocks",
                     "quota",
                     "warnings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.PutRoleProfileDefinition": {
+      "post": {
+        "operationId": "POST:platform.PutRoleProfileDefinition",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "assignedBy": {
+                    "type": "string"
+                  },
+                  "capabilities": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "defaultForNewUsers": {
+                    "type": "boolean"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "operatingModes": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "profile": {
+                    "type": "string"
+                  },
+                  "quota": {
+                    "$ref": "#/components/schemas/platform.UserQuota"
+                  },
+                  "sortOrder": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "system": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "profile",
+                  "displayName",
+                  "description",
+                  "enabled",
+                  "system",
+                  "defaultForNewUsers",
+                  "sortOrder",
+                  "quota",
+                  "capabilities",
+                  "operatingModes",
+                  "assignedBy"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "capabilities": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.Capability"
+                      },
+                      "type": "array"
+                    },
+                    "defaultForNewUsers": {
+                      "type": "boolean"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "operatingModes": {
+                      "items": {
+                        "$ref": "#/components/schemas/platform.OperatingMode"
+                      },
+                      "type": "array"
+                    },
+                    "profile": {
+                      "$ref": "#/components/schemas/platform.RoleProfile"
+                    },
+                    "quota": {
+                      "$ref": "#/components/schemas/platform.UserQuota"
+                    },
+                    "sortOrder": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "system": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "profile",
+                    "displayName",
+                    "description",
+                    "enabled",
+                    "system",
+                    "defaultForNewUsers",
+                    "sortOrder",
+                    "quota",
+                    "capabilities",
+                    "operatingModes"
                   ],
                   "type": "object"
                 }
@@ -41939,6 +45874,120 @@
                     "capabilities",
                     "directRoles",
                     "quota"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      }
+    },
+    "/platform.RefreshClusterInventorySnapshot": {
+      "get": {
+        "operationId": "GET:platform.RefreshClusterInventorySnapshot",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "controlPlaneLabPodCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "createdTopologies": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "deletedTopologies": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "nodeCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "podCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "recordedAt": {
+                      "type": "string"
+                    },
+                    "topologyCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "recordedAt",
+                    "nodeCount",
+                    "podCount",
+                    "topologyCount",
+                    "controlPlaneLabPodCount",
+                    "createdTopologies",
+                    "deletedTopologies"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        }
+      },
+      "post": {
+        "operationId": "POST:platform.RefreshClusterInventorySnapshot",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "controlPlaneLabPodCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "createdTopologies": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "deletedTopologies": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "nodeCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "podCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "recordedAt": {
+                      "type": "string"
+                    },
+                    "topologyCount": {
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "recordedAt",
+                    "nodeCount",
+                    "podCount",
+                    "topologyCount",
+                    "controlPlaneLabPodCount",
+                    "createdTopologies",
+                    "deletedTopologies"
                   ],
                   "type": "object"
                 }
@@ -44053,6 +48102,109 @@
         "summary": "ExecuteForwardTenantResetRun is a worker-facing private API for queued\n"
       }
     },
+    "/skyforge.ExecuteForwardTestDriveSeedRun": {
+      "post": {
+        "description": "TestDrive topology seeding.\n",
+        "operationId": "POST:skyforge.ExecuteForwardTestDriveSeedRun",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "requestedBy": {
+                    "type": "string"
+                  },
+                  "reset": {
+                    "type": "boolean"
+                  },
+                  "testDriveId": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "testDriveId",
+                  "requestedBy",
+                  "reset"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ExecuteForwardTestDriveSeedRun is a worker-facing private API for durable\n"
+      }
+    },
+    "/skyforge.ReconcileForwardTenantResetTask": {
+      "post": {
+        "description": "terminal or recoverable forward reset runs to a task outcome.\n",
+        "operationId": "POST:skyforge.ReconcileForwardTenantResetTask",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "runId": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "runId",
+                  "username"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "errorMessage": {
+                      "type": "string"
+                    },
+                    "handled": {
+                      "type": "boolean"
+                    },
+                    "taskStatus": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "handled",
+                    "taskStatus",
+                    "errorMessage"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success response"
+          },
+          "default": {
+            "$ref": "#/components/responses/APIError"
+          }
+        },
+        "summary": "ReconcileForwardTenantResetTask is a worker-facing private API that resolves\n"
+      }
+    },
     "/snmp/{path}": {
       "get": {
         "operationId": "GET:frontend.FrontendSNMP",
@@ -45069,9 +49221,33 @@
                       "format": "int64",
                       "type": "integer"
                     },
+                    "queuedByType": {
+                      "items": {
+                        "$ref": "#/components/schemas/taskruns.TaskQueueTypeCount"
+                      },
+                      "type": "array"
+                    },
+                    "queuedOffenders": {
+                      "items": {
+                        "$ref": "#/components/schemas/taskruns.TaskQueueOffender"
+                      },
+                      "type": "array"
+                    },
                     "running": {
                       "format": "int64",
                       "type": "integer"
+                    },
+                    "runningByType": {
+                      "items": {
+                        "$ref": "#/components/schemas/taskruns.TaskQueueTypeCount"
+                      },
+                      "type": "array"
+                    },
+                    "signals": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
                     },
                     "status": {
                       "type": "string"
@@ -45093,7 +49269,11 @@
                     "publishFailures10m",
                     "publishFailuresLatest",
                     "stuckQueuedCandidates",
-                    "status"
+                    "status",
+                    "queuedByType",
+                    "runningByType",
+                    "queuedOffenders",
+                    "signals"
                   ],
                   "type": "object"
                 }

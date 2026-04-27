@@ -25,6 +25,16 @@
 {{- $fluentBitOutputs := default (list) $logForwarding.outputs -}}
 {{- $compute := default (dict) $workers.compute -}}
 {{- $search := default (dict) $workers.search -}}
+{{- $computeRequiredAntiAffinity := true -}}
+{{- if hasKey $compute "requiredAntiAffinity" -}}
+{{- $computeRequiredAntiAffinity = $compute.requiredAntiAffinity -}}
+{{- end -}}
+{{- $searchRequiredAntiAffinity := true -}}
+{{- if hasKey $search "requiredAntiAffinity" -}}
+{{- $searchRequiredAntiAffinity = $search.requiredAntiAffinity -}}
+{{- end -}}
+{{- $computeRequiredPoolClass := default "" $compute.requiredPoolClass -}}
+{{- $searchRequiredPoolClass := default "" $search.requiredPoolClass -}}
 {{- $computeImage := include "skyforge.forwardWorker.computeImage" . -}}
 {{- $searchImage := include "skyforge.forwardWorker.searchImage" . -}}
 {{- $rollout := default (dict) $workers.rollout -}}
@@ -171,13 +181,14 @@ spec:
         {{- include "skyforge.labels" . | nindent 8 }}
         app.kubernetes.io/name: fwd-compute-worker
     spec:
-      automountServiceAccountToken: false
+      automountServiceAccountToken: true
       terminationGracePeriodSeconds: {{ default 90 $rollout.terminationGracePeriodSeconds }}
       {{- if $priorityClassName }}
       priorityClassName: {{ $priorityClassName | quote }}
       {{- end }}
       affinity:
         podAntiAffinity:
+          {{- if $computeRequiredAntiAffinity }}
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchExpressions:
@@ -186,12 +197,30 @@ spec:
                     values:
                       - fwd-compute-worker
               topologyKey: kubernetes.io/hostname
+          {{- else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - fwd-compute-worker
+                topologyKey: kubernetes.io/hostname
+          {{- end }}
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
                   - key: node-role.kubernetes.io/fwd-compute-worker
                     operator: Exists
+                  {{- if $computeRequiredPoolClass }}
+                  - key: skyforge.forwardnetworks.com/pool-class
+                    operator: In
+                    values:
+                      - {{ $computeRequiredPoolClass | quote }}
+                  {{- end }}
       securityContext:
         fsGroup: {{ $fsGroup }}
       {{- if $imagePullSecretName }}
@@ -341,13 +370,14 @@ spec:
         {{- include "skyforge.labels" . | nindent 8 }}
         app.kubernetes.io/name: fwd-search-worker
     spec:
-      automountServiceAccountToken: false
+      automountServiceAccountToken: true
       terminationGracePeriodSeconds: {{ default 90 $rollout.terminationGracePeriodSeconds }}
       {{- if $priorityClassName }}
       priorityClassName: {{ $priorityClassName | quote }}
       {{- end }}
       affinity:
         podAntiAffinity:
+          {{- if $searchRequiredAntiAffinity }}
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchExpressions:
@@ -356,12 +386,30 @@ spec:
                     values:
                       - fwd-search-worker
               topologyKey: kubernetes.io/hostname
+          {{- else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - fwd-search-worker
+                topologyKey: kubernetes.io/hostname
+          {{- end }}
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
                   - key: node-role.kubernetes.io/fwd-search-worker
                     operator: Exists
+                  {{- if $searchRequiredPoolClass }}
+                  - key: skyforge.forwardnetworks.com/pool-class
+                    operator: In
+                    values:
+                      - {{ $searchRequiredPoolClass | quote }}
+                  {{- end }}
       securityContext:
         fsGroup: {{ $fsGroup }}
       {{- if $imagePullSecretName }}

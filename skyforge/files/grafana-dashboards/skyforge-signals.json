@@ -38,19 +38,19 @@
     {
       "id": 2,
       "type": "timeseries",
-      "title": "Pod Restarts (namespace=skyforge)",
+      "title": "SSO proxy request rate",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (pod) (increase(kube_pod_container_status_restarts_total{namespace=\"skyforge\"}[30m]))",
+          "expr": "sum by (pod) (rate(envoy_http_downstream_rq_total{job=\"sso-proxy-envoy\",envoy_http_conn_manager_prefix=\"ingress_http\"}[5m]))",
           "legendFormat": "{{pod}}",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "reqps",
           "min": 0
         },
         "overrides": []

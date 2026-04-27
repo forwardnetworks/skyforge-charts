@@ -1,0 +1,86 @@
+{{- $giteaSSH := default (dict) .Values.skyforge.gitea.ssh -}}
+{{- $lbipam := default (dict) .Values.skyforge.gateway.ciliumLBIPAM -}}
+{{- if and .Values.skyforge.gitea.enabled (default true $giteaSSH.enabled) (ne (trim (default "skyforge-gateway" $lbipam.sharingKey)) "") }}
+{{- $hookEvents := list "post-install" -}}
+{{- if .Values.skyforge.hooks.gatewayLBIPAMShareReconcile.runOnUpgrade -}}
+{{- $hookEvents = append $hookEvents "post-upgrade" -}}
+{{- end -}}
+{{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
+{{- $sharedIP := default "" $lbipam.sharedIP -}}
+{{- if eq (trim $sharedIP) "" -}}
+  {{- range $addr := $gatewayAddresses -}}
+    {{- if and (eq (default "" $addr.type) "IPAddress") (ne (trim (default "" $addr.value)) "") -}}
+      {{- $sharedIP = $addr.value -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gateway-lbipam-share-reconcile
+  labels:
+    {{- include "skyforge.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: {{ join "," $hookEvents | quote }}
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
+    helm.sh/hook-weight: "-4"
+spec:
+  backoffLimit: {{ default 1 .Values.skyforge.hooks.gatewayLBIPAMShareReconcile.backoffLimit }}
+  activeDeadlineSeconds: {{ default 300 .Values.skyforge.hooks.gatewayLBIPAMShareReconcile.activeDeadlineSeconds }}
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        {{- include "skyforge.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: skyforge-server
+      restartPolicy: Never
+      automountServiceAccountToken: true
+      containers:
+        - name: reconcile
+          image: {{ .Values.images.kubectl | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -lc
+          args:
+            - |
+              set -eu
+              KUBECTL_BIN="/opt/bitnami/kubectl/bin/kubectl"
+              if [ ! -x "${KUBECTL_BIN}" ]; then
+                KUBECTL_BIN="$(command -v kubectl || true)"
+              fi
+              if [ -z "${KUBECTL_BIN}" ]; then
+                echo "kubectl binary not found in hook image" >&2
+                exit 1
+              fi
+              ns="{{ .Release.Namespace }}"
+              gateway_svc="{{ default "cilium-gateway-skyforge" $lbipam.gatewayServiceName }}"
+              ssh_svc="gitea-ssh"
+              sharing_key="{{ default "skyforge-gateway" $lbipam.sharingKey }}"
+              shared_ip="{{ $sharedIP }}"
+
+              for svc in "${gateway_svc}" "${ssh_svc}"; do
+                echo "Waiting for ${ns}/${svc}"
+                for i in $(seq 1 120); do
+                  if "${KUBECTL_BIN}" -n "${ns}" get service "${svc}" >/dev/null 2>&1; then
+                    break
+                  fi
+                  sleep 2
+                done
+                "${KUBECTL_BIN}" -n "${ns}" get service "${svc}" >/dev/null
+              done
+
+              for svc in "${gateway_svc}" "${ssh_svc}"; do
+                "${KUBECTL_BIN}" -n "${ns}" annotate service "${svc}" \
+                  lbipam.cilium.io/sharing-key="${sharing_key}" \
+                  --overwrite >/dev/null
+                if [ -n "${shared_ip}" ]; then
+                  "${KUBECTL_BIN}" -n "${ns}" annotate service "${svc}" \
+                    lbipam.cilium.io/ips="${shared_ip}" \
+                    --overwrite >/dev/null
+                fi
+              done
+
+              echo "Cilium LB-IPAM sharing applied to ${gateway_svc} and ${ssh_svc}"
+{{- end }}

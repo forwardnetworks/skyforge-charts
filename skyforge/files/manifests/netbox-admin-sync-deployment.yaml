@@ -17,7 +17,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - args:
-        - "set -euo pipefail\nexport PGPASSWORD=\"$(cat /run/secrets/postgres-skyforge-password)\"\
+        - "set -eu\nexport PGPASSWORD=\"$(cat /run/secrets/postgres-skyforge-password)\"\
           \ninterval=\"${SKYFORGE_ADMIN_SYNC_SECONDS:-30}\"\nif ! echo \"${interval}\"\
           \ | grep -Eq '^[0-9]+$' || [ \"${interval}\" -lt 5 ]; then\n  interval=\"\
           30\"\nfi\n\nnormalize_users() {\n  echo \"${SKYFORGE_ADMIN_USERS:-}\" \\\

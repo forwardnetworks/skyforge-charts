@@ -2,10 +2,10 @@
   "id": null,
   "uid": "skyforge-operations",
   "title": "Skyforge Operations",
-  "tags": ["skyforge", "operations", "queue"],
+  "tags": ["skyforge", "operations", "node", "sso"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 3,
   "refresh": "30s",
   "time": {
     "from": "now-6h",
@@ -15,11 +15,11 @@
     {
       "id": 1,
       "type": "stat",
-      "title": "Queued tasks",
+      "title": "Prometheus targets up",
       "gridPos": { "h": 5, "w": 6, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "expr": "skyforge_tasks_queued_current_total", "refId": "A" }
+        { "expr": "sum(up)", "refId": "A" }
       ],
       "fieldConfig": {
         "defaults": { "unit": "short", "min": 0 },
@@ -34,14 +34,14 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "Oldest queued age",
+      "title": "Node CPU active",
       "gridPos": { "h": 5, "w": 6, "x": 6, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "expr": "skyforge_tasks_queued_oldest_age_seconds_total", "refId": "A" }
+        { "expr": "quantile(0.95, 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))))", "refId": "A" }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "min": 0 },
+        "defaults": { "unit": "percent", "min": 0, "max": 100 },
         "overrides": []
       },
       "options": {
@@ -53,14 +53,14 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "Active workers",
+      "title": "Node memory used",
       "gridPos": { "h": 5, "w": 6, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "expr": "skyforge_task_workers_alive_current", "refId": "A" }
+        { "expr": "quantile(0.95, 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)))", "refId": "A" }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "short", "min": 0 },
+        "defaults": { "unit": "percent", "min": 0, "max": 100 },
         "overrides": []
       },
       "options": {
@@ -72,14 +72,14 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Worker heartbeat age",
+      "title": "Root filesystem used",
       "gridPos": { "h": 5, "w": 6, "x": 18, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "expr": "skyforge_task_workers_heartbeat_age_seconds", "refId": "A" }
+        { "expr": "100 * (1 - (node_filesystem_avail_bytes{job=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{job=\"node-exporter\",mountpoint=\"/\"}))", "refId": "A" }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "min": 0 },
+        "defaults": { "unit": "percent", "min": 0, "max": 100 },
         "overrides": []
       },
       "options": {
@@ -91,18 +91,18 @@
     {
       "id": 5,
       "type": "timeseries",
-      "title": "Queue latency by task type",
+      "title": "Node network receive",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "skyforge_task_queue_latency_seconds_last",
-          "legendFormat": "{{task_type}}",
+          "expr": "sum by (device) (rate(node_network_receive_bytes_total{job=\"node-exporter\",device!~\"lo|cni.*|flannel.*|veth.*\"}[5m]))",
+          "legendFormat": "{{device}}",
           "refId": "A"
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "min": 0 },
+        "defaults": { "unit": "Bps", "min": 0 },
         "overrides": []
       },
       "options": {
@@ -112,18 +112,18 @@
     {
       "id": 6,
       "type": "timeseries",
-      "title": "Run duration by task type",
+      "title": "Node network transmit",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "skyforge_task_run_duration_seconds_last",
-          "legendFormat": "{{task_type}}",
+          "expr": "sum by (device) (rate(node_network_transmit_bytes_total{job=\"node-exporter\",device!~\"lo|cni.*|flannel.*|veth.*\"}[5m]))",
+          "legendFormat": "{{device}}",
           "refId": "A"
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "min": 0 },
+        "defaults": { "unit": "Bps", "min": 0 },
         "overrides": []
       },
       "options": {
@@ -133,13 +133,60 @@
     {
       "id": 7,
       "type": "timeseries",
-      "title": "Queued tasks by task type",
+      "title": "SSO proxy auth decisions",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "skyforge_tasks_queued_current",
-          "legendFormat": "{{task_type}}",
+          "expr": "sum by (pod) (rate(envoy_http_ext_authz_ok{job=\"sso-proxy-envoy\",envoy_http_conn_manager_prefix=\"ingress_http\"}[5m]))",
+          "legendFormat": "{{pod}} ok",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (pod) (rate(envoy_http_ext_authz_denied{job=\"sso-proxy-envoy\",envoy_http_conn_manager_prefix=\"ingress_http\"}[5m]))",
+          "legendFormat": "{{pod}} denied",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ops", "min": 0 },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "SSO proxy response classes",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (pod, envoy_response_code_class) (rate(envoy_http_downstream_rq_xx{job=\"sso-proxy-envoy\",envoy_http_conn_manager_prefix=\"ingress_http\"}[5m]))",
+          "legendFormat": "{{pod}} {{envoy_response_code_class}}xx",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "min": 0 },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "KEDA worker scaler metrics",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "max by (namespace, scaledObject) (keda_scaler_metrics_value{namespace=~\"forward|skyforge\",scaledObject=~\"fwd-(compute|search)-worker|skyforge-server-worker\"})",
+          "legendFormat": "{{namespace}}/{{scaledObject}}",
           "refId": "A"
         }
       ],
@@ -152,20 +199,25 @@
       }
     },
     {
-      "id": 8,
+      "id": 10,
       "type": "timeseries",
-      "title": "Deployment lifecycle decisions",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+      "title": "KEDA worker ready/active",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 21 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (action, outcome) (increase(skyforge_deployment_lifecycle_total[30m]))",
-          "legendFormat": "{{action}} / {{outcome}}",
+          "expr": "max by (namespace, scaledObject) (keda_scaled_object_ready{namespace=~\"forward|skyforge\",scaledObject=~\"fwd-(compute|search)-worker|skyforge-server-worker\"})",
+          "legendFormat": "{{namespace}}/{{scaledObject}} ready",
           "refId": "A"
+        },
+        {
+          "expr": "max by (namespace, scaledObject) (keda_scaled_object_active{namespace=~\"forward|skyforge\",scaledObject=~\"fwd-(compute|search)-worker|skyforge-server-worker\"})",
+          "legendFormat": "{{namespace}}/{{scaledObject}} active",
+          "refId": "B"
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "short", "min": 0 },
+        "defaults": { "unit": "short", "min": 0, "max": 1 },
         "overrides": []
       },
       "options": {

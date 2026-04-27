@@ -1,6 +1,8 @@
 {{- $workerPriorityClass := default .Values.skyforge.corePriorityClassName .Values.skyforge.worker.priorityClassName -}}
 {{- $forwardClusterEnabled := default false .Values.skyforge.forwardCluster.enabled -}}
 {{- $forwardTlsSecretName := default "proxy-tls-fwd" .Values.skyforge.forwardCluster.tlsSecretName -}}
+{{- $kedaWorkerEnabled := and .Values.skyforge.keda .Values.skyforge.keda.enabled .Values.skyforge.keda.worker.enabled -}}
+{{- $hpaWorkerEnabled := and .Values.skyforge.worker.autoscaling.enabled (not $kedaWorkerEnabled) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,7 +11,9 @@ metadata:
     {{- include "skyforge.labels" . | nindent 4 }}
     app.kubernetes.io/component: worker
 spec:
+{{- if not (or $kedaWorkerEnabled $hpaWorkerEnabled) }}
   replicas: {{ default 1 .Values.skyforge.worker.replicas }}
+{{- end }}
   strategy:
     type: Recreate
   selector:
@@ -99,6 +103,10 @@ spec:
           env:
             - name: SKYFORGE_ROLE
               value: "worker"
+            - name: SKYFORGE_FORWARD_DEMO_SEED_REPLAY_TIMEOUT
+              value: {{ default "45m" .Values.skyforge.forwardDemoSeed.replayTimeout | quote }}
+            - name: SKYFORGE_FORWARD_DEMO_SEED_SNAPSHOT_PROCESS_TIMEOUT
+              value: {{ default "20m" .Values.skyforge.forwardDemoSeed.snapshotProcessTimeout | quote }}
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:

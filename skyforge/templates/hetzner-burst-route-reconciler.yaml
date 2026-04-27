@@ -1,7 +1,7 @@
 {{- $burst := default dict .Values.skyforge.burst -}}
 {{- $hetzner := default dict $burst.hetzner -}}
 {{- $routes := default dict $hetzner.routeReconciler -}}
-{{- if and $hetzner.enabled $routes.enabled (gt (len (default (list) $routes.destinations)) 0) (ne (default "" $routes.via) "") }}
+{{- if and $routes.enabled (gt (len (default (list) $routes.destinations)) 0) (ne (default "" $routes.via) "") }}
 {{- $name := default "hetzner-burst-route-reconciler" $routes.name -}}
 {{- $image := default "docker.io/nicolaka/netshoot:v0.13" $routes.image -}}
 {{- $pullPolicy := default "IfNotPresent" $routes.imagePullPolicy -}}

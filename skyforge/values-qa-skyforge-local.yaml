@@ -59,6 +59,7 @@ skyforge:
   db:
     storage:
       storageClassName: "longhorn"
+    maxConnections: 1200
   edition: enterprise
   infoblox:
     enabled: true
@@ -119,10 +120,20 @@ skyforge:
     storage:
       storageClassName: "longhorn"
   rapid7:
-    enabled: false
-    managed: false
+    enabled: true
+    managed: true
+    image: ghcr.io/forwardnetworks/rapid7:20260307-r33
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+      limits:
+        cpu: "4"
+        memory: "8Gi"
     storage:
-      storageClassName: "longhorn"
+      size: "100Gi"
+      storageClassName: "local-path"
+  rapid7Url: "https://skyforge.local.forwardnetworks.com/rapid7"
   elk:
     enabled: false
     managed: false
@@ -132,13 +143,14 @@ skyforge:
       enabled: true
       pollingInterval: 15
       cooldownPeriod: 120
-      minReplicaCount: 2
-      maxReplicaCount: 4
+      minReplicaCount: 1
+      maxReplicaCount: 1
       query: "SELECT COUNT(*) FROM sf_tasks WHERE status = 'queued'"
       activationTargetQueryValue: "1"
       targetQueryValue: "5"
   burst:
     hetzner:
+      enabled: false
       apiTokenSecretName: skyforge-hetzner-burst
       apiTokenSecretKey: api-token
       hubPublicKeySecretName: skyforge-hetzner-burst
@@ -151,7 +163,7 @@ skyforge:
   forward:
     baseUrl: https://fwd-appserver.forward.svc:8443
   forwardImages:
-    tag: 26.4.0-15
+    tag: 26.4.1-02
     imagePullSecretName: ""
     imagePullSecretNamespace: ""
   kubernetes:
@@ -163,6 +175,9 @@ skyforge:
     attempts: 90
     sleepSeconds: 2
     connectTimeoutSeconds: 2
+  forwardDemoSeed:
+    replayTimeout: "30m"
+    snapshotProcessTimeout: "10m"
   forwardCluster:
     enabled: true
     hostname: skyforge-fwd.local.forwardnetworks.com
@@ -235,6 +250,13 @@ skyforge:
       nqeAssist:
         enabled: true
         appCredentialsSecretName: "fwd-app-creds-for-nqe-assist"
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "2Gi"
+          limits:
+            cpu: "500m"
+            memory: "2Gi"
       ai:
         baml:
           enabled: true
@@ -256,8 +278,8 @@ skyforge:
       memoryProfileConfigMapName: "fwd-memory-profile-overrides"
       rollout:
         strategyType: "RollingUpdate"
-        maxUnavailable: 0
-        maxSurge: 1
+        maxUnavailable: 1
+        maxSurge: 0
         minReadySeconds: 10
         progressDeadlineSeconds: 600
         terminationGracePeriodSeconds: 90
@@ -301,7 +323,7 @@ skyforge:
         fdbInternalPartition1SecretName: "postgres.fwd-pg-fdb-1.credentials"
         fdbPartitionPasswordKey: "password"
       compute:
-        replicas: 6
+        replicas: 1
         port: 30060
         requiredAntiAffinity: false
         requiredPoolClass: "app"
@@ -310,18 +332,18 @@ skyforge:
         memoryPctOverride: ""
         resources:
           requests:
-            cpu: "4"
-            memory: "12Gi"
+            cpu: "500m"
+            memory: "14Gi"
           limits:
-            cpu: "4"
-            memory: "12Gi"
+            cpu: "256"
+            memory: "18Gi"
         probes:
           initialDelaySeconds: 10
           periodSeconds: 60
-          failureThreshold: 10
+          failureThreshold: 180
           timeoutSeconds: 3
       search:
-        replicas: 6
+        replicas: 1
         port: 30050
         requiredAntiAffinity: false
         requiredPoolClass: "app"
@@ -329,18 +351,18 @@ skyforge:
         memoryLimitMB: 0
         memoryPctOverride: ""
         ioexecThreadsPerCore: ""
-        fdbJdbcMaxPoolSize: 10
+        fdbJdbcMaxPoolSize: 30
         resources:
           requests:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "500m"
+            memory: "10Gi"
           limits:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "256"
+            memory: "14Gi"
         probes:
           initialDelaySeconds: 10
           periodSeconds: 60
-          failureThreshold: 10
+          failureThreshold: 180
           timeoutSeconds: 3
     nodeRoleReconciler:
       enabled: true
@@ -466,8 +488,23 @@ skyforge:
     localSpread:
       enabled: false
   netbox:
+    enabled: true
+    forwardPlugin:
+      enabled: true
     storage:
       storageClassName: "longhorn"
+  netboxUrl: "https://skyforge.local.forwardnetworks.com/netbox"
+  nautobot:
+    enabled: true
+    bootstrap:
+      enabled: false
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "3Gi"
+      limits:
+        memory: "3Gi"
+  nautobotUrl: "https://skyforge.local.forwardnetworks.com/nautobot"
   yaade:
     storage:
       storageClassName: "longhorn"
@@ -488,5 +525,5 @@ secrets:
   validatePrecreated: true
 
 images:
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260422-prod-local-auth-r2"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260422-prod-local-auth-r2-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260424-prod-first-login-seed-r1"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260424-prod-first-login-seed-r1-worker"

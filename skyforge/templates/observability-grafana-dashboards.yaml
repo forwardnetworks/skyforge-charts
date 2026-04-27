@@ -11,7 +11,7 @@ metadata:
   labels:
     {{- include "skyforge.labels" . | nindent 4 }}
 data:
-{{- range $path, $_ := .Files.Glob "files/grafana-dashboards/*.json" }}
+{{ range $path, $_ := .Files.Glob "files/grafana-dashboards/*.json" }}
   {{ base $path }}: |
 {{ $.Files.Get $path | indent 4 }}
 {{- end }}

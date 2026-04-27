@@ -15,6 +15,11 @@
 {{- $reseedSuspend := default false $reseed.suspend -}}
 {{- $license := default dict .Values.skyforge.infoblox.lifecycle.license -}}
 {{- $licenseSuspend := default false $license.suspend -}}
+{{- $existingState := lookup "v1" "ConfigMap" .Release.Namespace $stateCM -}}
+{{- $existingData := dict -}}
+{{- if $existingState -}}
+{{- $existingData = default (dict) $existingState.data -}}
+{{- end -}}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -68,12 +73,12 @@ metadata:
     {{- include "skyforge.labels" . | nindent 4 }}
     app.kubernetes.io/component: infoblox
 data:
-  last_reset_epoch: "0"
-  last_auto_stop_epoch: "0"
-  last_reseed_reason: ""
-  last_access_epoch: "0"
-  license_pending: "false"
-  license_last_apply_epoch: "0"
+  last_reset_epoch: {{ quote (default "0" (index $existingData "last_reset_epoch")) }}
+  last_auto_stop_epoch: {{ quote (default "0" (index $existingData "last_auto_stop_epoch")) }}
+  last_reseed_reason: {{ quote (default "" (index $existingData "last_reseed_reason")) }}
+  last_access_epoch: {{ quote (default "0" (index $existingData "last_access_epoch")) }}
+  license_pending: {{ quote (default "false" (index $existingData "license_pending")) }}
+  license_last_apply_epoch: {{ quote (default "0" (index $existingData "license_last_apply_epoch")) }}
 {{- if $autoStop.enabled }}
 ---
 apiVersion: batch/v1

@@ -58,7 +58,7 @@ spec:
         - -c
         args:
         - |
-          set -euo pipefail
+          set -eu
 
           export SECRET_KEY="$(cat /run/secrets/gitea-secret-key)"
           export GITEA__database__PASSWD="$(cat /run/secrets/db-gitea-password)"
@@ -187,7 +187,7 @@ spec:
           value: {{ default "oidc" $giteaOIDC.sourceName | quote }}
         - name: SSL_CERT_FILE
           value: /etc/skyforge/ca/ca-certificates.crt
-        image: ghcr.io/go-gitea/gitea:1.24.6-rootless
+        image: ghcr.io/go-gitea/gitea:1.26.0-rootless
         name: gitea-admin-sync
         securityContext:
           runAsGroup: 1000

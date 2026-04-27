@@ -1,0 +1,35 @@
+{{- $gatewayAddresses := .Values.skyforge.gateway.addresses | default (list) -}}
+{{- $giteaSSH := default (dict) .Values.skyforge.gitea.ssh -}}
+{{- $lbipam := default (dict) .Values.skyforge.gateway.ciliumLBIPAM -}}
+{{- $sharedIP := default "" $lbipam.sharedIP -}}
+{{- if eq (trim $sharedIP) "" -}}
+  {{- range $addr := $gatewayAddresses -}}
+    {{- if and (eq (default "" $addr.type) "IPAddress") (ne (trim (default "" $addr.value)) "") -}}
+      {{- $sharedIP = $addr.value -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if and .Values.skyforge.gitea.enabled (default true $giteaSSH.enabled) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitea-ssh
+  labels:
+    app.kubernetes.io/name: gitea
+    io.cilium.gateway/owning-gateway: skyforge
+  annotations:
+    lbipam.cilium.io/sharing-key: {{ default "skyforge-gateway" $lbipam.sharingKey | quote }}
+    {{- if ne (trim $sharedIP) "" }}
+    lbipam.cilium.io/ips: {{ $sharedIP | quote }}
+    {{- end }}
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: ssh
+      port: {{ default 22 $giteaSSH.servicePort }}
+      protocol: TCP
+      targetPort: ssh
+  selector:
+    app.kubernetes.io/name: gitea
+{{- end }}

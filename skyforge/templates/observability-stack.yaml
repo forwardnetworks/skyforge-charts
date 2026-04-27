@@ -20,6 +20,7 @@
 {{- $prom := default (dict) (index $obs "prometheus") -}}
 {{- $promSvc := default "skyforge-prometheus" (index $prom "serviceName") -}}
 {{- $promPort := default 9090 (index $prom "servicePort") -}}
+{{- $promPrefix := default "/prometheus" (index $prom "externalPrefix") | trimSuffix "/" -}}
 {{- $dashboards := default (dict) (index $obs "dashboards") -}}
 {{- $dashboardsFolder := default "Skyforge" (index $dashboards "folder") -}}
 {{- $scrapeInterval := default "30s" (index $managed "scrapeInterval") -}}
@@ -36,6 +37,11 @@
 {{- $nodeExporterEnabled := default true (index $nodeExporter "enabled") -}}
 {{- $nodeExporterImage := default "prom/node-exporter:v1.8.2" (index $nodeExporter "image") -}}
 {{- $nodeExporterSvc := default "skyforge-node-exporter" (index $nodeExporter "serviceName") -}}
+{{- $keda := default (dict) .Values.skyforge.keda -}}
+{{- $kedaEnabled := default false (index $keda "enabled") -}}
+{{- $kedaObs := default (dict) (index $keda "observability") -}}
+{{- $kedaObsEnabled := and $kedaEnabled (default true (index $kedaObs "enabled")) -}}
+{{- $kedaNamespace := default "keda" (index $kedaObs "namespace") -}}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -87,14 +93,9 @@ data:
       - /etc/prometheus/rules/*.yml
     scrape_configs:
       - job_name: prometheus
+        metrics_path: /prometheus/metrics
         static_configs:
           - targets: ["localhost:9090"]
-      - job_name: skyforge-server
-        static_configs:
-          - targets: ["skyforge-server.{{ .Release.Namespace }}.svc.cluster.local:8085"]
-      - job_name: skyforge-worker
-        static_configs:
-          - targets: ["skyforge-server-worker.{{ .Release.Namespace }}.svc.cluster.local:8085"]
       - job_name: sso-proxy-envoy
         metrics_path: /stats/prometheus
         kubernetes_sd_configs:
@@ -127,6 +128,25 @@ data:
           - source_labels: [__meta_kubernetes_endpoint_port_name]
             regex: metrics
             action: keep
+{{- end }}
+{{- if $kedaObsEnabled }}
+      - job_name: keda-operator
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: {{ $kedaNamespace | quote }}
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+            regex: keda-operator
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_container_port_name]
+            regex: metrics|http-metrics|prometheus
+            action: keep
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
 {{- end }}
 {{- if $promPersistenceEnabled }}
 ---
@@ -263,7 +283,7 @@ spec:
             - --storage.tsdb.retention.time={{ $promRetention }}
             - --web.enable-lifecycle
             - --web.route-prefix=/prometheus
-            - --web.external-url=https://{{ $hostname }}{{ default "/prometheus" (index $prom "externalPrefix") }}
+            - --web.external-url=https://{{ $hostname }}{{ $promPrefix }}
           ports:
             - name: http
               containerPort: 9090
@@ -391,7 +411,7 @@ data:
         uid: prometheus
         type: prometheus
         access: proxy
-        url: http://{{ $promSvc }}.{{ $ns }}.svc.cluster.local:{{ int $promPort }}
+        url: http://{{ $promSvc }}.{{ $ns }}.svc.cluster.local:{{ int $promPort }}{{ $promPrefix }}
         isDefault: true
 ---
 apiVersion: v1

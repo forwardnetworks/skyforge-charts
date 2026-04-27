@@ -35,7 +35,15 @@ spec:
             - -lc
           args:
             - |
-              set -euo pipefail
+              set -eu
+              KUBECTL_BIN="/opt/bitnami/kubectl/bin/kubectl"
+              if [ ! -x "${KUBECTL_BIN}" ]; then
+                KUBECTL_BIN="$(command -v kubectl || true)"
+              fi
+              if [ -z "${KUBECTL_BIN}" ]; then
+                echo "kubectl binary not found in hook image" >&2
+                exit 1
+              fi
               ns="{{ .Release.Namespace }}"
               svc="{{ default "cilium-gateway-skyforge" $nodePorts.serviceName }}"
               http_np="{{ int (default 30080 $nodePorts.http) }}"
@@ -43,18 +51,18 @@ spec:
 
               echo "Waiting for ${ns}/${svc}"
               for i in $(seq 1 120); do
-                if kubectl -n "${ns}" get service "${svc}" >/dev/null 2>&1; then
+                if "${KUBECTL_BIN}" -n "${ns}" get service "${svc}" >/dev/null 2>&1; then
                   break
                 fi
                 sleep 2
               done
-              kubectl -n "${ns}" get service "${svc}" >/dev/null
+              "${KUBECTL_BIN}" -n "${ns}" get service "${svc}" >/dev/null
 
               patch='{"spec":{"ports":[{"name":"port-80","port":80,"protocol":"TCP","targetPort":80,"nodePort":'"${http_np}"'},{"name":"port-443","port":443,"protocol":"TCP","targetPort":443,"nodePort":'"${https_np}"'}]}}'
-              kubectl -n "${ns}" patch service "${svc}" --type merge -p "${patch}" >/dev/null
+              "${KUBECTL_BIN}" -n "${ns}" patch service "${svc}" --type merge -p "${patch}" >/dev/null
 
-              actual_http="$(kubectl -n "${ns}" get service "${svc}" -o jsonpath='{.spec.ports[?(@.name=="port-80")].nodePort}')"
-              actual_https="$(kubectl -n "${ns}" get service "${svc}" -o jsonpath='{.spec.ports[?(@.name=="port-443")].nodePort}')"
+              actual_http="$("${KUBECTL_BIN}" -n "${ns}" get service "${svc}" -o jsonpath='{.spec.ports[?(@.name=="port-80")].nodePort}')"
+              actual_https="$("${KUBECTL_BIN}" -n "${ns}" get service "${svc}" -o jsonpath='{.spec.ports[?(@.name=="port-443")].nodePort}')"
 
               if [ "${actual_http}" != "${http_np}" ] || [ "${actual_https}" != "${https_np}" ]; then
                 echo "nodePort reconcile failed: have http=${actual_http} https=${actual_https} want http=${http_np} https=${https_np}" >&2

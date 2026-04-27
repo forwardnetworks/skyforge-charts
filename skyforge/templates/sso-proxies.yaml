@@ -38,6 +38,7 @@ prefixes even when the Gateway URL-rewrites the prefix away.
 {{- $enableAccessLog := default false $root.Values.skyforge.debug.ssoProxyAccessLog -}}
 {{- $envoyImage := default "envoyproxy/envoy:v1.31.2" $root.Values.images.envoy -}}
 {{- $busyboxImage := default "docker.io/library/busybox:1.36.1" $root.Values.images.busybox -}}
+{{- $placement := default (dict) $root.Values.skyforge.ssoProxy.placement -}}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -261,6 +262,13 @@ spec:
         checksum/envoy-template: {{ printf "%s|%s|%s|%v|%s|%s|%s|%t|%t|%s|%s|%s" $name (default "" $upstreamServiceEnv) (default "" $upstreamHost) $upstreamPort (default "" $externalPrefix) (default "" $responsePrefixRewrite) (default "skyforge.local.forwardnetworks.com" $root.Values.skyforge.hostname) $upstreamUseTLS $upstreamTLSSkipVerify (default "" $upstreamSNI) (default "" $upstreamTrustedCAConfigMap) (default "ca.crt" $upstreamTrustedCAFile) | sha256sum }}
     spec:
       automountServiceAccountToken: false
+{{- with include "skyforge.workloadNodeAffinity" (list $placement) }}
+      affinity:
+{{ . | indent 8 }}
+{{- end }}
+{{- with include "skyforge.workloadPlacementSpec" (list $placement) }}
+{{ . | indent 6 }}
+{{- end }}
       initContainers:
         - name: render-envoy-config
           image: {{ $busyboxImage | quote }}
