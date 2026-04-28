@@ -34,13 +34,16 @@ spec:
                   : "${BACKUP_S3_BUCKET:?set BACKUP_S3_BUCKET}"
                   : "${BACKUP_S3_ENDPOINT:?set BACKUP_S3_ENDPOINT}"
                   endpoint="${BACKUP_S3_ENDPOINT}"
-                  if [[ "${endpoint}" != http://* && "${endpoint}" != https://* ]]; then
-                    if [[ "${BACKUP_S3_USE_SSL}" == "true" ]]; then
-                      endpoint="https://${endpoint}"
-                    else
-                      endpoint="http://${endpoint}"
-                    fi
-                  fi
+                  case "${endpoint}" in
+                    http://*|https://*) ;;
+                    *)
+                      if [ "${BACKUP_S3_USE_SSL}" = "true" ]; then
+                        endpoint="https://${endpoint}"
+                      else
+                        endpoint="http://${endpoint}"
+                      fi
+                      ;;
+                  esac
 
                   export AWS_ACCESS_KEY_ID="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
                   export AWS_SECRET_ACCESS_KEY="$(cat /run/secrets/object-storage-root-password | tr -d '\r\n')"
@@ -48,11 +51,25 @@ spec:
                   export PGPASSWORD="$(cat /run/secrets/postgres-skyforge-password | tr -d '\r\n')"
 
                   echo "Dumping Postgres..."
-                  pg_dumpall -h db -U "${BACKUP_PG_USER}" | gzip -9 > "${out}"
+                  sql="${out%.gz}"
+                  pg_dumpall -h db -U "${BACKUP_PG_USER}" -f "${sql}"
+                  test -s "${sql}"
+                  gzip -1 "${sql}"
+                  min_bytes="${BACKUP_MIN_BYTES:-1024}"
+                  actual_bytes="$(wc -c < "${out}" | tr -d ' ')"
+                  if [ "${actual_bytes}" -lt "${min_bytes}" ]; then
+                    echo "Postgres backup too small: ${actual_bytes} bytes < ${min_bytes}" >&2
+                    exit 1
+                  fi
+
+                  echo "Ensuring s3://${BACKUP_S3_BUCKET} exists..."
+                  if ! aws --endpoint-url "${endpoint}" s3api head-bucket --bucket "${BACKUP_S3_BUCKET}" >/dev/null 2>&1; then
+                    aws --endpoint-url "${endpoint}" s3api create-bucket --bucket "${BACKUP_S3_BUCKET}" >/dev/null
+                  fi
 
                   echo "Uploading to s3://${BACKUP_S3_BUCKET}/${BACKUP_S3_PREFIX}/"
                   aws --endpoint-url "${endpoint}" s3 cp "${out}" "s3://${BACKUP_S3_BUCKET}/${BACKUP_S3_PREFIX}/$(basename "${out}")"
-                  echo "Done."
+                  echo "Done. bytes=${actual_bytes}"
               env:
                 - name: BACKUP_S3_BUCKET
                   value: {{ default "skyforge-backups" $postgresBackup.bucket | quote }}

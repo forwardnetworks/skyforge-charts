@@ -512,7 +512,9 @@ skyforge:
       targetNamespace: "longhorn-system"
       recurringJobName: "forward-platform-backup-daily"
     localSpread:
-      enabled: false
+      enabled: true
+    offsiteRaw:
+      enabled: true
   netbox:
     enabled: true
     forwardPlugin:

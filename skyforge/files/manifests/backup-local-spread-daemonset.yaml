@@ -34,7 +34,7 @@ spec:
             - |
               set -eu
               endpoint="http://{{ .Values.skyforge.s3gw.serviceName }}:{{ .Values.skyforge.s3gw.service.port }}"
-              if [[ "{{ ternary "true" "false" .Values.skyforge.objectStorage.useSsl }}" == "true" ]]; then
+              if [ "{{ ternary "true" "false" .Values.skyforge.objectStorage.useSsl }}" = "true" ]; then
                 endpoint="https://{{ .Values.skyforge.s3gw.serviceName }}:{{ .Values.skyforge.s3gw.service.port }}"
               fi
               export AWS_ACCESS_KEY_ID="$(cat /run/secrets/object-storage-root-user | tr -d '\r\n')"
