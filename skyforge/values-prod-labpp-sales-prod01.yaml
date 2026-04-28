@@ -176,7 +176,7 @@ skyforge:
       k3sTokenSecretName: skyforge-hetzner-burst
       k3sTokenSecretKey: token
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260428-eos-kne-vrf-svi-r1
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260428-ceos-kne-physical-r1
     pullPolicy: IfNotPresent
   forward:
     baseUrl: https://skyforge-fwd.dc.forwardnetworks.com
@@ -459,7 +459,7 @@ skyforge:
       enabled: true
       ceoslab:
         enabled: true
-        image: ghcr.io/forwardnetworks/arista-ceoslab-operator:20260417-kne-persistence-r1
+        image: ghcr.io/forwardnetworks/arista-ceoslab-operator:20260428-ceoslab-ifmap-r1
       cdnos:
         enabled: false
       srlinux:
