@@ -176,7 +176,7 @@ skyforge:
       k3sTokenSecretName: skyforge-hetzner-burst
       k3sTokenSecretKey: token
   netlab:
-    image: ghcr.io/forwardnetworks/skyforge-netlab:20260428-kne-link-guard-r1
+    image: ghcr.io/forwardnetworks/skyforge-netlab:20260428-eos-vrf-stub-svi-r4
     pullPolicy: IfNotPresent
   forward:
     baseUrl: https://skyforge-fwd.dc.forwardnetworks.com
@@ -593,5 +593,5 @@ secrets:
   validatePrecreated: true
 
 images:
-  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260428-kne-link-guard-r1"
-  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260428-kne-link-guard-r1-worker"
+  skyforgeServer: "ghcr.io/forwardnetworks/skyforge-server:20260428-eos-vrf-stub-svi-r4"
+  skyforgeServerWorker: "ghcr.io/forwardnetworks/skyforge-server:20260428-eos-vrf-stub-svi-r4-worker"
